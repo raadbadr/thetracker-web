@@ -40,6 +40,9 @@ function handleConfig(env) {
     supabaseAnonKey: env.SUPABASE_ANON_KEY,
     // معرّف عميل جوجل معلومة عامة (يظهر في المتصفح) ويلزم زر الدخول بجوجل
     googleClientId: env.GOOGLE_CLIENT_ID || null,
+    // التحويل المباشر إلى جوجل يظهر اسم نطاقنا، لكنه يحتاج تسجيل عنوان العودة
+    // /login في مشروع جوجل. حتى يُسجَّل، يبقى مسار سوبابيس القياسي هو العامل.
+    googleDirect: String(env.GOOGLE_DIRECT_LOGIN || "") === "on",
     // معلومات عامة لربط القنوات (لا أسرار)
     telegramBot: env.TELEGRAM_BOT_USERNAME || null,
     whatsappNumber: env.WHATSAPP_PUBLIC_NUMBER || null,

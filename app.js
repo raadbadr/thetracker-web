@@ -25,6 +25,7 @@
   var CONFIG_URL = "/api/config";
   var GSI_SRC = "https://accounts.google.com/gsi/client";
   var googleClientId = null;   /* عام؛ يأتي من /api/config */
+  var googleDirect = false;    /* هل نطلب رمز الهوية من جوجل مباشرة؟ */
 
   /* Arabic fallbacks, used only when the page has no `translations` object. */
   var FALLBACK = {
@@ -144,6 +145,7 @@
       .then(function (cfg) {
         if (!cfg || !cfg.supabaseUrl || !cfg.supabaseAnonKey) throw new Error("config incomplete");
         googleClientId = cfg.googleClientId || null;
+        googleDirect = !!cfg.googleDirect;
         auth.client = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey, {
           auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
         });
@@ -308,7 +310,7 @@
   }
 
   function googleReady() {
-    return !!(googleClientId && window.crypto && window.crypto.subtle && window.TextEncoder);
+    return !!(googleDirect && googleClientId && window.crypto && window.crypto.subtle && window.TextEncoder);
   }
 
   /* يبدأ الدخول: nonce أصلي يُحفظ محلياً وبصمته تُرسل لجوجل داخل الرمز. */

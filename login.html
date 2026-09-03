@@ -221,19 +221,37 @@
     .waitlist-msg.error { color: var(--error); }
     /* Sign-in card layout */
     .login-intro { text-align: center; }
-    /* زر جوجل: الشكل الرسمي (أبيض بشعار جوجل) داخل قياسات أزرار الموقع */
-    .google-btn {
+    /* زر تسجيل الدخول — منقول حرفياً من زر تطبيق باركينزي (LoginView.swift):
+       ارتفاع 56، خلفية زجاجية، إطار 1.5، زاوية 16، ظل نيومورفيك،
+       شعار جوجل 24×24 في الطرف والنص في المنتصف. */
+    .app-signin-btn {
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.6rem;
-      background: #ffffff;
-      color: #1f1f1f;
-      border: 1px solid #dadce0;
+      width: 100%;
+      height: 56px;
+      padding: 0 3.5rem;
+      background: var(--glass);
+      border: 1.5px solid var(--glass-border);
+      border-radius: 16px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 17px;
       font-weight: 600;
+      cursor: pointer;
+      box-shadow: 4px 4px 5px var(--shadow-dark), -4px -4px 5px var(--shadow-light);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .google-btn:hover { background: #f4f5f6; }
-    .google-g { width: 20px; height: 20px; flex: 0 0 auto; }
+    .app-signin-btn:hover { transform: translateY(-2px); }
+    .app-signin-btn:active { box-shadow: 2px 2px 3px var(--shadow-dark), -2px -2px 3px var(--shadow-light); transform: none; }
+    .app-signin-btn:disabled { opacity: 0.6; cursor: default; transform: none; }
+    .app-signin-logo {
+      position: absolute;
+      inset-inline-start: 20px;
+      width: 24px;
+      height: 24px;
+    }
 
     .login-stack {
       display: flex;
@@ -305,13 +323,8 @@
 
     <div class="content" id="loginCard">
       <div class="login-stack">
-        <button type="button" class="waitlist-btn google-btn" id="googleBtn" style="width:100%">
-          <svg class="google-g" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
-            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-          </svg>
+        <button type="button" class="app-signin-btn" id="googleBtn">
+          <img class="app-signin-logo" src="/google-logo.png" alt="" aria-hidden="true" width="24" height="24">
           <span data-i18n="googleBtn">المتابعة بحساب Google</span>
         </button>
         <p class="waitlist-msg" id="loginStatus" style="display:none;" role="status" aria-live="polite"></p>
@@ -617,7 +630,7 @@
     }
   </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
-<script src="/app.js?v=3" defer></script>
+<script src="/app.js?v=4" defer></script>
 <script src="/brand-logo.js?v=4" defer></script>
 </body>
 </html>
