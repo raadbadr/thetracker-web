@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-// TRACKER — نسخة من دالة باركينزي send-zoho-email (Zoho Mail API عبر accounts.zoho.sa)
+// TheTracker — نسخة من دالة باركينزي send-zoho-email (Zoho Mail API عبر accounts.zoho.sa)
 // الأسرار: ZOHO_REFRESH_TOKEN, ZOHO_CLIENT_ID, ZOHO_CLIENT_SECRET, ZOHO_REDIRECT_URI (SUPABASE_URL/ANON_KEY تلقائيان)
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 
@@ -115,7 +115,7 @@ async function sendMail(payload: SendPayload) {
   return { ok: true, result: sendJson };
 }
 
-// ─── Reminder email (TRACKER) ───
+// ─── Reminder email (TheTracker) ───
 type ReminderPayload = {
   action: "send-reminder";
   to: string;
@@ -138,10 +138,10 @@ function fmtDue(d: string, lang: string): string {
 }
 
 const REMINDER_TEXT: Record<string, { subject: string; heading: string; due: string; tracker: string; open: string; footer: string }> = {
-  ar: { subject: "تذكير: {title}", heading: "موعد استحقاق قريب", due: "تاريخ الاستحقاق", tracker: "المتتبع", open: "فتح لوحة التحكم", footer: "وصلك هذا التنبيه لأنك مسؤول عن هذا العنصر في TRACKER." },
-  en: { subject: "Reminder: {title}", heading: "Upcoming due date", due: "Due", tracker: "Tracker", open: "Open dashboard", footer: "You received this reminder because you are assigned to this item in TRACKER." },
-  fr: { subject: "Rappel : {title}", heading: "Échéance proche", due: "Échéance", tracker: "Suivi", open: "Ouvrir le tableau de bord", footer: "Vous recevez ce rappel car cet élément vous est assigné dans TRACKER." },
-  ur: { subject: "یاد دہانی: {title}", heading: "قریب آنے والی آخری تاریخ", due: "آخری تاریخ", tracker: "ٹریکر", open: "ڈیش بورڈ کھولیں", footer: "یہ یاد دہانی آپ کو اس لیے ملی کیونکہ TRACKER میں یہ آئٹم آپ کو تفویض ہے۔" },
+  ar: { subject: "تذكير: {title}", heading: "موعد استحقاق قريب", due: "تاريخ الاستحقاق", tracker: "المتتبع", open: "فتح لوحة التحكم", footer: "وصلك هذا التنبيه لأنك مسؤول عن هذا العنصر في TheTracker." },
+  en: { subject: "Reminder: {title}", heading: "Upcoming due date", due: "Due", tracker: "Tracker", open: "Open dashboard", footer: "You received this reminder because you are assigned to this item in TheTracker." },
+  fr: { subject: "Rappel : {title}", heading: "Échéance proche", due: "Échéance", tracker: "Suivi", open: "Ouvrir le tableau de bord", footer: "Vous recevez ce rappel car cet élément vous est assigné dans TheTracker." },
+  ur: { subject: "یاد دہانی: {title}", heading: "قریب آنے والی آخری تاریخ", due: "آخری تاریخ", tracker: "ٹریکر", open: "ڈیش بورڈ کھولیں", footer: "یہ یاد دہانی آپ کو اس لیے ملی کیونکہ TheTracker میں یہ آئٹم آپ کو تفویض ہے۔" },
 };
 
 function buildReminderHTML(p: ReminderPayload): { subject: string; html: string } {

@@ -1,6 +1,6 @@
 {
-  "name": "TRACKER",
-  "short_name": "TRACKER",
+  "name": "TheTracker",
+  "short_name": "TheTracker",
   "description": "تتبع أعمالك في مكان واحد",
   "start_url": "./index.html",
   "scope": "./",

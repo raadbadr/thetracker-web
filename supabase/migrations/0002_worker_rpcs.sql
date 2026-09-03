@@ -1,5 +1,5 @@
 -- ============================================================
--- TRACKER — دوال الـ Worker (بدون مفتاح service role في Cloudflare)
+-- TheTracker — دوال الـ Worker (بدون مفتاح service role في Cloudflare)
 -- الـ Worker يستخدم مفتاح anon + سرّ مشترك (worker_secret) تتحقق منه دوال SECURITY DEFINER.
 -- ============================================================
 create table if not exists public.app_settings (

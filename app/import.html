@@ -10,7 +10,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <title>استيراد من Excel | TRACKER</title>
+  <title>استيراد من Excel | TheTracker</title>
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -654,7 +654,7 @@
     </p>
     <p class="footer-copyright">
       <span data-i18n="copyrightLine2">جميع الحقوق محفوظة</span>
-      <span> · <img src="/tracker-logo-full-dark.png" alt="TRACKER" id="footerLogo" class="brand-logo-inline brand-logo-inline--xs" data-brand-logo-footer style="height:1.3em;width:auto;display:inline-block;vertical-align:-0.35em;max-width:none;"> <span class="footer-year">© 2026</span></span>
+      <span> · <img src="/tracker-logo-full-dark.png" alt="TheTracker" id="footerLogo" class="brand-logo-inline brand-logo-inline--xs" data-brand-logo-footer style="height:1.3em;width:auto;display:inline-block;vertical-align:-0.35em;max-width:none;"> <span class="footer-year">© 2026</span></span>
     </p>
   </footer>
 
@@ -1061,7 +1061,7 @@
       document.getElementById("currentThemeDisplay").textContent = translations[code][th === "dark" ? "dark" : "light"];
       applyStatic(code);
       applyPlaceholders(code);
-      document.title = (translations[code] && translations[code].title ? translations[code].title : "Import") + " | TRACKER";
+      document.title = (translations[code] && translations[code].title ? translations[code].title : "Import") + " | TheTracker";
       if (typeof window.__importPageRefresh === "function") window.__importPageRefresh();
       if (typeof window.__trackerAuthRefresh === "function") window.__trackerAuthRefresh();
     }
@@ -1111,7 +1111,7 @@
       const el = document.getElementById("check-" + c);
       if (el) el.style.display = l === c ? "inline" : "none";
     });
-    document.title = (translations[l] && translations[l].title ? translations[l].title : "Import") + " | TRACKER";
+    document.title = (translations[l] && translations[l].title ? translations[l].title : "Import") + " | TheTracker";
 
     (function() {
       const th = theme();
@@ -1135,7 +1135,7 @@
     (function () {
       "use strict";
 
-      const NEW_TRACKER = "__new__";
+      const NEW_TheTracker = "__new__";
       const MAX_PREVIEW = 20;
       const CHUNK = 200;
       const MAX_UNMATCHED_LISTED = 10;
@@ -1443,16 +1443,16 @@
         const sel = els.trackerSelect;
         const prev = sel.value;
         sel.innerHTML = "";
-        sel.appendChild(new Option(t("newTracker"), NEW_TRACKER));
+        sel.appendChild(new Option(t("newTracker"), NEW_TheTracker));
         state.trackers.forEach(function (tr) { sel.appendChild(new Option(tr.name, tr.id)); });
-        let keep = NEW_TRACKER;
+        let keep = NEW_TheTracker;
         for (let i = 0; i < sel.options.length; i++) if (sel.options[i].value === prev) { keep = prev; break; }
         sel.value = keep;
         toggleTrackerName();
       }
 
       function toggleTrackerName() {
-        show(els.trackerNameField, els.trackerSelect.value === NEW_TRACKER);
+        show(els.trackerNameField, els.trackerSelect.value === NEW_TheTracker);
       }
 
       function analyzeAndRender() {
@@ -1618,7 +1618,7 @@
         const m = state.mapping;
         if (m.title < 0 || m.due < 0) { setMsg(els.importProgress, t("mappingRequired"), "error"); return; }
 
-        const isNew = els.trackerSelect.value === NEW_TRACKER;
+        const isNew = els.trackerSelect.value === NEW_TheTracker;
         const trackerName = String(els.trackerName.value || "").trim();
         if (isNew && !trackerName) { setMsg(els.importProgress, t("trackerNameRequired"), "error"); els.trackerName.focus(); return; }
 
@@ -1851,6 +1851,6 @@
 <script src="/app.js?v=1" defer></script>
 <script src="/app/common.js?v=1" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
-<script src="/brand-logo.js?v=3" defer></script>
+<script src="/brand-logo.js?v=4" defer></script>
 </body>
 </html>

@@ -33,10 +33,10 @@ export function buildIcs(items, calName) {
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//TRACKER//appmails.net//AR",
+    "PRODID:-//TheTracker//appmails.net//AR",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
-    `X-WR-CALNAME:${icsEscape(calName || "TRACKER")}`,
+    `X-WR-CALNAME:${icsEscape(calName || "TheTracker")}`,
     "X-WR-TIMEZONE:Asia/Riyadh",
   ];
   const stamp = icsDate(new Date());
@@ -68,7 +68,7 @@ export async function handleCalendar(token, env) {
   let feed;
   try { feed = await rpc(env, "calendar_feed", { p_token: safe }); } catch { feed = null; }
   if (!feed || typeof feed !== "object") return new Response("not found", { status: 404 });
-  const calName = feed.org_name ? `TRACKER — ${feed.org_name}` : "TRACKER";
+  const calName = feed.org_name ? `TheTracker — ${feed.org_name}` : "TheTracker";
   return new Response(buildIcs(Array.isArray(feed.items) ? feed.items : [], calName), {
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",

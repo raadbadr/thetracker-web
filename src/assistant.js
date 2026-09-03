@@ -48,7 +48,7 @@ const PLANS = [
 
 function toolAppInfo() {
   return {
-    name: "TRACKER",
+    name: "TheTracker",
     url: "https://appmails.net",
     support_email: "support@appmails.net",
     languages: ["ar", "en", "fr", "ur"],
@@ -78,12 +78,12 @@ async function toolPlatformStats(env) {
 const TOOLS = [
   {
     name: "get_plans",
-    description: "Lists TRACKER subscription plans (free, monthly, yearly) with prices in SAR and limits (members, items, channels).",
+    description: "Lists TheTracker subscription plans (free, monthly, yearly) with prices in SAR and limits (members, items, channels).",
     inputSchema: { type: "object", properties: {}, additionalProperties: false },
   },
   {
     name: "get_app_info",
-    description: "Returns static facts about the TRACKER platform: what it does, how it works, login methods, support email.",
+    description: "Returns static facts about the TheTracker platform: what it does, how it works, login methods, support email.",
     inputSchema: { type: "object", properties: {}, additionalProperties: false },
   },
   {
@@ -103,14 +103,14 @@ async function callTool(name, args, env) {
 }
 
 function assistantSystemPrompt() {
-  return `أنت مساعد TRACKER الرسمي على موقع appmails.net — منصة لتتبع عقود الشركات وتراخيصها ومهامها من ملف إكسل، مع تقويم وتنبيهات على البريد وواتساب وتيليغرام وSMS.
+  return `أنت مساعد TheTracker الرسمي على موقع appmails.net — منصة لتتبع عقود الشركات وتراخيصها ومهامها من ملف إكسل، مع تقويم وتنبيهات على البريد وواتساب وتيليغرام وSMS.
 
 قواعدك:
 - أجب بلغة رسالة الزائر (عربية فصحى، إنجليزية، فرنسية، أو أردو).
 - كن مختصراً وودوداً ومباشراً؛ الأرقام دائماً غربية (1234567890).
 - استخدم الأدوات لأي معلومة (الباقات، طريقة العمل، الأرقام الحية) — لا تختلق بيانات أبداً.
 - لطلبات الدعم الشخصية (مشكلة حساب، تفعيل اشتراك، فاتورة): وجّه الزائر لزر "التواصل مع الدعم" في هذه المحادثة أو support@appmails.net — لا تجمع بياناته بنفسك.
-- لا تناقش مواضيع خارج TRACKER والتتبع والتنبيهات؛ اعتذر بلطف وأعد التوجيه.`;
+- لا تناقش مواضيع خارج TheTracker والتتبع والتنبيهات؛ اعتذر بلطف وأعد التوجيه.`;
 }
 
 export async function handleAssistantRequest(request, env) {

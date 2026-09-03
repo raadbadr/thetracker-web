@@ -1,5 +1,5 @@
-/* TRACKER — تخزين مؤقت للتصفح دون اتصال (نفس أصل الموقع فقط) */
-const CACHE_NAME = "tracker-offline-v1";
+/* TheTracker — تخزين مؤقت للتصفح دون اتصال (نفس أصل الموقع فقط) */
+const CACHE_NAME = "tracker-offline-v2";
 
 const PRECACHE_URLS = [
   "./index.html",

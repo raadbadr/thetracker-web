@@ -1,21 +1,32 @@
 /**
  * brand-logo.js
- * Replaces every visible occurrence of the literal text "TRACKER"
- * with the small tracker-logo-dark.png mark.
+ * Replaces every visible occurrence of the literal text "TheTracker"
+ * with the wordmark image, following the active theme.
  */
 (function () {
-  var LOGO_SRC = '/tracker-logo-dark.png';
+  var LOGO_DARK = '/tracker-logo-full-dark.png';
+  var LOGO_LIGHT = '/tracker-logo-full-light.png';
   var SKIP_SELECTOR = 'script, style, noscript, code, pre, title, .brand-logo-mark, .brand-logo-inline, [data-brand-logo-footer]';
-  var TARGET = 'TRACKER';
+  var TARGET = 'TheTracker';
+
+  function logoSrc() {
+    return document.documentElement.getAttribute('data-theme') === 'light' ? LOGO_LIGHT : LOGO_DARK;
+  }
 
   function makeLogo() {
     var img = document.createElement('img');
-    img.src = LOGO_SRC;
+    img.src = logoSrc();
     img.alt = TARGET;
     img.className = 'brand-logo-mark';
     img.loading = 'lazy';
     img.decoding = 'async';
     return img;
+  }
+
+  function syncTheme() {
+    var src = logoSrc();
+    var marks = document.querySelectorAll('img.brand-logo-mark');
+    for (var i = 0; i < marks.length; i++) marks[i].src = src;
   }
 
   function replaceInBody() {
@@ -57,6 +68,12 @@
 
   function start() {
     replaceInBody();
+    // Follow theme switches (setTheme() flips data-theme on <html>).
+    if (typeof MutationObserver !== 'undefined') {
+      new MutationObserver(syncTheme).observe(document.documentElement, {
+        attributes: true, attributeFilter: ['data-theme']
+      });
+    }
     // Watch the DOM for later changes (setLang() rewrites translated
     // strings, related-posts loader injects cards, etc.).
     if (typeof MutationObserver === 'undefined' || !document.body) return;

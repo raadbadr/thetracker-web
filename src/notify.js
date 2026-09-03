@@ -28,22 +28,22 @@ export async function rpc(env, name, args) {
 }
 
 const TEXT = {
-  ar: { reminder: (t, due, tr) => `⏰ تذكير من TRACKER\n${t}\nالاستحقاق: ${due}${tr ? `\nالمتتبع: ${tr}` : ""}\nhttps://appmails.net/app/dashboard.html`,
-        linked: "✅ تم ربط حسابك بـ TRACKER بنجاح. ستصلك التنبيهات هنا.",
-        badCode: "الرمز غير صحيح أو منتهٍ. افتح الإعدادات في TRACKER وانسخ الرمز الجديد.",
-        test: "✅ رسالة تجريبية من TRACKER: هذه القناة تعمل." },
-  en: { reminder: (t, due, tr) => `⏰ TRACKER reminder\n${t}\nDue: ${due}${tr ? `\nTracker: ${tr}` : ""}\nhttps://appmails.net/app/dashboard.html`,
-        linked: "✅ Your account is now linked to TRACKER. Reminders will arrive here.",
-        badCode: "Invalid or expired code. Open Settings in TRACKER and copy a new code.",
-        test: "✅ Test message from TRACKER: this channel works." },
-  fr: { reminder: (t, due, tr) => `⏰ Rappel TRACKER\n${t}\nÉchéance : ${due}${tr ? `\nSuivi : ${tr}` : ""}\nhttps://appmails.net/app/dashboard.html`,
-        linked: "✅ Votre compte est lié à TRACKER. Les rappels arriveront ici.",
-        badCode: "Code invalide ou expiré. Ouvrez Paramètres dans TRACKER et copiez un nouveau code.",
-        test: "✅ Message de test TRACKER : ce canal fonctionne." },
-  ur: { reminder: (t, due, tr) => `⏰ TRACKER یاد دہانی\n${t}\nآخری تاریخ: ${due}${tr ? `\nٹریکر: ${tr}` : ""}\nhttps://appmails.net/app/dashboard.html`,
-        linked: "✅ آپ کا اکاؤنٹ TRACKER سے منسلک ہو گیا۔ یاد دہانیاں یہاں آئیں گی۔",
-        badCode: "کوڈ غلط یا ختم ہو چکا ہے۔ TRACKER کی ترتیبات کھول کر نیا کوڈ کاپی کریں۔",
-        test: "✅ TRACKER سے آزمائشی پیغام: یہ چینل کام کر رہا ہے۔" },
+  ar: { reminder: (t, due, tr) => `⏰ تذكير من TheTracker\n${t}\nالاستحقاق: ${due}${tr ? `\nالمتتبع: ${tr}` : ""}\nhttps://appmails.net/app/dashboard.html`,
+        linked: "✅ تم ربط حسابك بـ TheTracker بنجاح. ستصلك التنبيهات هنا.",
+        badCode: "الرمز غير صحيح أو منتهٍ. افتح الإعدادات في TheTracker وانسخ الرمز الجديد.",
+        test: "✅ رسالة تجريبية من TheTracker: هذه القناة تعمل." },
+  en: { reminder: (t, due, tr) => `⏰ TheTracker reminder\n${t}\nDue: ${due}${tr ? `\nTracker: ${tr}` : ""}\nhttps://appmails.net/app/dashboard.html`,
+        linked: "✅ Your account is now linked to TheTracker. Reminders will arrive here.",
+        badCode: "Invalid or expired code. Open Settings in TheTracker and copy a new code.",
+        test: "✅ Test message from TheTracker: this channel works." },
+  fr: { reminder: (t, due, tr) => `⏰ Rappel TheTracker\n${t}\nÉchéance : ${due}${tr ? `\nSuivi : ${tr}` : ""}\nhttps://appmails.net/app/dashboard.html`,
+        linked: "✅ Votre compte est lié à TheTracker. Les rappels arriveront ici.",
+        badCode: "Code invalide ou expiré. Ouvrez Paramètres dans TheTracker et copiez un nouveau code.",
+        test: "✅ Message de test TheTracker : ce canal fonctionne." },
+  ur: { reminder: (t, due, tr) => `⏰ TheTracker یاد دہانی\n${t}\nآخری تاریخ: ${due}${tr ? `\nٹریکر: ${tr}` : ""}\nhttps://appmails.net/app/dashboard.html`,
+        linked: "✅ آپ کا اکاؤنٹ TheTracker سے منسلک ہو گیا۔ یاد دہانیاں یہاں آئیں گی۔",
+        badCode: "کوڈ غلط یا ختم ہو چکا ہے۔ TheTracker کی ترتیبات کھول کر نیا کوڈ کاپی کریں۔",
+        test: "✅ TheTracker سے آزمائشی پیغام: یہ چینل کام کر رہا ہے۔" },
 };
 export function t(lang) { return TEXT[lang] || TEXT.ar; }
 

@@ -1,4 +1,4 @@
-# TRACKER Website — Immutable Rules
+# TheTracker Website — Immutable Rules
 
 These rules apply to every AI agent, developer, and automated tool working on this project.
 **No exceptions without explicit written approval from المهندس رعد.**
@@ -13,7 +13,7 @@ These rules apply to every AI agent, developer, and automated tool working on th
 | `favicon-32x32.png` / `favicon-16x16.png` | Favicon 32px / 16px | Brand identity — same source as favicon.ico |
 | `apple-touch-icon.png` | iOS home screen icon | Brand identity — same source as favicon.ico |
 | `tracker-logo-dark.png` / `tracker-logo-light.png` | Small "T" brand mark | Brand identity — used by `brand-logo.js` and the header/footer |
-| `tracker-logo-full-dark.png` / `tracker-logo-full-light.png` | "TRACKER" wordmark | Brand identity — the only approved wordmark files |
+| `tracker-logo-full-dark.png` / `tracker-logo-full-light.png` | "TheTracker" wordmark | Brand identity — the only approved wordmark files |
 | `header.css` / `footer.css` | Shared header and footer | Design must stay identical to parkinzi.com — owner's red line |
 | `index.html` — `:root` / theme CSS variables | Neumorphic + glass theme tokens | Design must stay identical to parkinzi.com — owner's red line |
 | `src/worker.js` — `/api/config` | Browser config endpoint | Must only ever expose `SUPABASE_URL` and `SUPABASE_ANON_KEY` — never the service role key |
@@ -46,9 +46,9 @@ These rules apply to every AI agent, developer, and automated tool working on th
 
 ## Brand Rules
 
-- Wordmark is "TRACKER": `tracker-logo-full-dark.png` (dark theme) / `tracker-logo-full-light.png` (light theme)
+- Wordmark is "TheTracker": `tracker-logo-full-dark.png` (dark theme) / `tracker-logo-full-light.png` (light theme)
 - Mark is the letter "T": `tracker-logo-dark.png` / `tracker-logo-light.png`
 - Favicon must always be the generated "T" icon (Monoton font on brand blue)
 - Never replace `favicon.ico`, `favicon-32x32.png`, `favicon-16x16.png`, or `apple-touch-icon.png` with any other asset without explicit approval
-- `brand-logo.js` replaces "TRACKER" text nodes with the logo image — never disable or remove it
+- `brand-logo.js` replaces "TheTracker" text nodes with the logo image — never disable or remove it
 - The visual theme is inherited verbatim from parkinzi.com and must not change

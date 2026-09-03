@@ -11,7 +11,7 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <title>إدارة الفريق | TRACKER</title>
+  <title>إدارة الفريق | TheTracker</title>
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -519,7 +519,7 @@
     </p>
     <p class="footer-copyright">
       <span data-i18n="copyrightLine2">جميع الحقوق محفوظة</span>
-      <span> · <img src="/tracker-logo-full-dark.png" alt="TRACKER" id="footerLogo" class="brand-logo-inline brand-logo-inline--xs" data-brand-logo-footer style="height:1.3em;width:auto;display:inline-block;vertical-align:-0.35em;max-width:none;"> <span class="footer-year">© 2026</span></span>
+      <span> · <img src="/tracker-logo-full-dark.png" alt="TheTracker" id="footerLogo" class="brand-logo-inline brand-logo-inline--xs" data-brand-logo-footer style="height:1.3em;width:auto;display:inline-block;vertical-align:-0.35em;max-width:none;"> <span class="footer-year">© 2026</span></span>
     </p>
   </footer>
 
@@ -821,7 +821,7 @@
         if (translations[code] && translations[code][k]) el.innerHTML = translations[code][k];
       });
       applyPlaceholders(code);
-      document.title = (translations[code] && translations[code].title ? translations[code].title : "Team") + " | TRACKER";
+      document.title = (translations[code] && translations[code].title ? translations[code].title : "Team") + " | TheTracker";
       if (typeof window.__trackerAuthRefresh === "function") window.__trackerAuthRefresh();
       if (typeof window.__teamRender === "function") window.__teamRender();
     }
@@ -874,7 +874,7 @@
       const el = document.getElementById("check-" + c);
       if (el) el.style.display = l === c ? "inline" : "none";
     });
-    document.title = (translations[l] && translations[l].title ? translations[l].title : "Team") + " | TRACKER";
+    document.title = (translations[l] && translations[l].title ? translations[l].title : "Team") + " | TheTracker";
 
     (function() {
       const th = theme();
@@ -1276,6 +1276,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 <script src="/app.js?v=1" defer></script>
 <script src="/app/common.js?v=1" defer></script>
-<script src="/brand-logo.js?v=3" defer></script>
+<script src="/brand-logo.js?v=4" defer></script>
 </body>
 </html>

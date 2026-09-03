@@ -1,6 +1,6 @@
-# معايير التصميم - موقع TRACKER
+# معايير التصميم - موقع TheTracker
 
-> الثيم موروث حرفياً من موقع Parkinzi (NeumorphicTheme) ولا يُعدَّل — خط أحمر للمالك. كل ما يخص TRACKER هنا هو الشعار فقط.
+> الثيم موروث حرفياً من موقع Parkinzi (NeumorphicTheme) ولا يُعدَّل — خط أحمر للمالك. كل ما يخص TheTracker هنا هو الشعار فقط.
 
 ## 🎨 نظام الألوان (من NeumorphicTheme)
 
@@ -121,7 +121,7 @@ transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 - ✅ نفس الحركات (cubic-bezier timing)
 - ✅ دعم Dark Mode كامل
 
-## 🏷️ شعار TRACKER - قواعد ثابتة لكل المشروع
+## 🏷️ شعار TheTracker - قواعد ثابتة لكل المشروع
 
 **الهيكل:** حرف T + نص RACKER
 
@@ -142,7 +142,7 @@ transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 | العلامة الصغيرة | `tracker-logo-light.png` | — |
 
 **ملف التطبيق:** `footer.css` — مصدر واحد للفوتر في index, pricing, login, about, privacy, terms
-**الاستبدال التلقائي:** `brand-logo.js` يستبدل كلمة "TRACKER" الحرفية في النصوص بصورة `tracker-logo-dark.png`
+**الاستبدال التلقائي:** `brand-logo.js` يستبدل كلمة "TheTracker" الحرفية في النصوص بصورة `tracker-logo-dark.png`
 **ملاحظة:** الثيم (الألوان، المسافات، الزوايا، الزجاج، الظلال، الخطوط، الحركات) موروث حرفياً من Parkinzi ولا يتغير
 
 ---
@@ -181,4 +181,4 @@ backdrop-filter: blur(30px) saturate(180%)
 ---
 
 آخر تحديث: 2026-09-03
-النسخة: 1.2 (شعار TRACKER — الثيم موروث من Parkinzi)
+النسخة: 1.2 (شعار TheTracker — الثيم موروث من Parkinzi)

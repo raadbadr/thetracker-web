@@ -1,5 +1,5 @@
 /**
- * TRACKER API Worker — proxies Supabase calls server-side.
+ * TheTracker API Worker — proxies Supabase calls server-side.
  * Keys are read from environment variables (Secrets in Cloudflare Dashboard).
  * Static assets are served by the [assets] binding automatically.
  */

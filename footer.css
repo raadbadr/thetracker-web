@@ -132,7 +132,7 @@
   vertical-align: -0.35em;
 }
 
-/* Inline brand mark used by brand-logo.js to swap the word "TRACKER"
+/* Inline brand mark used by brand-logo.js to swap the word "TheTracker"
    inside body text for the small tracker-logo icon. Tuned to sit on
    the baseline without bumping line-height. */
 .brand-logo-mark {

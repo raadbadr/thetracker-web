@@ -1,5 +1,5 @@
 /**
- * app/common.js — TRACKER shared data layer for the app pages (plain script, no modules).
+ * app/common.js — TheTracker shared data layer for the app pages (plain script, no modules).
  *
  * Loads after supabase-js (window.supabase) and /app.js (window.trackerAuth) and exposes
  * window.trackerApp = {
