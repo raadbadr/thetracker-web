@@ -709,6 +709,7 @@
         sheetKindViolations: "مخالفات",
         graceDays: "مهلة السداد (أيام)",
         mapVNumber: "رقم المخالفة",
+        mapCaseNumber: "رقم الدعوى",
         mapAmount: "مبلغ المخالفة",
         mapClient: "الشركة (العميل)",
         mapLocation: "الموقع",
@@ -806,6 +807,7 @@
         sheetKindViolations: "Violations",
         graceDays: "Payment window (days)",
         mapVNumber: "Violation number",
+        mapCaseNumber: "Case number",
         mapAmount: "Fine amount",
         mapClient: "Client company",
         mapLocation: "Location",
@@ -903,6 +905,7 @@
         sheetKindViolations: "Infractions",
         graceDays: "Délai de paiement (jours)",
         mapVNumber: "Numéro d'infraction",
+        mapCaseNumber: "Numéro de dossier",
         mapAmount: "Montant de l'amende",
         mapClient: "Entreprise cliente",
         mapLocation: "Lieu",
@@ -1000,6 +1003,7 @@
         sheetKindViolations: "خلاف ورزیاں",
         graceDays: "ادائیگی کی مہلت (دن)",
         mapVNumber: "خلاف ورزی نمبر",
+        mapCaseNumber: "مقدمہ نمبر",
         mapAmount: "جرمانے کی رقم",
         mapClient: "کلائنٹ کمپنی",
         mapLocation: "مقام",
@@ -1205,6 +1209,8 @@
           keywords: ["مبلغ المخالفة", "المبلغ", "مبلغ", "قيمة", "amount", "fine", "value", "montant"] },
         { key: "client",   labelKey: "mapClient",   required: false,
           keywords: ["الشركة", "العميل", "الجهة", "المدعى عليه", "client", "company", "entreprise"] },
+        { key: "casenum",  labelKey: "mapCaseNumber", required: false,
+          keywords: ["رقم الدعوى", "رقم القضية", "رقم الدعوي", "case number", "case no", "numéro de dossier"] },
         { key: "vnumber",  labelKey: "mapVNumber",  required: false,
           keywords: ["رقم المخالفة", "رقم مخالفة", "المخالفة", "violation number", "violation no", "ticket", "ticket number", "fine number", "numéro d'infraction"] },
         { key: "location", labelKey: "mapLocation", required: false,
@@ -1497,6 +1503,10 @@
             const raw = String(cellText(row[m.amount]) || "").replace(/[^0-9.\-]/g, "");
             const num = parseFloat(raw);
             if (!isNaN(num)) rec.amount = num;
+          }
+          if (m.casenum >= 0) {
+            const cn = cellText(row[m.casenum]);
+            if (cn) rec.case_number = cn;
           }
           var clientName = m.client >= 0 ? cellText(row[m.client]) : "";
           if (!clientName && state.client) clientName = state.client;

@@ -492,6 +492,11 @@
     .total-card .total-label { display: block; font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0.3rem; }
     .total-card .total-value { font-size: 1.25rem; font-weight: 800; color: var(--primary); font-variant-numeric: tabular-nums; }
     .cell-num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .case-link { color: var(--primary); text-decoration: none; font-weight: 700; }
+    .case-link:hover { text-decoration: underline; }
+    .case-bundle { margin-top: 1.25rem; }
+    .case-bundle table { width: 100%; border-collapse: collapse; }
+    .case-bundle th, .case-bundle td { padding: 0.6rem 0.75rem; text-align: start; font-size: 0.85rem; border-bottom: 1px solid var(--glass-border); }
 
     /* المرفقات */
     .attach-block { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--glass-border); }
@@ -870,6 +875,7 @@
                   <th data-i18n="colAmount">المبلغ</th>
                   <th data-i18n="colVType">نوع المخالفة</th>
                   <th data-i18n="colObjection">حالة التظلم</th>
+                  <th data-i18n="colCaseNumber">رقم الدعوى</th>
                   <th data-i18n="colPayDue">موعد السداد</th>
                   <th data-i18n="colStatus">الحالة</th>
                   <th data-i18n="colActions">الإجراءات</th>
@@ -878,6 +884,8 @@
               <tbody id="violationsBody"></tbody>
             </table>
           </div>
+
+          <div class="content case-bundle" id="caseBundle" hidden></div>
 
           <div class="table-wrap" id="tableWrap" hidden>
             <table class="items-table">
@@ -980,6 +988,9 @@
         statDone: "مكتملة",
         tabList: "القائمة",
         colVNumber: "رقم المخالفة",
+        colCaseNumber: "رقم الدعوى",
+        caseBundleTitle: "ملف الدعوى {n}",
+        caseBundleEmpty: "لا توجد عناصر مرتبطة بهذا الرقم.",
         colVDate: "تاريخ المخالفة",
         colClient: "الشركة",
         colIssuer: "جهة الإصدار",
@@ -1157,6 +1168,9 @@
         statDone: "Done",
         tabList: "List",
         colVNumber: "Violation no.",
+        colCaseNumber: "Case no.",
+        caseBundleTitle: "Case file {n}",
+        caseBundleEmpty: "Nothing linked to this number.",
         colVDate: "Violation date",
         colClient: "Client",
         colIssuer: "Issuer",
@@ -1334,6 +1348,9 @@
         statDone: "Terminés",
         tabList: "Liste",
         colVNumber: "N° d'infraction",
+        colCaseNumber: "N° de dossier",
+        caseBundleTitle: "Dossier {n}",
+        caseBundleEmpty: "Rien de lié à ce numéro.",
         colVDate: "Date de l'infraction",
         colClient: "Client",
         colIssuer: "Émetteur",
@@ -1511,6 +1528,9 @@
         statDone: "مکمل",
         tabList: "فہرست",
         colVNumber: "خلاف ورزی نمبر",
+        colCaseNumber: "مقدمہ نمبر",
+        caseBundleTitle: "مقدمہ فائل {n}",
+        caseBundleEmpty: "اس نمبر سے کچھ منسلک نہیں۔",
         colVDate: "خلاف ورزی کی تاریخ",
         colClient: "کمپنی",
         colIssuer: "جاری کنندہ",
@@ -2440,7 +2460,8 @@
           issuer: dataOf(item, ["location", "جهة اصدار المخالفة", "جهة الإصدار"]),
           vtype: dataOf(item, ["نوع المخالفة", "violation_type"]),
           objection: dataOf(item, ["حالة التظلم", "التظلم امام الامانة", "objection"]),
-          client: item.client_name || dataOf(item, ["الشركة", "client"])
+          client: item.client_name || dataOf(item, ["الشركة", "client"]),
+          caseNumber: item.case_number || dataOf(item, ["رقم الدعوى", "رقم القضية"])
         };
       }
 
@@ -2509,6 +2530,9 @@
             '<td class="cell-num">' + esc(money(item.amount)) + "</td>" +
             "<td>" + esc(f.vtype || "-") + "</td>" +
             "<td>" + esc(f.objection || "-") + "</td>" +
+            '<td class="cell-num">' + (f.caseNumber
+              ? '<a href="#" class="case-link" data-case="' + esc(f.caseNumber) + '">' + esc(f.caseNumber) + "</a>"
+              : "-") + "</td>" +
             '<td class="cell-num">' + (item.due_at ? esc(app.fmtDate(item.due_at)) : "-") + "</td>" +
             '<td><span class="status-' + sk + '">' + esc(T(STATUS_KEYS[sk])) + "</span></td>" +
             '<td><div class="chat-options row-actions">' +
@@ -2519,6 +2543,53 @@
           body.appendChild(tr);
         });
       }
+
+      /* رقم الدعوى يجمع المخالفة وقضيتها وملفاتهما */
+      function openCaseBundle(caseNumber) {
+        var box = $("caseBundle");
+        if (!box) return;
+        box.hidden = false;
+        box.innerHTML = "<h3>" + esc(T("caseBundleTitle").replace("{n}", caseNumber)) + '</h3><p class="empty-note">' + esc(T("loading")) + "</p>";
+        app.caseBundle(caseNumber).then(function (rows) {
+          var list = rows || [];
+          if (!list.length) {
+            box.innerHTML = "<h3>" + esc(T("caseBundleTitle").replace("{n}", caseNumber)) + '</h3><p class="empty-note">' + esc(T("caseBundleEmpty")) + "</p>";
+            return;
+          }
+          var html = "<h3>" + esc(T("caseBundleTitle").replace("{n}", caseNumber)) + "</h3>" +
+            "<table><thead><tr>" +
+            "<th>" + esc(T("colTitle")) + "</th><th>" + esc(T("fieldCategory")) + "</th>" +
+            "<th>" + esc(T("colDue")) + "</th><th>" + esc(T("colAmount")) + "</th>" +
+            "<th>" + esc(T("attachTitle")) + "</th><th></th></tr></thead><tbody>";
+          list.forEach(function (r) {
+            html += "<tr><td>" + esc(r.title || "-") + "</td>" +
+                    "<td>" + esc(r.category || "-") + "</td>" +
+                    '<td class="cell-num">' + (r.due_at ? esc(app.fmtDate(r.due_at)) : "-") + "</td>" +
+                    '<td class="cell-num">' + esc(money(r.amount)) + "</td>" +
+                    '<td class="cell-num">' + esc(String(r.attachments || 0)) + "</td>" +
+                    '<td><button type="button" class="chat-option-btn" data-bundle-open="' + esc(r.item_id) + '">' + esc(T("actionEdit")) + "</button></td></tr>";
+          });
+          html += "</tbody></table>";
+          box.innerHTML = html;
+        }).catch(function () {
+          box.innerHTML = "<h3>" + esc(T("caseBundleTitle").replace("{n}", caseNumber)) + '</h3><p class="empty-note">' + esc(T("caseBundleEmpty")) + "</p>";
+        });
+      }
+
+      document.addEventListener("click", function (ev) {
+        var link = ev.target.closest(".case-link");
+        if (link) {
+          ev.preventDefault();
+          openCaseBundle(link.dataset.case);
+          return;
+        }
+        var openBtn = ev.target.closest("[data-bundle-open]");
+        if (openBtn) {
+          var id = openBtn.dataset.bundleOpen;
+          var item = (state.items || []).filter(function (it) { return it.id === id; })[0];
+          if (item) openEdit(item);
+        }
+      });
 
       function renderList() {
         renderChart();

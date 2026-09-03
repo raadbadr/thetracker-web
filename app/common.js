@@ -36,7 +36,7 @@
   var ORG_KEY = "tracker_org";
   var LANG_KEY = "tracker_lang";
   var TIME_ZONE = "Asia/Riyadh";
-  var ITEM_COLUMNS = "id,item_number,title,category,due_at,status,assignee_id,amount,client_name,data,tracker_id,trackers(name)";
+  var ITEM_COLUMNS = "id,item_number,title,category,due_at,status,assignee_id,amount,client_name,case_number,data,tracker_id,trackers(name)";
   var INSERT_CHUNK = 200;
 
   /* Fallback strings (used only when the page has no `translations` object or lacks the key). */
@@ -493,6 +493,14 @@
   /* ---------- المرفقات (PDF / Word / صور) وروابط جوجل درايف ---------- */
 
   var ATTACH_BUCKET = "attachments";
+
+  /* كل ما يخص رقم قضية واحد: عناصره وعدد مرفقاته */
+  function caseBundle(caseNumber) {
+    return run(function (client) {
+      var orgId = requireOrg();
+      return client.rpc("case_bundle", { p_org: orgId, p_case: String(caseNumber || "") }).then(unwrap);
+    });
+  }
 
   function listAttachments(itemId) {
     return run(function (client) {
@@ -1263,6 +1271,7 @@
   app.regenerateCalendarToken = regenerateCalendarToken;
   app.updateProfile = updateProfile;
   app.isPlatformAdmin = isPlatformAdmin;
+  app.caseBundle = caseBundle;
   app.listAttachments = listAttachments;
   app.uploadAttachment = uploadAttachment;
   app.addAttachmentLink = addAttachmentLink;
