@@ -175,6 +175,43 @@
       justify-content: center;
       width: 100%;
     }
+    /* بطاقة الدعوة — نفس لغة النيومورفيك: مسافات منتظمة وظل ناعم */
+    .invite-block { margin-top: 1.75rem; }
+    .invite-block:first-of-type { margin-top: 1.25rem; }
+    .invite-block-title {
+      margin: 0 0 0.75rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+    .invite-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.75rem;
+      align-items: center;
+    }
+    #inviteForm.invite-row { grid-template-columns: minmax(0, 1fr) 150px auto; }
+    @media (max-width: 720px) {
+      .invite-row, #inviteForm.invite-row { grid-template-columns: 1fr; }
+    }
+    .invite-row .waitlist-input { width: 100%; min-width: 0; }
+    .invite-row .waitlist-btn { white-space: nowrap; }
+    .user-list { display: grid; gap: 0.75rem; margin-top: 1rem; }
+    .user-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.75rem;
+      align-items: center;
+      padding: 0.9rem 1.1rem;
+      border-radius: 16px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      box-shadow: 4px 4px 10px var(--shadow-dark), -4px -4px 10px var(--shadow-light);
+    }
+    .user-row strong { display: block; font-size: 0.95rem; color: var(--text-primary); }
+    .user-row span { font-size: 0.8rem; color: var(--text-secondary); }
+    .user-row .waitlist-btn { padding: 0.5rem 1.1rem; font-size: 0.85rem; }
+
     .waitlist-input {
       flex: 1;
       min-width: 140px;
@@ -486,13 +523,18 @@
         <button type="button" class="chat-option-btn" id="copyLinkBtn" data-i18n="copyLinkBtn">نسخ رابط تسجيل الدخول</button>
       </p>
 
-      <div class="waitlist-form" id="lookupRow">
-        <input type="text" class="waitlist-input" id="lookupQuery" placeholder="بريد أو جوال أو رقم مستخدم" data-i18n-placeholder="lookupPlaceholder" autocomplete="off">
-        <button type="button" class="chat-option-btn" id="lookupBtn" data-i18n="lookupBtn">بحث عن مستخدم مسجّل</button>
+      <div class="invite-block">
+        <h3 class="invite-block-title" data-i18n="lookupTitle">من المسجّلين في المنصة</h3>
+        <div class="invite-row" id="lookupRow">
+          <input type="text" class="waitlist-input" id="lookupQuery" placeholder="بريد أو جوال أو رقم مستخدم" data-i18n-placeholder="lookupPlaceholder" autocomplete="off">
+          <button type="button" class="waitlist-btn" id="lookupBtn" data-i18n="lookupBtn">عرض المستخدمين</button>
+        </div>
+        <div class="user-list" id="lookupResult" hidden></div>
       </div>
-      <div id="lookupResult" hidden></div>
 
-      <form class="waitlist-form" id="inviteForm" novalidate>
+      <div class="invite-block">
+        <h3 class="invite-block-title" data-i18n="inviteByEmailTitle">أو بالبريد الإلكتروني مباشرة</h3>
+      <form class="invite-row" id="inviteForm" novalidate>
         <input type="email" class="waitlist-input" id="inviteEmail" placeholder="بريد العضو الإلكتروني" required autocomplete="off" inputmode="email" dir="ltr">
         <select class="waitlist-input" id="inviteRole" aria-label="الدور">
           <option value="member" data-i18n="roleMember">عضو</option>
@@ -500,6 +542,7 @@
         </select>
         <button type="submit" class="waitlist-btn" id="inviteBtn" data-i18n="inviteBtn">دعوة</button>
       </form>
+      </div>
       <p class="waitlist-msg" id="inviteMsg" role="status" aria-live="polite" hidden></p>
       <p class="waitlist-msg error" id="inviteLimitMsg" hidden></p>
 
@@ -568,7 +611,9 @@
         linkCopied: "تم نسخ الرابط.",
         inviteEmailPlaceholder: "بريد العضو الإلكتروني",
         inviteBtn: "دعوة",
-        lookupBtn: "بحث عن مستخدم مسجّل",
+        lookupTitle: "من المسجّلين في المنصة",
+        inviteByEmailTitle: "أو بالبريد الإلكتروني مباشرة",
+        lookupBtn: "عرض المستخدمين",
         lookupPlaceholder: "بريد أو جوال أو رقم مستخدم",
         lookupNone: "لا يوجد مستخدم مطابق. تستطيع دعوته ببريده مباشرة.",
         inviteSending: "جارٍ الإضافة...",
@@ -635,7 +680,9 @@
         linkCopied: "Link copied.",
         inviteEmailPlaceholder: "Member's email address",
         inviteBtn: "Invite",
-        lookupBtn: "Find a registered user",
+        lookupTitle: "From registered users",
+        inviteByEmailTitle: "Or invite by email",
+        lookupBtn: "Show users",
         lookupPlaceholder: "Email, mobile or user number",
         lookupNone: "No matching user. You can still invite them by email.",
         inviteSending: "Adding...",
@@ -702,7 +749,9 @@
         linkCopied: "Lien copié.",
         inviteEmailPlaceholder: "Adresse e-mail du membre",
         inviteBtn: "Inviter",
-        lookupBtn: "Rechercher un utilisateur inscrit",
+        lookupTitle: "Parmi les utilisateurs inscrits",
+        inviteByEmailTitle: "Ou inviter par e-mail",
+        lookupBtn: "Afficher les utilisateurs",
         lookupPlaceholder: "E-mail, mobile ou numéro",
         lookupNone: "Aucun utilisateur trouvé. Vous pouvez l'inviter par e-mail.",
         inviteSending: "Ajout en cours...",
@@ -769,7 +818,9 @@
         linkCopied: "لنک کاپی ہو گیا۔",
         inviteEmailPlaceholder: "رکن کا ای میل ایڈریس",
         inviteBtn: "دعوت دیں",
-        lookupBtn: "رجسٹرڈ صارف تلاش کریں",
+        lookupTitle: "رجسٹرڈ صارفین میں سے",
+        inviteByEmailTitle: "یا ای میل سے دعوت دیں",
+        lookupBtn: "صارفین دکھائیں",
         lookupPlaceholder: "ای میل، موبائل یا صارف نمبر",
         lookupNone: "کوئی صارف نہیں ملا۔ آپ ای میل سے دعوت دے سکتے ہیں۔",
         inviteSending: "شامل کیا جا رہا ہے...",
@@ -1280,10 +1331,10 @@
         }
         var html = "";
         rows.forEach(function (r) {
-          html += '<div class="feature-card" style="margin-bottom:.6rem">' +
-                  "<strong>" + esc(r.full_name || r.email || "") + "</strong><br>" +
-                  '<span class="waitlist-msg" style="display:block">' + esc(r.email || "") +
-                  (r.profile_number ? " · " + esc(r.profile_number) : "") + "</span>" +
+          var meta = [r.email || "", r.phone || "", r.profile_number || ""].filter(Boolean).join(" · ");
+          html += '<div class="user-row"><div>' +
+                  "<strong>" + esc(r.full_name || r.email || "") + "</strong>" +
+                  "<span>" + esc(meta) + "</span></div>" +
                   '<button type="button" class="waitlist-btn" data-invite-email="' + esc(r.email || "") + '">' +
                   esc(t("inviteBtn")) + "</button></div>";
         });
@@ -1293,7 +1344,6 @@
 
       $("lookupBtn").addEventListener("click", function () {
         var q = String($("lookupQuery").value || "").trim();
-        if (!q) return;
         var btn = this;
         btn.disabled = true;
         app.findProfileForInvite(q).then(function (rows) {
