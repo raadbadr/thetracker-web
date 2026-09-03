@@ -50,6 +50,7 @@
        because the feature-card gradient border references them) */
     :root, [data-theme="light"] {
       --primary: rgb(0, 104, 184);
+      --btn-ink: rgb(255, 255, 255);
       --primary-light: rgb(25, 140, 220);
       --primary-dark: rgb(0, 88, 160);
       --secondary: rgb(0, 130, 190);
@@ -74,6 +75,7 @@
     }
     [data-theme="dark"] {
       --primary: rgb(0, 160, 210);
+      --btn-ink: rgb(16, 32, 42);
       --primary-light: rgb(40, 180, 220);
       --primary-dark: rgb(0, 140, 190);
       --secondary: rgb(0, 160, 210);
@@ -424,6 +426,47 @@
       .header, .content h1, .content h2 { text-align: center; }
       h1 { font-size: 2rem; }
       h2 { font-size: 1.5rem; }
+    }
+
+    /* ===== نظام الأزرار الموحّد (شكل واحد + تباين مقروء) ===== */
+    /* كل الأزرار بزوايا واحدة ووزن خط واحد وارتفاع واحد؛ الحد الشفاف في الزر
+       الممتلئ يجعل ارتفاعه مطابقاً للزر المحدَّد صاحب الإطار 1.5px. */
+    .waitlist-btn, .chat-option-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.65rem 1.2rem;
+      border-radius: 12px;
+      border-width: 1.5px;
+      border-style: solid;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      line-height: 1.25;
+      text-decoration: none;
+    }
+    .waitlist-btn { border-color: transparent; }
+    .waitlist-input { border-radius: 12px; }
+    /* الرابط داخل .content يرث الأزرق، فيختفي نصه فوق الزر الأزرق الممتلئ */
+    .content a.waitlist-btn,
+    .content a.waitlist-btn:hover { color: var(--btn-ink); text-decoration: none; }
+    .waitlist-btn:focus-visible,
+    .chat-option-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+    /* الوضع الداكن: الأبيض فوق الأزرق الفاتح تباينه 3:1 فقط (دون معيار AA)،
+       فحبر الزر الممتلئ داكن (5.5:1)، والزر المحدَّد يأخذ الأزرق الأفتح (4.9:1). */
+    .waitlist-btn, .back-btn, .content a.back-btn { color: var(--btn-ink); }
+    [data-theme="dark"] .chat-option-btn:not(.is-danger),
+    [data-theme="dark"] .content a.chat-option-btn:not(.is-danger) {
+      color: var(--primary-light);
+      border-color: var(--primary-light);
+    }
+    [data-theme="dark"] .chat-option-btn:not(.is-danger):hover,
+    [data-theme="dark"] .content a.chat-option-btn:not(.is-danger):hover,
+    [data-theme="dark"] .chat-option-btn.is-active,
+    [data-theme="dark"] .cal-mode.is-active {
+      background: var(--primary-light);
+      color: var(--btn-ink);
     }
   </style>
 </head>

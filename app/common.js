@@ -1240,7 +1240,7 @@
     "background:transparent;color:var(--text-secondary);font:inherit;font-size:.95rem;font-weight:600;text-decoration:none;cursor:pointer;text-align:start;",
     "transition:all .25s cubic-bezier(.4,0,.2,1)}",
     ".app-sidebar a:hover,.app-sidebar button:hover{background:var(--glass-border);color:var(--text-primary)}",
-    ".app-sidebar a.is-active{background:var(--primary);color:#fff;box-shadow:0 6px 18px var(--shadow-dark)}",
+    ".app-sidebar a.is-active{background:var(--primary);color:var(--btn-ink,#fff);box-shadow:0 6px 18px var(--shadow-dark)}",
     ".app-sidebar svg{width:20px;height:20px;flex:0 0 auto;fill:currentColor}",
     ".app-sidebar-spacer{flex:1 1 auto}",
     "body.has-app-sidebar .container{max-width:1400px;padding-inline-start:calc(240px + 2rem)}",
@@ -1813,7 +1813,7 @@
     ".app-gate-card input{width:100%;margin-top:.35rem;padding:.7rem .9rem;border-radius:12px;",
     "border:1px solid var(--glass-border);background:var(--glass);color:var(--text-primary);font:inherit}",
     ".app-gate-card button{width:100%;padding:.75rem 1rem;border:0;border-radius:12px;background:var(--primary);",
-    "color:#fff;font:inherit;font-weight:700;cursor:pointer}",
+    "color:var(--btn-ink,#fff);font:inherit;font-weight:700;cursor:pointer}",
     ".app-gate-msg{margin-top:.8rem;font-size:.85rem;color:#ff8f8f;min-height:1.2em}"
   ].join("");
 
