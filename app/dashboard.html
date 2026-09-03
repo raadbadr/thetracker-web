@@ -2244,7 +2244,8 @@
         }
         sw.setAttribute("aria-label", T("switchOrg"));
         $("linkAdmin").hidden = !app.isPlatformAdmin();
-        show("topBar");
+        /* اسم الشركة وتبديلها صارا في الشريط العلوي، وإدارتها في الإعدادات. */
+        hide("topBar");
       }
 
       function createOrgFlow(name, msgId) {

@@ -647,6 +647,19 @@
         <ul class="plan-limits" id="upgradeHistory"></ul>
       </div>
 
+      <!-- إدارة الشركة الحالية -->
+      <div class="content" id="orgCard">
+        <h2 data-i18n="orgCardTitle">الشركة</h2>
+        <div class="invite-row">
+          <input type="text" class="waitlist-input" id="orgNameInput" maxlength="120" autocomplete="organization">
+          <button type="button" class="waitlist-btn" id="orgSaveBtn" data-i18n="save">حفظ</button>
+        </div>
+        <p class="waitlist-msg" id="orgMsg" style="display:none" role="status" aria-live="polite"></p>
+        <div class="invite-block">
+          <button type="button" class="chat-option-btn" id="orgDeleteBtn" data-i18n="deleteOrgBtn">حذف الشركة</button>
+        </div>
+      </div>
+
       <!-- تسجيل الخروج موجود في الشريط العلوي وحده، فلا يتكرر هنا -->
 
     </div>
@@ -769,6 +782,10 @@
         limitImports: "عمليات الاستيراد شهرياً",
         unlimited: "غير محدود",
         upgradeBtn: "طلب ترقية",
+        orgCardTitle: "الشركة",
+        orgSaved: "تم حفظ اسم الشركة.",
+        deleteOrgBtn: "حذف الشركة",
+        deleteOrgConfirm: "سيُحذف سجل «{name}» وكل عناصره ومتتبعاته نهائياً. هل تتابع؟",
         upgradeSent: "أرسلنا طلبك، سيصلك التفعيل بعد المراجعة.",
         reqStatus_pending: "قيد المراجعة",
         reqStatus_approved: "مفعّل",
@@ -888,6 +905,10 @@
         limitImports: "Imports per month",
         unlimited: "Unlimited",
         upgradeBtn: "Request an upgrade",
+        orgCardTitle: "Company",
+        orgSaved: "Company name saved.",
+        deleteOrgBtn: "Delete company",
+        deleteOrgConfirm: "«{name}» and all of its items will be permanently deleted. Continue?",
         upgradeSent: "Request sent. Your plan is activated once it is reviewed.",
         reqStatus_pending: "Under review",
         reqStatus_approved: "Activated",
@@ -1007,6 +1028,10 @@
         limitImports: "Importations par mois",
         unlimited: "Illimité",
         upgradeBtn: "Demander une mise à niveau",
+        orgCardTitle: "Entreprise",
+        orgSaved: "Nom de l'entreprise enregistré.",
+        deleteOrgBtn: "Supprimer l'entreprise",
+        deleteOrgConfirm: "«{name}» et tous ses éléments seront supprimés. Continuer ?",
         upgradeSent: "Demande envoyée. Votre forfait sera activé après examen.",
         reqStatus_pending: "En cours d'examen",
         reqStatus_approved: "Activé",
@@ -1126,6 +1151,10 @@
         limitImports: "ماہانہ امپورٹس",
         unlimited: "لامحدود",
         upgradeBtn: "اپ گریڈ کی درخواست",
+        orgCardTitle: "کمپنی",
+        orgSaved: "کمپنی کا نام محفوظ ہو گیا۔",
+        deleteOrgBtn: "کمپنی حذف کریں",
+        deleteOrgConfirm: "«{name}» اور اس کے تمام آئٹمز حذف ہو جائیں گے۔ جاری رکھیں؟",
         upgradeSent: "درخواست بھیج دی گئی۔ جائزے کے بعد پلان فعال ہو جائے گا۔",
         reqStatus_pending: "زیرِ جائزہ",
         reqStatus_approved: "فعال",
@@ -1935,6 +1964,24 @@
           el("rulesWrap").addEventListener("click", onRuleAction);
           el("copyUrlBtn").addEventListener("click", copyCalendarUrl);
           el("upgradeBtn").addEventListener("click", submitUpgrade);
+
+          if (app.org && el("orgNameInput")) el("orgNameInput").value = app.org.name || "";
+          el("orgSaveBtn").addEventListener("click", function () {
+            var name = String(el("orgNameInput").value || "").trim();
+            if (!name) return;
+            el("orgSaveBtn").disabled = true;
+            app.renameOrg(name).then(function () {
+              setMsg("orgMsg", t("orgSaved"), "success");
+            }).catch(function () {
+              setMsg("orgMsg", t("genericError"), "error");
+            }).finally(function () { el("orgSaveBtn").disabled = false; });
+          });
+          el("orgDeleteBtn").addEventListener("click", function () {
+            if (!app.org) return;
+            if (!window.confirm(t("deleteOrgConfirm").split("{name}").join(app.org.name || ""))) return;
+            app.deleteOrg().then(function () { window.location.href = "/app/dashboard.html"; })
+              .catch(function () { setMsg("orgMsg", t("genericError"), "error"); });
+          });
           loadPlanRequests();
           el("regenerateBtn").addEventListener("click", regenerateCalendar);
           el("signOutBtn").addEventListener("click", signOut);
