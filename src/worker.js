@@ -180,6 +180,12 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
+    // HTTPS إلزامي — الطلبات على http تُحوَّل دائماً (بدل الاعتماد على إعداد اللوحة)
+    if (url.protocol === "http:") {
+      url.protocol = "https:";
+      return Response.redirect(url.toString(), 301);
+    }
+
     // تقويم ICS — /api/calendar/<token>.ics
     const cal = path.match(/^\/api\/calendar\/([a-f0-9]{16,64})\.ics$/i);
     if (cal && request.method === "GET") {
