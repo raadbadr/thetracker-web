@@ -499,6 +499,30 @@
     .case-bundle table { width: 100%; border-collapse: collapse; }
     .case-bundle th, .case-bundle td { padding: 0.6rem 0.75rem; text-align: start; font-size: 0.85rem; border-bottom: 1px solid var(--glass-border); }
 
+    /* الخط الزمني للإنجازات */
+    .timeline { position: relative; margin: 0; padding: 0 1.15rem 0 0; list-style: none; }
+    .timeline::before {
+      content: ""; position: absolute; inset-block: 0.35rem; inset-inline-start: auto; inset-inline-end: 0.35rem;
+      width: 2px; background: var(--glass-border);
+    }
+    .tl-item { position: relative; padding: 0 1.4rem 1.1rem 0; }
+    .tl-dot {
+      position: absolute; inset-inline-end: 0; inset-block-start: 0.25rem;
+      width: 12px; height: 12px; border-radius: 50%; background: var(--primary);
+      box-shadow: 0 0 0 3px var(--glass);
+    }
+    .tl-item[data-kind="item_done"] .tl-dot { background: #2fbf71; }
+    .tl-item[data-kind="import"] .tl-dot { background: #f2a33c; }
+    .tl-item[data-kind="attachment"] .tl-dot { background: #7b6cf6; }
+    .tl-item[data-kind="member"] .tl-dot { background: #46b3e6; }
+    .tl-item[data-kind="subscription"] .tl-dot { background: #e5484d; }
+    .tl-title { display: block; font-size: 0.88rem; font-weight: 700; color: var(--text-primary); }
+    .tl-meta { font-size: 0.75rem; color: var(--text-secondary); }
+    .ach-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.6rem; margin-bottom: 1rem; }
+    .ach-card { padding: 0.7rem 0.8rem; border-radius: 14px; background: var(--glass); border: 1px solid var(--glass-border); text-align: center; }
+    .ach-card b { display: block; font-size: 1.15rem; color: var(--primary); font-variant-numeric: tabular-nums; }
+    .ach-card span { font-size: 0.72rem; color: var(--text-secondary); }
+
     /* المرفقات */
     .attach-block { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--glass-border); }
     .attach-title { margin: 0 0 0.75rem; font-size: 0.95rem; color: var(--text-secondary); }
@@ -1010,6 +1034,21 @@
         statOverdue: "متأخرة",
         statDone: "مكتملة",
         tabList: "القائمة",
+        timelineTitle: "إنجازاتك",
+        timelineEmpty: "لا نشاط بعد — ابدأ باستيراد ملف أو إضافة موعد.",
+        tlCreated: "أُضيف عنصر",
+        tlDone: "أُنجز",
+        tlImport: "استيراد ملف",
+        tlAttachment: "رُفع ملف",
+        tlMember: "انضم عضو",
+        tlPlan: "اشتراك",
+        tlToday: "اليوم",
+        tlYesterday: "أمس",
+        tlDaysAgo: "قبل {n} يوماً",
+        achDoneMonth: "أُنجز هذا الشهر",
+        achItems: "إجمالي العناصر",
+        achFiles: "الملفات",
+        achImports: "عمليات الاستيراد",
         colVNumber: "رقم المخالفة",
         colCaseNumber: "رقم الدعوى",
         caseBundleTitle: "ملف الدعوى {n}",
@@ -1202,6 +1241,21 @@
         statOverdue: "Overdue",
         statDone: "Done",
         tabList: "List",
+        timelineTitle: "Your progress",
+        timelineEmpty: "No activity yet — import a file or add an appointment.",
+        tlCreated: "Item added",
+        tlDone: "Completed",
+        tlImport: "File imported",
+        tlAttachment: "File uploaded",
+        tlMember: "Member joined",
+        tlPlan: "Subscription",
+        tlToday: "Today",
+        tlYesterday: "Yesterday",
+        tlDaysAgo: "{n} days ago",
+        achDoneMonth: "Completed this month",
+        achItems: "Total items",
+        achFiles: "Files",
+        achImports: "Imports",
         colVNumber: "Violation no.",
         colCaseNumber: "Case no.",
         caseBundleTitle: "Case file {n}",
@@ -1394,6 +1448,21 @@
         statOverdue: "En retard",
         statDone: "Terminés",
         tabList: "Liste",
+        timelineTitle: "Vos réalisations",
+        timelineEmpty: "Aucune activité — importez un fichier ou ajoutez un rendez-vous.",
+        tlCreated: "Élément ajouté",
+        tlDone: "Terminé",
+        tlImport: "Fichier importé",
+        tlAttachment: "Fichier téléversé",
+        tlMember: "Membre ajouté",
+        tlPlan: "Abonnement",
+        tlToday: "Aujourd'hui",
+        tlYesterday: "Hier",
+        tlDaysAgo: "il y a {n} jours",
+        achDoneMonth: "Terminés ce mois",
+        achItems: "Éléments",
+        achFiles: "Fichiers",
+        achImports: "Imports",
         colVNumber: "N° d'infraction",
         colCaseNumber: "N° de dossier",
         caseBundleTitle: "Dossier {n}",
@@ -1586,6 +1655,21 @@
         statOverdue: "تاخیر شدہ",
         statDone: "مکمل",
         tabList: "فہرست",
+        timelineTitle: "آپ کی کارکردگی",
+        timelineEmpty: "ابھی کوئی سرگرمی نہیں — فائل درآمد کریں یا وقت شامل کریں۔",
+        tlCreated: "آئٹم شامل",
+        tlDone: "مکمل",
+        tlImport: "فائل درآمد",
+        tlAttachment: "فائل اپ لوڈ",
+        tlMember: "رکن شامل",
+        tlPlan: "سبسکرپشن",
+        tlToday: "آج",
+        tlYesterday: "کل",
+        tlDaysAgo: "{n} دن پہلے",
+        achDoneMonth: "اس مہینے مکمل",
+        achItems: "کل آئٹمز",
+        achFiles: "فائلیں",
+        achImports: "درآمدات",
         colVNumber: "خلاف ورزی نمبر",
         colCaseNumber: "مقدمہ نمبر",
         caseBundleTitle: "مقدمہ فائل {n}",
@@ -2228,6 +2312,60 @@
           "</div>";
       }
 
+      /* ---------- الخط الزمني للإنجازات ---------- */
+
+      var TL_KINDS = {
+        item_created: "tlCreated", item_done: "tlDone", import: "tlImport",
+        attachment: "tlAttachment", member: "tlMember", subscription: "tlPlan"
+      };
+
+      function relativeDay(iso) {
+        var d = new Date(iso);
+        if (isNaN(d.getTime())) return "";
+        var days = Math.floor((Date.now() - d.getTime()) / 86400000);
+        if (days <= 0) return T("tlToday");
+        if (days === 1) return T("tlYesterday");
+        if (days < 30) return fmt("tlDaysAgo", { n: days });
+        return app.fmtDate(iso);
+      }
+
+      function renderTimeline(rows, stats) {
+        var card = document.getElementById("timelineCard");
+        if (!card) return;
+        var html = "<h2>" + esc(T("timelineTitle")) + "</h2>";
+        if (stats) {
+          html += '<div class="ach-row">' +
+            '<div class="ach-card"><b>' + esc(String(stats.done_this_month || 0)) + "</b><span>" + esc(T("achDoneMonth")) + "</span></div>" +
+            '<div class="ach-card"><b>' + esc(String(stats.items_total || 0)) + "</b><span>" + esc(T("achItems")) + "</span></div>" +
+            '<div class="ach-card"><b>' + esc(String(stats.files_total || 0)) + "</b><span>" + esc(T("achFiles")) + "</span></div>" +
+            '<div class="ach-card"><b>' + esc(String(stats.imports_total || 0)) + "</b><span>" + esc(T("achImports")) + "</span></div>" +
+            "</div>";
+        }
+        if (!rows || !rows.length) {
+          card.innerHTML = html + '<p class="empty-note">' + esc(T("timelineEmpty")) + "</p>";
+          return;
+        }
+        html += '<ul class="timeline">';
+        rows.slice(0, 12).forEach(function (r) {
+          var kindKey = TL_KINDS[r.kind] || "tlCreated";
+          var meta = r.meta || {};
+          var extra = meta.item_number || meta.rows || meta.role || meta.status || "";
+          html += '<li class="tl-item" data-kind="' + esc(r.kind) + '"><span class="tl-dot"></span>' +
+                  '<span class="tl-title">' + esc(T(kindKey)) + (r.title ? " — " + esc(r.title) : "") + "</span>" +
+                  '<span class="tl-meta">' + esc(relativeDay(r.at)) + (extra ? " · " + esc(String(extra)) : "") + "</span></li>";
+        });
+        html += "</ul>";
+        card.innerHTML = html;
+      }
+
+      function loadTimeline() {
+        var card = document.getElementById("timelineCard");
+        if (!card) return Promise.resolve();
+        return Promise.all([app.activityFeed(30), app.achievements()])
+          .then(function (res) { renderTimeline(res[0] || [], res[1]); })
+          .catch(function () { renderTimeline([], null); });
+      }
+
       /* ---------- تخطيط لوحة المعلومات (خدمات + تقويم دائم الظهور) ---------- */
 
       var SERVICES = [
@@ -2302,6 +2440,10 @@
         calCard.appendChild(calendar);
         sideCol.appendChild(calCard);
         if (stats) sideCol.appendChild(stats);
+        var timeline = document.createElement("div");
+        timeline.className = "content";
+        timeline.id = "timelineCard";
+        sideCol.appendChild(timeline);
         grid.appendChild(mainCol);
         grid.appendChild(sideCol);
 
@@ -2344,6 +2486,7 @@
           show("dashboard");
           layoutDashboard();
           wireAttachments();
+          loadTimeline();
           try {
             if (new URLSearchParams(window.location.search).get("neworg")) {
               var f = $("newOrgForm");

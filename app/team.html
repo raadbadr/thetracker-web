@@ -551,6 +551,34 @@
       <p id="invitationsEmpty" data-i18n="invitationsEmpty" hidden>لا توجد دعوات معلقة.</p>
     </div>
 
+    <!-- توزيع الأعمال بين الأعضاء -->
+    <div class="content" id="workloadCard" hidden>
+      <h2 data-i18n="workloadTitle">توزيع الأعمال</h2>
+      <p data-i18n="workloadIntro">عبء كل عضو الآن، والأعمال التي لا صاحب لها بانتظار من تُسند إليه.</p>
+      <div class="features-grid" id="workloadGrid" role="list"></div>
+
+      <h3 class="invite-block-title" data-i18n="unassignedTitle">أعمال بلا صاحب</h3>
+      <div class="user-list" id="unassignedList" hidden></div>
+      <p id="unassignedEmpty" data-i18n="unassignedEmpty" hidden>كل الأعمال مُسندة.</p>
+    </div>
+
+    <!-- تواصل الفريق وتوجيه المهمات -->
+    <div class="content" id="chatCard" hidden>
+      <h2 data-i18n="chatTitle">تواصل الفريق</h2>
+      <p data-i18n="chatIntro">اكتب للفريق كله أو وجّه رسالتك إلى عضو بعينه، واربطها بعمل ليعرف المقصود تماماً. الرسالة الموجهة تصل جرس تنبيهاته.</p>
+      <form class="invite-row" id="chatForm" novalidate>
+        <input type="text" class="waitlist-input" id="chatBody" placeholder="اكتب رسالتك" data-i18n-placeholder="chatPlaceholder" required autocomplete="off" maxlength="2000">
+        <select class="waitlist-input" id="chatTo" aria-label="إلى"></select>
+        <button type="submit" class="waitlist-btn" id="chatSendBtn" data-i18n="chatSend">إرسال</button>
+      </form>
+      <div class="invite-row" id="chatItemRow">
+        <select class="waitlist-input" id="chatItem" aria-label="العمل المرتبط"></select>
+      </div>
+      <p class="waitlist-msg" id="chatMsg" role="status" aria-live="polite" hidden></p>
+      <div class="user-list" id="chatList" hidden></div>
+      <p id="chatEmpty" data-i18n="chatEmpty" hidden>لا توجد رسائل بعد.</p>
+    </div>
+
     <div style="text-align: center; padding: 2rem;">
       <a href="/app/dashboard.html" class="back-btn" data-i18n="backBtn">العودة إلى لوحة التحكم</a>
     </div>
@@ -618,6 +646,29 @@
         lookupNone: "لا يوجد مستخدم مطابق. تستطيع دعوته ببريده مباشرة.",
         inviteSending: "جارٍ الإضافة...",
         inviteCreated: "أُضيفت الدعوة لـ {email}، وسينضم تلقائياً عند تسجيل دخوله.",
+        workloadTitle: "توزيع الأعمال",
+        workloadIntro: "عبء كل عضو الآن، والأعمال التي لا صاحب لها بانتظار من تُسند إليه.",
+        unassignedTitle: "أعمال بلا صاحب",
+        unassignedEmpty: "كل الأعمال مُسندة.",
+        wlOpen: "جارية",
+        wlOverdue: "متأخرة",
+        wlDone: "منتهية",
+        assignTo: "أسند إلى",
+        assignPick: "اختر عضواً",
+        assignDone: "أُسند العمل إلى {name}.",
+        unassign: "بلا صاحب",
+        noDue: "بلا موعد",
+        chatTitle: "تواصل الفريق",
+        chatIntro: "اكتب للفريق كله أو وجّه رسالتك إلى عضو بعينه، واربطها بعمل ليعرف المقصود تماماً. الرسالة الموجهة تصل جرس تنبيهاته.",
+        chatPlaceholder: "اكتب رسالتك",
+        chatSend: "إرسال",
+        chatEmpty: "لا توجد رسائل بعد.",
+        chatToAll: "إلى الفريق كله",
+        chatNoItem: "بلا عمل مرتبط",
+        chatSending: "جارٍ الإرسال...",
+        chatSent: "أُرسلت الرسالة.",
+        chatToPrefix: "إلى {name}",
+        chatDelete: "حذف",
         invitationsTitle: "الدعوات المعلقة",
         invitationsEmpty: "لا توجد دعوات معلقة.",
         invitedOn: "أُضيفت في {date}",
@@ -687,6 +738,29 @@
         lookupNone: "No matching user. You can still invite them by email.",
         inviteSending: "Adding...",
         inviteCreated: "Invitation added for {email}. They will join automatically when they sign in.",
+        workloadTitle: "Work distribution",
+        workloadIntro: "Each member's current load, and the work with no owner waiting to be assigned.",
+        unassignedTitle: "Unassigned work",
+        unassignedEmpty: "All work is assigned.",
+        wlOpen: "Open",
+        wlOverdue: "Overdue",
+        wlDone: "Done",
+        assignTo: "Assign to",
+        assignPick: "Pick a member",
+        assignDone: "Assigned to {name}.",
+        unassign: "Unassigned",
+        noDue: "No due date",
+        chatTitle: "Team chat",
+        chatIntro: "Write to the whole team or address one member, and link a task so they know exactly what you mean. A directed message reaches their notification bell.",
+        chatPlaceholder: "Write your message",
+        chatSend: "Send",
+        chatEmpty: "No messages yet.",
+        chatToAll: "To the whole team",
+        chatNoItem: "No linked task",
+        chatSending: "Sending...",
+        chatSent: "Message sent.",
+        chatToPrefix: "to {name}",
+        chatDelete: "Delete",
         invitationsTitle: "Pending invitations",
         invitationsEmpty: "No pending invitations.",
         invitedOn: "added on {date}",
@@ -756,6 +830,29 @@
         lookupNone: "Aucun utilisateur trouvé. Vous pouvez l'inviter par e-mail.",
         inviteSending: "Ajout en cours...",
         inviteCreated: "Invitation ajoutée pour {email}. Cette personne rejoindra l'équipe automatiquement lors de sa connexion.",
+        workloadTitle: "Répartition du travail",
+        workloadIntro: "La charge actuelle de chaque membre, et le travail sans responsable en attente d'affectation.",
+        unassignedTitle: "Travail non attribué",
+        unassignedEmpty: "Tout le travail est attribué.",
+        wlOpen: "En cours",
+        wlOverdue: "En retard",
+        wlDone: "Terminé",
+        assignTo: "Attribuer à",
+        assignPick: "Choisir un membre",
+        assignDone: "Attribué à {name}.",
+        unassign: "Non attribué",
+        noDue: "Sans échéance",
+        chatTitle: "Discussion d'équipe",
+        chatIntro: "Écrivez à toute l'équipe ou adressez-vous à un membre, et liez une tâche pour être précis. Un message adressé arrive dans sa cloche de notifications.",
+        chatPlaceholder: "Écrivez votre message",
+        chatSend: "Envoyer",
+        chatEmpty: "Aucun message pour le moment.",
+        chatToAll: "À toute l'équipe",
+        chatNoItem: "Aucune tâche liée",
+        chatSending: "Envoi en cours...",
+        chatSent: "Message envoyé.",
+        chatToPrefix: "à {name}",
+        chatDelete: "Supprimer",
         invitationsTitle: "Invitations en attente",
         invitationsEmpty: "Aucune invitation en attente.",
         invitedOn: "ajoutée le {date}",
@@ -825,6 +922,29 @@
         lookupNone: "کوئی صارف نہیں ملا۔ آپ ای میل سے دعوت دے سکتے ہیں۔",
         inviteSending: "شامل کیا جا رہا ہے...",
         inviteCreated: "{email} کے لیے دعوت شامل کر دی گئی، سائن ان کرتے ہی وہ خود بخود شامل ہو جائے گا۔",
+        workloadTitle: "کام کی تقسیم",
+        workloadIntro: "ہر رکن کا موجودہ بوجھ، اور وہ کام جن کا کوئی ذمہ دار نہیں۔",
+        unassignedTitle: "بغیر ذمہ دار کام",
+        unassignedEmpty: "تمام کام تفویض ہو چکے ہیں۔",
+        wlOpen: "جاری",
+        wlOverdue: "تاخیر شدہ",
+        wlDone: "مکمل",
+        assignTo: "تفویض کریں",
+        assignPick: "رکن منتخب کریں",
+        assignDone: "{name} کے سپرد کر دیا گیا۔",
+        unassign: "بغیر ذمہ دار",
+        noDue: "کوئی تاریخ نہیں",
+        chatTitle: "ٹیم رابطہ",
+        chatIntro: "پوری ٹیم کو لکھیں یا کسی ایک رکن کو، اور کام کے ساتھ منسلک کریں۔ مخاطب پیغام اس کی اطلاعات کی گھنٹی تک پہنچتا ہے۔",
+        chatPlaceholder: "اپنا پیغام لکھیں",
+        chatSend: "بھیجیں",
+        chatEmpty: "ابھی کوئی پیغام نہیں۔",
+        chatToAll: "پوری ٹیم کو",
+        chatNoItem: "کوئی منسلک کام نہیں",
+        chatSending: "بھیجا جا رہا ہے...",
+        chatSent: "پیغام بھیج دیا گیا۔",
+        chatToPrefix: "بنام {name}",
+        chatDelete: "حذف کریں",
         invitationsTitle: "زیرِ التوا دعوتیں",
         invitationsEmpty: "کوئی زیرِ التوا دعوت نہیں۔",
         invitedOn: "شامل کی گئی: {date}",
@@ -975,7 +1095,7 @@
       var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
       var app = null;
-      var state = { loaded: false, error: null, canManage: false, members: [], invitations: [], limits: {} };
+      var state = { loaded: false, error: null, canManage: false, members: [], invitations: [], limits: {}, work: [], messages: [] };
 
       function $(id) { return document.getElementById(id); }
 
@@ -1005,7 +1125,7 @@
         return s;
       }
 
-      function fmtDate(iso) { return (app && app.fmtDate) ? app.fmtDate(iso) : ""; }
+      function fmtDate(iso, opts) { return (app && app.fmtDate) ? app.fmtDate(iso, opts) : ""; }
       function toast(message, kind) { if (app && app.toast) app.toast(message, kind); }
       function show(id, on) { var el = $(id); if (el) el.hidden = !on; }
 
@@ -1040,6 +1160,14 @@
         el.textContent = key ? t(key) : "";
         el.className = "waitlist-msg" + (kind ? " " + kind : "");
         el.hidden = !key;
+      }
+
+      function setMsg(id, text, kind) {
+        var el = $(id);
+        if (!el) return;
+        el.textContent = text || "";
+        el.className = "waitlist-msg" + (kind ? " " + kind : "");
+        el.hidden = !text;
       }
 
       function setInviteMsg(text, kind) {
@@ -1273,6 +1401,203 @@
 
       /* ---------- load & render ---------- */
 
+      /* ---------- توزيع الأعمال ---------- */
+
+      function memberById(id) {
+        for (var i = 0; i < state.members.length; i++) if (state.members[i].user_id === id) return state.members[i];
+        return null;
+      }
+
+      function nameOf(id) {
+        var m = memberById(id);
+        return m ? memberName(m) : "";
+      }
+
+      function workload() {
+        var now = Date.now();
+        var by = {};
+        state.members.forEach(function (m) { by[m.user_id] = { open: 0, overdue: 0, done: 0 }; });
+        state.work.forEach(function (it) {
+          var slot = by[it.assignee_id];
+          if (!slot) return;
+          if (it.status === "done") { slot.done++; return; }
+          if (it.status === "cancelled") return;
+          slot.open++;
+          var due = it.due_at ? new Date(it.due_at).getTime() : null;
+          if (due && due < now) slot.overdue++;
+        });
+        return by;
+      }
+
+      function memberOptions(selected) {
+        var html = '<option value="">' + esc(t("assignPick")) + "</option>";
+        state.members.forEach(function (m) {
+          html += '<option value="' + esc(m.user_id) + '"' + (m.user_id === selected ? " selected" : "") + ">" +
+                  esc(memberName(m)) + "</option>";
+        });
+        return html;
+      }
+
+      function renderWorkload() {
+        var card = $("workloadCard");
+        if (!card) return;
+        show("workloadCard", state.loaded);
+        if (!state.loaded) return;
+
+        var by = workload();
+        $("workloadGrid").innerHTML = state.members.map(function (m) {
+          var w = by[m.user_id] || { open: 0, overdue: 0, done: 0 };
+          return '<div class="feature-card" role="listitem">' +
+                   "<h3>" + esc(memberName(m)) + "</h3>" +
+                   '<div class="platform-stat-detail">' +
+                     '<div class="platform-stat-detail-row"><span>' + esc(t("wlOpen")) + "</span>" +
+                       '<span class="platform-stat-detail-val">' + esc(String(w.open)) + "</span></div>" +
+                     '<div class="platform-stat-detail-row"><span>' + esc(t("wlOverdue")) + "</span>" +
+                       '<span class="platform-stat-detail-val">' + esc(String(w.overdue)) + "</span></div>" +
+                     '<div class="platform-stat-detail-row"><span>' + esc(t("wlDone")) + "</span>" +
+                       '<span class="platform-stat-detail-val">' + esc(String(w.done)) + "</span></div>" +
+                   "</div></div>";
+        }).join("");
+
+        var free = state.work.filter(function (it) {
+          return !it.assignee_id && it.status !== "done" && it.status !== "cancelled";
+        });
+        var list = $("unassignedList");
+        list.innerHTML = free.map(function (it) {
+          var meta = [it.item_number || "", it.due_at ? fmtDate(it.due_at) : t("noDue")].filter(Boolean).join(" · ");
+          return '<div class="user-row"><div>' +
+                   "<strong>" + esc(it.title || "-") + "</strong><span>" + esc(meta) + "</span></div>" +
+                   '<div class="waitlist-form">' +
+                     '<select class="waitlist-input" data-assign-item="' + esc(it.id) + '" aria-label="' + esc(t("assignTo")) + '">' +
+                       memberOptions("") + "</select></div></div>";
+        }).join("");
+        list.hidden = !free.length;
+        show("unassignedEmpty", !free.length);
+      }
+
+      function onAssignChange(ev) {
+        var sel = ev.target.closest("[data-assign-item]");
+        if (!sel) return;
+        var itemId = sel.getAttribute("data-assign-item");
+        var userId = sel.value;
+        if (!userId) return;
+        sel.disabled = true;
+        app.assignItem(itemId, userId).then(function () {
+          toast(tf("assignDone", { name: nameOf(userId) }), "success");
+          return loadWork();
+        }).catch(function (err) {
+          sel.disabled = false;
+          toast(errorMessage(err), "error");
+        });
+      }
+
+      /* ---------- تواصل الفريق ---------- */
+
+      function renderChatControls() {
+        var to = $("chatTo");
+        if (!to) return;
+        var keep = to.value;
+        var html = '<option value="">' + esc(t("chatToAll")) + "</option>";
+        var me = (app && app.user) ? app.user.id : null;
+        state.members.forEach(function (m) {
+          if (m.user_id === me) return;
+          html += '<option value="' + esc(m.user_id) + '">' + esc(memberName(m)) + "</option>";
+        });
+        to.innerHTML = html;
+        if (keep) to.value = keep;
+
+        var item = $("chatItem");
+        var keepItem = item.value;
+        var opts = '<option value="">' + esc(t("chatNoItem")) + "</option>";
+        state.work.forEach(function (it) {
+          if (it.status === "done" || it.status === "cancelled") return;
+          var label = (it.item_number ? it.item_number + " · " : "") + (it.title || "-");
+          opts += '<option value="' + esc(it.id) + '">' + esc(label) + "</option>";
+        });
+        item.innerHTML = opts;
+        if (keepItem) item.value = keepItem;
+      }
+
+      function itemLabel(id) {
+        for (var i = 0; i < state.work.length; i++) {
+          if (state.work[i].id === id) {
+            var it = state.work[i];
+            return (it.item_number ? it.item_number + " · " : "") + (it.title || "");
+          }
+        }
+        return "";
+      }
+
+      function renderChat() {
+        var card = $("chatCard");
+        if (!card) return;
+        show("chatCard", state.loaded);
+        if (!state.loaded) return;
+        renderChatControls();
+
+        var me = (app && app.user) ? app.user.id : null;
+        var list = $("chatList");
+        list.innerHTML = state.messages.map(function (msg) {
+          var author = nameOf(msg.author_id) || "-";
+          var head = esc(author);
+          if (msg.to_user_id) head += ' <span class="chat-option-btn" style="cursor:default">' +
+                                      esc(tf("chatToPrefix", { name: nameOf(msg.to_user_id) || "-" })) + "</span>";
+          var meta = [fmtDate(msg.created_at, { withTime: true })];
+          var linked = msg.item_id ? itemLabel(msg.item_id) : "";
+          if (linked) meta.push(linked);
+          var del = (msg.author_id === me || state.canManage)
+            ? '<button type="button" class="chat-option-btn" data-del-msg="' + esc(msg.id) + '">' + esc(t("chatDelete")) + "</button>"
+            : "";
+          return '<div class="user-row"><div>' +
+                   "<strong>" + head + "</strong>" +
+                   '<span style="display:block;color:var(--text-primary);margin:.35rem 0;overflow-wrap:anywhere">' + esc(msg.body || "") + "</span>" +
+                   "<span>" + esc(meta.join(" · ")) + "</span></div>" + del + "</div>";
+        }).join("");
+        list.hidden = !state.messages.length;
+        show("chatEmpty", !state.messages.length);
+      }
+
+      function onChatSubmit(ev) {
+        ev.preventDefault();
+        var input = $("chatBody");
+        var body = String(input.value || "").trim();
+        if (!body) return;
+        var btn = $("chatSendBtn");
+        btn.disabled = true;
+        setMsg("chatMsg", t("chatSending"));
+        app.sendTeamMessage(body, $("chatTo").value || null, $("chatItem").value || null).then(function () {
+          input.value = "";
+          setMsg("chatMsg", t("chatSent"), "success");
+          return loadMessages();
+        }).catch(function (err) {
+          setMsg("chatMsg", errorMessage(err), "error");
+        }).finally(function () { btn.disabled = false; });
+      }
+
+      function onChatListClick(ev) {
+        var btn = ev.target.closest("[data-del-msg]");
+        if (!btn) return;
+        btn.disabled = true;
+        app.deleteTeamMessage(btn.getAttribute("data-del-msg")).then(function () {
+          return loadMessages();
+        }).catch(function () { btn.disabled = false; });
+      }
+
+      function loadWork() {
+        return app.teamWorkItems().then(function (rows) {
+          state.work = rows || [];
+          renderWorkload();
+          renderChat();
+        }).catch(function () { /* الأعمال ليست حرجة لعرض الفريق */ });
+      }
+
+      function loadMessages() {
+        return app.listTeamMessages(50).then(function (rows) {
+          state.messages = rows || [];
+          renderChat();
+        }).catch(function () { /* الرسائل ليست حرجة لعرض الفريق */ });
+      }
+
       function render() {
         if (state.error) setStatus("loadError", "error");
         else if (!state.loaded) setStatus("loading");
@@ -1280,6 +1605,8 @@
         renderCapacity();
         renderMembers();
         renderInvite();
+        renderWorkload();
+        renderChat();
       }
 
       function loadAll() {
@@ -1294,6 +1621,7 @@
           state.loaded = true;
           state.error = null;
           render();
+          return Promise.all([loadWork(), loadMessages()]);
         }).catch(function (err) {
           state.error = err;
           render();
@@ -1303,6 +1631,8 @@
       function showUnavailable() {
         show("teamCard", false);
         show("inviteCard", false);
+        show("workloadCard", false);
+        show("chatCard", false);
         show("noOrgCard", false);
         show("unavailableCard", true);
       }
@@ -1310,6 +1640,8 @@
       function showNoOrg() {
         show("teamCard", false);
         show("inviteCard", false);
+        show("workloadCard", false);
+        show("chatCard", false);
         show("unavailableCard", false);
         show("noOrgCard", true);
       }
@@ -1321,6 +1653,9 @@
         $("membersGrid").addEventListener("click", onMembersClick);
         $("membersGrid").addEventListener("change", onMembersChange);
         $("invitationsList").addEventListener("click", onInvitationsClick);
+        $("unassignedList").addEventListener("change", onAssignChange);
+        $("chatForm").addEventListener("submit", onChatSubmit);
+        $("chatList").addEventListener("click", onChatListClick);
       /* البحث عن مستخدم مسجّل ثم دعوته بنقرة */
       function renderLookup(rows) {
         var box = $("lookupResult");

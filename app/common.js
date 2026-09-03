@@ -495,6 +495,23 @@
   var ATTACH_BUCKET = "attachments";
 
   /* كل ما يخص رقم قضية واحد: عناصره وعدد مرفقاته */
+  /* الخط الزمني للإنجازات */
+  function activityFeed(limit) {
+    return run(function (client) {
+      var orgId = requireOrg();
+      return client.rpc("activity_feed", { p_org: orgId, p_limit: Number(limit) || 30 }).then(unwrap);
+    });
+  }
+
+  function achievements() {
+    return run(function (client) {
+      var orgId = requireOrg();
+      return client.rpc("achievements", { p_org: orgId }).then(unwrap).then(function (rows) {
+        return (rows && rows[0]) || null;
+      });
+    });
+  }
+
   function caseBundle(caseNumber) {
     return run(function (client) {
       var orgId = requireOrg();
@@ -848,6 +865,64 @@
     return run(function (client) {
       var orgId = requireOrg();
       return client.from("invitations").delete().eq("org_id", orgId).eq("id", id).then(unwrap);
+    });
+  }
+
+  /* ============================================================
+   * مكان عمل الفريق: توزيع الأعمال والتواصل وتوجيه المهمات
+   * ============================================================ */
+
+  /* أعمال الشركة كلها بأصحابها، ليُحسب عبء كل عضو وتظهر الأعمال بلا صاحب. */
+  function teamWorkItems() {
+    return run(function (client) {
+      var orgId = requireOrg();
+      return client.from("items")
+        .select("id,item_number,title,category,due_at,status,assignee_id")
+        .eq("org_id", orgId)
+        .order("due_at", { ascending: true, nullsFirst: false })
+        .limit(1000)
+        .then(unwrap)
+        .then(function (rows) { return rows || []; });
+    });
+  }
+
+  /* الإسناد نفسه يُنبّه العضو عبر مشغّل في القاعدة، فلا شيء يُرسل من هنا. */
+  function assignItem(itemId, userId) {
+    return run(function (client) {
+      var orgId = requireOrg();
+      return client.from("items").update({ assignee_id: userId || null })
+        .eq("org_id", orgId).eq("id", itemId).select("id,assignee_id").single().then(unwrap);
+    });
+  }
+
+  function listTeamMessages(limit) {
+    return run(function (client) {
+      var orgId = requireOrg();
+      return client.from("team_messages").select("*")
+        .eq("org_id", orgId)
+        .order("created_at", { ascending: false })
+        .limit(limit || 50)
+        .then(unwrap)
+        .then(function (rows) { return rows || []; });
+    });
+  }
+
+  function sendTeamMessage(body, toUserId, itemId) {
+    return run(function (client) {
+      var orgId = requireOrg();
+      var text = String(body || "").trim();
+      if (!text) throw new Error("empty message");
+      return client.from("team_messages")
+        .insert({ org_id: orgId, author_id: app.user.id, to_user_id: toUserId || null,
+                  item_id: itemId || null, body: text.slice(0, 2000) })
+        .select("*").single().then(unwrap);
+    });
+  }
+
+  function deleteTeamMessage(id) {
+    return run(function (client) {
+      var orgId = requireOrg();
+      return client.from("team_messages").delete().eq("org_id", orgId).eq("id", id).then(unwrap);
     });
   }
 
@@ -1272,6 +1347,11 @@
   app.listInvitations = listInvitations;
   app.inviteMember = inviteMember;
   app.cancelInvitation = cancelInvitation;
+  app.teamWorkItems = teamWorkItems;
+  app.assignItem = assignItem;
+  app.listTeamMessages = listTeamMessages;
+  app.sendTeamMessage = sendTeamMessage;
+  app.deleteTeamMessage = deleteTeamMessage;
   app.removeMember = removeMember;
   app.setMemberRole = setMemberRole;
   app.listRules = listRules;
@@ -1287,6 +1367,8 @@
   app.regenerateCalendarToken = regenerateCalendarToken;
   app.updateProfile = updateProfile;
   app.isPlatformAdmin = isPlatformAdmin;
+  app.activityFeed = activityFeed;
+  app.achievements = achievements;
   app.caseBundle = caseBundle;
   app.listAttachments = listAttachments;
   app.uploadAttachment = uploadAttachment;
@@ -1602,6 +1684,14 @@
     member_joined: {
       ar: "{actor} انضم إلى شركة {org}", en: "{actor} joined {org}",
       fr: "{actor} a rejoint {org}", ur: "{actor} {org} میں شامل ہو گئے"
+    },
+    team_message: {
+      ar: "رسالة من {actor}", en: "Message from {actor}",
+      fr: "Message de {actor}", ur: "{actor} کی طرف سے پیغام"
+    },
+    assigned: {
+      ar: "أُسندت إليك: {item}", en: "Assigned to you: {item}",
+      fr: "Qui vous est assigné : {item}", ur: "آپ کے سپرد: {item}"
     }
   };
 
@@ -1610,7 +1700,8 @@
     if (!map) return "";
     return sidebarLabel(map)
       .replace("{org}", payload.org_name || "")
-      .replace("{actor}", payload.actor || "");
+      .replace("{actor}", payload.actor || "")
+      .replace("{item}", payload.item_title || payload.excerpt || "");
   }
 
   function loadBell() {
