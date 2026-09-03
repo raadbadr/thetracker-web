@@ -300,10 +300,10 @@
 
       <div class="login-stack">
         <!-- زر جوجل الرسمي (Google Identity Services): يفتح نافذة الاختيار على نطاقنا
-             نفسه بدل تحويل المتصفح إلى سوبابيس. يُعرض من app.js، وإن تعذّر تحميله
-             يبقى الزر التالي بديلاً يعمل بمسار التحويل. -->
-        <div id="googleGsi" class="gsi-slot" style="display:none"></div>
-        <button type="button" class="waitlist-btn" id="googleBtn" style="width:100%" data-i18n="googleBtn">المتابعة بحساب Google</button>
+             نفسه بدل تحويل المتصفح إلى سوبابيس، ويُرسم بتصميم جوجل من app.js.
+             الزر التالي مخفي تماماً ولا يظهر إلا إذا تعذّر تحميل مكتبة جوجل. -->
+        <div id="googleGsi" class="gsi-slot"></div>
+        <button type="button" class="waitlist-btn" id="googleBtn" style="width:100%;display:none" data-i18n="googleBtn">المتابعة بحساب Google</button>
         <p class="waitlist-msg" id="loginStatus" style="display:none;" role="status" aria-live="polite"></p>
       </div>
 

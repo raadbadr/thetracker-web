@@ -450,10 +450,14 @@
           onError: function (err) { fail(err, "oauth"); }
         });
       }).then(function (ok) {
-        if (!ok) return;
-        googleSlot.style.display = "flex";
-        if (googleBtn) googleBtn.style.display = "none";
-      }).catch(function () { /* يبقى الزر البديل */ });
+        if (ok) return;
+        /* تعذّر تحميل مكتبة جوجل: نكشف الزر البديل بمسار التحويل. */
+        googleSlot.style.display = "none";
+        if (googleBtn) googleBtn.style.display = "";
+      }).catch(function () {
+        googleSlot.style.display = "none";
+        if (googleBtn) googleBtn.style.display = "";
+      });
     }
 
     if (appleBtn) appleBtn.addEventListener("click", function () {

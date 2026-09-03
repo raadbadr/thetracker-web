@@ -213,6 +213,12 @@
       gap: 1.5rem;
     }
 
+    /* الباقات الثلاث في صف واحد على الشاشات الكبيرة بدل صفّين */
+    @media (min-width: 900px) {
+      .container { max-width: 1140px; }
+      .features-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
     /* ============================================
        Feature Cards - Neumorphic Glass Cards
        من NeumorphicTheme: glass + neumorphicShadow
