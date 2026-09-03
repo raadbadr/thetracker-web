@@ -650,8 +650,15 @@
           <span class="topbar-label" data-i18n="companyLabel">الشركة:</span>
           <strong class="topbar-org-name" id="orgName"></strong>
           <select class="waitlist-input" id="orgSwitcher" hidden></select>
+          <button type="button" class="chat-option-btn" id="renameOrgBtn" data-i18n="renameOrgBtn">تعديل الاسم</button>
+          <button type="button" class="chat-option-btn" id="deleteOrgBtn" data-i18n="deleteOrgBtn">حذف الشركة</button>
           <button type="button" class="chat-option-btn" id="newOrgBtn" data-i18n="newOrgBtn">+ شركة جديدة</button>
         </div>
+        <form class="waitlist-form" id="renameOrgForm" hidden novalidate>
+          <input type="text" class="waitlist-input" id="renameOrgName" maxlength="120" autocomplete="organization">
+          <button type="submit" class="waitlist-btn" data-i18n="save">حفظ</button>
+          <button type="button" class="chat-option-btn" id="renameOrgCancel" data-i18n="cancel">إلغاء</button>
+        </form>
         <form class="waitlist-form" id="newOrgForm" hidden novalidate>
           <input type="text" class="waitlist-input" id="newOrgName" placeholder="اسم الشركة" maxlength="120" autocomplete="organization">
           <button type="submit" class="waitlist-btn" data-i18n="newOrgSubmit">إنشاء</button>
@@ -860,6 +867,10 @@
         companyLabel: "الشركة:",
         switchOrg: "التبديل بين الشركات",
         newOrgBtn: "+ شركة جديدة",
+        renameOrgBtn: "تعديل الاسم",
+        deleteOrgBtn: "حذف الشركة",
+        orgRenamed: "تم تعديل اسم الشركة.",
+        deleteOrgConfirm: "سيُحذف سجل «{name}» وكل عناصره ومتتبعاته نهائياً. هل تتابع؟",
         newOrgPlaceholder: "اسم الشركة",
         newOrgSubmit: "إنشاء",
         cancel: "إلغاء",
@@ -1003,6 +1014,10 @@
         companyLabel: "Company:",
         switchOrg: "Switch company",
         newOrgBtn: "+ New company",
+        renameOrgBtn: "Rename",
+        deleteOrgBtn: "Delete company",
+        orgRenamed: "Company name updated.",
+        deleteOrgConfirm: "«{name}» and all of its items and trackers will be permanently deleted. Continue?",
         newOrgPlaceholder: "Company name",
         newOrgSubmit: "Create",
         cancel: "Cancel",
@@ -1146,6 +1161,10 @@
         companyLabel: "Entreprise :",
         switchOrg: "Changer d'entreprise",
         newOrgBtn: "+ Nouvelle entreprise",
+        renameOrgBtn: "Renommer",
+        deleteOrgBtn: "Supprimer l'entreprise",
+        orgRenamed: "Nom de l'entreprise mis à jour.",
+        deleteOrgConfirm: "«{name}» et tous ses éléments seront supprimés définitivement. Continuer ?",
         newOrgPlaceholder: "Nom de l'entreprise",
         newOrgSubmit: "Créer",
         cancel: "Annuler",
@@ -1289,6 +1308,10 @@
         companyLabel: "کمپنی:",
         switchOrg: "کمپنی تبدیل کریں",
         newOrgBtn: "+ نئی کمپنی",
+        renameOrgBtn: "نام بدلیں",
+        deleteOrgBtn: "کمپنی حذف کریں",
+        orgRenamed: "کمپنی کا نام تبدیل ہو گیا۔",
+        deleteOrgConfirm: "«{name}» اور اس کے تمام آئٹمز مستقل طور پر حذف ہو جائیں گے۔ جاری رکھیں؟",
         newOrgPlaceholder: "کمپنی کا نام",
         newOrgSubmit: "بنائیں",
         cancel: "منسوخ کریں",
@@ -1898,6 +1921,10 @@
       /* ---------- top bar / organizations ---------- */
 
       function renderTopBar() {
+        var owns = !!(app.org && app.user && app.org.owner_id === app.user.id) || !!(app.org && app.org.role === "owner");
+        var rn = $("renameOrgBtn"), dl = $("deleteOrgBtn");
+        if (rn) rn.hidden = !app.org;
+        if (dl) dl.hidden = !owns;
         var orgs = app.orgs || [];
         var sw = $("orgSwitcher");
         $("orgRow").hidden = !app.org;
@@ -1932,6 +1959,34 @@
       $("orgSwitcher").addEventListener("change", function () {
         if (this.value && app && app.org && this.value !== app.org.id) app.setCurrentOrg(this.value);
       });
+      $("renameOrgBtn").addEventListener("click", function () {
+        if (!app.org) return;
+        var form = $("renameOrgForm");
+        $("renameOrgName").value = app.org.name || "";
+        form.hidden = !form.hidden;
+        if (!form.hidden) $("renameOrgName").focus();
+      });
+
+      $("renameOrgCancel").addEventListener("click", function () { $("renameOrgForm").hidden = true; });
+
+      $("renameOrgForm").addEventListener("submit", function (ev) {
+        ev.preventDefault();
+        var name = String($("renameOrgName").value || "").trim();
+        if (!name) return;
+        app.renameOrg(name).then(function () {
+          $("renameOrgForm").hidden = true;
+          renderTopBar();
+          app.toast(T("orgRenamed"));
+        }).catch(function (err) { fail(err); });
+      });
+
+      $("deleteOrgBtn").addEventListener("click", function () {
+        if (!app.org) return;
+        if (!window.confirm(T("deleteOrgConfirm").replace("{name}", app.org.name || ""))) return;
+        app.deleteOrg().then(function () { window.location.reload(); })
+          .catch(function (err) { fail(err); });
+      });
+
       $("newOrgBtn").addEventListener("click", function () {
         var f = $("newOrgForm");
         f.hidden = !f.hidden;

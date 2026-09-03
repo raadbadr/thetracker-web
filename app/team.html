@@ -486,6 +486,12 @@
         <button type="button" class="chat-option-btn" id="copyLinkBtn" data-i18n="copyLinkBtn">نسخ رابط تسجيل الدخول</button>
       </p>
 
+      <div class="waitlist-form" id="lookupRow">
+        <input type="text" class="waitlist-input" id="lookupQuery" placeholder="بريد أو جوال أو رقم مستخدم" data-i18n-placeholder="lookupPlaceholder" autocomplete="off">
+        <button type="button" class="chat-option-btn" id="lookupBtn" data-i18n="lookupBtn">بحث عن مستخدم مسجّل</button>
+      </div>
+      <div id="lookupResult" hidden></div>
+
       <form class="waitlist-form" id="inviteForm" novalidate>
         <input type="email" class="waitlist-input" id="inviteEmail" placeholder="بريد العضو الإلكتروني" required autocomplete="off" inputmode="email" dir="ltr">
         <select class="waitlist-input" id="inviteRole" aria-label="الدور">
@@ -562,6 +568,9 @@
         linkCopied: "تم نسخ الرابط.",
         inviteEmailPlaceholder: "بريد العضو الإلكتروني",
         inviteBtn: "دعوة",
+        lookupBtn: "بحث عن مستخدم مسجّل",
+        lookupPlaceholder: "بريد أو جوال أو رقم مستخدم",
+        lookupNone: "لا يوجد مستخدم مطابق. تستطيع دعوته ببريده مباشرة.",
         inviteSending: "جارٍ الإضافة...",
         inviteCreated: "أُضيفت الدعوة لـ {email}، وسينضم تلقائياً عند تسجيل دخوله.",
         invitationsTitle: "الدعوات المعلقة",
@@ -626,6 +635,9 @@
         linkCopied: "Link copied.",
         inviteEmailPlaceholder: "Member's email address",
         inviteBtn: "Invite",
+        lookupBtn: "Find a registered user",
+        lookupPlaceholder: "Email, mobile or user number",
+        lookupNone: "No matching user. You can still invite them by email.",
         inviteSending: "Adding...",
         inviteCreated: "Invitation added for {email}. They will join automatically when they sign in.",
         invitationsTitle: "Pending invitations",
@@ -690,6 +702,9 @@
         linkCopied: "Lien copié.",
         inviteEmailPlaceholder: "Adresse e-mail du membre",
         inviteBtn: "Inviter",
+        lookupBtn: "Rechercher un utilisateur inscrit",
+        lookupPlaceholder: "E-mail, mobile ou numéro",
+        lookupNone: "Aucun utilisateur trouvé. Vous pouvez l'inviter par e-mail.",
         inviteSending: "Ajout en cours...",
         inviteCreated: "Invitation ajoutée pour {email}. Cette personne rejoindra l'équipe automatiquement lors de sa connexion.",
         invitationsTitle: "Invitations en attente",
@@ -754,6 +769,9 @@
         linkCopied: "لنک کاپی ہو گیا۔",
         inviteEmailPlaceholder: "رکن کا ای میل ایڈریس",
         inviteBtn: "دعوت دیں",
+        lookupBtn: "رجسٹرڈ صارف تلاش کریں",
+        lookupPlaceholder: "ای میل، موبائل یا صارف نمبر",
+        lookupNone: "کوئی صارف نہیں ملا۔ آپ ای میل سے دعوت دے سکتے ہیں۔",
         inviteSending: "شامل کیا جا رہا ہے...",
         inviteCreated: "{email} کے لیے دعوت شامل کر دی گئی، سائن ان کرتے ہی وہ خود بخود شامل ہو جائے گا۔",
         invitationsTitle: "زیرِ التوا دعوتیں",
@@ -1252,6 +1270,48 @@
         $("membersGrid").addEventListener("click", onMembersClick);
         $("membersGrid").addEventListener("change", onMembersChange);
         $("invitationsList").addEventListener("click", onInvitationsClick);
+      /* البحث عن مستخدم مسجّل ثم دعوته بنقرة */
+      function renderLookup(rows) {
+        var box = $("lookupResult");
+        if (!rows || !rows.length) {
+          box.hidden = false;
+          box.innerHTML = '<p class="waitlist-msg">' + esc(t("lookupNone")) + "</p>";
+          return;
+        }
+        var html = "";
+        rows.forEach(function (r) {
+          html += '<div class="feature-card" style="margin-bottom:.6rem">' +
+                  "<strong>" + esc(r.full_name || r.email || "") + "</strong><br>" +
+                  '<span class="waitlist-msg" style="display:block">' + esc(r.email || "") +
+                  (r.profile_number ? " · " + esc(r.profile_number) : "") + "</span>" +
+                  '<button type="button" class="waitlist-btn" data-invite-email="' + esc(r.email || "") + '">' +
+                  esc(t("inviteBtn")) + "</button></div>";
+        });
+        box.hidden = false;
+        box.innerHTML = html;
+      }
+
+      $("lookupBtn").addEventListener("click", function () {
+        var q = String($("lookupQuery").value || "").trim();
+        if (!q) return;
+        var btn = this;
+        btn.disabled = true;
+        app.findProfileForInvite(q).then(function (rows) {
+          renderLookup(rows || []);
+        }).catch(function () {
+          renderLookup([]);
+        }).finally(function () { btn.disabled = false; });
+      });
+
+      $("lookupResult").addEventListener("click", function (ev) {
+        var btn = ev.target.closest("[data-invite-email]");
+        if (!btn) return;
+        var email = btn.dataset.inviteEmail;
+        if (!email) return;
+        $("inviteEmail").value = email;
+        $("inviteForm").dispatchEvent(new Event("submit", { cancelable: true }));
+      });
+
         $("inviteForm").addEventListener("submit", onInviteSubmit);
         $("copyLinkBtn").addEventListener("click", onCopyLink);
 
