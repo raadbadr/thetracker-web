@@ -1882,6 +1882,7 @@
         viewType: "",
         clientFilter: "",
         calMode: (function () { try { return localStorage.getItem("tracker_cal_mode") || "greg"; } catch (e) { return "greg"; } })(),
+        calAnchor: new Date(),
         filters: { tracker: "", status: "", search: "" },
         tab: "list",
         month: null,
@@ -3179,16 +3180,22 @@
         var it = findItem(c.dataset.id);
         if (it) openEdit(it);
       });
+      function setAnchorFromMonth() {
+        state.calAnchor = new Date(state.month.getFullYear(), state.month.getMonth(), state.month.getDate() + 15);
+      }
+
       $("calPrevBtn").addEventListener("click", function () {
         state.month = calendarIsHijri()
           ? shiftHijriMonth(state.month, -1)
           : new Date(state.month.getFullYear(), state.month.getMonth() - 1, 1);
+        setAnchorFromMonth();
         loadCalendar();
       });
       $("calNextBtn").addEventListener("click", function () {
         state.month = calendarIsHijri()
           ? shiftHijriMonth(state.month, 1)
           : new Date(state.month.getFullYear(), state.month.getMonth() + 1, 1);
+        setAnchorFromMonth();
         loadCalendar();
       });
 
@@ -3200,7 +3207,8 @@
         var g = $("calGregBtn"), h = $("calHijriBtn");
         if (g) g.classList.toggle("is-active", state.calMode === "greg");
         if (h) h.classList.toggle("is-active", state.calMode === "hijri");
-        state.month = calendarIsHijri() ? startOfHijriMonth(state.month) : startOfMonth(state.month);
+        var anchor = state.calAnchor || new Date();
+        state.month = calendarIsHijri() ? startOfHijriMonth(anchor) : startOfMonth(anchor);
         loadCalendar();
       });
       $("calTodayBtn").addEventListener("click", function () {
