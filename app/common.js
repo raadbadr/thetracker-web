@@ -1141,9 +1141,216 @@
   app.randomCode = randomCode;
   app.unavailableMessage = unavailableMessage;
 
+  /* ============================================================
+   * الشريط العلوي للتطبيق — روابط الخدمات، واسم المستخدم، وجرس التنبيهات،
+   * وزر خروج صغير. يظهر أسفل شريط الموقع في كل صفحات /app.
+   * ============================================================ */
+
+  var TOPNAV = [
+    { href: "/app/dashboard.html", labels: { ar: "لوحة المعلومات", en: "Dashboard", fr: "Tableau de bord", ur: "ڈیش بورڈ" } },
+    { menu: true, labels: { ar: "الخدمات الإلكترونية", en: "e-Services", fr: "Services en ligne", ur: "برقی خدمات" } },
+    { href: "/about.html", labels: { ar: "الدليل", en: "Guide", fr: "Guide", ur: "رہنما" } },
+    { href: "/#contact", labels: { ar: "تواصل معنا", en: "Contact us", fr: "Nous contacter", ur: "رابطہ کریں" } }
+  ];
+
+  var BELL_LABELS = { ar: "التنبيهات", en: "Notifications", fr: "Notifications", ur: "اطلاعات" };
+  var BELL_EMPTY = { ar: "لا توجد تنبيهات بعد.", en: "No notifications yet.", fr: "Aucune notification pour le moment.", ur: "ابھی کوئی اطلاع نہیں۔" };
+  var BELL_SEEN_KEY = "tracker_bell_seen";
+
+  var TOPBAR_CSS = [
+    ".app-topbar{position:fixed;inset-block-start:52px;inset-inline:0;height:56px;z-index:45;display:flex;align-items:center;",
+    "justify-content:space-between;gap:1rem;padding:0 1.1rem;background:var(--glass);-webkit-backdrop-filter:blur(20px);",
+    "backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-border)}",
+    ".app-topnav{display:flex;align-items:center;gap:.25rem;overflow-x:auto;scrollbar-width:none}",
+    ".app-topnav::-webkit-scrollbar{display:none}",
+    ".app-topnav>a,.app-topnav>button{position:relative;display:inline-flex;align-items:center;gap:.35rem;padding:.5rem .85rem;border:0;",
+    "border-radius:10px;background:transparent;color:var(--text-secondary);font:inherit;font-size:.9rem;font-weight:600;",
+    "white-space:nowrap;text-decoration:none;cursor:pointer;transition:all .25s ease}",
+    ".app-topnav>a:hover,.app-topnav>button:hover{background:var(--glass-border);color:var(--text-primary)}",
+    ".app-topnav>a.is-active{color:var(--primary)}",
+    ".app-topnav>a.is-active::after{content:'';position:absolute;inset-inline:.85rem;bottom:-.55rem;height:3px;border-radius:3px;background:var(--primary)}",
+    ".app-userbox{display:flex;align-items:center;gap:.5rem;flex:0 0 auto}",
+    ".app-username{display:inline-flex;align-items:center;gap:.5rem;max-width:230px;padding:.45rem .85rem;border-radius:12px;",
+    "background:var(--glass-border);color:var(--text-primary);font-size:.85rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
+    ".app-iconbtn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;padding:0;border:1px solid var(--glass-border);",
+    "border-radius:12px;background:transparent;color:var(--text-secondary);cursor:pointer;transition:all .25s ease}",
+    ".app-iconbtn:hover{background:var(--glass-border);color:var(--text-primary)}",
+    ".app-iconbtn svg{width:19px;height:19px;fill:currentColor}",
+    ".app-bell-badge{position:absolute;inset-block-start:-6px;inset-inline-end:-6px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;",
+    "background:#e5484d;color:#fff;font-size:.68rem;font-weight:700;display:flex;align-items:center;justify-content:center}",
+    ".app-bell-panel{position:absolute;inset-block-start:46px;inset-inline-end:0;width:300px;max-height:60vh;overflow-y:auto;padding:.5rem;",
+    "border-radius:16px;background:var(--card-bg,var(--glass));-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);",
+    "border:1px solid var(--glass-border);box-shadow:0 18px 40px var(--shadow-dark);display:none;z-index:60}",
+    ".app-bell-panel.is-open{display:block}",
+    ".app-bell-item{padding:.6rem .7rem;border-radius:10px;font-size:.85rem;color:var(--text-secondary)}",
+    ".app-bell-item strong{display:block;color:var(--text-primary);font-size:.9rem;margin-bottom:.15rem}",
+    ".app-bell-empty{padding:.9rem .7rem;font-size:.85rem;color:var(--text-secondary);text-align:center}",
+    ".app-menu-panel{position:absolute;inset-block-start:46px;width:220px;padding:.4rem;border-radius:16px;background:var(--card-bg,var(--glass));",
+    "-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);border:1px solid var(--glass-border);",
+    "box-shadow:0 18px 40px var(--shadow-dark);display:none;z-index:60}",
+    ".app-menu-panel.is-open{display:block}",
+    ".app-menu-panel a{display:block;padding:.6rem .75rem;border-radius:10px;color:var(--text-secondary);font-size:.9rem;font-weight:600;text-decoration:none}",
+    ".app-menu-panel a:hover{background:var(--glass-border);color:var(--text-primary)}",
+    "body.has-app-topbar{padding-top:108px}",
+    "body.has-app-topbar .app-sidebar{inset-block-start:108px}",
+    "@media(max-width:900px){.app-topbar{position:static;height:auto;flex-wrap:wrap;padding:.5rem .75rem;gap:.5rem}",
+    "body.has-app-topbar{padding-top:52px}.app-username{max-width:150px}",
+    ".app-bell-panel,.app-menu-panel{inset-block-start:auto;inset-inline-end:auto;position:fixed;inset-inline:1rem;width:auto}}"
+  ].join("");
+
+  function userDisplayName() {
+    var p = app.profile || {};
+    var u = app.user || {};
+    var meta = (u.user_metadata || {});
+    return p.full_name || meta.full_name || meta.name || u.email || "";
+  }
+
+  function bellSeenAt() {
+    try { return localStorage.getItem(BELL_SEEN_KEY) || ""; } catch (e) { return ""; }
+  }
+
+  function myNotifications() {
+    return run(function (client) {
+      return client.from("notifications")
+        .select("id,status,channel,scheduled_at,sent_at,created_at,payload")
+        .eq("user_id", app.user.id)
+        .order("created_at", { ascending: false })
+        .limit(8)
+        .then(unwrap);
+    });
+  }
+
+  function renderTopbar() {
+    var bar = document.getElementById("appTopbar");
+    if (!bar) return;
+    var here = String(window.location.pathname || "");
+    var nav = "";
+    TOPNAV.forEach(function (item, i) {
+      var label = escapeHtml(sidebarLabel(item.labels));
+      if (item.menu) {
+        nav += '<button type="button" id="topServicesBtn" aria-haspopup="true" aria-expanded="false">' + label +
+               '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" style="fill:currentColor"><path d="M7 10l5 5 5-5z"/></svg></button>';
+      } else {
+        var active = item.href.indexOf("/app/") === 0 && here.indexOf(item.href) === 0 ? " is-active" : "";
+        nav += '<a class="' + active.replace(" ", "") + '" href="' + item.href + '">' + label + "</a>";
+      }
+    });
+
+    var services = "";
+    NAV_ITEMS.forEach(function (item) {
+      if (item.adminOnly && !(document.getElementById("appSidebar") || {}).dataset) return;
+      if (item.adminOnly && !document.getElementById("appSidebar").dataset.admin) return;
+      services += '<a href="' + item.href + '">' + escapeHtml(sidebarLabel(item.labels)) + "</a>";
+    });
+
+    bar.innerHTML =
+      '<nav class="app-topnav">' + nav + "</nav>" +
+      '<div class="app-userbox">' +
+        '<span class="app-username" id="topUserName" title="' + escapeHtml(userDisplayName()) + '">' + escapeHtml(userDisplayName()) + "</span>" +
+        '<button type="button" class="app-iconbtn" id="topBellBtn" aria-label="' + escapeHtml(sidebarLabel(BELL_LABELS)) + '">' +
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5S10.5 3.17 10.5 4v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>' +
+          '<span class="app-bell-badge" id="topBellBadge" hidden>0</span></button>' +
+        '<button type="button" class="app-iconbtn" id="topSignOut" aria-label="' + escapeHtml(sidebarLabel(SIGN_OUT_LABELS)) + '">' +
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg></button>' +
+        '<div class="app-bell-panel" id="topBellPanel"><div class="app-bell-empty">' + escapeHtml(sidebarLabel(BELL_EMPTY)) + "</div></div>" +
+        '<div class="app-menu-panel" id="topServicesPanel">' + services + "</div>" +
+      "</div>";
+
+    var bell = document.getElementById("topBellBtn");
+    var bellPanel = document.getElementById("topBellPanel");
+    var svcBtn = document.getElementById("topServicesBtn");
+    var svcPanel = document.getElementById("topServicesPanel");
+
+    if (svcBtn && svcPanel) svcBtn.addEventListener("click", function (ev) {
+      ev.stopPropagation();
+      if (bellPanel) bellPanel.classList.remove("is-open");
+      svcPanel.classList.toggle("is-open");
+      svcBtn.setAttribute("aria-expanded", svcPanel.classList.contains("is-open") ? "true" : "false");
+    });
+
+    if (bell && bellPanel) bell.addEventListener("click", function (ev) {
+      ev.stopPropagation();
+      if (svcPanel) svcPanel.classList.remove("is-open");
+      bellPanel.classList.toggle("is-open");
+      if (!bellPanel.classList.contains("is-open")) return;
+      try { localStorage.setItem(BELL_SEEN_KEY, new Date().toISOString()); } catch (e) { /* ignore */ }
+      var badge = document.getElementById("topBellBadge");
+      if (badge) badge.hidden = true;
+      loadBell();
+    });
+
+    document.addEventListener("click", function () {
+      if (bellPanel) bellPanel.classList.remove("is-open");
+      if (svcPanel) svcPanel.classList.remove("is-open");
+    });
+
+    var out = document.getElementById("topSignOut");
+    if (out) out.addEventListener("click", function () {
+      var auth = window.trackerAuth;
+      var done = function () { window.location.replace("/login"); };
+      if (auth && typeof auth.signOut === "function") auth.signOut().then(done, done);
+      else done();
+    });
+  }
+
+  function loadBell() {
+    var panel = document.getElementById("topBellPanel");
+    if (!panel) return;
+    myNotifications().then(function (rows) {
+      var list = rows || [];
+      if (!list.length) {
+        panel.innerHTML = '<div class="app-bell-empty">' + escapeHtml(sidebarLabel(BELL_EMPTY)) + "</div>";
+        return;
+      }
+      var html = "";
+      var seen = bellSeenAt();
+      var unseen = 0;
+      list.forEach(function (n) {
+        var payload = n.payload || {};
+        var title = payload.title || payload.item_title || "";
+        var when = n.sent_at || n.scheduled_at || n.created_at;
+        if (!seen || String(n.created_at) > seen) unseen++;
+        html += '<div class="app-bell-item"><strong>' + escapeHtml(title || sidebarLabel(BELL_LABELS)) + "</strong>" +
+                escapeHtml(fmtDate(when, { withTime: true })) + "</div>";
+      });
+      panel.innerHTML = html;
+      var badge = document.getElementById("topBellBadge");
+      if (badge && unseen > 0 && !panel.classList.contains("is-open")) {
+        badge.textContent = String(unseen);
+        badge.hidden = false;
+      }
+    }).catch(function () { /* التنبيهات ليست حرجة */ });
+  }
+
+  function mountTopbar() {
+    if (document.getElementById("appTopbar")) return;
+    if (!/^\/app\//.test(String(window.location.pathname || ""))) return;
+    var style = document.createElement("style");
+    style.textContent = TOPBAR_CSS;
+    document.head.appendChild(style);
+    var bar = document.createElement("header");
+    bar.id = "appTopbar";
+    bar.className = "app-topbar";
+    document.body.insertBefore(bar, document.body.firstChild);
+    document.body.classList.add("has-app-topbar");
+
+    var ready = app && app.ready && typeof app.ready.then === "function" ? app.ready : null;
+    if (ready) ready.then(function () {
+      renderTopbar();
+      loadBell();
+    }).catch(function () { renderTopbar(); });
+    else renderTopbar();
+
+    if (typeof MutationObserver !== "undefined") {
+      new MutationObserver(function () { renderTopbar(); })
+        .observe(document.documentElement, { attributes: true, attributeFilter: ["lang", "dir"] });
+    }
+  }
+
   /* القائمة الجانبية تُركّب بعد اكتمال تعريف الواجهة، وأي خطأ فيها لا يوقف الصفحة. */
   function bootSidebar() {
     try { mountSidebar(); } catch (e) { /* تجاهل */ }
+    try { mountTopbar(); } catch (e) { /* تجاهل */ }
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bootSidebar);
   else bootSidebar();
