@@ -239,6 +239,20 @@
       position: relative;
       overflow: hidden;
       transform-style: preserve-3d;
+      /* البطاقات الثلاث بنفس الارتفاع، والقائمة تتمدد فيبقى زر الباقة في الأسفل
+         على خط واحد في البطاقات كلها. */
+      display: flex;
+      flex-direction: column;
+    }
+
+    .feature-card ul {
+      flex: 1 1 auto;
+    }
+
+    .feature-card .waitlist-btn {
+      margin-top: 1.5rem;
+      align-self: stretch;
+      text-align: center;
     }
     
     /* Gradient Border Effect */
@@ -535,7 +549,7 @@
           <ul>
             <li data-i18n="planTrialMembers">حتى 5 أعضاء</li>
             <li data-i18n="planTrialItems">حتى 2,000 عنصر متتبع</li>
-            <li data-i18n="planTrialChannels">جميع قنوات التنبيه: البريد الإلكتروني وتيليغرام وواتساب والرسائل النصية</li>
+            <li data-i18n="planTrialChannels">تنبيهات على تيليغرام</li>
             <li data-i18n="planTrialImports">استيراد غير محدود لملفات إكسل</li>
             <li data-i18n="planTrialCalendar">تقويم ICS وتقويم جوجل</li>
             <li data-i18n="planTrialSupport">الدعم عبر البريد الإلكتروني</li>
@@ -548,7 +562,7 @@
           <ul>
             <li data-i18n="planMonthlyMembers">حتى 5 أعضاء</li>
             <li data-i18n="planMonthlyItems">حتى 2,000 عنصر متتبع</li>
-            <li data-i18n="planMonthlyChannels">جميع قنوات التنبيه: البريد الإلكتروني وتيليغرام وواتساب والرسائل النصية</li>
+            <li data-i18n="planMonthlyChannels">تنبيهات على تيليغرام والبريد الإلكتروني</li>
             <li data-i18n="planMonthlyImports">استيراد غير محدود لملفات إكسل</li>
             <li data-i18n="planMonthlyCalendar">تقويم ICS وتقويم جوجل</li>
             <li data-i18n="planMonthlySupport">الدعم عبر البريد الإلكتروني</li>
@@ -562,7 +576,7 @@
           <ul>
             <li data-i18n="planYearlyMembers">حتى 15 عضواً</li>
             <li data-i18n="planYearlyItems">حتى 20,000 عنصر متتبع</li>
-            <li data-i18n="planYearlyChannels">جميع قنوات التنبيه: البريد الإلكتروني وتيليغرام وواتساب والرسائل النصية</li>
+            <li data-i18n="planYearlyChannels">تنبيهات على تيليغرام والبريد الإلكتروني</li>
             <li data-i18n="planYearlyImports">استيراد غير محدود لملفات إكسل</li>
             <li data-i18n="planYearlyCalendar">تقويم ICS وتقويم جوجل</li>
             <li data-i18n="planYearlySupport">دعم ذو أولوية</li>
@@ -624,7 +638,7 @@
         planTrialNote: "بكل المزايا وبلا بطاقة بنكية. بعد 14 يوماً اختر الباقة الشهرية أو السنوية للاستمرار.",
         planTrialMembers: "حتى 5 أعضاء",
         planTrialItems: "حتى 2,000 عنصر متتبع",
-        planTrialChannels: "جميع قنوات التنبيه: البريد الإلكتروني وتيليغرام وواتساب والرسائل النصية",
+        planTrialChannels: "تنبيهات على تيليغرام",
         planTrialImports: "استيراد غير محدود لملفات إكسل",
         planTrialCalendar: "تقويم ICS وتقويم جوجل",
         planTrialSupport: "الدعم عبر البريد الإلكتروني",
@@ -634,7 +648,7 @@
         planMonthlyPeriod: "/ شهرياً",
         planMonthlyMembers: "حتى 5 أعضاء",
         planMonthlyItems: "حتى 2,000 عنصر متتبع",
-        planMonthlyChannels: "جميع قنوات التنبيه: البريد الإلكتروني وتيليغرام وواتساب والرسائل النصية",
+        planMonthlyChannels: "تنبيهات على تيليغرام والبريد الإلكتروني",
         planMonthlyImports: "استيراد غير محدود لملفات إكسل",
         planMonthlyCalendar: "تقويم ICS وتقويم جوجل",
         planMonthlySupport: "الدعم عبر البريد الإلكتروني",
@@ -644,7 +658,7 @@
         planYearlyNote: "أي ما يعادل شهرين مجاناً مقارنة بالاشتراك الشهري.",
         planYearlyMembers: "حتى 15 عضواً",
         planYearlyItems: "حتى 20,000 عنصر متتبع",
-        planYearlyChannels: "جميع قنوات التنبيه: البريد الإلكتروني وتيليغرام وواتساب والرسائل النصية",
+        planYearlyChannels: "تنبيهات على تيليغرام والبريد الإلكتروني",
         planYearlyImports: "استيراد غير محدود لملفات إكسل",
         planYearlyCalendar: "تقويم ICS وتقويم جوجل",
         planYearlySupport: "دعم ذو أولوية",
@@ -687,7 +701,7 @@
         planTrialNote: "Every feature, no credit card. After 14 days pick the monthly or yearly plan to continue.",
         planTrialMembers: "Up to 5 members",
         planTrialItems: "Up to 2,000 tracked items",
-        planTrialChannels: "All reminder channels: email, Telegram, WhatsApp and SMS",
+        planTrialChannels: "Telegram reminders",
         planTrialImports: "Unlimited Excel imports",
         planTrialCalendar: "ICS calendar and Google Calendar",
         planTrialSupport: "Email support",
@@ -697,7 +711,7 @@
         planMonthlyPeriod: "/ month",
         planMonthlyMembers: "Up to 5 members",
         planMonthlyItems: "Up to 2,000 tracked items",
-        planMonthlyChannels: "All reminder channels: email, Telegram, WhatsApp and SMS",
+        planMonthlyChannels: "Telegram and email reminders",
         planMonthlyImports: "Unlimited Excel imports",
         planMonthlyCalendar: "ICS calendar and Google Calendar",
         planMonthlySupport: "Email support",
@@ -707,7 +721,7 @@
         planYearlyNote: "Equivalent to two months free compared with the monthly plan.",
         planYearlyMembers: "Up to 15 members",
         planYearlyItems: "Up to 20,000 tracked items",
-        planYearlyChannels: "All reminder channels: email, Telegram, WhatsApp and SMS",
+        planYearlyChannels: "Telegram and email reminders",
         planYearlyImports: "Unlimited Excel imports",
         planYearlyCalendar: "ICS calendar and Google Calendar",
         planYearlySupport: "Priority support",
@@ -750,7 +764,7 @@
         planTrialNote: "Toutes les fonctionnalités, sans carte bancaire. Après 14 jours, choisissez le forfait mensuel ou annuel pour continuer.",
         planTrialMembers: "Jusqu'à 5 membres",
         planTrialItems: "Jusqu'à 2 000 éléments suivis",
-        planTrialChannels: "Tous les canaux de rappel : e-mail, Telegram, WhatsApp et SMS",
+        planTrialChannels: "Rappels sur Telegram",
         planTrialImports: "Imports Excel illimités",
         planTrialCalendar: "Calendrier ICS et Google Agenda",
         planTrialSupport: "Assistance par e-mail",
@@ -760,7 +774,7 @@
         planMonthlyPeriod: "/ mois",
         planMonthlyMembers: "Jusqu'à 5 membres",
         planMonthlyItems: "Jusqu'à 2 000 éléments suivis",
-        planMonthlyChannels: "Tous les canaux de rappel : e-mail, Telegram, WhatsApp et SMS",
+        planMonthlyChannels: "Rappels sur Telegram et par e-mail",
         planMonthlyImports: "Imports Excel illimités",
         planMonthlyCalendar: "Calendrier ICS et Google Agenda",
         planMonthlySupport: "Assistance par e-mail",
@@ -770,7 +784,7 @@
         planYearlyNote: "Soit deux mois gratuits par rapport au forfait mensuel.",
         planYearlyMembers: "Jusqu'à 15 membres",
         planYearlyItems: "Jusqu'à 20 000 éléments suivis",
-        planYearlyChannels: "Tous les canaux de rappel : e-mail, Telegram, WhatsApp et SMS",
+        planYearlyChannels: "Rappels sur Telegram et par e-mail",
         planYearlyImports: "Imports Excel illimités",
         planYearlyCalendar: "Calendrier ICS et Google Agenda",
         planYearlySupport: "Assistance prioritaire",
@@ -813,7 +827,7 @@
         planTrialNote: "تمام خصوصیات، کریڈٹ کارڈ کے بغیر۔ 14 دن کے بعد جاری رکھنے کے لیے ماہانہ یا سالانہ پلان منتخب کریں۔",
         planTrialMembers: "5 اراکین تک",
         planTrialItems: "2,000 ٹریک شدہ آئٹمز تک",
-        planTrialChannels: "تمام یاد دہانی چینلز: ای میل، ٹیلیگرام، واٹس ایپ اور SMS",
+        planTrialChannels: "ٹیلیگرام پر یاد دہانیاں",
         planTrialImports: "لامحدود ایکسل امپورٹس",
         planTrialCalendar: "ICS کیلنڈر اور گوگل کیلنڈر",
         planTrialSupport: "ای میل سپورٹ",
@@ -823,7 +837,7 @@
         planMonthlyPeriod: "/ ماہ",
         planMonthlyMembers: "5 اراکین تک",
         planMonthlyItems: "2,000 ٹریک شدہ آئٹمز تک",
-        planMonthlyChannels: "تمام یاد دہانی چینلز: ای میل، ٹیلیگرام، واٹس ایپ اور SMS",
+        planMonthlyChannels: "ٹیلیگرام اور ای میل پر یاد دہانیاں",
         planMonthlyImports: "لامحدود ایکسل امپورٹس",
         planMonthlyCalendar: "ICS کیلنڈر اور گوگل کیلنڈر",
         planMonthlySupport: "ای میل سپورٹ",
@@ -833,7 +847,7 @@
         planYearlyNote: "ماہانہ پلان کے مقابلے میں دو ماہ مفت کے برابر۔",
         planYearlyMembers: "15 اراکین تک",
         planYearlyItems: "20,000 ٹریک شدہ آئٹمز تک",
-        planYearlyChannels: "تمام یاد دہانی چینلز: ای میل، ٹیلیگرام، واٹس ایپ اور SMS",
+        planYearlyChannels: "ٹیلیگرام اور ای میل پر یاد دہانیاں",
         planYearlyImports: "لامحدود ایکسل امپورٹس",
         planYearlyCalendar: "ICS کیلنڈر اور گوگل کیلنڈر",
         planYearlySupport: "ترجیحی سپورٹ",

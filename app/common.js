@@ -744,7 +744,7 @@
         tracker_id: r.tracker_id || null,
         item_id: r.item_id || null,
         offset_minutes: Number(r.offset_minutes) || 1440,
-        channels: (r.channels && r.channels.length) ? r.channels : ["email"],
+        channels: (r.channels && r.channels.length) ? r.channels : ["telegram"],
         target: r.target === "all" ? "all" : "assignee"
       };
       if (!row.tracker_id && !row.item_id) throw new Error("tracker_id or item_id required");

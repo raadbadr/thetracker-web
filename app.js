@@ -328,11 +328,11 @@
     if (!width) width = 320;
     return {
       type: "standard",
-      theme: document.documentElement.getAttribute("data-theme") === "light" ? "outline" : "filled_black",
+      theme: "outline",              /* زر جوجل الأبيض الرسمي — أوضح على البطاقة الداكنة */
       size: "large",
-      text: "continue_with",
-      shape: "pill",
-      logo_alignment: "center",
+      text: "signin_with",           /* "تسجيل الدخول باستخدام Google" بالعربية */
+      shape: "rectangular",
+      logo_alignment: "left",
       locale: currentLang(),
       width: Math.max(200, Math.min(400, width))
     };

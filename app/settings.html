@@ -1311,8 +1311,9 @@
       }
 
       function allowedChannels() {
-        var list = state.limits && Array.isArray(state.limits.channels) ? state.limits.channels : ["email"];
-        return list.indexOf("email") === -1 ? ["email"].concat(list) : list;
+        /* القنوات تأتي من حدود الباقة: التجريبية تيليغرام فقط، والمدفوعة تيليغرام والبريد. */
+        var list = state.limits && Array.isArray(state.limits.channels) ? state.limits.channels : ["telegram"];
+        return list.length ? list : ["telegram"];
       }
 
       function planAllows(channel) {
@@ -1602,7 +1603,7 @@
         state.trackers.forEach(function (tracker) {
           var rule = ruleForTracker(tracker.id);
           var offset = rule ? Number(rule.offset_minutes) || 1440 : 1440;
-          var channels = rule && Array.isArray(rule.channels) ? rule.channels : ["email"];
+          var channels = rule && Array.isArray(rule.channels) ? rule.channels : ["telegram"];
           var target = rule && rule.target === "all" ? "all" : "assignee";
           var offsets = OFFSETS.slice();
           if (offsets.indexOf(offset) === -1) offsets.push(offset);
@@ -1653,7 +1654,7 @@
           row.querySelectorAll(".rule-channel").forEach(function (cb) {
             if (cb.checked && !cb.disabled && allowed.indexOf(cb.value) !== -1) channels.push(cb.value);
           });
-          if (!channels.length) channels = ["email"];
+          if (!channels.length) channels = ["telegram"];
           btn.disabled = true;
           app.saveRule({
             id: ruleId,
@@ -1738,10 +1739,10 @@
           state.plans = res[1] || [];
           state.sub = res[2] || null;
           var plan = currentPlan();
-          state.limits = plan && plan.limits ? plan.limits : { channels: ["email"] };
+          state.limits = plan && plan.limits ? plan.limits : { channels: ["telegram"] };
           renderSubscription();
         }).catch(function (err) {
-          state.limits = { channels: ["email"] };
+          state.limits = { channels: ["telegram"] };
           el("planSummary").innerHTML = '<li><span class="waitlist-msg error">' + esc(errorMessage(err)) + "</span></li>";
         });
       }
@@ -1769,7 +1770,7 @@
         var name = plan ? (plan["name_" + code] || plan.name_en || plan.code) : state.planCode;
         var limits = (plan && plan.limits) || {};
         var expiresAt = (state.sub && state.sub.expires_at) || app.org.plan_expires_at || null;
-        var channelNames = (Array.isArray(limits.channels) ? limits.channels : ["email"]).map(function (ch) {
+        var channelNames = (Array.isArray(limits.channels) ? limits.channels : ["telegram"]).map(function (ch) {
           return t(CHANNEL_KEYS[ch] || ch);
         }).join("، ");
         list.innerHTML =
@@ -1850,8 +1851,8 @@
     })();
   </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
-<script src="/app.js?v=1" defer></script>
-<script src="/app/common.js?v=1" defer></script>
+<script src="/app.js?v=2" defer></script>
+<script src="/app/common.js?v=2" defer></script>
 <script src="/brand-logo.js?v=4" defer></script>
 </body>
 </html>

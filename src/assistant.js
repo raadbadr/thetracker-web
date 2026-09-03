@@ -38,12 +38,12 @@ function supaHeaders(env) {
 // --- حقائق ثابتة عن المنصة (تُعدَّل هنا فقط) ------------------------------
 const PLANS = [
   { code: "trial", name_ar: "التجريبية", name_en: "Trial", price_monthly_sar: 0, price_yearly_sar: 0, trial_days: 14,
-    members: 5, items: 2000, channels: ["email", "telegram", "whatsapp", "sms"], excel_imports_per_month: null, calendar: ["ics", "google"],
+    members: 5, items: 2000, channels: ["telegram"], excel_imports_per_month: null, calendar: ["ics", "google"],
     note_ar: "14 يوماً بكل المزايا وبلا بطاقة بنكية، ولا تتجدد تلقائياً" },
   { code: "monthly", name_ar: "شهري", name_en: "Monthly", price_monthly_sar: 49, price_yearly_sar: null,
-    members: 5, items: 2000, channels: ["email", "telegram", "whatsapp", "sms"], excel_imports_per_month: null, calendar: ["ics", "google"] },
+    members: 5, items: 2000, channels: ["telegram", "email"], excel_imports_per_month: null, calendar: ["ics", "google"] },
   { code: "yearly", name_ar: "سنوي", name_en: "Yearly", price_monthly_sar: null, price_yearly_sar: 490,
-    members: 15, items: 20000, channels: ["email", "telegram", "whatsapp", "sms"], excel_imports_per_month: null, calendar: ["ics", "google"], priority_support: true },
+    members: 15, items: 20000, channels: ["telegram", "email"], excel_imports_per_month: null, calendar: ["ics", "google"], priority_support: true },
 ];
 
 function toolAppInfo() {
@@ -58,7 +58,7 @@ function toolAppInfo() {
       "ارفع ملف إكسل وطابق الأعمدة (العنوان، التاريخ، المسؤول)",
       "تظهر العناصر في قائمة وتقويم، ويُعطى لك رابط ICS لتقويم آبل وجوجل وأوتلوك",
       "ادعُ زملاءك وأسند العناصر لهم",
-      "اربط قنواتك (بريد، تيليغرام، واتساب، SMS) لتصلك التنبيهات قبل الاستحقاق",
+      "اربط تيليغرام (وفي الباقات المدفوعة البريد الإلكتروني أيضاً) لتصلك التنبيهات قبل الاستحقاق",
     ],
     payment: "لا توجد باقة مجانية دائمة: تبدأ كل شركة بفترة تجريبية 14 يوماً بكل المزايا، ثم تشترك شهرياً أو سنوياً. الاشتراكات تُفعَّل حالياً بالتواصل مع الدعم؛ بوابة الدفع الإلكتروني قادمة.",
   };
@@ -103,7 +103,7 @@ async function callTool(name, args, env) {
 }
 
 function assistantSystemPrompt() {
-  return `أنت مساعد TheTracker الرسمي على موقع appmails.net — منصة لتتبع عقود الشركات وتراخيصها ومهامها من ملف إكسل، مع تقويم وتنبيهات على البريد وواتساب وتيليغرام وSMS.
+  return `أنت مساعد TheTracker الرسمي على موقع appmails.net — منصة لتتبع عقود الشركات وتراخيصها ومهامها من ملف إكسل، مع تقويم وتنبيهات على تيليغرام والبريد الإلكتروني.
 
 قواعدك:
 - أجب بلغة رسالة الزائر (عربية فصحى، إنجليزية، فرنسية، أو أردو).

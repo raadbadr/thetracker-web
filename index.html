@@ -12,7 +12,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- أيقونات «أرقام المنصة»: Bootstrap Icons (MIT، يتطلب الإبقاء على إشعار الترخيص عند إعادة التوزيع) — https://github.com/twbs/icons/blob/main/LICENSE -->
-  <meta name="description" content="TheTracker - تتبع عقود شركتك وتراخيصها ومهامها من ملف إكسل، مع تقويم وتنبيهات على البريد وواتساب وتيليغرام.">
+  <meta name="description" content="TheTracker - تتبع عقود شركتك وتراخيصها ومهامها من ملف إكسل، مع تقويم وتنبيهات على تيليغرام والبريد الإلكتروني.">
   <link rel="canonical" href="https://appmails.net/">
   <link rel="alternate" hreflang="ar" href="https://appmails.net/">
   <link rel="alternate" hreflang="en" href="https://appmails.net/">
@@ -41,7 +41,7 @@
     "@type": "WebApplication",
     "name": "TheTracker",
     "alternateName": "TheTracker",
-    "description": "منصة لتتبع عقود الشركات وتراخيصها ومهامها من ملف إكسل، مع تقويم وتنبيهات على البريد وواتساب وتيليغرام.",
+    "description": "منصة لتتبع عقود الشركات وتراخيصها ومهامها من ملف إكسل، مع تقويم وتنبيهات على تيليغرام والبريد الإلكتروني.",
     "url": "https://appmails.net",
     "image": "https://appmails.net/logo.png",
     "applicationCategory": "BusinessApplication",
@@ -2839,8 +2839,8 @@
         <div class="platform-stat-detail" id="platformStatDetailNotifs" hidden>
           <div class="platform-stat-detail-row"><span data-i18n="statNotifEmail">بريد إلكتروني</span><span class="platform-stat-detail-val" id="statNotifEmail">0</span></div>
           <div class="platform-stat-detail-row"><span data-i18n="statNotifTelegram">تيليغرام</span><span class="platform-stat-detail-val" id="statNotifTelegram">0</span></div>
-          <div class="platform-stat-detail-row"><span data-i18n="statNotifWhatsapp">واتساب</span><span class="platform-stat-detail-val" id="statNotifWhatsapp">0</span></div>
-          <div class="platform-stat-detail-row"><span data-i18n="statNotifSms">رسائل SMS</span><span class="platform-stat-detail-val" id="statNotifSms">0</span></div>
+          <div class="platform-stat-detail-row" hidden><span data-i18n="statNotifWhatsapp">واتساب</span><span class="platform-stat-detail-val" id="statNotifWhatsapp">0</span></div>
+          <div class="platform-stat-detail-row" hidden><span data-i18n="statNotifSms">رسائل SMS</span><span class="platform-stat-detail-val" id="statNotifSms">0</span></div>
         </div>
       </div>
     </div>
@@ -2878,7 +2878,7 @@
           </svg>
         </div>
         <h3 data-i18n="f3">تنبيهات قبل الموعد</h3>
-        <p data-i18n="f3p">تصلك على البريد وواتساب وتيليغرام وSMS قبل الاستحقاق بالوقت الذي تحدده</p>
+        <p data-i18n="f3p">تصلك على تيليغرام والبريد الإلكتروني قبل الاستحقاق بالوقت الذي تحدده</p>
       </div>
     </div>
 
@@ -3019,7 +3019,7 @@
         f2: "تقويم لكل استحقاق",
         f2p: "العقود والتراخيص والمهام على تقويم واحد يعمل مع آبل وجوجل وأوتلوك",
         f3: "تنبيهات قبل الموعد",
-        f3p: "تصلك على البريد وواتساب وتيليغرام وSMS قبل الاستحقاق بالوقت الذي تحدده",
+        f3p: "تصلك على تيليغرام والبريد الإلكتروني قبل الاستحقاق بالوقت الذي تحدده",
         providerTitle: "للفرق والشركات",
         p1: "زملاء العمل",
         p1p: "ادعُ فريقك، وأسند كل عنصر لمسؤوله، فيصله تنبيهه هو",
@@ -3066,7 +3066,7 @@
         chatAssistantPlaceholder: "اكتب سؤالك...",
         chatAssistantSuggest1: "كيف أرفع ملف إكسل؟",
         chatAssistantSuggest2: "ما الفرق بين الباقات؟",
-        chatAssistantSuggest3: "كيف تصلني التنبيهات على واتساب؟",
+        chatAssistantSuggest3: "كيف تصلني التنبيهات على تيليغرام؟",
         chatContactSupportBtn: "التواصل مع الدعم",
         chatAssistantUnavailable: "المساعد الذكي غير متاح حالياً، سأحوّلك لفريق الدعم.",
         chatAssistantError: "تعذر الرد الآن. حاول مجدداً أو تواصل مع الدعم.",
@@ -3106,7 +3106,7 @@
         f2: "A calendar for every due date",
         f2p: "Contracts, licenses and tasks on one calendar that works with Apple, Google and Outlook",
         f3: "Alerts before the deadline",
-        f3p: "Delivered by email, WhatsApp, Telegram and SMS, as far ahead of the due date as you choose",
+        f3p: "Delivered on Telegram and by email, as far ahead of the due date as you choose",
         providerTitle: "For teams and companies",
         p1: "Teammates",
         p1p: "Invite your team, assign each item to its owner, and they get their own alerts",
@@ -3153,7 +3153,7 @@
         chatAssistantPlaceholder: "Type your question...",
         chatAssistantSuggest1: "How do I upload an Excel file?",
         chatAssistantSuggest2: "What's the difference between the plans?",
-        chatAssistantSuggest3: "How do I get alerts on WhatsApp?",
+        chatAssistantSuggest3: "How do I get alerts on Telegram?",
         chatContactSupportBtn: "Contact support",
         chatAssistantUnavailable: "The smart assistant is currently unavailable, I'll connect you with the support team.",
         chatAssistantError: "Couldn't reply right now. Try again or contact support.",
@@ -3193,7 +3193,7 @@
         f2: "Un calendrier pour chaque échéance",
         f2p: "Contrats, licences et tâches sur un seul calendrier compatible avec Apple, Google et Outlook",
         f3: "Alertes avant l'échéance",
-        f3p: "Recevez-les par e-mail, WhatsApp, Telegram et SMS, avec l'avance que vous choisissez",
+        f3p: "Recevez-les sur Telegram et par e-mail, avec l'avance que vous choisissez",
         providerTitle: "Pour les équipes et les entreprises",
         p1: "Collègues de travail",
         p1p: "Invitez votre équipe, attribuez chaque élément à son responsable, et c'est lui qui reçoit l'alerte",
@@ -3240,7 +3240,7 @@
         chatAssistantPlaceholder: "Écrivez votre question...",
         chatAssistantSuggest1: "Comment importer un fichier Excel ?",
         chatAssistantSuggest2: "Quelle est la différence entre les forfaits ?",
-        chatAssistantSuggest3: "Comment recevoir les alertes sur WhatsApp ?",
+        chatAssistantSuggest3: "Comment recevoir les alertes sur Telegram ?",
         chatContactSupportBtn: "Contacter le support",
         chatAssistantUnavailable: "L'assistant intelligent est indisponible pour le moment, je vous transfère à l'équipe support.",
         chatAssistantError: "Impossible de répondre pour l'instant. Réessayez ou contactez le support.",
@@ -3280,7 +3280,7 @@
         f2: "ہر ڈیڈ لائن کے لیے کیلنڈر",
         f2p: "معاہدے، لائسنس اور کام ایک ہی کیلنڈر پر، جو ایپل، گوگل اور آؤٹ لک کے ساتھ کام کرتا ہے",
         f3: "وقت سے پہلے اطلاعات",
-        f3p: "ای میل، واٹس ایپ، ٹیلیگرام اور SMS پر آپ کو ڈیڈ لائن سے اتنا پہلے موصول ہوں جتنا وقت آپ مقرر کریں",
+        f3p: "ٹیلیگرام اور ای میل پر آپ کو ڈیڈ لائن سے اتنا پہلے موصول ہوں جتنا وقت آپ مقرر کریں",
         providerTitle: "ٹیموں اور کمپنیوں کے لیے",
         p1: "ٹیم کے ساتھی",
         p1p: "اپنی ٹیم کو مدعو کریں، ہر آئٹم اس کے ذمہ دار کو سونپیں، اور اطلاع براہِ راست اسی کو ملے گی",
@@ -3327,7 +3327,7 @@
         chatAssistantPlaceholder: "اپنا سوال لکھیں...",
         chatAssistantSuggest1: "میں ایکسل فائل کیسے اپ لوڈ کروں؟",
         chatAssistantSuggest2: "پیکجز میں کیا فرق ہے؟",
-        chatAssistantSuggest3: "مجھے واٹس ایپ پر اطلاعات کیسے ملیں گی؟",
+        chatAssistantSuggest3: "مجھے ٹیلیگرام پر اطلاعات کیسے ملیں گی؟",
         chatContactSupportBtn: "سپورٹ سے رابطہ کریں",
         chatAssistantUnavailable: "ذہین معاون فی الحال دستیاب نہیں، میں آپ کو سپورٹ ٹیم سے ملا رہا ہوں۔",
         chatAssistantError: "ابھی جواب دینا ممکن نہیں۔ دوبارہ کوشش کریں یا سپورٹ سے رابطہ کریں۔",
@@ -4132,7 +4132,7 @@
     }
   </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
-<script src="/app.js?v=1" defer></script>
+<script src="/app.js?v=2" defer></script>
 <script src="/brand-logo.js?v=4" defer></script>
 </body>
 </html>
