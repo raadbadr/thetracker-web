@@ -93,8 +93,20 @@
 
   /* ---------- client bootstrap ---------- */
 
+  /* الوجهة بعد الدخول: المسار المطلوب في ?next= إن كان مساراً داخلياً آمناً
+     تحت /app/ (تضعه common.js عند حراسة الصفحات)، وإلا لوحة التحكم. */
+  function nextPath() {
+    try {
+      var n = new URLSearchParams(window.location.search).get("next") || "";
+      if (/^\/app\/[A-Za-z0-9._\-\/]*$/.test(n) && n.indexOf("//") === -1 && n.indexOf("..") === -1) {
+        return n;
+      }
+    } catch (e) { /* متصفح قديم بلا URLSearchParams */ }
+    return DASHBOARD_PATH;
+  }
+
   function redirectUrl() {
-    return window.location.origin + DASHBOARD_PATH;
+    return window.location.origin + nextPath();
   }
 
   function unavailableError() {
@@ -198,7 +210,7 @@
     }).then(unwrap).then(function (data) {
       if (data && data.session) {
         auth.session = data.session;
-        window.location.href = DASHBOARD_PATH;
+        window.location.href = nextPath();
       }
       return data;
     });
@@ -385,10 +397,10 @@
         return;
       }
       auth.client.auth.onAuthStateChange(function (event, session) {
-        if (session && event === "SIGNED_IN") window.location.replace(DASHBOARD_PATH);
+        if (session && event === "SIGNED_IN") window.location.replace(nextPath());
       });
       return auth.getSession().then(function (session) {
-        if (session) window.location.replace(DASHBOARD_PATH);
+        if (session) window.location.replace(nextPath());
       });
     }).catch(function () { /* never block the page */ });
   }
