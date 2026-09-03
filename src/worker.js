@@ -35,7 +35,14 @@ const NO_CACHE = { cacheTtl: 0, cacheEverything: false };
 /** إعدادات العميل العامة — مفتاح anon عام بطبيعته (RLS هي الحماية)، لكنه لا يُكتب في الملفات. */
 function handleConfig(env) {
   if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) return json({ error: "not configured" }, 503);
-  return json({ supabaseUrl: env.SUPABASE_URL, supabaseAnonKey: env.SUPABASE_ANON_KEY });
+  return json({
+    supabaseUrl: env.SUPABASE_URL,
+    supabaseAnonKey: env.SUPABASE_ANON_KEY,
+    // معلومات عامة لربط القنوات (لا أسرار)
+    telegramBot: env.TELEGRAM_BOT_USERNAME || null,
+    whatsappNumber: env.WHATSAPP_PUBLIC_NUMBER || null,
+    smsEnabled: !!(env.SMS_PROVIDER),
+  });
 }
 
 /** أرقام المنصة — دالة SQL مجمّعة (SECURITY DEFINER) تعيد أعداداً فقط، بلا بيانات شركات. */
