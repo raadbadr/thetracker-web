@@ -41,9 +41,9 @@ const PLANS = [
     members: 5, items: 2000, channels: ["telegram"], excel_imports_per_month: null, calendar: ["ics", "google"],
     note_ar: "14 يوماً بكل المزايا وبلا بطاقة بنكية، ولا تتجدد تلقائياً" },
   { code: "monthly", name_ar: "شهري", name_en: "Monthly", price_monthly_sar: 49, price_yearly_sar: null,
-    members: 5, items: 2000, channels: ["telegram", "email"], excel_imports_per_month: null, calendar: ["ics", "google"] },
+    members: 5, items: 2000, channels: ["telegram"], excel_imports_per_month: null, calendar: ["ics", "google"] },
   { code: "yearly", name_ar: "سنوي", name_en: "Yearly", price_monthly_sar: null, price_yearly_sar: 490,
-    members: 15, items: 20000, channels: ["telegram", "email"], excel_imports_per_month: null, calendar: ["ics", "google"], priority_support: true },
+    members: 15, items: 20000, channels: ["telegram"], excel_imports_per_month: null, calendar: ["ics", "google"], priority_support: true },
 ];
 
 function toolAppInfo() {
@@ -52,13 +52,13 @@ function toolAppInfo() {
     url: "https://appmails.net",
     support_email: "support@appmails.net",
     languages: ["ar", "en", "fr", "ur"],
-    login_methods: ["google", "apple", "email_magic_link", "phone_otp"],
+    login_methods: ["google"],
     how_it_works: [
       "سجّل حسابك ثم أنشئ شركتك",
       "ارفع ملف إكسل وطابق الأعمدة (العنوان، التاريخ، المسؤول)",
       "تظهر العناصر في قائمة وتقويم، ويُعطى لك رابط ICS لتقويم آبل وجوجل وأوتلوك",
       "ادعُ زملاءك وأسند العناصر لهم",
-      "اربط تيليغرام (وفي الباقات المدفوعة البريد الإلكتروني أيضاً) لتصلك التنبيهات قبل الاستحقاق",
+      "اربط حسابك بتيليغرام لتصلك التنبيهات قبل الاستحقاق",
     ],
     payment: "لا توجد باقة مجانية دائمة: تبدأ كل شركة بفترة تجريبية 14 يوماً بكل المزايا، ثم تشترك شهرياً أو سنوياً. الاشتراكات تُفعَّل حالياً بالتواصل مع الدعم؛ بوابة الدفع الإلكتروني قادمة.",
   };
@@ -103,7 +103,7 @@ async function callTool(name, args, env) {
 }
 
 function assistantSystemPrompt() {
-  return `أنت مساعد TheTracker الرسمي على موقع appmails.net — منصة لتتبع عقود الشركات وتراخيصها ومهامها من ملف إكسل، مع تقويم وتنبيهات على تيليغرام والبريد الإلكتروني.
+  return `أنت مساعد TheTracker الرسمي على موقع appmails.net — منصة لتتبع عقود الشركات وتراخيصها ومهامها من ملف إكسل، مع تقويم وتنبيهات على تيليغرام.
 
 قواعدك:
 - أجب بلغة رسالة الزائر (عربية فصحى، إنجليزية، فرنسية، أو أردو).
@@ -215,7 +215,38 @@ export async function handleAssistantRequest(request, env) {
 // نفس الأدوات بصيغة OpenAI-style function calling التي يفهمها Workers AI.
 const WORKERS_AI_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 
+/* Workers AI لا يجيد استدعاء الأدوات، فنضع الحقائق كلها في التعليمات ونطلب
+   إجابة واحدة مباشرة. هكذا لا يخترع أزراراً ولا أسعاراً. */
+async function groundedSystemPrompt(env) {
+  let stats = {};
+  try { stats = await toolPlatformStats(env); } catch (e) { stats = {}; }
+  const facts = { plans: PLANS, app: toolAppInfo(), live_stats: stats };
+  return assistantSystemPrompt() +
+    "\n\nالحقائق المعتمدة (لا تخرج عنها ولا تخترع غيرها):\n" +
+    JSON.stringify(facts) +
+    "\n\nأسلوب الرد:\n" +
+    "- أجب عن سؤال الزائر مباشرة بجملتين أو ثلاث، بلا مقدمات ولا خواتيم مثل \"هل لديك أسئلة أخرى\".\n" +
+    "- لا تذكر اسم زر أو شاشة غير موجودة في الحقائق أعلاه؛ صف الخطوة بكلماتك.\n" +
+    "- إن كانت الرسالة تحية أو غير مفهومة: رحّب بسطر واحد ثم اعرض ثلاثة أمور تستطيع مساعدته فيها (الباقات، استيراد إكسل، التنبيهات).\n" +
+    "- إن لم تعرف الجواب من الحقائق: قل ذلك صراحة ووجّهه إلى support@appmails.net.";
+}
+
 async function workersAiAssistant(messages, env, headers) {
+  try {
+    const out = await env.AI.run(WORKERS_AI_MODEL, {
+      messages: [{ role: "system", content: await groundedSystemPrompt(env) }].concat(messages),
+      max_tokens: 700,
+      temperature: 0.3,
+    });
+    const reply = String((out && (out.response || out.result)) || "").trim();
+    if (reply) {
+      return new Response(JSON.stringify({ reply, engine: "workers-ai" }), { headers });
+    }
+  } catch (e) { /* نسقط إلى المسار القديم بالأدوات */ }
+  return workersAiAssistantWithTools(messages, env, headers);
+}
+
+async function workersAiAssistantWithTools(messages, env, headers) {
   const tools = TOOLS.map((t) => ({
     type: "function",
     function: { name: t.name, description: t.description, parameters: t.inputSchema },

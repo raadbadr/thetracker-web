@@ -628,6 +628,10 @@
           <button type="button" class="waitlist-btn" id="copyUrlBtn" data-i18n="copyUrlBtn">نسخ الرابط</button>
           <button type="button" class="chat-option-btn" id="regenerateBtn" data-i18n="regenerateBtn">إعادة توليد الرابط</button>
         </div>
+        <div class="chat-options" id="calendarLinks">
+          <a class="waitlist-btn" id="googleCalBtn" href="#" target="_blank" rel="noopener" data-i18n="addToGoogle">أضف إلى تقويم جوجل</a>
+          <a class="chat-option-btn" id="appleCalBtn" href="#" data-i18n="addToApple">أضف إلى تقويم آبل أو أوتلوك</a>
+        </div>
         <p class="waitlist-msg" id="calendarMsg" style="display:none" role="status" aria-live="polite"></p>
       </div>
 
@@ -635,7 +639,12 @@
       <div class="content" id="subscriptionCard">
         <h2 data-i18n="subscriptionTitle">الاشتراك</h2>
         <ul class="plan-limits" id="planSummary"></ul>
-        <a class="back-btn" id="upgradeLink" href="mailto:support@appmails.net" data-i18n="upgradeBtn">طلب ترقية</a>
+        <div class="waitlist-form" id="upgradeForm">
+          <select class="waitlist-input" id="upgradePlan"></select>
+          <button type="button" class="waitlist-btn" id="upgradeBtn" data-i18n="upgradeBtn">طلب ترقية</button>
+        </div>
+        <p class="waitlist-msg" id="upgradeMsg" style="display:none" role="status" aria-live="polite"></p>
+        <ul class="plan-limits" id="upgradeHistory"></ul>
       </div>
 
       <!-- (6) Sign out -->
@@ -751,6 +760,8 @@
         urlCopied: "تم نسخ الرابط.",
         copyFailed: "تعذّر النسخ، انسخ الرابط يدوياً.",
         regenerateBtn: "إعادة توليد الرابط",
+        addToGoogle: "أضف إلى تقويم جوجل",
+        addToApple: "أضف إلى تقويم آبل أو أوتلوك",
         regenerateConfirm: "سيتوقف الرابط القديم عن العمل. هل تريد المتابعة؟",
         calendarRegenerated: "تم توليد رابط جديد.",
         subscriptionTitle: "الاشتراك",
@@ -763,6 +774,11 @@
         limitImports: "عمليات الاستيراد شهرياً",
         unlimited: "غير محدود",
         upgradeBtn: "طلب ترقية",
+        upgradeSent: "أرسلنا طلبك، سيصلك التفعيل بعد المراجعة.",
+        reqStatus_pending: "قيد المراجعة",
+        reqStatus_approved: "مفعّل",
+        reqStatus_rejected: "مرفوض",
+        reqStatus_cancelled: "ملغى",
         upgradeSubject: "طلب ترقية الباقة",
         signOutTitle: "تسجيل الخروج",
         signOutText: "يمكنك تسجيل الدخول مرة أخرى في أي وقت.",
@@ -863,6 +879,8 @@
         urlCopied: "Link copied.",
         copyFailed: "Could not copy. Please copy the link manually.",
         regenerateBtn: "Regenerate link",
+        addToGoogle: "Add to Google Calendar",
+        addToApple: "Add to Apple Calendar or Outlook",
         regenerateConfirm: "The old link will stop working. Continue?",
         calendarRegenerated: "A new link was generated.",
         subscriptionTitle: "Subscription",
@@ -875,6 +893,11 @@
         limitImports: "Imports per month",
         unlimited: "Unlimited",
         upgradeBtn: "Request an upgrade",
+        upgradeSent: "Request sent. Your plan is activated once it is reviewed.",
+        reqStatus_pending: "Under review",
+        reqStatus_approved: "Activated",
+        reqStatus_rejected: "Rejected",
+        reqStatus_cancelled: "Cancelled",
         upgradeSubject: "Plan upgrade request",
         signOutTitle: "Sign out",
         signOutText: "You can sign in again at any time.",
@@ -975,6 +998,8 @@
         urlCopied: "Lien copié.",
         copyFailed: "Copie impossible. Veuillez copier le lien manuellement.",
         regenerateBtn: "Régénérer le lien",
+        addToGoogle: "Ajouter à Google Agenda",
+        addToApple: "Ajouter à Apple Calendar ou Outlook",
         regenerateConfirm: "L'ancien lien cessera de fonctionner. Continuer ?",
         calendarRegenerated: "Un nouveau lien a été généré.",
         subscriptionTitle: "Abonnement",
@@ -987,6 +1012,11 @@
         limitImports: "Importations par mois",
         unlimited: "Illimité",
         upgradeBtn: "Demander une mise à niveau",
+        upgradeSent: "Demande envoyée. Votre forfait sera activé après examen.",
+        reqStatus_pending: "En cours d'examen",
+        reqStatus_approved: "Activé",
+        reqStatus_rejected: "Refusé",
+        reqStatus_cancelled: "Annulé",
         upgradeSubject: "Demande de mise à niveau du forfait",
         signOutTitle: "Déconnexion",
         signOutText: "Vous pouvez vous reconnecter à tout moment.",
@@ -1087,6 +1117,8 @@
         urlCopied: "لنک کاپی ہو گیا۔",
         copyFailed: "کاپی نہیں ہو سکا، براہ کرم لنک خود کاپی کریں۔",
         regenerateBtn: "نیا لنک بنائیں",
+        addToGoogle: "گوگل کیلنڈر میں شامل کریں",
+        addToApple: "ایپل کیلنڈر یا آؤٹ لک میں شامل کریں",
         regenerateConfirm: "پرانا لنک کام کرنا بند کر دے گا۔ کیا آپ جاری رکھنا چاہتے ہیں؟",
         calendarRegenerated: "نیا لنک بن گیا۔",
         subscriptionTitle: "سبسکرپشن",
@@ -1099,6 +1131,11 @@
         limitImports: "ماہانہ امپورٹس",
         unlimited: "لامحدود",
         upgradeBtn: "اپ گریڈ کی درخواست",
+        upgradeSent: "درخواست بھیج دی گئی۔ جائزے کے بعد پلان فعال ہو جائے گا۔",
+        reqStatus_pending: "زیرِ جائزہ",
+        reqStatus_approved: "فعال",
+        reqStatus_rejected: "مسترد",
+        reqStatus_cancelled: "منسوخ",
         upgradeSubject: "پلان اپ گریڈ کی درخواست",
         signOutTitle: "سائن آؤٹ",
         signOutText: "آپ کسی بھی وقت دوبارہ سائن ان کر سکتے ہیں۔",
@@ -1491,6 +1528,12 @@
 
       function renderChannels() {
         if (!state.loaded) return;
+        /* لا نعرض إلا القنوات التي تسمح بها الباقة (حالياً تيليغرام وحده). */
+        var allowed = allowedChannels();
+        CHANNELS.forEach(function (ch) {
+          var card = document.getElementById(ch + "Card");
+          if (card) card.hidden = allowed.indexOf(ch) === -1;
+        });
         renderEmail();
         renderCoded("telegram");
         renderCoded("whatsapp");
@@ -1688,6 +1731,7 @@
         return app.calendarUrl().then(function (url) {
           state.calendarUrl = url;
           el("calendarUrl").value = url;
+          syncCalendarLinks(url);
         }).catch(function (err) {
           setMsg("calendarMsg", errorMessage(err), "error");
         });
@@ -1720,6 +1764,7 @@
         btn.disabled = true;
         app.regenerateCalendarToken().then(function (token) {
           state.calendarUrl = window.location.origin + "/api/calendar/" + token + ".ics";
+          syncCalendarLinks(state.calendarUrl);
           el("calendarUrl").value = state.calendarUrl;
           btn.disabled = false;
           setMsg("calendarMsg", t("calendarRegenerated"), "success");
@@ -1757,12 +1802,21 @@
         return String(v);
       }
 
+      /* اشتراك بنقرة واحدة: جوجل يقبل رابط ICS مباشرة، وآبل وأوتلوك عبر webcal. */
+      function syncCalendarLinks(url) {
+        if (!url) return;
+        var g = el("googleCalBtn");
+        var a = el("appleCalBtn");
+        if (g) g.href = "https://calendar.google.com/calendar/r?cid=" + encodeURIComponent(url);
+        if (a) a.href = url.replace(/^https?:/, "webcal:");
+      }
+
       function renderSubscription() {
         var list = el("planSummary");
-        var upgrade = el("upgradeLink");
         if (!app.org) {
           list.innerHTML = '<li><span class="waitlist-msg error">' + esc(t("noOrg")) + "</span></li>";
-          upgrade.href = "mailto:" + SUPPORT_EMAIL + "?subject=" + encodeURIComponent(t("upgradeSubject"));
+          var form = el("upgradeForm");
+          if (form) form.style.display = "none";
           return;
         }
         var plan = currentPlan();
@@ -1780,8 +1834,64 @@
           "<li><span>" + esc(t("limitItems")) + "</span><span>" + esc(limitText(limits.items)) + "</span></li>" +
           "<li><span>" + esc(t("limitChannels")) + "</span><span>" + esc(channelNames) + "</span></li>" +
           "<li><span>" + esc(t("limitImports")) + "</span><span>" + esc(limitText(limits.imports_per_month)) + "</span></li>";
-        upgrade.href = "mailto:" + SUPPORT_EMAIL + "?subject=" +
-          encodeURIComponent(t("upgradeSubject") + " - " + (app.org.name || "") + " (" + state.planCode + ")");
+        renderUpgrade();
+      }
+
+      /* ---------- طلب الترقية داخل الموقع ---------- */
+
+      var UPGRADE_PLANS = ["monthly", "yearly"];
+
+      function planLabel(code) {
+        var p = null;
+        for (var i = 0; i < (state.plans || []).length; i++) if (state.plans[i].code === code) p = state.plans[i];
+        if (!p) return code;
+        return p["name_" + lang()] || p.name_en || p.code;
+      }
+
+      function renderUpgrade() {
+        var sel = el("upgradePlan");
+        if (!sel) return;
+        var options = "";
+        UPGRADE_PLANS.forEach(function (code) {
+          if (code === state.planCode) return;
+          options += '<option value="' + code + '">' + esc(planLabel(code)) + "</option>";
+        });
+        sel.innerHTML = options;
+        el("upgradeForm").style.display = options ? "" : "none";
+        renderUpgradeHistory();
+      }
+
+      function renderUpgradeHistory() {
+        var box = el("upgradeHistory");
+        if (!box) return;
+        var reqs = state.planRequests || [];
+        if (!reqs.length) { box.innerHTML = ""; return; }
+        var html = "";
+        reqs.slice(0, 3).forEach(function (r) {
+          html += "<li><span>" + esc(planLabel(r.plan_code)) + " · " + esc(fmtDate(r.created_at)) + "</span>" +
+                  "<span>" + esc(t("reqStatus_" + r.status)) + "</span></li>";
+        });
+        box.innerHTML = html;
+      }
+
+      function loadPlanRequests() {
+        return app.planRequests().then(function (rows) {
+          state.planRequests = rows || [];
+          renderUpgradeHistory();
+        }).catch(function () { /* الطلبات ليست حرجة */ });
+      }
+
+      function submitUpgrade() {
+        var btn = el("upgradeBtn");
+        var sel = el("upgradePlan");
+        if (!app.org) { setMsg("upgradeMsg", t("noOrg"), "error"); return; }
+        btn.disabled = true;
+        app.requestPlan({ plan_code: sel.value }).then(function () {
+          setMsg("upgradeMsg", t("upgradeSent"), "success");
+          return loadPlanRequests();
+        }).catch(function () {
+          setMsg("upgradeMsg", t("genericError"), "error");
+        }).finally(function () { btn.disabled = false; });
       }
 
       /* ---------- sign out ---------- */
@@ -1829,6 +1939,8 @@
           el("channelsGrid").addEventListener("submit", onSmsSubmit);
           el("rulesWrap").addEventListener("click", onRuleAction);
           el("copyUrlBtn").addEventListener("click", copyCalendarUrl);
+          el("upgradeBtn").addEventListener("click", submitUpgrade);
+          loadPlanRequests();
           el("regenerateBtn").addEventListener("click", regenerateCalendar);
           el("signOutBtn").addEventListener("click", signOut);
 
@@ -1852,7 +1964,7 @@
   </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 <script src="/app.js?v=4" defer></script>
-<script src="/app/common.js?v=2" defer></script>
+<script src="/app/common.js?v=6" defer></script>
 <script src="/brand-logo.js?v=4" defer></script>
 </body>
 </html>

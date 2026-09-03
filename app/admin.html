@@ -496,6 +496,16 @@
       </div>
 
       <!-- (2) activate a subscription -->
+      <!-- طلبات الترقية المرسلة من داخل الموقع -->
+      <div class="content" id="requestsCard">
+        <h2 data-i18n="requestsTitle">طلبات الترقية</h2>
+        <div class="waitlist-form">
+          <button type="button" class="waitlist-btn" id="reqRefresh" data-i18n="refreshBtn">تحديث</button>
+        </div>
+        <p class="waitlist-msg" id="reqStatus" role="status" aria-live="polite" style="display:none"></p>
+        <div class="features-grid" id="reqGrid"></div>
+      </div>
+
       <div class="content" id="activateCard">
         <h2 data-i18n="activateTitle">تفعيل اشتراك</h2>
         <p class="login-intro" data-i18n="activateIntro">اختر الشركة والباقة والمدة ثم اضغط «تفعيل». يُسجَّل الاشتراك باسمك وتُحدَّث باقة الشركة فوراً.</p>
@@ -592,6 +602,18 @@
         colName: "الاسم",
         colEmail: "البريد الإلكتروني",
         colStatus: "الحالة",
+        requestsTitle: "طلبات الترقية",
+        requestsEmpty: "لا توجد طلبات.",
+        approveBtn: "موافقة وتفعيل",
+        rejectBtn: "رفض",
+        monthsLabel: "شهراً",
+        orgNameLabel: "الشركة",
+        savingReq: "جارٍ التنفيذ...",
+        savedReq: "تم التنفيذ.",
+        reqStatus_pending: "قيد المراجعة",
+        reqStatus_approved: "مفعّل",
+        reqStatus_rejected: "مرفوض",
+        reqStatus_cancelled: "ملغى",
         noSubject: "بدون موضوع",
         statusNew: "جديدة",
         statusRead: "مقروءة",
@@ -656,6 +678,18 @@
         colName: "Name",
         colEmail: "Email",
         colStatus: "Status",
+        requestsTitle: "Upgrade requests",
+        requestsEmpty: "No requests.",
+        approveBtn: "Approve & activate",
+        rejectBtn: "Reject",
+        monthsLabel: "months",
+        orgNameLabel: "Company",
+        savingReq: "Working...",
+        savedReq: "Done.",
+        reqStatus_pending: "Under review",
+        reqStatus_approved: "Activated",
+        reqStatus_rejected: "Rejected",
+        reqStatus_cancelled: "Cancelled",
         noSubject: "No subject",
         statusNew: "New",
         statusRead: "Read",
@@ -720,6 +754,18 @@
         colName: "Nom",
         colEmail: "E-mail",
         colStatus: "Statut",
+        requestsTitle: "Demandes de mise à niveau",
+        requestsEmpty: "Aucune demande.",
+        approveBtn: "Approuver et activer",
+        rejectBtn: "Refuser",
+        monthsLabel: "mois",
+        orgNameLabel: "Entreprise",
+        savingReq: "En cours...",
+        savedReq: "Terminé.",
+        reqStatus_pending: "En cours d'examen",
+        reqStatus_approved: "Activé",
+        reqStatus_rejected: "Refusé",
+        reqStatus_cancelled: "Annulé",
         noSubject: "Sans objet",
         statusNew: "Nouveau",
         statusRead: "Lu",
@@ -784,6 +830,18 @@
         colName: "نام",
         colEmail: "ای میل",
         colStatus: "حیثیت",
+        requestsTitle: "اپ گریڈ کی درخواستیں",
+        requestsEmpty: "کوئی درخواست نہیں۔",
+        approveBtn: "منظور کر کے فعال کریں",
+        rejectBtn: "مسترد",
+        monthsLabel: "مہینے",
+        orgNameLabel: "کمپنی",
+        savingReq: "جاری ہے...",
+        savedReq: "ہو گیا۔",
+        reqStatus_pending: "زیرِ جائزہ",
+        reqStatus_approved: "فعال",
+        reqStatus_rejected: "مسترد",
+        reqStatus_cancelled: "منسوخ",
         noSubject: "بغیر موضوع",
         statusNew: "نیا",
         statusRead: "پڑھا گیا",
@@ -1223,6 +1281,68 @@
           .then(() => { $("msgsRefresh").disabled = false; });
       }
 
+      /* ---------- طلبات الترقية ---------- */
+
+      let requests = [];
+      let reqsLoaded = false;
+
+      function requestCard(r) {
+        const org = (r.organizations && r.organizations.name) || r.org_id;
+        const pending = r.status === "pending";
+        const actions = pending
+          ? '<div class="chat-options" style="margin-top:0.75rem">' +
+            '<button type="button" class="waitlist-btn" data-req-approve="' + esc(r.id) + '">' + esc(T("approveBtn")) + '</button>' +
+            '<button type="button" class="chat-option-btn" data-req-reject="' + esc(r.id) + '">' + esc(T("rejectBtn")) + '</button>' +
+            '</div>'
+          : "";
+        return '<div class="feature-card">' +
+          row("orgNameLabel", esc(org)) +
+          row("colPlan", esc(planName(r.plan_code)) + " · " + esc(String(r.months)) + " " + esc(T("monthsLabel"))) +
+          row("colDate", esc(fmtDate(r.created_at, { withTime: true }))) +
+          row("colStatus", '<span class="highlight">' + esc(T("reqStatus_" + r.status)) + "</span>") +
+          actions + "</div>";
+      }
+
+      function renderRequests() {
+        const grid = $("reqGrid");
+        if (!grid) return;
+        if (!requests.length) {
+          grid.innerHTML = "";
+          setStatus($("reqStatus"), T("requestsEmpty"));
+          return;
+        }
+        setStatus($("reqStatus"), "");
+        grid.innerHTML = requests.map(requestCard).join("");
+      }
+
+      function loadRequests() {
+        setStatus($("reqStatus"), T("loading"));
+        $("reqRefresh").disabled = true;
+        return app.adminPlanRequests()
+          .then(rows => {
+            requests = rows || [];
+            reqsLoaded = true;
+            renderRequests();
+          })
+          .catch(err => { setStatus($("reqStatus"), T("loadError") + " " + (err && err.message ? err.message : ""), "error"); })
+          .then(() => { $("reqRefresh").disabled = false; });
+      }
+
+      function onRequestAction(ev) {
+        const approveBtn = ev.target.closest("[data-req-approve]");
+        const rejectBtn = ev.target.closest("[data-req-reject]");
+        const id = approveBtn ? approveBtn.dataset.reqApprove : (rejectBtn ? rejectBtn.dataset.reqReject : null);
+        if (!id) return;
+        const req = requests.filter(r => r.id === id)[0];
+        if (!req) return;
+        const approve = !!approveBtn;
+        (approveBtn || rejectBtn).disabled = true;
+        setStatus($("reqStatus"), T("savingReq"));
+        app.adminDecideRequest(req, approve)
+          .then(() => { setStatus($("reqStatus"), T("savedReq"), "success"); return Promise.all([loadRequests(), loadOrgs()]); })
+          .catch(err => { setStatus($("reqStatus"), T("loadError") + " " + (err && err.message ? err.message : ""), "error"); });
+      }
+
       /* ---------- wiring ---------- */
 
       function bind() {
@@ -1232,6 +1352,8 @@
         });
         $("orgsRefresh").addEventListener("click", () => { loadOrgs(); });
         $("msgsRefresh").addEventListener("click", () => { loadMessages(); });
+        $("reqRefresh").addEventListener("click", () => { loadRequests(); });
+        $("reqGrid").addEventListener("click", onRequestAction);
         $("actPlan").addEventListener("change", () => { $("actMonths").value = defaultMonthsFor($("actPlan").value); });
         $("activateForm").addEventListener("submit", onActivateSubmit);
       }
@@ -1240,6 +1362,7 @@
       window.__adminRefresh = function () {
         if (orgsLoaded) { renderOrgs(); renderActivateOptions(); }
         if (msgsLoaded) renderMessages();
+        if (reqsLoaded) renderRequests();
       };
 
       function boot() {
@@ -1252,6 +1375,7 @@
           bind();
           loadOrgs();
           loadMessages();
+          loadRequests();
         }).catch(() => { show("unavailableCard"); });
       }
 
@@ -1269,7 +1393,7 @@
   </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 <script src="/app.js?v=4" defer></script>
-<script src="/app/common.js?v=2" defer></script>
+<script src="/app/common.js?v=6" defer></script>
 <script src="/brand-logo.js?v=4" defer></script>
 </body>
 </html>

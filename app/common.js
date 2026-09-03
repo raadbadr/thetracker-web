@@ -878,6 +878,62 @@
     return !!(app.profile && app.profile.is_platform_admin);
   }
 
+  /* ---------- طلبات الترقية (داخل الموقع، بلا بريد) ---------- */
+
+  function requestPlan(input) {
+    return run(function (client) {
+      var a = input || {};
+      var orgId = requireOrg();
+      if (!a.plan_code) throw new Error("plan_code required");
+      var row = {
+        org_id: orgId,
+        plan_code: a.plan_code,
+        months: Number(a.months) || (a.plan_code === "yearly" ? 12 : 1),
+        note: a.note || null,
+        created_by: app.user.id
+      };
+      return client.from("plan_requests").insert(row).select("*").single().then(unwrap);
+    });
+  }
+
+  function planRequests() {
+    return run(function (client) {
+      var orgId = requireOrg();
+      return client.from("plan_requests").select("*").eq("org_id", orgId)
+        .order("created_at", { ascending: false }).limit(10).then(unwrap);
+    });
+  }
+
+  function cancelPlanRequest(id) {
+    return run(function (client) {
+      var orgId = requireOrg();
+      return client.from("plan_requests").update({ status: "cancelled" })
+        .eq("id", id).eq("org_id", orgId).eq("status", "pending").then(unwrap);
+    });
+  }
+
+  function adminPlanRequests() {
+    return run(function (client) {
+      return client.from("plan_requests").select("*, organizations(name)")
+        .order("created_at", { ascending: false }).limit(100).then(unwrap);
+    });
+  }
+
+  /* موافقة مدير المنصة: تفعيل الاشتراك ثم ختم الطلب. */
+  function adminDecideRequest(req, approve) {
+    if (!req || !req.id) return Promise.reject(new Error("request required"));
+    var finish = function () {
+      return run(function (client) {
+        return client.from("plan_requests")
+          .update({ status: approve ? "approved" : "rejected", decided_by: app.user.id, decided_at: new Date().toISOString() })
+          .eq("id", req.id).then(unwrap);
+      });
+    };
+    if (!approve) return finish();
+    return adminActivate({ org_id: req.org_id, plan_code: req.plan_code, months: req.months, note: "من طلب داخل الموقع" })
+      .then(finish);
+  }
+
   function adminListOrgs() {
     return run(function (client) {
       return client.from("organizations").select("*, subscriptions(*)")
@@ -927,6 +983,117 @@
   app.plans = plans;
   app.planLimits = planLimits;
   app.subscription = subscription;
+  /* ============================================================
+   * قائمة الخدمات الجانبية — تظهر في كل صفحات التطبيق بعد تسجيل الدخول،
+   * على اليمين في العربية والأردية وعلى اليسار في الإنجليزية والفرنسية.
+   * تُبنى هنا مرة واحدة بدل تكرارها في خمس صفحات.
+   * ============================================================ */
+
+  var NAV_ITEMS = [
+    { href: "/app/dashboard.html", path: "dashboard",
+      icon: '<path d="M4 13h6V4H4v9zm0 7h6v-5H4v5zm9 0h7v-9h-7v9zm0-16v5h7V4h-7z"/>',
+      labels: { ar: "لوحة التحكم", en: "Dashboard", fr: "Tableau de bord", ur: "ڈیش بورڈ" } },
+    { href: "/app/import.html", path: "import",
+      icon: '<path d="M19 12v7H5v-7H3v9h18v-9h-2zM11 3v10.17l-3.59-3.58L6 11l6 6 6-6-1.41-1.41L13 13.17V3h-2z"/>',
+      labels: { ar: "استيراد إكسل", en: "Excel import", fr: "Import Excel", ur: "ایکسل درآمد" } },
+    { href: "/app/team.html", path: "team",
+      icon: '<path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>',
+      labels: { ar: "الفريق", en: "Team", fr: "Équipe", ur: "ٹیم" } },
+    { href: "/app/settings.html", path: "settings",
+      icon: '<path d="M19.14 12.94a7.07 7.07 0 000-1.88l2.03-1.58a.5.5 0 00.12-.64l-1.92-3.32a.5.5 0 00-.61-.22l-2.39.96a7.03 7.03 0 00-1.62-.94l-.36-2.54a.5.5 0 00-.5-.42h-3.84a.5.5 0 00-.5.42l-.36 2.54c-.58.24-1.12.56-1.62.94l-2.39-.96a.5.5 0 00-.61.22L2.65 8.84a.5.5 0 00.12.64l2.03 1.58a7.07 7.07 0 000 1.88l-2.03 1.58a.5.5 0 00-.12.64l1.92 3.32c.13.22.39.3.61.22l2.39-.96c.5.38 1.04.7 1.62.94l.36 2.54c.04.24.25.42.5.42h3.84c.25 0 .46-.18.5-.42l.36-2.54c.58-.24 1.12-.56 1.62-.94l2.39.96c.22.08.48 0 .61-.22l1.92-3.32a.5.5 0 00-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1112 8.5a3.5 3.5 0 010 7z"/>',
+      labels: { ar: "الإعدادات", en: "Settings", fr: "Paramètres", ur: "ترتیبات" } },
+    { href: "/app/admin.html", path: "admin", adminOnly: true,
+      icon: '<path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>',
+      labels: { ar: "إدارة المنصة", en: "Platform admin", fr: "Administration", ur: "پلیٹ فارم ایڈمن" } },
+  ];
+
+  var SIGN_OUT_LABELS = { ar: "تسجيل الخروج", en: "Sign out", fr: "Se déconnecter", ur: "سائن آؤٹ" };
+
+  var SIDEBAR_CSS = [
+    ".app-sidebar{position:fixed;inset-block:52px 0;inset-inline-start:0;width:232px;padding:1.25rem .85rem;",
+    "display:flex;flex-direction:column;gap:.35rem;z-index:40;overflow-y:auto;background:var(--glass);",
+    "-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-inline-end:1px solid var(--glass-border)}",
+    ".app-sidebar-title{font-size:.75rem;font-weight:700;letter-spacing:.04em;opacity:.6;padding:0 .6rem .5rem;color:var(--text-secondary)}",
+    ".app-sidebar a,.app-sidebar button{display:flex;align-items:center;justify-content:space-between;gap:.65rem;width:100%;padding:.7rem .8rem;border:0;border-radius:14px;",
+    "background:transparent;color:var(--text-secondary);font:inherit;font-size:.95rem;font-weight:600;text-decoration:none;cursor:pointer;text-align:start;",
+    "transition:all .25s cubic-bezier(.4,0,.2,1)}",
+    ".app-sidebar a:hover,.app-sidebar button:hover{background:var(--glass-border);color:var(--text-primary)}",
+    ".app-sidebar a.is-active{background:var(--primary);color:#fff;box-shadow:0 6px 18px var(--shadow-dark)}",
+    ".app-sidebar svg{width:20px;height:20px;flex:0 0 auto;fill:currentColor}",
+    ".app-sidebar-spacer{flex:1 1 auto}",
+    "body.has-app-sidebar .container{padding-inline-start:calc(232px + 1.5rem)}",
+    "@media(max-width:900px){.app-sidebar{position:static;inset:auto;width:auto;flex-direction:row;overflow-x:auto;",
+    "border-inline-end:0;border-bottom:1px solid var(--glass-border);padding:.6rem;gap:.4rem}",
+    ".app-sidebar-title,.app-sidebar-spacer{display:none}",
+    ".app-sidebar a,.app-sidebar button{width:auto;white-space:nowrap;padding:.55rem .75rem;font-size:.85rem}",
+    "body.has-app-sidebar .container{padding-inline-start:1rem}}"
+  ].join("");
+
+  function sidebarLabel(map) {
+    var l = lang();
+    return map[l] || map.ar;
+  }
+
+  function renderSidebar() {
+    var nav = document.getElementById("appSidebar");
+    if (!nav) return;
+    var here = String(window.location.pathname || "");
+    var html = '<div class="app-sidebar-title">' + escapeHtml(sidebarLabel({ ar: "الخدمات", en: "Services", fr: "Services", ur: "خدمات" })) + "</div>";
+    NAV_ITEMS.forEach(function (item) {
+      if (item.adminOnly && !nav.dataset.admin) return;
+      var active = here.indexOf("/" + item.path) !== -1 ? " is-active" : "";
+      html += '<a class="app-sidebar-link' + active + '" href="' + item.href + '">' +
+              "<span>" + escapeHtml(sidebarLabel(item.labels)) + "</span>" +
+              '<svg viewBox="0 0 24 24" aria-hidden="true">' + item.icon + "</svg></a>";
+    });
+    html += '<div class="app-sidebar-spacer"></div>';
+    html += '<button type="button" id="sidebarSignOut">' +
+            "<span>" + escapeHtml(sidebarLabel(SIGN_OUT_LABELS)) + "</span>" +
+            '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg></button>';
+    nav.innerHTML = html;
+    var out = document.getElementById("sidebarSignOut");
+    if (out) out.addEventListener("click", function () {
+      var auth = window.trackerAuth;
+      var done = function () { window.location.replace("/login"); };
+      if (auth && typeof auth.signOut === "function") auth.signOut().then(done, done);
+      else done();
+    });
+  }
+
+  function mountSidebar() {
+    if (document.getElementById("appSidebar")) return;
+    if (!/^\/app\//.test(String(window.location.pathname || ""))) return;
+    var style = document.createElement("style");
+    style.textContent = SIDEBAR_CSS;
+    document.head.appendChild(style);
+
+    var nav = document.createElement("nav");
+    nav.id = "appSidebar";
+    nav.className = "app-sidebar";
+    nav.setAttribute("aria-label", sidebarLabel({ ar: "قائمة الخدمات", en: "Services menu", fr: "Menu des services", ur: "خدمات کا مینو" }));
+    document.body.insertBefore(nav, document.body.firstChild);
+    document.body.classList.add("has-app-sidebar");
+
+    /* روابط الأعلى صارت مكررة مع القائمة الجانبية. */
+    var quick = document.getElementById("quickLinks");
+    if (quick) quick.hidden = true;
+
+    renderSidebar();
+
+    var ready = app && app.ready && typeof app.ready.then === "function" ? app.ready : null;
+    if (ready) ready.then(function () {
+      if (!isPlatformAdmin()) return;
+      nav.dataset.admin = "1";
+      renderSidebar();
+    }).catch(function () { /* الصفحة تتكفل بعرض الخطأ */ });
+
+    /* إعادة الرسم عند تغيير اللغة (setLang يغيّر lang/dir على <html>). */
+    if (typeof MutationObserver !== "undefined") {
+      new MutationObserver(function () { renderSidebar(); })
+        .observe(document.documentElement, { attributes: true, attributeFilter: ["lang", "dir"] });
+    }
+  }
+
   app.listTrackers = listTrackers;
   app.createTracker = createTracker;
   app.deleteTracker = deleteTracker;
@@ -957,6 +1124,11 @@
   app.regenerateCalendarToken = regenerateCalendarToken;
   app.updateProfile = updateProfile;
   app.isPlatformAdmin = isPlatformAdmin;
+  app.requestPlan = requestPlan;
+  app.planRequests = planRequests;
+  app.cancelPlanRequest = cancelPlanRequest;
+  app.adminPlanRequests = adminPlanRequests;
+  app.adminDecideRequest = adminDecideRequest;
   app.adminListOrgs = adminListOrgs;
   app.adminActivate = adminActivate;
   app.adminContactMessages = adminContactMessages;
@@ -968,4 +1140,11 @@
   app.escapeHtml = escapeHtml;
   app.randomCode = randomCode;
   app.unavailableMessage = unavailableMessage;
+
+  /* القائمة الجانبية تُركّب بعد اكتمال تعريف الواجهة، وأي خطأ فيها لا يوقف الصفحة. */
+  function bootSidebar() {
+    try { mountSidebar(); } catch (e) { /* تجاهل */ }
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bootSidebar);
+  else bootSidebar();
 })();
