@@ -475,6 +475,92 @@
     });
   }
 
+  /* ---------- المرفقات (PDF / Word / صور) وروابط جوجل درايف ---------- */
+
+  var ATTACH_BUCKET = "attachments";
+
+  function listAttachments(itemId) {
+    return run(function (client) {
+      var orgId = requireOrg();
+      var q = client.from("attachments").select("*").eq("org_id", orgId);
+      if (itemId) q = q.eq("item_id", itemId);
+      return q.order("created_at", { ascending: false }).then(unwrap);
+    });
+  }
+
+  function uploadAttachment(itemId, file) {
+    return run(function (client) {
+      var orgId = requireOrg();
+      if (!file) throw new Error("file required");
+      var safe = String(file.name || "file").replace(/[^\w.\- \u0600-\u06FF]/g, "_").slice(-120);
+      var path = orgId + "/" + (itemId || "org") + "/" + randomCode(10).toLowerCase() + "-" + safe;
+      return client.storage.from(ATTACH_BUCKET).upload(path, file, { upsert: false, contentType: file.type || undefined })
+        .then(function (res) {
+          if (res && res.error) throw res.error;
+          return client.from("attachments").insert({
+            org_id: orgId,
+            item_id: itemId || null,
+            name: file.name || safe,
+            mime: file.type || null,
+            size_bytes: file.size || 0,
+            storage_path: path,
+            uploaded_by: app.user.id
+          }).select("*").single().then(unwrap)
+            .catch(function (err) {
+              /* لا نترك ملفاً يتيماً في التخزين إذا رفضت القاعدة الصف */
+              client.storage.from(ATTACH_BUCKET).remove([path]);
+              throw err;
+            });
+        });
+    });
+  }
+
+  function addAttachmentLink(itemId, name, url) {
+    return run(function (client) {
+      var orgId = requireOrg();
+      var clean = String(url || "").trim();
+      if (!/^https?:\/\//i.test(clean)) throw new Error("invalid url");
+      return client.from("attachments").insert({
+        org_id: orgId,
+        item_id: itemId || null,
+        name: String(name || clean).slice(0, 200),
+        external_url: clean,
+        uploaded_by: app.user.id
+      }).select("*").single().then(unwrap);
+    });
+  }
+
+  function attachmentUrl(att) {
+    if (!att) return Promise.resolve(null);
+    if (att.external_url) return Promise.resolve(att.external_url);
+    return run(function (client) {
+      return client.storage.from(ATTACH_BUCKET).createSignedUrl(att.storage_path, 300).then(function (res) {
+        if (res && res.error) throw res.error;
+        return res.data ? res.data.signedUrl : null;
+      });
+    });
+  }
+
+  function deleteAttachment(att) {
+    return run(function (client) {
+      if (!att || !att.id) throw new Error("attachment required");
+      return client.from("attachments").delete().eq("id", att.id).then(unwrap).then(function () {
+        if (att.storage_path) return client.storage.from(ATTACH_BUCKET).remove([att.storage_path]);
+        return null;
+      });
+    });
+  }
+
+  function storageUsed() {
+    return run(function (client) {
+      var orgId = requireOrg();
+      return client.from("attachments").select("size_bytes").eq("org_id", orgId).then(unwrap)
+        .then(function (rows) {
+          return (rows || []).reduce(function (sum, r) { return sum + (Number(r.size_bytes) || 0); }, 0);
+        });
+    });
+  }
+
   function renameOrg(name) {
     return run(function (client) {
       var orgId = requireOrg();
@@ -1162,6 +1248,12 @@
   app.regenerateCalendarToken = regenerateCalendarToken;
   app.updateProfile = updateProfile;
   app.isPlatformAdmin = isPlatformAdmin;
+  app.listAttachments = listAttachments;
+  app.uploadAttachment = uploadAttachment;
+  app.addAttachmentLink = addAttachmentLink;
+  app.attachmentUrl = attachmentUrl;
+  app.deleteAttachment = deleteAttachment;
+  app.storageUsed = storageUsed;
   app.renameOrg = renameOrg;
   app.deleteOrg = deleteOrg;
   app.findProfileForInvite = findProfileForInvite;
@@ -1225,7 +1317,9 @@
     "border-radius:16px;background:var(--bg-mid,#1a2933);",
     "border:1px solid var(--glass-border);box-shadow:0 18px 40px var(--shadow-dark);display:none;z-index:60}",
     ".app-bell-panel.is-open{display:block}",
-    ".app-bell-item{padding:.6rem .7rem;border-radius:10px;font-size:.85rem;color:var(--text-secondary)}",
+    ".app-bell-item{padding:.65rem .75rem;border-radius:12px;font-size:.82rem;color:var(--text-secondary);margin-bottom:.25rem}",
+    ".app-bell-item.is-unread{background:var(--glass-border)}",
+    ".app-bell-num{display:block;font-size:.72rem;opacity:.75;margin-bottom:.15rem}",
     ".app-bell-item strong{display:block;color:var(--text-primary);font-size:.9rem;margin-bottom:.15rem}",
     ".app-bell-empty{padding:.9rem .7rem;font-size:.85rem;color:var(--text-secondary);text-align:center}",
     ".app-menu-wrap{position:relative;display:inline-flex}",
@@ -1258,11 +1352,18 @@
   function myNotifications() {
     return run(function (client) {
       return client.from("notifications")
-        .select("id,status,channel,scheduled_at,sent_at,created_at,payload")
+        .select("id,status,channel,scheduled_at,sent_at,created_at,read_at,payload")
         .eq("user_id", app.user.id)
+        .eq("channel", "inapp")
         .order("created_at", { ascending: false })
-        .limit(8)
+        .limit(12)
         .then(unwrap);
+    });
+  }
+
+  function markNotificationsRead() {
+    return run(function (client) {
+      return client.rpc("mark_notifications_read").then(unwrap);
     });
   }
 
@@ -1321,9 +1422,9 @@
       if (svcPanel) svcPanel.classList.remove("is-open");
       bellPanel.classList.toggle("is-open");
       if (!bellPanel.classList.contains("is-open")) return;
-      try { localStorage.setItem(BELL_SEEN_KEY, new Date().toISOString()); } catch (e) { /* ignore */ }
       var badge = document.getElementById("topBellBadge");
       if (badge) badge.hidden = true;
+      markNotificationsRead().catch(function () { /* غير حرج */ });
       loadBell();
     });
 
@@ -1351,15 +1452,18 @@
         return;
       }
       var html = "";
-      var seen = bellSeenAt();
       var unseen = 0;
       list.forEach(function (n) {
         var payload = n.payload || {};
         var title = payload.title || payload.item_title || "";
-        var when = n.sent_at || n.scheduled_at || n.created_at;
-        if (!seen || String(n.created_at) > seen) unseen++;
-        html += '<div class="app-bell-item"><strong>' + escapeHtml(title || sidebarLabel(BELL_LABELS)) + "</strong>" +
-                escapeHtml(fmtDate(when, { withTime: true })) + "</div>";
+        var due = payload.due_at || null;
+        var number = payload.item_number || "";
+        if (!n.read_at) unseen++;
+        html += '<div class="app-bell-item' + (n.read_at ? "" : " is-unread") + '"><strong>' +
+                escapeHtml(title || sidebarLabel(BELL_LABELS)) + "</strong>" +
+                (number ? '<span class="app-bell-num">' + escapeHtml(number) + "</span>" : "") +
+                escapeHtml(due ? fmtDate(due, { withTime: true }) : fmtDate(n.created_at, { withTime: true })) +
+                "</div>";
       });
       panel.innerHTML = html;
       var badge = document.getElementById("topBellBadge");

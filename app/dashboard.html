@@ -481,6 +481,21 @@
     .svc-icon { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
       border-radius: 12px; background: var(--primary); color: #fff; }
     .svc-icon svg { width: 20px; height: 20px; fill: currentColor; }
+    /* المرفقات */
+    .attach-block { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--glass-border); }
+    .attach-title { margin: 0 0 0.75rem; font-size: 0.95rem; color: var(--text-secondary); }
+    .attach-actions { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0.6rem; align-items: center; }
+    @media (max-width: 720px) { .attach-actions { grid-template-columns: 1fr; } }
+    .attach-upload { cursor: pointer; text-align: center; white-space: nowrap; }
+    .attach-list { display: grid; gap: 0.5rem; margin-top: 0.9rem; }
+    .attach-row {
+      display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 0.6rem; align-items: center;
+      padding: 0.65rem 0.9rem; border-radius: 12px; background: var(--glass); border: 1px solid var(--glass-border);
+      font-size: 0.85rem;
+    }
+    .attach-row a { color: var(--primary); text-decoration: none; overflow-wrap: anywhere; }
+    .attach-row span { color: var(--text-secondary); font-size: 0.78rem; }
+
     /* مؤشر المخالفات — أعمدة بسيطة بلا مكتبات خارجية */
     .chart-card { margin-top: 0; }
     .chart-bars { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem; align-items: end; min-height: 190px; padding-top: 0.5rem; }
@@ -751,6 +766,20 @@
             </div>
             <p class="waitlist-msg" id="editMsg" hidden role="status" aria-live="polite"></p>
           </form>
+
+          <div class="attach-block">
+            <h4 class="attach-title" data-i18n="attachTitle">المرفقات</h4>
+            <div class="attach-actions">
+              <label class="waitlist-btn attach-upload">
+                <span data-i18n="attachUpload">رفع ملف (PDF أو Word)</span>
+                <input type="file" id="attachFile" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.webp,.txt" hidden>
+              </label>
+              <input type="url" class="waitlist-input" id="attachLink" placeholder="أو الصق رابط جوجل درايف" data-i18n-placeholder="attachLinkPlaceholder" dir="ltr">
+              <button type="button" class="chat-option-btn" id="attachLinkBtn" data-i18n="attachLinkBtn">إضافة الرابط</button>
+            </div>
+            <p class="waitlist-msg" id="attachMsg" hidden role="status" aria-live="polite"></p>
+            <div class="attach-list" id="attachList"></div>
+          </div>
         </div>
 
         <div id="listPanel" role="tabpanel">
@@ -888,6 +917,18 @@
         statOverdue: "متأخرة",
         statDone: "مكتملة",
         tabList: "القائمة",
+        attachTitle: "المرفقات",
+        attachUpload: "رفع ملف (PDF أو Word)",
+        attachLinkPlaceholder: "أو الصق رابط جوجل درايف",
+        attachLinkBtn: "إضافة الرابط",
+        attachEmpty: "لا مرفقات لهذا العنصر.",
+        attachUploading: "جارٍ الرفع...",
+        attachDone: "تمت الإضافة.",
+        attachFailed: "تعذّر رفع الملف.",
+        attachLimit: "تجاوزت مساحة التخزين المسموحة في باقتك.",
+        attachDeleteConfirm: "حذف المرفق نهائياً؟",
+        attachLinkLabel: "رابط خارجي",
+        delete: "حذف",
         chartTitle: "المؤشر (جدول المخالفات)",
         chartTotal: "إجمالي المخالفات",
         chartObjected: "تم التظلم فيها",
@@ -1035,6 +1076,18 @@
         statOverdue: "Overdue",
         statDone: "Done",
         tabList: "List",
+        attachTitle: "Attachments",
+        attachUpload: "Upload a file (PDF or Word)",
+        attachLinkPlaceholder: "Or paste a Google Drive link",
+        attachLinkBtn: "Add link",
+        attachEmpty: "No attachments for this item.",
+        attachUploading: "Uploading...",
+        attachDone: "Added.",
+        attachFailed: "Could not upload the file.",
+        attachLimit: "Your plan storage limit is exhausted.",
+        attachDeleteConfirm: "Delete this attachment permanently?",
+        attachLinkLabel: "external link",
+        delete: "Delete",
         chartTitle: "Violations indicator",
         chartTotal: "Total violations",
         chartObjected: "Appealed",
@@ -1182,6 +1235,18 @@
         statOverdue: "En retard",
         statDone: "Terminés",
         tabList: "Liste",
+        attachTitle: "Pièces jointes",
+        attachUpload: "Téléverser un fichier (PDF ou Word)",
+        attachLinkPlaceholder: "Ou collez un lien Google Drive",
+        attachLinkBtn: "Ajouter le lien",
+        attachEmpty: "Aucune pièce jointe.",
+        attachUploading: "Téléversement...",
+        attachDone: "Ajouté.",
+        attachFailed: "Échec du téléversement.",
+        attachLimit: "Stockage de votre forfait épuisé.",
+        attachDeleteConfirm: "Supprimer définitivement ?",
+        attachLinkLabel: "lien externe",
+        delete: "Supprimer",
         chartTitle: "Indicateur des infractions",
         chartTotal: "Total des infractions",
         chartObjected: "Contestées",
@@ -1329,6 +1394,18 @@
         statOverdue: "تاخیر شدہ",
         statDone: "مکمل",
         tabList: "فہرست",
+        attachTitle: "منسلکات",
+        attachUpload: "فائل اپ لوڈ کریں (PDF یا Word)",
+        attachLinkPlaceholder: "یا گوگل ڈرائیو لنک چسپاں کریں",
+        attachLinkBtn: "لنک شامل کریں",
+        attachEmpty: "اس آئٹم کے لیے کوئی منسلک نہیں۔",
+        attachUploading: "اپ لوڈ ہو رہا ہے...",
+        attachDone: "شامل ہو گیا۔",
+        attachFailed: "فائل اپ لوڈ نہیں ہو سکی۔",
+        attachLimit: "آپ کے پیکج کی اسٹوریج ختم ہو گئی۔",
+        attachDeleteConfirm: "منسلک مستقل حذف کریں؟",
+        attachLinkLabel: "بیرونی لنک",
+        delete: "حذف",
         chartTitle: "خلاف ورزیوں کا اشاریہ",
         chartTotal: "کل خلاف ورزیاں",
         chartObjected: "اعتراض شدہ",
@@ -1892,6 +1969,7 @@
           restoreTab();
           show("dashboard");
           layoutDashboard();
+          wireAttachments();
           return loadAll();
         }).catch(function (err) {
           hide("loadingCard");
@@ -2278,8 +2356,91 @@
         $("editStatus").value = STATUS_KEYS[item.status] && item.status !== "overdue" ? item.status : "open";
         clearMsg("editMsg");
         show("editPanel");
+        renderAttachments([]);
+        loadAttachments();
         try { $("editPanel").scrollIntoView({ behavior: "smooth", block: "nearest" }); } catch (e) { /* ignore */ }
         $("editTitle").focus();
+      }
+
+      /* ---------- المرفقات ---------- */
+
+      function humanSize(bytes) {
+        var n = Number(bytes) || 0;
+        if (n < 1024) return n + " B";
+        if (n < 1048576) return (n / 1024).toFixed(0) + " KB";
+        return (n / 1048576).toFixed(1) + " MB";
+      }
+
+      function renderAttachments(rows) {
+        var box = $("attachList");
+        if (!box) return;
+        if (!rows || !rows.length) { box.innerHTML = '<p class="empty-note">' + esc(T("attachEmpty")) + "</p>"; return; }
+        var html = "";
+        rows.forEach(function (a) {
+          html += '<div class="attach-row"><a href="#" data-attach-open="' + esc(a.id) + '">' + esc(a.name) + "</a>" +
+                  "<span>" + esc(a.external_url ? T("attachLinkLabel") : humanSize(a.size_bytes)) + "</span>" +
+                  '<button type="button" class="chat-option-btn" data-attach-del="' + esc(a.id) + '">' + esc(T("delete")) + "</button></div>";
+        });
+        box.innerHTML = html;
+      }
+
+      function loadAttachments() {
+        if (!state.editing) return Promise.resolve();
+        return app.listAttachments(state.editing.id).then(function (rows) {
+          state.attachments = rows || [];
+          renderAttachments(state.attachments);
+        }).catch(function () { renderAttachments([]); });
+      }
+
+      function attachById(id) {
+        return (state.attachments || []).filter(function (a) { return a.id === id; })[0] || null;
+      }
+
+      function wireAttachments() {
+        var fileInput = $("attachFile");
+        if (fileInput) fileInput.addEventListener("change", function () {
+          var file = this.files && this.files[0];
+          if (!file || !state.editing) return;
+          setMsg("attachMsg", T("attachUploading"));
+          app.uploadAttachment(state.editing.id, file).then(function () {
+            setMsg("attachMsg", T("attachDone"), "success");
+            return loadAttachments();
+          }).catch(function (err) {
+            var code = String((err && (err.message || err.code)) || "");
+            setMsg("attachMsg", code.indexOf("PLAN_LIMIT_STORAGE") !== -1 ? T("attachLimit") : T("attachFailed"), "error");
+          }).finally(function () { fileInput.value = ""; });
+        });
+
+        var linkBtn = $("attachLinkBtn");
+        if (linkBtn) linkBtn.addEventListener("click", function () {
+          var url = String($("attachLink").value || "").trim();
+          if (!url || !state.editing) return;
+          setMsg("attachMsg", T("attachUploading"));
+          app.addAttachmentLink(state.editing.id, url.split("/").pop() || url, url).then(function () {
+            $("attachLink").value = "";
+            setMsg("attachMsg", T("attachDone"), "success");
+            return loadAttachments();
+          }).catch(function () { setMsg("attachMsg", T("attachFailed"), "error"); });
+        });
+
+        var list = $("attachList");
+        if (list) list.addEventListener("click", function (ev) {
+          var openBtn = ev.target.closest("[data-attach-open]");
+          var delBtn = ev.target.closest("[data-attach-del]");
+          if (openBtn) {
+            ev.preventDefault();
+            var att = attachById(openBtn.dataset.attachOpen);
+            if (!att) return;
+            app.attachmentUrl(att).then(function (url) { if (url) window.open(url, "_blank", "noopener"); })
+              .catch(function () { setMsg("attachMsg", T("attachFailed"), "error"); });
+          } else if (delBtn) {
+            var target = attachById(delBtn.dataset.attachDel);
+            if (!target) return;
+            if (!window.confirm(T("attachDeleteConfirm"))) return;
+            app.deleteAttachment(target).then(loadAttachments)
+              .catch(function () { setMsg("attachMsg", T("attachFailed"), "error"); });
+          }
+        });
       }
 
       function closeEdit() {

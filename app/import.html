@@ -709,6 +709,8 @@
         sheetKindViolations: "مخالفات",
         graceDays: "مهلة السداد (أيام)",
         mapVNumber: "رقم المخالفة",
+        mapAmount: "مبلغ المخالفة",
+        mapClient: "الشركة (العميل)",
         mapLocation: "الموقع",
         violationTitle: "مخالفة رقم {n}",
         required: "مطلوب",
@@ -804,6 +806,8 @@
         sheetKindViolations: "Violations",
         graceDays: "Payment window (days)",
         mapVNumber: "Violation number",
+        mapAmount: "Fine amount",
+        mapClient: "Client company",
         mapLocation: "Location",
         violationTitle: "Violation no. {n}",
         required: "required",
@@ -899,6 +903,8 @@
         sheetKindViolations: "Infractions",
         graceDays: "Délai de paiement (jours)",
         mapVNumber: "Numéro d'infraction",
+        mapAmount: "Montant de l'amende",
+        mapClient: "Entreprise cliente",
         mapLocation: "Lieu",
         violationTitle: "Infraction n° {n}",
         required: "obligatoire",
@@ -994,6 +1000,8 @@
         sheetKindViolations: "خلاف ورزیاں",
         graceDays: "ادائیگی کی مہلت (دن)",
         mapVNumber: "خلاف ورزی نمبر",
+        mapAmount: "جرمانے کی رقم",
+        mapClient: "کلائنٹ کمپنی",
         mapLocation: "مقام",
         violationTitle: "خلاف ورزی نمبر {n}",
         required: "لازمی",
@@ -1188,15 +1196,19 @@
         { key: "title",    labelKey: "mapTitle",    required: true,
           keywords: ["title", "عنوان", "العنوان", "name", "اسم", "الاسم", "subject", "موضوع", "الموضوع", "titre", "nom", "objet"] },
         { key: "due",      labelKey: "mapDue",      required: true,
-          keywords: ["due date", "due", "تاريخ الاستحقاق", "استحقاق", "الاستحقاق", "expiry", "expiry date", "expire", "expires", "انتهاء", "الانتهاء", "تاريخ الانتهاء", "deadline", "date", "تاريخ", "التاريخ", "échéance", "echeance", "تاریخ"] },
+          keywords: ["تاريخ المخالفة", "تاريخ الجلسة القادمة", "تاريخ الجلسة", "تاريخ الدعوى", "due date", "due", "تاريخ الاستحقاق", "استحقاق", "الاستحقاق", "expiry", "expiry date", "expire", "expires", "انتهاء", "الانتهاء", "تاريخ الانتهاء", "deadline", "date", "تاريخ", "التاريخ", "échéance", "echeance", "تاریخ"] },
         { key: "category", labelKey: "mapCategory", required: false,
           keywords: ["category", "تصنيف", "التصنيف", "type", "نوع", "النوع", "فئة", "الفئة", "catégorie", "categorie", "زمرہ"] },
         { key: "assignee", labelKey: "mapAssignee", required: false,
           keywords: ["assignee", "assignee email", "email", "e-mail", "بريد", "البريد", "البريد الإلكتروني", "مسؤول", "المسؤول", "responsable", "courriel", "ای میل"] },
+        { key: "amount",   labelKey: "mapAmount",   required: false,
+          keywords: ["مبلغ المخالفة", "المبلغ", "مبلغ", "قيمة", "amount", "fine", "value", "montant"] },
+        { key: "client",   labelKey: "mapClient",   required: false,
+          keywords: ["الشركة", "العميل", "الجهة", "المدعى عليه", "client", "company", "entreprise"] },
         { key: "vnumber",  labelKey: "mapVNumber",  required: false,
           keywords: ["رقم المخالفة", "رقم مخالفة", "المخالفة", "violation number", "violation no", "ticket", "ticket number", "fine number", "numéro d'infraction"] },
         { key: "location", labelKey: "mapLocation", required: false,
-          keywords: ["الموقع", "موقع", "المكان", "location", "place", "site", "lieu", "مقام"] },
+          keywords: ["جهة اصدار المخالفة", "جهة الإصدار", "الموقع", "موقع", "المكان", "المدينة", "location", "place", "site", "lieu", "مقام"] },
         { key: "status",   labelKey: "mapStatus",   required: false,
           keywords: ["status", "حالة", "الحالة", "statut", "état", "etat", "حالت"] }
       ];
@@ -1208,6 +1220,7 @@
 
       const state = {
         mode: "general",
+        client: "",
         file: null,
         fileBase: "",
         workbook: null,
@@ -1319,12 +1332,51 @@
         else reader.readAsArrayBuffer(file);
       }
 
-      /* First non-empty row = headers; the rest = data rows (blank rows dropped). */
+      /* أوراق التقارير الحقيقية تبدأ بملخص تنفيذي فوق الجدول، فنبحث عن صف العناوين
+         الحقيقي: أكثر صف يحمل عناوين نصية معروفة ويتبعه صف بيانات. */
+      const HEADER_HINTS = ["رقم المخالفة", "تاريخ المخالفة", "مبلغ المخالفة", "نوع المخالفة", "حالة التظلم",
+                            "رقم القضية", "رقم الدعوى", "المدعي", "المدعى عليه", "المحكمة", "الدائرة",
+                            "الجهة القضائية", "المحامي", "التاريخ", "الوقت", "تاريخ الجلسة", "تاريخ الحكم",
+                            "title", "due", "date", "amount"];
+
+      function headerScore(row, next) {
+        if (!row) return -1;
+        let textCells = 0, hints = 0;
+        row.forEach(function (cell) {
+          const v = cellText(cell);
+          if (!v) return;
+          if (typeof cell === "number") return;
+          textCells++;
+          const low = v.toLowerCase();
+          for (let i = 0; i < HEADER_HINTS.length; i++) {
+            if (low.indexOf(HEADER_HINTS[i].toLowerCase()) !== -1) { hints++; break; }
+          }
+        });
+        if (textCells < 3) return -1;
+        const nextFilled = next ? next.filter(nonEmpty).length : 0;
+        if (nextFilled < 2) return -1;
+        return hints * 10 + textCells;
+      }
+
+      /* صف العناوين قد يليه سطر فارغ قبل البيانات، فنبحث عن أول صف مملوء بعده. */
+      function nextDataRow(aoa, i) {
+        for (let k = i + 1; k <= i + 3 && k < aoa.length; k++) {
+          if (aoa[k] && aoa[k].filter(nonEmpty).length >= 2) return aoa[k];
+        }
+        return null;
+      }
+
       function parseSheet(ws) {
         const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: null, blankrows: false });
         let hi = -1;
-        for (let i = 0; i < aoa.length; i++) {
-          if (aoa[i] && aoa[i].some(nonEmpty)) { hi = i; break; }
+        let best = -1;
+        const scanTo = Math.min(aoa.length, 30);
+        for (let i = 0; i < scanTo; i++) {
+          const sc = headerScore(aoa[i], nextDataRow(aoa, i));
+          if (sc > best) { best = sc; hi = i; }
+        }
+        if (hi === -1) {
+          for (let i = 0; i < aoa.length; i++) if (aoa[i] && aoa[i].some(nonEmpty)) { hi = i; break; }
         }
         if (hi === -1) return { headers: [], rows: [] };
 
@@ -1351,9 +1403,25 @@
         return { headers: headers, rows: rows };
       }
 
+      /* اسم الورقة يحدد النوع والعميل: "مخالفات بلدي - ابراج الكهرباء" ← مخالفات، العميل: ابراج الكهرباء */
+      function sheetProfile(name) {
+        const n = String(name || "");
+        const dash = n.split(/\s[-–]\s/);
+        const client = dash.length > 1 ? dash[dash.length - 1].trim() : "";
+        let kind = "general";
+        if (/مخالف/.test(n)) kind = "violations";
+        else if (/جلسات|قضايا|دعاو/.test(n)) kind = "cases";
+        return { kind: kind, client: client };
+      }
+
       function selectSheet(name) {
         const ws = state.workbook && state.workbook.Sheets[name];
         state.sheetName = name;
+        const profile = sheetProfile(name);
+        state.client = profile.client;
+        state.mode = profile.kind === "violations" ? "violations" : "general";
+        if (els.importMode) els.importMode.value = state.mode;
+        if (els.graceField) show(els.graceField, state.mode === "violations");
         const parsed = ws ? parseSheet(ws) : { headers: [], rows: [] };
         state.headers = parsed.headers;
         state.rows = parsed.rows;
@@ -1423,6 +1491,16 @@
           } else if (!title || !due) { skipped++; return; }
 
           const rec = { title: title, due_at: due, category: isViolations ? "مخالفة" : null, status: "open", assignee_id: null, data: {} };
+
+          /* المبلغ يُجمع لاحقاً في اللوحات، والعميل يأتي من العمود أو من اسم الورقة */
+          if (m.amount >= 0) {
+            const raw = String(cellText(row[m.amount]) || "").replace(/[^0-9.\-]/g, "");
+            const num = parseFloat(raw);
+            if (!isNaN(num)) rec.amount = num;
+          }
+          var clientName = m.client >= 0 ? cellText(row[m.client]) : "";
+          if (!clientName && state.client) clientName = state.client;
+          if (clientName) rec.client_name = clientName;
           if (isViolations) {
             rec.data.violation_number = vnumber;
             rec.data.violation_date = m.due >= 0 ? trackerApp.parseExcelDate(row[m.due]) : null;
