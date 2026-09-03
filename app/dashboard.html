@@ -1048,6 +1048,16 @@
         chartObjected: "تم التظلم فيها",
         chartCourt: "مرفوعة للمحكمة",
         chartRepeated: "المخالفات المتكررة",
+        casesIndicatorsTitle: "المؤشرات الحالية للقضايا",
+        casesChartTitle: "المؤشر (جدول القضايا)",
+        caseTotal: "إجمالي القضايا",
+        caseOpen: "قضايا جارية",
+        caseOverdue: "متأخرة عن موعدها",
+        caseDone: "قضايا منتهية",
+        clientsTitle: "العملاء {n} (حسب العميل)",
+        noClientData: "لا توجد بيانات عملاء بعد.",
+        caseAmount: "إجمالي مبالغ القضايا",
+        caseDoneAmount: "مبالغ القضايا المنتهية",
         viewCases: "لوحة القضايا",
         viewViolations: "لوحة المخالفات",
         servicesTitle: "الخدمات",
@@ -1230,6 +1240,16 @@
         chartObjected: "Appealed",
         chartCourt: "Referred to court",
         chartRepeated: "Repeated violations",
+        casesIndicatorsTitle: "Current case indicators",
+        casesChartTitle: "Cases indicator",
+        caseTotal: "Total cases",
+        caseOpen: "Open cases",
+        caseOverdue: "Overdue",
+        caseDone: "Closed cases",
+        clientsTitle: "Clients {n} (by client)",
+        noClientData: "No client data yet.",
+        caseAmount: "Total case amounts",
+        caseDoneAmount: "Closed case amounts",
         viewCases: "Cases dashboard",
         viewViolations: "Violations dashboard",
         servicesTitle: "Services",
@@ -1412,6 +1432,16 @@
         chartObjected: "Contestées",
         chartCourt: "Portées en justice",
         chartRepeated: "Infractions répétées",
+        casesIndicatorsTitle: "Indicateurs des affaires",
+        casesChartTitle: "Indicateur des affaires",
+        caseTotal: "Total des affaires",
+        caseOpen: "Affaires en cours",
+        caseOverdue: "En retard",
+        caseDone: "Affaires clôturées",
+        clientsTitle: "Clients {n} (par client)",
+        noClientData: "Aucune donnée client.",
+        caseAmount: "Montant total des affaires",
+        caseDoneAmount: "Montant des affaires clôturées",
         viewCases: "Tableau des affaires",
         viewViolations: "Tableau des infractions",
         servicesTitle: "Services",
@@ -1594,6 +1624,16 @@
         chartObjected: "اعتراض شدہ",
         chartCourt: "عدالت میں",
         chartRepeated: "بار بار کی خلاف ورزیاں",
+        casesIndicatorsTitle: "مقدمات کے موجودہ اشاریے",
+        casesChartTitle: "مقدمات کا اشاریہ",
+        caseTotal: "کل مقدمات",
+        caseOpen: "جاری مقدمات",
+        caseOverdue: "تاخیر شدہ",
+        caseDone: "مکمل مقدمات",
+        clientsTitle: "کلائنٹس {n} (کلائنٹ کے مطابق)",
+        noClientData: "کلائنٹ کا ڈیٹا موجود نہیں۔",
+        caseAmount: "مقدمات کی کل رقم",
+        caseDoneAmount: "مکمل مقدمات کی رقم",
         viewCases: "مقدمات ڈیش بورڈ",
         viewViolations: "خلاف ورزیاں ڈیش بورڈ",
         servicesTitle: "خدمات",
@@ -1990,13 +2030,18 @@
         } catch (e) { return ""; }
       }
 
-      function matchesView(item) {
-        var view = VIEW_TYPES[state.viewType];
+      function isOfType(item, type) {
+        var view = VIEW_TYPES[type];
         if (!view) return true;
         var hay = ((item.category || "") + " " + (item.title || "")).toLowerCase();
         for (var i = 0; i < view.words.length; i++) if (hay.indexOf(view.words[i].toLowerCase()) !== -1) return true;
         return false;
       }
+
+      function isCaseItem(item) { return isOfType(item, "cases"); }
+      function isViolationItem(item) { return isOfType(item, "violations"); }
+
+      function matchesView(item) { return isOfType(item, state.viewType); }
 
       function applyViewTitle() {
         var view = VIEW_TYPES[state.viewType];
@@ -2064,13 +2109,38 @@
         return '<svg viewBox="0 0 160 160" width="170" height="170" role="img">' + seg + "</svg>";
       }
 
-      function renderChart() {
-        var card = document.getElementById("violationsChart");
-        if (!card) return;
-        var items = state.items || [];
-        var metrics = violationMetrics(items);
-        var max = Math.max.apply(null, metrics.map(function (m) { return m.value; }).concat([1]));
+      /* مؤشرات القضايا: نفس لغة مؤشر المخالفات، بمقاييس القضايا ومحور العملاء. */
+      function caseMetrics(items) {
+        var now = Date.now();
+        var total = items.length, open = 0, overdue = 0, done = 0;
+        items.forEach(function (it) {
+          var due = it.due_at ? new Date(it.due_at).getTime() : null;
+          if (it.status === "done") { done++; return; }
+          if (it.status === "cancelled") return;
+          open++;
+          if (due && due < now) overdue++;
+        });
+        return [
+          { key: "caseTotal", value: total },
+          { key: "caseOpen", value: open },
+          { key: "caseOverdue", value: overdue },
+          { key: "caseDone", value: done }
+        ];
+      }
 
+      function clientBreakdown(items) {
+        var counts = {};
+        items.forEach(function (it) {
+          var name = it.client_name || dataOf(it, ["العميل", "اسم العميل", "الموكل", "client", "client_name"]);
+          if (!name) return;
+          counts[name] = (counts[name] || 0) + 1;
+        });
+        return Object.keys(counts).map(function (k) { return { label: k, value: counts[k] }; })
+          .sort(function (a, b) { return b.value - a.value; }).slice(0, 6);
+      }
+
+      function barsHtml(metrics) {
+        var max = Math.max.apply(null, metrics.map(function (m) { return m.value; }).concat([1]));
         var bars = '<div class="chart-bars">';
         metrics.forEach(function (m) {
           var h = Math.max(6, Math.round((m.value / max) * 150));
@@ -2078,7 +2148,52 @@
                   '<span class="chart-bar" style="height:' + h + 'px"></span>' +
                   '<span class="chart-label">' + esc(T(m.key)) + "</span></div>";
         });
-        bars += "</div>";
+        return bars + "</div>";
+      }
+
+      function donutHtml(parts, emptyKey) {
+        var total = parts.reduce(function (a, p) { return a + p.value; }, 0);
+        if (!total) return { html: '<p class="empty-note">' + esc(T(emptyKey)) + "</p>", total: 0 };
+        var legend = "";
+        parts.forEach(function (p, i) {
+          var pct = ((p.value / total) * 100).toFixed(2);
+          legend += '<div><span class="dot" style="background:' + DONUT_COLORS[i % DONUT_COLORS.length] + '"></span>' +
+                    esc(p.label) + " — " + esc(String(p.value)) + " (" + esc(pct) + "%)</div>";
+        });
+        return { html: '<div class="ind-body">' + donutSvg(parts, total) + '<div class="donut-legend">' + legend + "</div></div>", total: total };
+      }
+
+      function renderCasesChart() {
+        var card = document.getElementById("casesChart");
+        if (!card) return;
+        var items = (state.items || []).filter(function (it) { return isCaseItem(it); });
+        var clients = clientBreakdown(items);
+        var donut = donutHtml(clients, "noClientData");
+
+        var totalAmount = 0, doneAmount = 0;
+        items.forEach(function (it) {
+          var amt = Number(it.amount) || 0;
+          totalAmount += amt;
+          if (it.status === "done") doneAmount += amt;
+        });
+
+        card.innerHTML =
+          "<h2>" + esc(T("casesIndicatorsTitle")) + "</h2>" +
+          '<div class="ind-grid">' +
+            '<div class="ind-card"><h3>' + esc(T("casesChartTitle")) + "</h3>" + barsHtml(caseMetrics(items)) + "</div>" +
+            '<div class="ind-card"><h3>' + esc(T("clientsTitle").replace("{n}", String(donut.total))) + "</h3>" + donut.html + "</div>" +
+          "</div>" +
+          '<div class="ind-totals">' +
+            '<div class="ind-total"><b>' + esc(shortMoney(totalAmount)) + "</b><span>" + esc(T("caseAmount")) + "</span></div>" +
+            '<div class="ind-total"><b>' + esc(shortMoney(doneAmount)) + "</b><span>" + esc(T("caseDoneAmount")) + "</span></div>" +
+          "</div>";
+      }
+
+      function renderChart() {
+        var card = document.getElementById("violationsChart");
+        if (!card) return;
+        var items = (state.items || []).filter(function (it) { return isViolationItem(it); });
+        var bars = barsHtml(violationMetrics(items));
 
         var courts = courtBreakdown(items);
         var courtTotal = courts.reduce(function (a, p) { return a + p.value; }, 0);
@@ -2632,6 +2747,7 @@
 
       function renderList() {
         renderChart();
+        renderCasesChart();
         if (state.viewType === "violations") {
           $("violationsBar").hidden = false;
           $("tableWrap").hidden = true;

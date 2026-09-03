@@ -1329,6 +1329,8 @@
   var BELL_LABELS = { ar: "التنبيهات", en: "Notifications", fr: "Notifications", ur: "اطلاعات" };
   var ORG_LABELS = { ar: "الشركة", en: "Company", fr: "Entreprise", ur: "کمپنی" };
   var NEW_ORG_LABELS = { ar: "＋ شركة جديدة", en: "＋ New company", fr: "＋ Nouvelle entreprise", ur: "＋ نئی کمپنی" };
+  var BELL_DELETE = { ar: "حذف التنبيه", en: "Delete", fr: "Supprimer", ur: "حذف کریں" };
+  var BELL_CLEAR = { ar: "حذف كل التنبيهات", en: "Clear all", fr: "Tout effacer", ur: "سب حذف کریں" };
   var BELL_EMPTY = { ar: "لا توجد تنبيهات بعد.", en: "No notifications yet.", fr: "Aucune notification pour le moment.", ur: "ابھی کوئی اطلاع نہیں۔" };
   var BELL_SEEN_KEY = "tracker_bell_seen";
 
@@ -1373,6 +1375,13 @@
     ".app-bell-item{padding:.65rem .75rem;border-radius:12px;font-size:.82rem;color:var(--text-secondary);margin-bottom:.25rem}",
     ".app-bell-item.is-unread{background:var(--glass-border)}",
     ".app-bell-num{display:block;font-size:.72rem;opacity:.75;margin-bottom:.15rem}",
+    ".app-bell-item{position:relative;padding-inline-end:1.9rem}",
+    ".app-bell-del{position:absolute;inset-inline-end:.35rem;inset-block-start:.45rem;width:22px;height:22px;padding:0;",
+    "border:0;border-radius:8px;background:transparent;color:var(--text-secondary);font-size:.8rem;line-height:1;cursor:pointer}",
+    ".app-bell-del:hover{background:var(--glass-border);color:var(--text-primary)}",
+    ".app-bell-clear{display:block;width:100%;margin-top:.35rem;padding:.5rem;border:0;border-radius:10px;",
+    "background:transparent;color:var(--text-secondary);font:inherit;font-size:.8rem;font-weight:700;cursor:pointer}",
+    ".app-bell-clear:hover{background:var(--glass-border);color:var(--text-primary)}",
     ".app-bell-item strong{display:block;color:var(--text-primary);font-size:.9rem;margin-bottom:.15rem}",
     ".app-bell-empty{padding:.9rem .7rem;font-size:.85rem;color:var(--text-secondary);text-align:center}",
     ".app-menu-wrap{position:relative;display:inline-flex}",
@@ -1411,6 +1420,18 @@
         .order("created_at", { ascending: false })
         .limit(12)
         .then(unwrap);
+    });
+  }
+
+  function deleteNotification(id) {
+    return run(function (client) {
+      return client.from("notifications").delete().eq("id", id).eq("user_id", app.user.id).then(unwrap);
+    });
+  }
+
+  function clearNotifications() {
+    return run(function (client) {
+      return client.from("notifications").delete().eq("user_id", app.user.id).eq("channel", "inapp").then(unwrap);
     });
   }
 
@@ -1522,6 +1543,19 @@
       });
     }
 
+    if (bellPanel) bellPanel.addEventListener("click", function (ev) {
+      ev.stopPropagation();
+      var del = ev.target.closest("[data-bell-del]");
+      if (del) {
+        del.disabled = true;
+        deleteNotification(del.dataset.bellDel).then(function () { loadBell(); }).catch(function () { del.disabled = false; });
+        return;
+      }
+      if (ev.target.closest("#bellClearAll")) {
+        clearNotifications().then(function () { loadBell(); }).catch(function () { /* تجاهل */ });
+      }
+    });
+
     if (bell && bellPanel) bell.addEventListener("click", function (ev) {
       ev.stopPropagation();
       bellPanel.classList.toggle("is-open");
@@ -1596,13 +1630,16 @@
         var due = payload.due_at || null;
         var number = payload.item_number || "";
         if (!n.read_at) unseen++;
-        html += '<div class="app-bell-item' + (n.read_at ? "" : " is-unread") + '"><strong>' +
-                escapeHtml(title || sidebarLabel(BELL_LABELS)) + "</strong>" +
+        html += '<div class="app-bell-item' + (n.read_at ? "" : " is-unread") + '">' +
+                '<button type="button" class="app-bell-del" data-bell-del="' + escapeHtml(n.id) + '" aria-label="' +
+                escapeHtml(sidebarLabel(BELL_DELETE)) + '" title="' + escapeHtml(sidebarLabel(BELL_DELETE)) + '">✕</button>' +
+                "<strong>" + escapeHtml(title || sidebarLabel(BELL_LABELS)) + "</strong>" +
                 (number ? '<span class="app-bell-num">' + escapeHtml(number) + "</span>" : "") +
                 escapeHtml(due ? fmtDate(due, { withTime: true }) : fmtDate(n.created_at, { withTime: true })) +
                 "</div>";
       });
-      panel.innerHTML = html;
+      panel.innerHTML = html +
+        '<button type="button" class="app-bell-clear" id="bellClearAll">' + escapeHtml(sidebarLabel(BELL_CLEAR)) + "</button>";
       var badge = document.getElementById("topBellBadge");
       if (!badge) return;
       if (unseen > 0 && !panel.classList.contains("is-open")) {
