@@ -90,6 +90,7 @@
     profile: null,
     orgs: [],
     org: null,
+    joinedOrgs: [],
     unavailable: false
   };
   window.trackerApp = app;
@@ -405,6 +406,17 @@
       });
   }
 
+  /* الدعوة تصل صاحبها عند أول فتح للتطبيق: القاعدة تُدخله في الشركة وتختم الدعوة،
+     وتعيد الشركات التي انضم إليها الآن ليراها في إشعار بدل انضمام صامت. */
+  function acceptInvitations(client) {
+    return client.rpc("accept_my_invitations").then(unwrap)
+      .then(function (rows) { return Array.isArray(rows) ? rows : []; })
+      .catch(function (err) {
+        if (window.console) console.warn("trackerApp: accepting invitations failed:", err.message);
+        return [];
+      });
+  }
+
   function pickOrg(orgs) {
     if (!orgs.length) return null;
     var saved = null;
@@ -430,6 +442,9 @@
         app.user = session.user;
         return loadProfile(app.client, app.user).then(function (profile) {
           app.profile = profile;
+          return acceptInvitations(app.client);
+        }).then(function (joined) {
+          app.joinedOrgs = joined;
           return loadOrgs(app.client, app.user);
         }).then(function (orgs) {
           app.orgs = orgs;
@@ -1596,6 +1611,24 @@
     });
   }
 
+  var JOINED_LABELS = {
+    ar: "انضممت إلى شركة {name}. تجدها في مبدّل الشركات.",
+    en: "You joined {name}. You will find it in the company switcher.",
+    fr: "Vous avez rejoint {name}. Retrouvez-la dans le sélecteur d'entreprise.",
+    ur: "آپ {name} میں شامل ہو گئے۔ یہ کمپنی سوئچر میں ملے گی۔"
+  };
+
+  /* المدعو يعرف بانضمامه بدل أن تظهر له شركة جديدة بلا تفسير. */
+  function announceJoinedOrgs() {
+    var joined = app.joinedOrgs || [];
+    joined.forEach(function (row, i) {
+      var name = row.joined_org_name || "";
+      setTimeout(function () {
+        toast(sidebarLabel(JOINED_LABELS).replace("{name}", name), "success");
+      }, 600 + i * 800);
+    });
+  }
+
   /* القائمة الجانبية تُركّب بعد اكتمال تعريف الواجهة، وأي خطأ فيها لا يوقف الصفحة. */
   function bootSidebar() {
     try { mountSidebar(); } catch (e) { /* تجاهل */ }
@@ -1604,6 +1637,7 @@
     var readyGate = app && app.ready && typeof app.ready.then === "function" ? app.ready : null;
     if (readyGate) readyGate.then(function () {
       try { mountProfileGate(); } catch (e) { /* تجاهل */ }
+      try { announceJoinedOrgs(); } catch (e) { /* تجاهل */ }
     }).catch(function () { /* الصفحة تتكفل بالخطأ */ });
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bootSidebar);

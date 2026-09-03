@@ -508,8 +508,29 @@
     .attach-row a { color: var(--primary); text-decoration: none; overflow-wrap: anywhere; }
     .attach-row span { color: var(--text-secondary); font-size: 0.78rem; }
 
-    /* مؤشر المخالفات — أعمدة بسيطة بلا مكتبات خارجية */
+    /* لوحة المؤشرات: عمودان (أعمدة + دائرة) ثم شريط المجاميع */
     .chart-card { margin-top: 0; }
+    .ind-grid { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
+    @media (min-width: 900px) { .ind-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .ind-card {
+      padding: 1.25rem 1.4rem; border-radius: 20px; background: var(--glass);
+      border: 1px solid var(--glass-border);
+      box-shadow: 5px 5px 12px var(--shadow-dark), -5px -5px 12px var(--shadow-light);
+    }
+    .ind-card h3 { margin: 0 0 1rem; font-size: 0.95rem; font-weight: 700; color: var(--text-primary); text-align: center; }
+    .ind-body { display: flex; align-items: center; justify-content: center; gap: 1.25rem; flex-wrap: wrap; }
+    .donut-legend { display: grid; gap: 0.5rem; font-size: 0.8rem; color: var(--text-secondary); }
+    .donut-legend span.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-inline-end: 0.45rem; }
+    .ind-totals {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0;
+      margin-top: 1.25rem; padding: 1.25rem 1rem; border-radius: 20px;
+      background: var(--glass); border: 1px solid var(--glass-border);
+      box-shadow: 5px 5px 12px var(--shadow-dark), -5px -5px 12px var(--shadow-light);
+    }
+    .ind-total { text-align: center; padding: 0.25rem 1rem; border-inline-end: 1px solid var(--glass-border); }
+    .ind-total:last-child { border-inline-end: 0; }
+    .ind-total b { display: block; font-size: 1.9rem; font-weight: 800; color: var(--primary); font-variant-numeric: tabular-nums; }
+    .ind-total span { font-size: 0.82rem; color: var(--text-secondary); }
     .chart-bars { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.25rem; align-items: end; min-height: 210px; padding-top: 0.75rem; max-width: 900px; margin: 0 auto; }
     .chart-col { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; height: 100%; justify-content: flex-end; }
     .chart-val { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; }
@@ -985,6 +1006,10 @@
         attachLinkLabel: "رابط خارجي",
         delete: "حذف",
         chartTitle: "المؤشر (جدول المخالفات)",
+        indicatorsTitle: "المؤشرات الحالية للمخالفات والجلسات",
+        courtsTitle: "إجمالي القضايا {n} (حسب المحكمة)",
+        cancelledAmount: "مبلغ المخالفات التي تم إلغاؤها",
+        noCourtData: "لا توجد بيانات محاكم بعد.",
         chartTotal: "إجمالي المخالفات",
         chartObjected: "تم التظلم فيها",
         chartCourt: "مرفوعة للمحكمة",
@@ -1158,6 +1183,10 @@
         attachLinkLabel: "external link",
         delete: "Delete",
         chartTitle: "Violations indicator",
+        indicatorsTitle: "Current violation and hearing indicators",
+        courtsTitle: "Cases {n} (by court)",
+        cancelledAmount: "Cancelled fines amount",
+        noCourtData: "No court data yet.",
         chartTotal: "Total violations",
         chartObjected: "Appealed",
         chartCourt: "Referred to court",
@@ -1331,6 +1360,10 @@
         attachLinkLabel: "lien externe",
         delete: "Supprimer",
         chartTitle: "Indicateur des infractions",
+        indicatorsTitle: "Indicateurs des infractions et audiences",
+        courtsTitle: "Affaires {n} (par tribunal)",
+        cancelledAmount: "Montant des amendes annulées",
+        noCourtData: "Aucune donnée de tribunal.",
         chartTotal: "Total des infractions",
         chartObjected: "Contestées",
         chartCourt: "Portées en justice",
@@ -1504,6 +1537,10 @@
         attachLinkLabel: "بیرونی لنک",
         delete: "حذف",
         chartTitle: "خلاف ورزیوں کا اشاریہ",
+        indicatorsTitle: "خلاف ورزیوں اور سماعتوں کے اشاریے",
+        courtsTitle: "مقدمات {n} (عدالت کے مطابق)",
+        cancelledAmount: "منسوخ جرمانوں کی رقم",
+        noCourtData: "عدالت کا ڈیٹا موجود نہیں۔",
         chartTotal: "کل خلاف ورزیاں",
         chartObjected: "اعتراض شدہ",
         chartCourt: "عدالت میں",
@@ -1942,22 +1979,85 @@
         ];
       }
 
+      var DONUT_COLORS = ["#0e3a4d", "#cfe9f5", "#5f7a88", "#7fd3f0", "#00a0d2", "#9fb6c0"];
+
+      function shortMoney(n) {
+        var v = Number(n) || 0;
+        if (v >= 1000000) return (v / 1000000).toFixed(v >= 10000000 ? 0 : 1).replace(/\.0$/, "") + "M";
+        if (v >= 1000) return Math.round(v / 1000) + "K";
+        return String(Math.round(v));
+      }
+
+      function courtBreakdown(items) {
+        var counts = {};
+        items.forEach(function (it) {
+          var court = dataOf(it, ["المحكمة", "الجهة القضائية", "محكمة الدرجة الأولى", "court"]);
+          if (!court) return;
+          counts[court] = (counts[court] || 0) + 1;
+        });
+        return Object.keys(counts).map(function (k) { return { label: k, value: counts[k] }; })
+          .sort(function (a, b) { return b.value - a.value; }).slice(0, 6);
+      }
+
+      function donutSvg(parts, total) {
+        if (!total) return "";
+        var r = 60, c = 2 * Math.PI * r, offset = 0, seg = "";
+        parts.forEach(function (p, i) {
+          var len = (p.value / total) * c;
+          seg += '<circle r="' + r + '" cx="80" cy="80" fill="transparent" stroke="' + DONUT_COLORS[i % DONUT_COLORS.length] +
+                 '" stroke-width="34" stroke-dasharray="' + len.toFixed(2) + " " + (c - len).toFixed(2) +
+                 '" stroke-dashoffset="' + (-offset).toFixed(2) + '" transform="rotate(-90 80 80)"></circle>';
+          offset += len;
+        });
+        return '<svg viewBox="0 0 160 160" width="170" height="170" role="img">' + seg + "</svg>";
+      }
+
       function renderChart() {
         var card = document.getElementById("violationsChart");
         if (!card) return;
-        var metrics = violationMetrics(state.items || []);
+        var items = state.items || [];
+        var metrics = violationMetrics(items);
         var max = Math.max.apply(null, metrics.map(function (m) { return m.value; }).concat([1]));
-        var html = "<h2>" + esc(T("chartTitle")) + '</h2><div class="chart-bars">';
+
+        var bars = '<div class="chart-bars">';
         metrics.forEach(function (m) {
           var h = Math.max(6, Math.round((m.value / max) * 150));
-          html += '<div class="chart-col">' +
-                    '<span class="chart-val">' + esc(String(m.value)) + "</span>" +
-                    '<span class="chart-bar" style="height:' + h + 'px"></span>' +
-                    '<span class="chart-label">' + esc(T(m.key)) + "</span>" +
-                  "</div>";
+          bars += '<div class="chart-col"><span class="chart-val">' + esc(String(m.value)) + "</span>" +
+                  '<span class="chart-bar" style="height:' + h + 'px"></span>' +
+                  '<span class="chart-label">' + esc(T(m.key)) + "</span></div>";
         });
-        html += "</div>";
-        card.innerHTML = html;
+        bars += "</div>";
+
+        var courts = courtBreakdown(items);
+        var courtTotal = courts.reduce(function (a, p) { return a + p.value; }, 0);
+        var legend = "";
+        courts.forEach(function (p, i) {
+          var pct = courtTotal ? ((p.value / courtTotal) * 100).toFixed(2) : "0";
+          legend += '<div><span class="dot" style="background:' + DONUT_COLORS[i % DONUT_COLORS.length] + '"></span>' +
+                    esc(p.label) + " — " + esc(String(p.value)) + " (" + esc(pct) + "%)</div>";
+        });
+        var donut = courtTotal
+          ? '<div class="ind-body">' + donutSvg(courts, courtTotal) + '<div class="donut-legend">' + legend + "</div></div>"
+          : '<p class="empty-note">' + esc(T("noCourtData")) + "</p>";
+
+        var totalAmount = 0, cancelledAmount = 0;
+        items.forEach(function (it) {
+          var amt = Number(it.amount) || 0;
+          totalAmount += amt;
+          var blob = JSON.stringify(it.data || {}) + " " + (it.title || "");
+          if (it.status === "cancelled" || /إلغاء|الغاء|قبول التظلم/.test(blob)) cancelledAmount += amt;
+        });
+
+        card.innerHTML =
+          "<h2>" + esc(T("indicatorsTitle")) + "</h2>" +
+          '<div class="ind-grid">' +
+            '<div class="ind-card"><h3>' + esc(T("chartTitle")) + "</h3>" + bars + "</div>" +
+            '<div class="ind-card"><h3>' + esc(T("courtsTitle").replace("{n}", String(courtTotal))) + "</h3>" + donut + "</div>" +
+          "</div>" +
+          '<div class="ind-totals">' +
+            '<div class="ind-total"><b>' + esc(shortMoney(totalAmount)) + "</b><span>" + esc(T("totalAmount")) + "</span></div>" +
+            '<div class="ind-total"><b>' + esc(shortMoney(cancelledAmount)) + "</b><span>" + esc(T("cancelledAmount")) + "</span></div>" +
+          "</div>";
       }
 
       /* ---------- تخطيط لوحة المعلومات (خدمات + تقويم دائم الظهور) ---------- */

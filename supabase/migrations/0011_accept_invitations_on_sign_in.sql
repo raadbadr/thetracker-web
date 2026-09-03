@@ -6,34 +6,35 @@
 -- إليها الآن ليخبر التطبيق المستخدم بها. حد الأعضاء في الباقة يبقى مفروضاً:
 -- إن كانت الشركة ممتلئة تبقى الدعوة معلقة ولا يفشل الدخول.
 create or replace function public.accept_invitations_for(u uuid)
-returns table (org_id uuid, org_name text, member_role text)
+returns table (joined_org_id uuid, joined_org_name text, joined_role text)
 language plpgsql security definer set search_path = public as $$
 declare
   mail text;
   inv record;
-  joined boolean;
+  ok boolean;
 begin
+  if u is null then return; end if;
   select lower(email) into mail from auth.users where id = u;
-  if u is null or mail is null or mail = '' then return; end if;
+  if mail is null or mail = '' then return; end if;
 
   for inv in
-    select i.id, i.org_id, i.role, i.invited_by
+    select i.id as inv_id, i.org_id as inv_org, i.role as inv_role, i.invited_by as inv_by
     from public.invitations i
     where lower(i.email) = mail and i.accepted_at is null
     order by i.created_at
   loop
-    joined := true;
+    ok := true;
     begin
       insert into public.org_members (org_id, user_id, role, status, invited_email, invited_by)
-      values (inv.org_id, u, inv.role, 'active', mail, inv.invited_by)
+      values (inv.inv_org, u, inv.inv_role, 'active', mail, inv.inv_by)
       on conflict (org_id, user_id) do nothing;
     exception when others then
-      joined := false;
+      ok := false;
     end;
-    if joined then
-      update public.invitations set accepted_at = now() where id = inv.id;
+    if ok then
+      update public.invitations set accepted_at = now() where id = inv.inv_id;
       return query
-        select o.id, o.name, inv.role from public.organizations o where o.id = inv.org_id;
+        select o.id, o.name, inv.inv_role from public.organizations o where o.id = inv.inv_org;
     end if;
   end loop;
 end $$;
@@ -42,7 +43,7 @@ revoke all on function public.accept_invitations_for(uuid) from public, anon, au
 
 -- ما يناديه المتصفح: لا يقبل إلا دعوات صاحب الجلسة نفسه.
 create or replace function public.accept_my_invitations()
-returns table (org_id uuid, org_name text, member_role text)
+returns table (joined_org_id uuid, joined_org_name text, joined_role text)
 language sql security definer set search_path = public as $$
   select * from public.accept_invitations_for(auth.uid());
 $$;
@@ -67,7 +68,7 @@ begin
   return new;
 end $$;
 
--- الدعوات المعلقة لمستخدمين مسجّلين أصلاً تُقبل الآن دفعة واحدة.
+-- الدعوات المعلقة لمستخدمين مسجّلين أصلاً تُقبل دفعة واحدة.
 select public.accept_invitations_for(u.id)
 from auth.users u
 where exists (
