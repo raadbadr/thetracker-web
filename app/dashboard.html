@@ -451,6 +451,41 @@
 
     /* Tabs / filters / inline glass forms (layout only; panel look = header.css .menu-dropdown glass) */
     .tabs-row { margin-top: 0; margin-bottom: 1.25rem; }
+
+    /* لوحة المعلومات: عمود رئيسي للخدمات والقائمة، وعمود جانبي للتقويم والأرقام */
+    .dash-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+    @media (min-width: 1150px) { .dash-grid { grid-template-columns: minmax(0, 1fr) minmax(320px, 400px); } }
+    .dash-main, .dash-side { min-width: 0; }
+    .dash-side { display: grid; gap: 1.5rem; align-content: start; }
+    /* التقويم داخل العمود الجانبي: خلايا مضغوطة وأزرار في سطر واحد */
+    .dash-side .cal-nav { flex-wrap: nowrap; gap: 0.4rem; }
+    .dash-side .cal-nav .chat-option-btn { padding: 0.35rem 0.6rem; font-size: 0.75rem; white-space: nowrap; }
+    .dash-side .cal-title { font-size: 0.95rem; }
+    .dash-side .cal-grid { gap: 0.25rem; }
+    .dash-side .cal-cell { min-height: 54px; padding: 0.2rem; border-radius: 10px; }
+    .dash-side .cal-dow { font-size: 0.68rem; }
+    .dash-side .cal-day { font-size: 0.72rem; }
+    .dash-side .cal-chip { font-size: 0.6rem; padding: 0.08rem 0.25rem; }
+    .dash-side .platform-stats-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dash-side .content, .dash-main .content { margin-bottom: 0; }
+    .svc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 1rem; }
+    .svc-card {
+      display: flex; flex-direction: column; gap: 0.5rem;
+      padding: 1.1rem; border-radius: 16px;
+      background: var(--glass); border: 1px solid var(--glass-border);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .svc-card:hover { transform: translateY(-3px); box-shadow: 0 12px 28px var(--shadow-dark); }
+    .svc-card h3 { font-size: 1rem; margin: 0; color: var(--text-primary); }
+    .svc-card p { font-size: 0.85rem; margin: 0; color: var(--text-secondary); flex: 1 1 auto; }
+    .svc-icon { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+      border-radius: 12px; background: var(--primary); color: #fff; }
+    .svc-icon svg { width: 20px; height: 20px; fill: currentColor; }
+    .svc-card .waitlist-btn, .svc-card a.waitlist-btn {
+      width: 100%; text-align: center; text-decoration: none;
+      padding: 0.55rem 0.9rem; font-size: 0.85rem;
+      color: #fff;   /* روابط البطاقات ترث لون الروابط الأزرق فتختفي على الزر */
+    }
     .filters-row { justify-content: flex-start; margin-bottom: 1rem; }
     .inline-form {
       background: var(--glass-strong);
@@ -831,6 +866,21 @@
         statOverdue: "متأخرة",
         statDone: "مكتملة",
         tabList: "القائمة",
+        viewCases: "لوحة القضايا",
+        viewViolations: "لوحة المخالفات",
+        servicesTitle: "الخدمات",
+        calendarCardTitle: "التقويم والمواعيد",
+        startService: "بدء الخدمة",
+        svcImportTitle: "استيراد من إكسل",
+        svcImportText: "حوّل جدول مواعيدك وعقودك إلى عناصر متابَعة في دقيقة.",
+        svcAddTitle: "إضافة موعد",
+        svcAddText: "سجّل جلسة أو موعد استحقاق جديداً يدوياً.",
+        svcTeamTitle: "دعوة زميل",
+        svcTeamText: "أضف زملاءك وأسند إليهم المواعيد والمهام.",
+        svcTelegramTitle: "ربط تيليغرام",
+        svcTelegramText: "استقبل تنبيه كل موعد على تيليغرام قبل حلوله.",
+        svcCalendarTitle: "ربط التقويم",
+        svcCalendarText: "اربط مواعيدك بتقويم جوجل أو آبل أو أوتلوك بنقرة.",
         tabCalendar: "التقويم",
         filterAllTrackers: "كل المتتبعات",
         filterAllStatuses: "كل الحالات",
@@ -954,6 +1004,21 @@
         statOverdue: "Overdue",
         statDone: "Done",
         tabList: "List",
+        viewCases: "Cases dashboard",
+        viewViolations: "Violations dashboard",
+        servicesTitle: "Services",
+        calendarCardTitle: "Calendar & hearings",
+        startService: "Start service",
+        svcImportTitle: "Import from Excel",
+        svcImportText: "Turn your schedule or contracts into tracked items in a minute.",
+        svcAddTitle: "Add an appointment",
+        svcAddText: "Log a hearing or a due date by hand.",
+        svcTeamTitle: "Invite a colleague",
+        svcTeamText: "Add colleagues and assign dates and tasks to them.",
+        svcTelegramTitle: "Connect Telegram",
+        svcTelegramText: "Get every reminder on Telegram before it is due.",
+        svcCalendarTitle: "Connect your calendar",
+        svcCalendarText: "Link your dates to Google, Apple or Outlook in one click.",
         tabCalendar: "Calendar",
         filterAllTrackers: "All trackers",
         filterAllStatuses: "All statuses",
@@ -1077,6 +1142,21 @@
         statOverdue: "En retard",
         statDone: "Terminés",
         tabList: "Liste",
+        viewCases: "Tableau des affaires",
+        viewViolations: "Tableau des infractions",
+        servicesTitle: "Services",
+        calendarCardTitle: "Agenda et audiences",
+        startService: "Démarrer le service",
+        svcImportTitle: "Importer depuis Excel",
+        svcImportText: "Transformez votre agenda ou vos contrats en éléments suivis en une minute.",
+        svcAddTitle: "Ajouter un rendez-vous",
+        svcAddText: "Enregistrez une audience ou une échéance manuellement.",
+        svcTeamTitle: "Inviter un collègue",
+        svcTeamText: "Ajoutez vos collègues et attribuez-leur dates et tâches.",
+        svcTelegramTitle: "Connecter Telegram",
+        svcTelegramText: "Recevez chaque rappel sur Telegram avant l'échéance.",
+        svcCalendarTitle: "Connecter l'agenda",
+        svcCalendarText: "Reliez vos dates à Google, Apple ou Outlook en un clic.",
         tabCalendar: "Calendrier",
         filterAllTrackers: "Tous les suivis",
         filterAllStatuses: "Tous les statuts",
@@ -1200,6 +1280,21 @@
         statOverdue: "تاخیر شدہ",
         statDone: "مکمل",
         tabList: "فہرست",
+        viewCases: "مقدمات ڈیش بورڈ",
+        viewViolations: "خلاف ورزیاں ڈیش بورڈ",
+        servicesTitle: "خدمات",
+        calendarCardTitle: "کیلنڈر اور سماعتیں",
+        startService: "خدمت شروع کریں",
+        svcImportTitle: "ایکسل سے درآمد",
+        svcImportText: "اپنے شیڈول یا معاہدوں کو منٹ میں ٹریک شدہ آئٹمز میں بدلیں۔",
+        svcAddTitle: "نیا وقت شامل کریں",
+        svcAddText: "سماعت یا مقررہ تاریخ خود درج کریں۔",
+        svcTeamTitle: "ساتھی کو مدعو کریں",
+        svcTeamText: "ساتھیوں کو شامل کریں اور تاریخیں و کام تفویض کریں۔",
+        svcTelegramTitle: "ٹیلیگرام جوڑیں",
+        svcTelegramText: "ہر یاد دہانی وقت سے پہلے ٹیلیگرام پر پائیں۔",
+        svcCalendarTitle: "کیلنڈر جوڑیں",
+        svcCalendarText: "اپنی تاریخیں ایک کلک میں گوگل، ایپل یا آؤٹ لک سے جوڑیں۔",
         tabCalendar: "کیلنڈر",
         filterAllTrackers: "تمام ٹریکرز",
         filterAllStatuses: "تمام حالتیں",
@@ -1428,6 +1523,7 @@
         names: {},
         items: [],
         calItems: [],
+        viewType: "",
         filters: { tracker: "", status: "", search: "" },
         tab: "list",
         month: null,
@@ -1560,6 +1656,114 @@
         return list;
       }
 
+      /* ---------- لوحات فرعية: القضايا والمخالفات ---------- */
+
+      var VIEW_TYPES = {
+        cases: { titleKey: "viewCases", defaultCategory: "قضية",
+                 words: ["قضية", "قضايا", "case", "cases", "affaire", "مقدمہ"] },
+        violations: { titleKey: "viewViolations", defaultCategory: "مخالفة",
+                      words: ["مخالفة", "مخالفات", "violation", "violations", "infraction", "خلاف"] }
+      };
+
+      function currentViewType() {
+        try {
+          var v = new URLSearchParams(window.location.search).get("type");
+          return VIEW_TYPES[v] ? v : "";
+        } catch (e) { return ""; }
+      }
+
+      function matchesView(item) {
+        var view = VIEW_TYPES[state.viewType];
+        if (!view) return true;
+        var hay = ((item.category || "") + " " + (item.title || "")).toLowerCase();
+        for (var i = 0; i < view.words.length; i++) if (hay.indexOf(view.words[i].toLowerCase()) !== -1) return true;
+        return false;
+      }
+
+      function applyViewTitle() {
+        var view = VIEW_TYPES[state.viewType];
+        if (!view) return;
+        var h1 = document.querySelector('h1[data-i18n="title"]');
+        if (h1) { h1.textContent = T(view.titleKey); h1.removeAttribute("data-i18n"); }
+        document.title = T(view.titleKey) + " | TheTracker";
+      }
+
+      /* ---------- تخطيط لوحة المعلومات (خدمات + تقويم دائم الظهور) ---------- */
+
+      var SERVICES = [
+        { key: "svcImport", href: "/app/import.html",
+          icon: '<path d="M19 12v7H5v-7H3v9h18v-9h-2zM11 3v10.17l-3.59-3.58L6 11l6 6 6-6-1.41-1.41L13 13.17V3h-2z"/>' },
+        { key: "svcAdd", action: "add",
+          icon: '<path d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2zm0 16H5V9h14v11zm-6-8h-2v2H9v2h2v2h2v-2h2v-2h-2v-2z"/>' },
+        { key: "svcTeam", href: "/app/team.html",
+          icon: '<path d="M16 11a3 3 0 100-6 3 3 0 000 6zm-8 0a3 3 0 100-6 3 3 0 000 6zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>' },
+        { key: "svcTelegram", href: "/app/settings.html",
+          icon: '<path d="M9.04 15.47l-.37 5.2c.53 0 .76-.23 1.04-.5l2.5-2.39 5.18 3.79c.95.52 1.63.25 1.88-.88l3.4-15.95c.31-1.4-.5-1.95-1.43-1.6L1.6 10.8c-1.36.53-1.34 1.29-.23 1.63l5.1 1.59L18.3 6.58c.56-.36 1.06-.16.65.2L9.04 15.47z"/>' },
+        { key: "svcCalendar", href: "/app/settings.html",
+          icon: '<path d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2zm0 16H5V9h14v11zM7 11h5v5H7z"/>' }
+      ];
+
+      function buildServices() {
+        var html = "";
+        SERVICES.forEach(function (svc) {
+          var btn = svc.href
+            ? '<a class="waitlist-btn" href="' + svc.href + '">' + esc(T("startService")) + "</a>"
+            : '<button type="button" class="waitlist-btn" data-svc="' + svc.key + '">' + esc(T("startService")) + "</button>";
+          html += '<div class="svc-card">' +
+                  '<span class="svc-icon"><svg viewBox="0 0 24 24" aria-hidden="true">' + svc.icon + "</svg></span>" +
+                  "<h3>" + esc(T(svc.key + "Title")) + "</h3>" +
+                  "<p>" + esc(T(svc.key + "Text")) + "</p>" + btn + "</div>";
+        });
+        return html;
+      }
+
+      function layoutDashboard() {
+        var dash = $("dashboard");
+        if (!dash || dash.dataset.laidOut) return;
+        var stats = dash.querySelector(".stats-section");
+        var main = dash.querySelector(".content");
+        var calendar = $("calendarPanel");
+        if (!main || !calendar) return;
+
+        var grid = document.createElement("div");
+        grid.className = "dash-grid";
+        var mainCol = document.createElement("div");
+        mainCol.className = "dash-main";
+        var sideCol = document.createElement("aside");
+        sideCol.className = "dash-side";
+
+        /* بطاقة الخدمات فوق القائمة */
+        var services = document.createElement("div");
+        services.className = "content";
+        services.innerHTML = "<h2>" + esc(T("servicesTitle")) + '</h2><div class="svc-grid">' + buildServices() + "</div>";
+
+        /* التقويم يخرج من التبويبات ويظهر دائماً في العمود الجانبي */
+        var calCard = document.createElement("div");
+        calCard.className = "content";
+        calCard.innerHTML = "<h2>" + esc(T("calendarCardTitle")) + "</h2>";
+
+        dash.insertBefore(grid, dash.firstChild);
+        mainCol.appendChild(services);
+        mainCol.appendChild(main);
+        calCard.appendChild(calendar);
+        sideCol.appendChild(calCard);
+        if (stats) sideCol.appendChild(stats);
+        grid.appendChild(mainCol);
+        grid.appendChild(sideCol);
+
+        calendar.hidden = false;
+        var tabs = dash.querySelector(".tabs-row");
+        if (tabs) tabs.hidden = true;
+
+        services.addEventListener("click", function (ev) {
+          var btn = ev.target.closest("[data-svc]");
+          if (!btn) return;
+          if (btn.dataset.svc === "svcAdd") { var add = $("addItemBtn"); if (add) add.click(); }
+        });
+
+        dash.dataset.laidOut = "1";
+      }
+
       /* ---------- boot ---------- */
 
       function showUnavailable() {
@@ -1579,9 +1783,12 @@
           if (!app.org) { show("createOrgCard"); return; }
           state.org = app.org;
           state.month = startOfMonth(new Date());
+          state.viewType = currentViewType();
+          applyViewTitle();
           renderSelects();
           restoreTab();
           show("dashboard");
+          layoutDashboard();
           return loadAll();
         }).catch(function (err) {
           hide("loadingCard");
@@ -1678,6 +1885,7 @@
       }
 
       function loadStats() {
+        if (state.viewType) return loadViewStats();
         var now = new Date();
         var nowIso = now.toISOString();
         var in7 = new Date(now.getTime() + 7 * 86400000).toISOString();
@@ -1694,9 +1902,39 @@
         }).catch(function (err) { fail(err); });
       }
 
+      /* أرقام اللوحة الفرعية تُحسب من عناصرها هي لا من عناصر الشركة كلها. */
+      function loadViewStats() {
+        var now = Date.now();
+        var in7 = now + 7 * 86400000;
+        return app.listItems({}).then(function (rows) {
+          var items = (rows || []).filter(matchesView);
+          var open = 0, due7 = 0, overdue = 0, done = 0;
+          items.forEach(function (it) {
+            var due = it.due_at ? new Date(it.due_at).getTime() : null;
+            if (it.status === "done") { done++; return; }
+            if (it.status === "open") {
+              open++;
+              if (due && due >= now && due <= in7) due7++;
+              if (due && due < now) overdue++;
+            }
+          });
+          $("statOpenVal").textContent = String(open);
+          $("statDue7Val").textContent = String(due7);
+          $("statOverdueVal").textContent = String(overdue);
+          $("statDoneVal").textContent = String(done);
+        }).catch(function (err) { fail(err); });
+      }
+
       /* ---------- tabs ---------- */
 
       function setTab(tab) {
+        /* التقويم صار دائم الظهور في العمود الجانبي، فالتبويبات لم تعد تخفيه. */
+        if (document.getElementById("dashboard") && document.getElementById("dashboard").dataset.laidOut) {
+          state.tab = "list";
+          $("listPanel").hidden = false;
+          $("calendarPanel").hidden = false;
+          return;
+        }
         state.tab = tab === "calendar" ? "calendar" : "list";
         $("listPanel").hidden = state.tab !== "list";
         $("calendarPanel").hidden = state.tab !== "calendar";
@@ -1750,7 +1988,7 @@
         if (f.status === "overdue") { q.status = "open"; q.to = new Date().toISOString(); }
         else if (f.status) q.status = f.status;
         return app.listItems(q).then(function (items) {
-          state.items = items || [];
+          state.items = (items || []).filter(matchesView);
           if (f.status === "overdue") state.items = state.items.filter(function (it) { return !!it.due_at; });
           clearMsg("listMsg");
           renderList();
@@ -1826,6 +2064,10 @@
       /* ---------- add item / new tracker ---------- */
 
       $("addItemBtn").addEventListener("click", function () {
+        if (state.viewType && VIEW_TYPES[state.viewType]) {
+          var catField = $("addCategory");
+          if (catField && !catField.value) catField.value = VIEW_TYPES[state.viewType].defaultCategory;
+        }
         var p = $("addItemPanel");
         p.hidden = !p.hidden;
         clearMsg("addMsg");
@@ -1964,7 +2206,7 @@
       function loadCalendar() {
         var r = calRange();
         return app.listItems({ from: r.start.toISOString(), to: r.end.toISOString(), limit: 1000 }).then(function (items) {
-          state.calItems = items || [];
+          state.calItems = (items || []).filter(matchesView);
           renderCalendar();
         }).catch(function (err) {
           state.calItems = [];

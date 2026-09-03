@@ -475,6 +475,40 @@
     });
   }
 
+  function renameOrg(name) {
+    return run(function (client) {
+      var orgId = requireOrg();
+      var clean = String(name || "").trim();
+      if (!clean) throw new Error("name required");
+      return client.from("organizations").update({ name: clean }).eq("id", orgId).select("*").single()
+        .then(unwrap)
+        .then(function (row) {
+          app.org.name = row.name;
+          for (var i = 0; i < app.orgs.length; i++) if (app.orgs[i].id === row.id) app.orgs[i].name = row.name;
+          return row;
+        });
+    });
+  }
+
+  function deleteOrg(orgId) {
+    return run(function (client) {
+      var id = orgId || requireOrg();
+      return client.from("organizations").delete().eq("id", id).then(unwrap).then(function () {
+        app.orgs = app.orgs.filter(function (o) { return o.id !== id; });
+        app.org = app.orgs.length ? app.orgs[0] : null;
+        try { app.org ? localStorage.setItem(ORG_KEY, app.org.id) : localStorage.removeItem(ORG_KEY); } catch (e) { /* ignore */ }
+        return true;
+      });
+    });
+  }
+
+  /* بحث عن مستخدم مسجّل لدعوته (مطابقة تامة للبريد أو الجوال أو رقمه القياسي). */
+  function findProfileForInvite(query) {
+    return run(function (client) {
+      return client.rpc("find_profile_for_invite", { p_query: String(query || "") }).then(unwrap);
+    });
+  }
+
   function effectivePlan() {
     return run(function (client) {
       var orgId = requireOrg();
@@ -862,6 +896,7 @@
       var p = patch || {};
       var clean = {};
       if (p.full_name !== undefined) clean.full_name = String(p.full_name || "").trim() || null;
+      if (p.phone !== undefined) clean.phone = String(p.phone || "").trim() || null;
       if (p.lang !== undefined) clean.lang = p.lang;
       if (p.tz !== undefined) clean.tz = p.tz;
       return client.from("profiles").update(clean).eq("id", app.user.id).select("*").single()
@@ -993,15 +1028,21 @@
     { href: "/app/dashboard.html", path: "dashboard",
       icon: '<path d="M4 13h6V4H4v9zm0 7h6v-5H4v5zm9 0h7v-9h-7v9zm0-16v5h7V4h-7z"/>',
       labels: { ar: "لوحة التحكم", en: "Dashboard", fr: "Tableau de bord", ur: "ڈیش بورڈ" } },
-    { href: "/app/import.html", path: "import",
-      icon: '<path d="M19 12v7H5v-7H3v9h18v-9h-2zM11 3v10.17l-3.59-3.58L6 11l6 6 6-6-1.41-1.41L13 13.17V3h-2z"/>',
-      labels: { ar: "استيراد إكسل", en: "Excel import", fr: "Import Excel", ur: "ایکسل درآمد" } },
+    { href: "/app/dashboard.html?type=cases", path: "type=cases",
+      icon: '<path d="M20 6h-3V4a2 2 0 00-2-2H9a2 2 0 00-2 2v2H4a2 2 0 00-2 2v11a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2zM9 4h6v2H9V4zm11 15H4V8h16v11z"/><path d="M11 10h2v7h-2z"/>',
+      labels: { ar: "القضايا", en: "Cases", fr: "Affaires", ur: "مقدمات" } },
+    { href: "/app/dashboard.html?type=violations", path: "type=violations",
+      icon: '<path d="M12 2L1 21h22L12 2zm1 15h-2v-2h2v2zm0-4h-2V9h2v4z"/>',
+      labels: { ar: "المخالفات", en: "Violations", fr: "Infractions", ur: "خلاف ورزیاں" } },
     { href: "/app/team.html", path: "team",
       icon: '<path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>',
       labels: { ar: "الفريق", en: "Team", fr: "Équipe", ur: "ٹیم" } },
     { href: "/app/settings.html", path: "settings",
       icon: '<path d="M19.14 12.94a7.07 7.07 0 000-1.88l2.03-1.58a.5.5 0 00.12-.64l-1.92-3.32a.5.5 0 00-.61-.22l-2.39.96a7.03 7.03 0 00-1.62-.94l-.36-2.54a.5.5 0 00-.5-.42h-3.84a.5.5 0 00-.5.42l-.36 2.54c-.58.24-1.12.56-1.62.94l-2.39-.96a.5.5 0 00-.61.22L2.65 8.84a.5.5 0 00.12.64l2.03 1.58a7.07 7.07 0 000 1.88l-2.03 1.58a.5.5 0 00-.12.64l1.92 3.32c.13.22.39.3.61.22l2.39-.96c.5.38 1.04.7 1.62.94l.36 2.54c.04.24.25.42.5.42h3.84c.25 0 .46-.18.5-.42l.36-2.54c.58-.24 1.12-.56 1.62-.94l2.39.96c.22.08.48 0 .61-.22l1.92-3.32a.5.5 0 00-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1112 8.5a3.5 3.5 0 010 7z"/>',
       labels: { ar: "الإعدادات", en: "Settings", fr: "Paramètres", ur: "ترتیبات" } },
+    { href: "/app/import.html", path: "import",
+      icon: '<path d="M19 12v7H5v-7H3v9h18v-9h-2zM11 3v10.17l-3.59-3.58L6 11l6 6 6-6-1.41-1.41L13 13.17V3h-2z"/>',
+      labels: { ar: "استيراد إكسل", en: "Excel import", fr: "Import Excel", ur: "ایکسل درآمد" } },
     { href: "/app/admin.html", path: "admin", adminOnly: true,
       icon: '<path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>',
       labels: { ar: "إدارة المنصة", en: "Platform admin", fr: "Administration", ur: "پلیٹ فارم ایڈمن" } },
@@ -1021,7 +1062,7 @@
     ".app-sidebar a.is-active{background:var(--primary);color:#fff;box-shadow:0 6px 18px var(--shadow-dark)}",
     ".app-sidebar svg{width:20px;height:20px;flex:0 0 auto;fill:currentColor}",
     ".app-sidebar-spacer{flex:1 1 auto}",
-    "body.has-app-sidebar .container{padding-inline-start:calc(232px + 1.5rem)}",
+    "body.has-app-sidebar .container{max-width:1400px;padding-inline-start:calc(232px + 1.5rem)}",
     "@media(max-width:900px){.app-sidebar{position:static;inset:auto;width:auto;flex-direction:row;overflow-x:auto;",
     "border-inline-end:0;border-bottom:1px solid var(--glass-border);padding:.6rem;gap:.4rem}",
     ".app-sidebar-title,.app-sidebar-spacer{display:none}",
@@ -1041,7 +1082,15 @@
     var html = '<div class="app-sidebar-title">' + escapeHtml(sidebarLabel({ ar: "الخدمات", en: "Services", fr: "Services", ur: "خدمات" })) + "</div>";
     NAV_ITEMS.forEach(function (item) {
       if (item.adminOnly && !nav.dataset.admin) return;
-      var active = here.indexOf("/" + item.path) !== -1 ? " is-active" : "";
+      var qs = String(window.location.search || "");
+      var active = "";
+      if (item.path.indexOf("type=") === 0) {
+        active = qs.indexOf(item.path) !== -1 ? " is-active" : "";
+      } else if (item.path === "dashboard") {
+        active = here.indexOf("/dashboard") !== -1 && qs.indexOf("type=") === -1 ? " is-active" : "";
+      } else {
+        active = here.indexOf("/" + item.path) !== -1 ? " is-active" : "";
+      }
       html += '<a class="app-sidebar-link' + active + '" href="' + item.href + '">' +
               "<span>" + escapeHtml(sidebarLabel(item.labels)) + "</span>" +
               '<svg viewBox="0 0 24 24" aria-hidden="true">' + item.icon + "</svg></a>";
@@ -1124,6 +1173,9 @@
   app.regenerateCalendarToken = regenerateCalendarToken;
   app.updateProfile = updateProfile;
   app.isPlatformAdmin = isPlatformAdmin;
+  app.renameOrg = renameOrg;
+  app.deleteOrg = deleteOrg;
+  app.findProfileForInvite = findProfileForInvite;
   app.requestPlan = requestPlan;
   app.planRequests = planRequests;
   app.cancelPlanRequest = cancelPlanRequest;
@@ -1372,11 +1424,92 @@
     }
   }
 
+  /* ============================================================
+   * إكمال الملف الشخصي — لا يستخدم أحد المنصة قبل تسجيل اسمه الكامل ورقم جواله.
+   * ============================================================ */
+
+  var PROFILE_TEXT = {
+    ar: { title: "أكمل بياناتك", intro: "نحتاج اسمك الكامل ورقم جوالك قبل استخدام المنصة.", name: "الاسم الكامل", phone: "رقم الجوال", save: "حفظ ومتابعة", error: "تعذّر الحفظ، حاول مرة أخرى.", invalid: "أدخل اسماً كاملاً ورقم جوال بالصيغة الدولية مثل +9665xxxxxxx" },
+    en: { title: "Complete your details", intro: "We need your full name and mobile number before you use the platform.", name: "Full name", phone: "Mobile number", save: "Save and continue", error: "Could not save, try again.", invalid: "Enter a full name and a mobile number in international format, e.g. +9665xxxxxxx" },
+    fr: { title: "Complétez vos informations", intro: "Nous avons besoin de votre nom complet et de votre numéro de mobile.", name: "Nom complet", phone: "Numéro de mobile", save: "Enregistrer et continuer", error: "Enregistrement impossible, réessayez.", invalid: "Saisissez un nom complet et un numéro au format international, ex. +9665xxxxxxx" },
+    ur: { title: "اپنی تفصیلات مکمل کریں", intro: "پلیٹ فارم استعمال کرنے سے پہلے ہمیں آپ کا پورا نام اور موبائل نمبر درکار ہے۔", name: "پورا نام", phone: "موبائل نمبر", save: "محفوظ کریں اور جاری رکھیں", error: "محفوظ نہیں ہو سکا، دوبارہ کوشش کریں۔", invalid: "پورا نام اور بین الاقوامی فارمیٹ میں نمبر درج کریں، مثلاً +9665xxxxxxx" }
+  };
+
+  var PROFILE_CSS = [
+    ".app-gate{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:1.5rem;",
+    "background:rgba(10,18,24,.75);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}",
+    ".app-gate-card{width:min(460px,100%);padding:1.75rem;border-radius:22px;background:var(--bg-mid,#1a2933);",
+    "border:1px solid var(--glass-border);box-shadow:0 24px 60px rgba(0,0,0,.45)}",
+    ".app-gate-card h2{margin:0 0 .35rem;font-size:1.3rem;color:var(--text-primary)}",
+    ".app-gate-card p{margin:0 0 1.1rem;font-size:.9rem;color:var(--text-secondary)}",
+    ".app-gate-card label{display:block;margin-bottom:.9rem;font-size:.85rem;color:var(--text-secondary)}",
+    ".app-gate-card input{width:100%;margin-top:.35rem;padding:.7rem .9rem;border-radius:12px;",
+    "border:1px solid var(--glass-border);background:var(--glass);color:var(--text-primary);font:inherit}",
+    ".app-gate-card button{width:100%;padding:.75rem 1rem;border:0;border-radius:12px;background:var(--primary);",
+    "color:#fff;font:inherit;font-weight:700;cursor:pointer}",
+    ".app-gate-msg{margin-top:.8rem;font-size:.85rem;color:#ff8f8f;min-height:1.2em}"
+  ].join("");
+
+  function profileText() {
+    return PROFILE_TEXT[lang()] || PROFILE_TEXT.ar;
+  }
+
+  function profileComplete() {
+    var p = app.profile || {};
+    return !!(String(p.full_name || "").trim() && String(p.phone || "").trim());
+  }
+
+  function mountProfileGate() {
+    if (document.getElementById("appProfileGate")) return;
+    if (!/^\/app\//.test(String(window.location.pathname || ""))) return;
+    if (profileComplete()) return;
+
+    var t = profileText();
+    var style = document.createElement("style");
+    style.textContent = PROFILE_CSS;
+    document.head.appendChild(style);
+
+    var gate = document.createElement("div");
+    gate.id = "appProfileGate";
+    gate.className = "app-gate";
+    gate.innerHTML =
+      '<div class="app-gate-card" role="dialog" aria-modal="true">' +
+        "<h2>" + escapeHtml(t.title) + "</h2><p>" + escapeHtml(t.intro) + "</p>" +
+        "<label>" + escapeHtml(t.name) + '<input type="text" id="gateName" maxlength="120" autocomplete="name" value="' +
+          escapeHtml(String((app.profile || {}).full_name || "")) + '"></label>' +
+        "<label>" + escapeHtml(t.phone) + '<input type="tel" id="gatePhone" dir="ltr" placeholder="+9665xxxxxxx" autocomplete="tel" value="' +
+          escapeHtml(String((app.profile || {}).phone || "")) + '"></label>' +
+        '<button type="button" id="gateSave">' + escapeHtml(t.save) + "</button>" +
+        '<div class="app-gate-msg" id="gateMsg"></div>' +
+      "</div>";
+    document.body.appendChild(gate);
+
+    document.getElementById("gateSave").addEventListener("click", function () {
+      var name = String(document.getElementById("gateName").value || "").trim();
+      var phone = String(document.getElementById("gatePhone").value || "").trim().replace(/[\s-]/g, "");
+      var msg = document.getElementById("gateMsg");
+      if (name.split(/\s+/).length < 2 || !/^\+[1-9]\d{7,14}$/.test(phone)) { msg.textContent = t.invalid; return; }
+      var btn = document.getElementById("gateSave");
+      btn.disabled = true;
+      msg.textContent = "";
+      updateProfile({ full_name: name, phone: phone }).then(function () {
+        gate.remove();
+      }).catch(function () {
+        btn.disabled = false;
+        msg.textContent = t.error;
+      });
+    });
+  }
+
   /* القائمة الجانبية تُركّب بعد اكتمال تعريف الواجهة، وأي خطأ فيها لا يوقف الصفحة. */
   function bootSidebar() {
     try { mountSidebar(); } catch (e) { /* تجاهل */ }
     try { mountTopbar(); } catch (e) { /* تجاهل */ }
     try { keepInsideApp(); } catch (e) { /* تجاهل */ }
+    var readyGate = app && app.ready && typeof app.ready.then === "function" ? app.ready : null;
+    if (readyGate) readyGate.then(function () {
+      try { mountProfileGate(); } catch (e) { /* تجاهل */ }
+    }).catch(function () { /* الصفحة تتكفل بالخطأ */ });
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bootSidebar);
   else bootSidebar();
