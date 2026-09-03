@@ -1565,6 +1565,10 @@
     var footerLinks = document.querySelectorAll(".footer-links");
     for (var f = 0; f < footerLinks.length; f++) footerLinks[f].hidden = true;
 
+    /* زر الخروج واحد فقط، في الشريط العلوي؛ أي زر آخر في الصفحات يُخفى. */
+    var strays = document.querySelectorAll("#signOutCard, #signOutBtn, #quickLinks");
+    for (var i = 0; i < strays.length; i++) strays[i].hidden = true;
+
     var links = document.querySelectorAll('a[href]');
     for (var i = 0; i < links.length; i++) {
       var a = links[i];
