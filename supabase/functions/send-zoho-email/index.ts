@@ -5,7 +5,7 @@ import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-tracker-secret",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
@@ -85,25 +85,6 @@ async function getZohoAccountId(accessToken: string, fromEmail?: string): Promis
   return id;
 }
 
-async function getInboxFolderId(accessToken: string, accountId: string): Promise<string> {
-  const res = await fetch(`${ZOHO_MAIL_BASE}/api/accounts/${accountId}/folders`, {
-    headers: { Authorization: `Zoho-oauthtoken ${accessToken}` },
-  });
-  const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(`Failed to load folders: ${JSON.stringify(json)}`);
-
-  const folders = Array.isArray(json?.data) ? json.data : [];
-  const inbox = folders.find((f: any) => {
-    const ft = String(f?.folderType || "").toLowerCase();
-    const fn = String(f?.folderName || "").toLowerCase();
-    const p = String(f?.path || "").toLowerCase();
-    return ft === "inbox" || fn === "inbox" || p.includes("/inbox");
-  });
-
-  const id = pickString(inbox?.folderId, inbox?.folder_id);
-  if (!id) throw new Error("Inbox folderId not found");
-  return id;
-}
 
 // ─── Send plain email ───
 async function sendMail(payload: SendPayload) {
