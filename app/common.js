@@ -1231,8 +1231,10 @@
         nav += '<button type="button" id="topServicesBtn" aria-haspopup="true" aria-expanded="false">' + label +
                '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" style="fill:currentColor"><path d="M7 10l5 5 5-5z"/></svg></button>';
       } else {
-        var active = item.href.indexOf("/app/") === 0 && here.indexOf(item.href) === 0 ? " is-active" : "";
-        nav += '<a class="' + active.replace(" ", "") + '" href="' + item.href + '">' + label + "</a>";
+        var inApp = item.href.indexOf("/app/") === 0;
+        var active = inApp && here.indexOf(item.href) === 0 ? "is-active" : "";
+        var target = inApp ? "" : ' target="_blank" rel="noopener"';
+        nav += '<a class="' + active + '" href="' + item.href + '"' + target + ">" + label + "</a>";
       }
     });
 
@@ -1322,6 +1324,21 @@
     }).catch(function () { /* التنبيهات ليست حرجة */ });
   }
 
+  /* داخل التطبيق لا يخرج المستخدم من حسابه: روابط الموقع العام تُفتح في تبويب
+     جديد، ورابط "تسجيل الدخول" في التذييل لا معنى له بعد الدخول. */
+  function keepInsideApp() {
+    var links = document.querySelectorAll('a[href]');
+    for (var i = 0; i < links.length; i++) {
+      var a = links[i];
+      var href = a.getAttribute("href") || "";
+      if (href.indexOf("/login") === 0 || href.indexOf("login.html") !== -1) { a.hidden = true; continue; }
+      if (href.charAt(0) === "#" || href.indexOf("mailto:") === 0 || href.indexOf("webcal:") === 0) continue;
+      var outside = href.indexOf("/app/") !== 0 && href.indexOf("http") !== 0 ? true : (href.indexOf(window.location.origin + "/app/") === 0 ? false : href.indexOf("http") === 0);
+      if (href.indexOf("/app/") === 0) continue;
+      if (outside && !a.target) { a.target = "_blank"; a.rel = "noopener"; }
+    }
+  }
+
   function mountTopbar() {
     if (document.getElementById("appTopbar")) return;
     if (!/^\/app\//.test(String(window.location.pathname || ""))) return;
@@ -1351,6 +1368,7 @@
   function bootSidebar() {
     try { mountSidebar(); } catch (e) { /* تجاهل */ }
     try { mountTopbar(); } catch (e) { /* تجاهل */ }
+    try { keepInsideApp(); } catch (e) { /* تجاهل */ }
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bootSidebar);
   else bootSidebar();
