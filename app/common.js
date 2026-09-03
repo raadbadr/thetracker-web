@@ -1348,11 +1348,14 @@
     ".app-topnav>a.is-active{background:var(--glass-border);color:var(--text-primary)}",
     ".app-topnav>a.is-active::after{content:'';position:absolute;inset-inline:1rem;bottom:-.65rem;height:3px;border-radius:3px;background:var(--primary)}",
     ".app-userbox{display:flex;align-items:center;gap:.5rem;flex:0 0 auto}",
-    ".app-orgbox{display:flex;align-items:center;gap:.5rem;padding:.35rem .5rem .35rem .85rem;border-radius:14px;",
-    "background:var(--primary);color:#fff;box-shadow:0 6px 16px var(--shadow-dark)}",
-    ".app-orglabel{font-size:.72rem;font-weight:700;opacity:.85;letter-spacing:.02em}",
-    ".app-orgselect{max-width:190px;padding:.35rem .5rem;border:0;border-radius:10px;background:rgba(255,255,255,.14);",
-    "color:#fff;font:inherit;font-size:.85rem;font-weight:700;cursor:pointer}",
+    ".app-orgbox{display:flex;align-items:center;gap:.55rem;padding:.4rem .55rem .4rem .9rem;border-radius:14px;",
+    "background:var(--glass);border:1px solid var(--glass-border);color:var(--text-primary)}",
+    ".app-orgbox:hover{border-color:var(--primary)}",
+    ".app-orglabel{font-size:.72rem;font-weight:700;color:var(--text-secondary);letter-spacing:.02em}",
+    ".app-orgselect{max-width:190px;padding:.3rem 1.4rem .3rem .4rem;border:0;border-radius:10px;background:transparent;",
+    "color:var(--text-primary);font:inherit;font-size:.88rem;font-weight:700;cursor:pointer;-webkit-appearance:none;appearance:none;",
+    "background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);",
+    "background-position:calc(0.55rem) center,calc(0.9rem) center;background-size:5px 5px,5px 5px;background-repeat:no-repeat}",
     ".app-orgselect option{color:#12212b;background:#fff}",
     "@media(max-width:900px){.app-orgselect{max-width:130px}}",
     ".app-username{display:inline-flex;align-items:center;gap:.5rem;max-width:240px;padding:.5rem 1rem;border-radius:14px;",
@@ -1418,6 +1421,51 @@
   }
 
   /* أين أنا الآن؟ اسم الشركة الحالية ظاهر دائماً ويُبدَّل من مكانه. */
+  var NEW_ORG_TEXT = {
+    ar: { title: "شركة جديدة", hint: "اكتب اسم الشركة التي تريد إضافتها.", save: "إنشاء", cancel: "إلغاء", error: "تعذّر الإنشاء، حاول مرة أخرى." },
+    en: { title: "New company", hint: "Enter the name of the company to add.", save: "Create", cancel: "Cancel", error: "Could not create it, try again." },
+    fr: { title: "Nouvelle entreprise", hint: "Saisissez le nom de l'entreprise.", save: "Créer", cancel: "Annuler", error: "Création impossible, réessayez." },
+    ur: { title: "نئی کمپنی", hint: "کمپنی کا نام لکھیں۔", save: "بنائیں", cancel: "منسوخ", error: "نہیں بن سکی، دوبارہ کوشش کریں۔" }
+  };
+
+  /* إضافة شركة من الشريط العلوي مباشرة */
+  function openNewOrgDialog() {
+    if (document.getElementById("appNewOrg")) return;
+    var t = NEW_ORG_TEXT[lang()] || NEW_ORG_TEXT.ar;
+    var style = document.createElement("style");
+    style.textContent = PROFILE_CSS;
+    document.head.appendChild(style);
+
+    var gate = document.createElement("div");
+    gate.id = "appNewOrg";
+    gate.className = "app-gate";
+    gate.innerHTML =
+      '<div class="app-gate-card" role="dialog" aria-modal="true">' +
+        "<h2>" + escapeHtml(t.title) + "</h2><p>" + escapeHtml(t.hint) + "</p>" +
+        '<label><input type="text" id="newOrgInput" maxlength="120" autocomplete="organization"></label>' +
+        '<button type="button" id="newOrgSave">' + escapeHtml(t.save) + "</button>" +
+        '<button type="button" id="newOrgCancelBtn" style="margin-top:.6rem;background:transparent;color:var(--text-secondary)">' + escapeHtml(t.cancel) + "</button>" +
+        '<div class="app-gate-msg" id="newOrgErr"></div>' +
+      "</div>";
+    document.body.appendChild(gate);
+    var input = document.getElementById("newOrgInput");
+    if (input) input.focus();
+
+    document.getElementById("newOrgCancelBtn").addEventListener("click", function () { gate.remove(); });
+    document.getElementById("newOrgSave").addEventListener("click", function () {
+      var name = String(input.value || "").trim();
+      if (!name) { input.focus(); return; }
+      var btn = this;
+      btn.disabled = true;
+      createOrg(name).then(function () {
+        window.location.href = "/app/dashboard.html";
+      }).catch(function () {
+        btn.disabled = false;
+        document.getElementById("newOrgErr").textContent = t.error;
+      });
+    });
+  }
+
   function orgBoxHtml() {
     var orgs = (app && app.orgs) || [];
     var current = app && app.org ? app.org : null;
@@ -1491,7 +1539,8 @@
     var orgSel = document.getElementById("topOrgSelect");
     if (orgSel) orgSel.addEventListener("change", function () {
       if (this.value === "__new") {
-        window.location.href = "/app/dashboard.html?neworg=1";
+        this.value = app.org ? app.org.id : "";
+        openNewOrgDialog();
         return;
       }
       if (app.org && this.value !== app.org.id) setCurrentOrg(this.value);
