@@ -587,6 +587,19 @@
       <!-- Step 3: mapping -->
       <div class="content" id="step3" hidden>
         <h2 data-i18n="step3Title">3. ربط الأعمدة</h2>
+        <div class="waitlist-form" id="modeRow">
+          <label class="form-field" style="flex:1 1 220px">
+            <span data-i18n="sheetKind">نوع الورقة</span>
+            <select class="waitlist-input" id="importMode">
+              <option value="general" data-i18n="sheetKindGeneral">عام (مواعيد وعقود)</option>
+              <option value="violations" data-i18n="sheetKindViolations">مخالفات</option>
+            </select>
+          </label>
+          <label class="form-field" id="graceField" hidden style="flex:0 1 200px">
+            <span data-i18n="graceDays">مهلة السداد (أيام)</span>
+            <input type="number" class="waitlist-input" id="graceDays" value="30" min="1" max="365" dir="ltr">
+          </label>
+        </div>
         <div class="features-grid stats-block" id="mappingGrid"></div>
         <p data-i18n="mappingHint">الأعمدة غير المربوطة تُحفظ كبيانات إضافية مع كل عنصر.</p>
         <p data-i18n="statusHint">في عمود الحالة تُعتبر القيم done أو منجز أو completed منجزة، وما عداها يبقى مفتوحاً.</p>
@@ -691,6 +704,13 @@
         mapCategory: "التصنيف",
         mapAssignee: "بريد المسؤول",
         mapStatus: "الحالة",
+        sheetKind: "نوع الورقة",
+        sheetKindGeneral: "عام (مواعيد وعقود)",
+        sheetKindViolations: "مخالفات",
+        graceDays: "مهلة السداد (أيام)",
+        mapVNumber: "رقم المخالفة",
+        mapLocation: "الموقع",
+        violationTitle: "مخالفة رقم {n}",
         required: "مطلوب",
         optional: "اختياري",
         notMapped: "— بدون —",
@@ -779,6 +799,13 @@
         mapCategory: "Category",
         mapAssignee: "Assignee email",
         mapStatus: "Status",
+        sheetKind: "Sheet type",
+        sheetKindGeneral: "General (dates and contracts)",
+        sheetKindViolations: "Violations",
+        graceDays: "Payment window (days)",
+        mapVNumber: "Violation number",
+        mapLocation: "Location",
+        violationTitle: "Violation no. {n}",
         required: "required",
         optional: "optional",
         notMapped: "— none —",
@@ -867,6 +894,13 @@
         mapCategory: "Catégorie",
         mapAssignee: "E-mail du responsable",
         mapStatus: "Statut",
+        sheetKind: "Type de feuille",
+        sheetKindGeneral: "Général (échéances et contrats)",
+        sheetKindViolations: "Infractions",
+        graceDays: "Délai de paiement (jours)",
+        mapVNumber: "Numéro d'infraction",
+        mapLocation: "Lieu",
+        violationTitle: "Infraction n° {n}",
         required: "obligatoire",
         optional: "facultatif",
         notMapped: "— aucune —",
@@ -955,6 +989,13 @@
         mapCategory: "زمرہ",
         mapAssignee: "ذمہ دار کا ای میل",
         mapStatus: "حالت",
+        sheetKind: "شیٹ کی قسم",
+        sheetKindGeneral: "عام (تاریخیں اور معاہدے)",
+        sheetKindViolations: "خلاف ورزیاں",
+        graceDays: "ادائیگی کی مہلت (دن)",
+        mapVNumber: "خلاف ورزی نمبر",
+        mapLocation: "مقام",
+        violationTitle: "خلاف ورزی نمبر {n}",
         required: "لازمی",
         optional: "اختیاری",
         notMapped: "— کوئی نہیں —",
@@ -1152,6 +1193,10 @@
           keywords: ["category", "تصنيف", "التصنيف", "type", "نوع", "النوع", "فئة", "الفئة", "catégorie", "categorie", "زمرہ"] },
         { key: "assignee", labelKey: "mapAssignee", required: false,
           keywords: ["assignee", "assignee email", "email", "e-mail", "بريد", "البريد", "البريد الإلكتروني", "مسؤول", "المسؤول", "responsable", "courriel", "ای میل"] },
+        { key: "vnumber",  labelKey: "mapVNumber",  required: false,
+          keywords: ["رقم المخالفة", "رقم مخالفة", "المخالفة", "violation number", "violation no", "ticket", "ticket number", "fine number", "numéro d'infraction"] },
+        { key: "location", labelKey: "mapLocation", required: false,
+          keywords: ["الموقع", "موقع", "المكان", "location", "place", "site", "lieu", "مقام"] },
         { key: "status",   labelKey: "mapStatus",   required: false,
           keywords: ["status", "حالة", "الحالة", "statut", "état", "etat", "حالت"] }
       ];
@@ -1162,6 +1207,7 @@
                            "مکمل", "ہو گیا", "بند"];
 
       const state = {
+        mode: "general",
         file: null,
         fileBase: "",
         workbook: null,
@@ -1358,12 +1404,31 @@
         const mappedIdx = {};
         Object.keys(m).forEach(function (k) { if (m[k] >= 0) mappedIdx[m[k]] = true; });
 
-        state.rows.forEach(function (row) {
-          const title = m.title >= 0 ? cellText(row[m.title]) : "";
-          const due = m.due >= 0 ? trackerApp.parseExcelDate(row[m.due]) : null;
-          if (!title || !due) { skipped++; return; }
+        const isViolations = state.mode === "violations";
+        const graceDays = Math.max(1, Math.min(365, Number(els.graceDays && els.graceDays.value) || 30));
 
-          const rec = { title: title, due_at: due, category: null, status: "open", assignee_id: null, data: {} };
+        state.rows.forEach(function (row) {
+          let title = m.title >= 0 ? cellText(row[m.title]) : "";
+          let due = m.due >= 0 ? trackerApp.parseExcelDate(row[m.due]) : null;
+          const vnumber = m.vnumber >= 0 ? cellText(row[m.vnumber]) : "";
+          const place = m.location >= 0 ? cellText(row[m.location]) : "";
+
+          if (isViolations) {
+            /* ورقة مخالفات: رقم المخالفة وتاريخها والموقع؛ الاستحقاق = التاريخ + مهلة السداد. */
+            if (!vnumber || !due) { skipped++; return; }
+            title = t("violationTitle").replace("{n}", vnumber) + (place ? " — " + place : "");
+            const dueDate = new Date(due);
+            dueDate.setDate(dueDate.getDate() + graceDays);
+            due = dueDate.toISOString();
+          } else if (!title || !due) { skipped++; return; }
+
+          const rec = { title: title, due_at: due, category: isViolations ? "مخالفة" : null, status: "open", assignee_id: null, data: {} };
+          if (isViolations) {
+            rec.data.violation_number = vnumber;
+            rec.data.violation_date = m.due >= 0 ? trackerApp.parseExcelDate(row[m.due]) : null;
+            if (place) rec.data.location = place;
+            rec.data.grace_days = graceDays;
+          }
           if (m.category >= 0) rec.category = cellText(row[m.category]) || null;
           if (m.status >= 0) {
             const sv = cellText(row[m.status]).toLowerCase();
@@ -1759,6 +1824,13 @@
       }
 
       function wireEvents() {
+        if (els.importMode) els.importMode.addEventListener("change", function () {
+          state.mode = this.value === "violations" ? "violations" : "general";
+          show(els.graceField, state.mode === "violations");
+          if (typeof refreshMapping === "function") refreshMapping();
+          else if (typeof renderMapping === "function") { renderMapping(); }
+        });
+
         els.chooseFileBtn.addEventListener("click", function (e) {
           e.stopPropagation();
           if (!state.busy) els.fileInput.click();
@@ -1808,6 +1880,7 @@
           dropZone: $("dropZone"), chooseFileBtn: $("chooseFileBtn"), fileInput: $("fileInput"), fileStatus: $("fileStatus"),
           sheetRow: $("sheetRow"), sheetSelect: $("sheetSelect"), previewNote: $("previewNote"), previewTable: $("previewTable"),
           mappingGrid: $("mappingGrid"), mappingStats: $("mappingStats"), unmatchedHint: $("unmatchedHint"),
+          importMode: $("importMode"), graceField: $("graceField"), graceDays: $("graceDays"),
           trackerSelect: $("trackerSelect"), trackerNameField: $("trackerNameField"), trackerName: $("trackerName"),
           planStats: $("planStats"), planMsg: $("planMsg"), planUpgrade: $("planUpgrade"),
           importBtn: $("importBtn"), importProgress: $("importProgress"),
