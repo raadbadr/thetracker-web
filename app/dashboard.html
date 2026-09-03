@@ -600,6 +600,14 @@
     /* Calendar (theme tokens only) */
     .cal-nav { align-items: center; justify-content: space-between; margin-bottom: 1rem; }
     .cal-title { font-size: 1.15rem; font-weight: 700; color: var(--text-primary); }
+    .cal-modes { display: inline-flex; padding: 0.2rem; border-radius: 12px; background: var(--glass-border); gap: 0.15rem; }
+    .cal-mode {
+      padding: 0.35rem 0.8rem; border: 0; border-radius: 10px; background: transparent;
+      color: var(--text-secondary); font: inherit; font-size: 0.8rem; font-weight: 700; cursor: pointer;
+      -webkit-appearance: none; appearance: none;
+    }
+    .cal-mode.is-active { background: var(--primary); color: #fff; }
+    .cal-day-sub { font-size: 0.62rem; opacity: 0.65; }
     .cal-grid {
       display: grid;
       grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -907,6 +915,10 @@
 
         <div id="calendarPanel" role="tabpanel" hidden>
           <div class="chat-options cal-nav">
+            <div class="cal-modes" role="group">
+              <button type="button" class="cal-mode is-active" id="calGregBtn" data-cal-mode="greg" data-i18n="calGregorian">ميلادي</button>
+              <button type="button" class="cal-mode" id="calHijriBtn" data-cal-mode="hijri" data-i18n="calHijri">هجري</button>
+            </div>
             <button type="button" class="chat-option-btn" id="calPrevBtn" data-i18n="calPrev">الشهر السابق</button>
             <strong class="cal-title" id="calTitle" aria-live="polite"></strong>
             <div class="chat-options" style="margin-top:0">
@@ -1086,6 +1098,8 @@
         calPrev: "الشهر السابق",
         calNext: "الشهر التالي",
         calToday: "اليوم",
+        calGregorian: "ميلادي",
+        calHijri: "هجري",
         daySun: "الأحد",
         dayMon: "الاثنين",
         dayTue: "الثلاثاء",
@@ -1266,6 +1280,8 @@
         calPrev: "Previous month",
         calNext: "Next month",
         calToday: "Today",
+        calGregorian: "Gregorian",
+        calHijri: "Hijri",
         daySun: "Sun",
         dayMon: "Mon",
         dayTue: "Tue",
@@ -1446,6 +1462,8 @@
         calPrev: "Mois précédent",
         calNext: "Mois suivant",
         calToday: "Aujourd'hui",
+        calGregorian: "Grégorien",
+        calHijri: "Hégirien",
         daySun: "Dim",
         dayMon: "Lun",
         dayTue: "Mar",
@@ -1626,6 +1644,8 @@
         calPrev: "پچھلا مہینہ",
         calNext: "اگلا مہینہ",
         calToday: "آج",
+        calGregorian: "عیسوی",
+        calHijri: "ہجری",
         daySun: "اتوار",
         dayMon: "پیر",
         dayTue: "منگل",
@@ -1810,6 +1830,7 @@
         calItems: [],
         viewType: "",
         clientFilter: "",
+        calMode: (function () { try { return localStorage.getItem("tracker_cal_mode") || "greg"; } catch (e) { return "greg"; } })(),
         filters: { tracker: "", status: "", search: "" },
         tab: "list",
         month: null,
@@ -2901,11 +2922,55 @@
         });
       }
 
+      /* تقويم أم القرى عبر Intl، والشبكة تبقى على المحور الميلادي نفسه */
+      var HIJRI_LOCALE = "ar-SA-u-ca-islamic-umalqura-nu-latn";   /* الأرقام غربية دائماً */
+
+      function hijriParts(date) {
+        try {
+          var parts = new Intl.DateTimeFormat("en-u-ca-islamic-umalqura", {
+            day: "numeric", month: "numeric", year: "numeric"
+          }).formatToParts(date);
+          var out = {};
+          parts.forEach(function (p) { if (p.type !== "literal") out[p.type] = parseInt(p.value, 10); });
+          return out;
+        } catch (e) { return null; }
+      }
+
+      function hijriTitle(date) {
+        try {
+          return new Intl.DateTimeFormat(HIJRI_LOCALE, { month: "long", year: "numeric" }).format(date) + " هـ";
+        } catch (e) { return ""; }
+      }
+
+      function startOfHijriMonth(date) {
+        var d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        var p = hijriParts(d);
+        if (!p) return startOfMonth(date);
+        var guard = 0;
+        while (p && p.day > 1 && guard < 40) {
+          d = new Date(d.getFullYear(), d.getMonth(), d.getDate() - (p.day - 1));
+          p = hijriParts(d);
+          guard++;
+          if (p && p.day === 1) break;
+        }
+        return d;
+      }
+
+      function shiftHijriMonth(date, dir) {
+        var start = startOfHijriMonth(date);
+        var probe = new Date(start.getFullYear(), start.getMonth(), start.getDate() + (dir > 0 ? 31 : -2));
+        return startOfHijriMonth(probe);
+      }
+
+      function calendarIsHijri() { return state.calMode === "hijri"; }
+
       function renderCalendar() {
         if (!state.month) return;
         var grid = $("calGrid");
         grid.innerHTML = "";
-        $("calTitle").textContent = T("month" + (state.month.getMonth() + 1)) + " " + state.month.getFullYear();
+        $("calTitle").textContent = calendarIsHijri()
+          ? hijriTitle(state.month)
+          : T("month" + (state.month.getMonth() + 1)) + " " + state.month.getFullYear();
 
         DAY_KEYS.forEach(function (k) {
           var h = document.createElement("div");
@@ -2934,7 +2999,16 @@
             (key === todayKey ? " is-today" : "");
           var num = document.createElement("div");
           num.className = "cal-day";
-          num.textContent = String(d.getDate());
+          if (calendarIsHijri()) {
+            var hp = hijriParts(d);
+            num.textContent = hp ? String(hp.day) : String(d.getDate());
+            var sub = document.createElement("span");
+            sub.className = "cal-day-sub";
+            sub.textContent = " · " + d.getDate();
+            num.appendChild(sub);
+          } else {
+            num.textContent = String(d.getDate());
+          }
           cell.appendChild(num);
 
           var list = byDay[key] || [];
@@ -2965,11 +3039,27 @@
         if (it) openEdit(it);
       });
       $("calPrevBtn").addEventListener("click", function () {
-        state.month = new Date(state.month.getFullYear(), state.month.getMonth() - 1, 1);
+        state.month = calendarIsHijri()
+          ? shiftHijriMonth(state.month, -1)
+          : new Date(state.month.getFullYear(), state.month.getMonth() - 1, 1);
         loadCalendar();
       });
       $("calNextBtn").addEventListener("click", function () {
-        state.month = new Date(state.month.getFullYear(), state.month.getMonth() + 1, 1);
+        state.month = calendarIsHijri()
+          ? shiftHijriMonth(state.month, 1)
+          : new Date(state.month.getFullYear(), state.month.getMonth() + 1, 1);
+        loadCalendar();
+      });
+
+      document.addEventListener("click", function (ev) {
+        var btn = ev.target.closest("[data-cal-mode]");
+        if (!btn) return;
+        state.calMode = btn.dataset.calMode === "hijri" ? "hijri" : "greg";
+        try { localStorage.setItem("tracker_cal_mode", state.calMode); } catch (e) { /* ignore */ }
+        var g = $("calGregBtn"), h = $("calHijriBtn");
+        if (g) g.classList.toggle("is-active", state.calMode === "greg");
+        if (h) h.classList.toggle("is-active", state.calMode === "hijri");
+        state.month = calendarIsHijri() ? startOfHijriMonth(state.month) : startOfMonth(state.month);
         loadCalendar();
       });
       $("calTodayBtn").addEventListener("click", function () {
