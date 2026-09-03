@@ -3,6 +3,7 @@ name: Deploy to Cloudflare Workers
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -12,6 +13,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: npx wrangler deploy
+
+      # سر كلاودفلير يضيفه المالك مرة واحدة في إعدادات المستودع. قبل إضافته يتخطّى
+      # هذا العمل النشر بنجاح بدل أن يفشل ويرسل تنبيهات، وبعد إضافته يعمل تلقائياً.
+      - id: token
+        run: echo "present=${{ secrets.CLOUDFLARE_API_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy
+        if: steps.token.outputs.present == 'true'
+        run: npx wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: Skip (no CLOUDFLARE_API_TOKEN yet)
+        if: steps.token.outputs.present != 'true'
+        run: |
+          echo "::notice title=Deploy skipped::أضف السر CLOUDFLARE_API_TOKEN في إعدادات المستودع ليصير النشر تلقائياً. النشر يتم حالياً يدوياً بـ npx wrangler deploy."
