@@ -22,3 +22,7 @@ binding = "AI"
 # Cron التنبيهات — كل 5 دقائق (يعمل فقط حين تُضبط أسرار Supabase)
 [triggers]
 crons = ["*/5 * * * *"]
+
+# معرّف عميل جوجل للويب (عام، ليس سراً) — يمرّ إلى المتصفح عبر /api/config
+[vars]
+GOOGLE_CLIENT_ID = "641714324296-bhfpk6hf8hnfkfctrtrjvl7uivt5g8p1.apps.googleusercontent.com"

@@ -38,6 +38,8 @@ function handleConfig(env) {
   return json({
     supabaseUrl: env.SUPABASE_URL,
     supabaseAnonKey: env.SUPABASE_ANON_KEY,
+    // معرّف عميل جوجل معلومة عامة (يظهر في المتصفح) ويلزم زر الدخول بجوجل
+    googleClientId: env.GOOGLE_CLIENT_ID || null,
     // معلومات عامة لربط القنوات (لا أسرار)
     telegramBot: env.TELEGRAM_BOT_USERNAME || null,
     whatsappNumber: env.WHATSAPP_PUBLIC_NUMBER || null,

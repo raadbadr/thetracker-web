@@ -23,6 +23,8 @@
   var DASHBOARD_PATH = "/app/dashboard.html";
   var LOGIN_PATH = "login.html";
   var CONFIG_URL = "/api/config";
+  var GSI_SRC = "https://accounts.google.com/gsi/client";
+  var googleClientId = null;   /* عام؛ يأتي من /api/config */
 
   /* Arabic fallbacks, used only when the page has no `translations` object. */
   var FALLBACK = {
@@ -141,6 +143,7 @@
     return loadConfig()
       .then(function (cfg) {
         if (!cfg || !cfg.supabaseUrl || !cfg.supabaseAnonKey) throw new Error("config incomplete");
+        googleClientId = cfg.googleClientId || null;
         auth.client = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey, {
           auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
         });
@@ -275,6 +278,108 @@
     return "statusError";
   }
 
+  /* ---------- تسجيل الدخول بجوجل من نطاقنا (Google Identity Services) ----------
+     مسار OAuth العادي ينقل المتصفح إلى <project>.supabase.co، فتُظهر جوجل ذلك
+     المضيف للمستخدم. زر جوجل الرسمي يبقي نافذة اختيار الحساب على appmails.net،
+     ثم نسلّم رمز الهوية (ID token) إلى سوبابيس مباشرة. إن تعذّر تحميل مكتبة جوجل
+     نرجع إلى مسار التحويل القديم. */
+
+  var gsiPromise = null;   /* Promise<google.accounts.id | null> */
+  var gsiNonce = null;     /* النسخة الأصلية من nonce؛ سوبابيس يطابقها مع بصمتها */
+
+  function randomNonce() {
+    var bytes = new Uint8Array(32);
+    window.crypto.getRandomValues(bytes);
+    var raw = "";
+    for (var i = 0; i < bytes.length; i++) raw += String.fromCharCode(bytes[i]);
+    return window.btoa(raw).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+
+  function sha256Hex(text) {
+    var data = new window.TextEncoder().encode(text);
+    return window.crypto.subtle.digest("SHA-256", data).then(function (buf) {
+      var arr = new Uint8Array(buf);
+      var out = "";
+      for (var i = 0; i < arr.length; i++) out += ("0" + arr[i].toString(16)).slice(-2);
+      return out;
+    });
+  }
+
+  function loadGsi() {
+    if (gsiPromise) return gsiPromise;
+    gsiPromise = new Promise(function (resolve) {
+      if (!googleClientId || !window.crypto || !window.crypto.subtle || !window.TextEncoder) { resolve(null); return; }
+      if (window.google && window.google.accounts && window.google.accounts.id) { resolve(window.google.accounts.id); return; }
+      var el = document.createElement("script");
+      el.src = GSI_SRC;
+      el.async = true;
+      el.defer = true;
+      el.onload = function () {
+        resolve((window.google && window.google.accounts && window.google.accounts.id) || null);
+      };
+      el.onerror = function () { resolve(null); };
+      document.head.appendChild(el);
+    });
+    return gsiPromise;
+  }
+
+  function gsiButtonOptions(slot) {
+    var width = Math.round((slot.getBoundingClientRect && slot.getBoundingClientRect().width) || 0);
+    if (!width) width = 320;
+    return {
+      type: "standard",
+      theme: document.documentElement.getAttribute("data-theme") === "light" ? "outline" : "filled_black",
+      size: "large",
+      text: "continue_with",
+      shape: "pill",
+      logo_alignment: "center",
+      locale: currentLang(),
+      width: Math.max(200, Math.min(400, width))
+    };
+  }
+
+  /* يعرض زر جوجل داخل `slot` ويعيد Promise<boolean> بنجاح العرض. */
+  function mountGoogleButton(slot, hooks) {
+    return loadGsi().then(function (idApi) {
+      if (!idApi || !auth.client) return false;
+      gsiNonce = randomNonce();
+      return sha256Hex(gsiNonce).then(function (hashed) {
+        idApi.initialize({
+          client_id: googleClientId,
+          nonce: hashed,
+          ux_mode: "popup",
+          auto_select: false,
+          cancel_on_tap_outside: true,
+          callback: function (resp) {
+            var credential = resp && resp.credential;
+            if (!credential) { hooks.onError({ code: "gsi_no_credential" }); return; }
+            hooks.onStart();
+            auth.client.auth.signInWithIdToken({ provider: "google", token: credential, nonce: gsiNonce })
+              .then(function (res) {
+                if (res && res.error) { hooks.onError(res.error); return; }
+                window.location.href = nextPath();
+              })
+              .catch(function (err) { hooks.onError(err); });
+          }
+        });
+        renderGoogleButton(slot, idApi);
+        /* إعادة الرسم عند تغيير المظهر أو اللغة (setTheme/setLang يغيّران <html>). */
+        if (typeof MutationObserver !== "undefined") {
+          new MutationObserver(function () { renderGoogleButton(slot, idApi); })
+            .observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "lang", "dir"] });
+        }
+        return true;
+      });
+    }).catch(function () { return false; });
+  }
+
+  function renderGoogleButton(slot, idApi) {
+    try {
+      slot.innerHTML = "";
+      idApi.renderButton(slot, gsiButtonOptions(slot));
+    } catch (e) { /* لو فشل الرسم يظهر الزر البديل */ }
+  }
+
   function initLoginPage() {
     var card = document.getElementById("loginCard");
     if (!card) return;
@@ -335,6 +440,21 @@
       setStatus("statusRedirecting");
       auth.signInWithGoogle().catch(function (err) { fail(err, "oauth"); });
     });
+
+    /* زر جوجل الرسمي يحل مكان الزر أعلاه حين تتوفر مكتبة جوجل ومعرّف العميل. */
+    var googleSlot = document.getElementById("googleGsi");
+    if (googleSlot) {
+      auth.ready.then(function () {
+        return mountGoogleButton(googleSlot, {
+          onStart: function () { setBusy(true); setStatus("statusVerifying"); },
+          onError: function (err) { fail(err, "oauth"); }
+        });
+      }).then(function (ok) {
+        if (!ok) return;
+        googleSlot.style.display = "flex";
+        if (googleBtn) googleBtn.style.display = "none";
+      }).catch(function () { /* يبقى الزر البديل */ });
+    }
 
     if (appleBtn) appleBtn.addEventListener("click", function () {
       if (guardUnavailable()) return;
