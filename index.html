@@ -2788,7 +2788,7 @@
     <div class="hero-content">
       <!-- TheTracker Logo with Text -->
       <div class="logo-with-text">
-        <img src="tracker-logo-full-dark.png" alt="TheTracker" class="hero-logo-full" id="heroLogo">
+        <img src="tracker-logo-full-dark.png?v=2" alt="TheTracker" class="hero-logo-full" id="heroLogo">
         <h1 class="sr-only">TheTracker</h1>
       </div>
       <p class="tagline" data-i18n="tagline">تتبع أعمالك في مكان واحد</p>
@@ -2849,7 +2849,7 @@
   <section class="features" id="features">
     <h2 class="section-title">
       <span class="why-brand-font" data-i18n="whyPrefix">لماذا </span>
-      <img src="tracker-logo-full-dark.png" alt="TheTracker" class="brand-logo-inline" data-brand-logo>
+      <img src="tracker-logo-full-dark.png?v=2" alt="TheTracker" class="brand-logo-inline" data-brand-logo>
       <span class="why-suffix" data-i18n="whySuffix">؟</span>
     </h2>
     <div class="features-grid">
@@ -2951,7 +2951,7 @@
           <div>
             <div class="chat-header-title">
               <span data-i18n="chatPrefix">مساعد </span>
-              <img src="tracker-logo-full-dark.png" alt="TheTracker" class="brand-logo-inline" data-brand-logo-header>
+              <img src="tracker-logo-full-dark.png?v=2" alt="TheTracker" class="brand-logo-inline" data-brand-logo-header>
             </div>
             <div class="chat-header-status" data-i18n="chatBotStatus">متصل · يرد عادة خلال دقائق</div>
             <a href="mailto:support@appmails.net" class="chat-support-email">support@appmails.net</a>
@@ -2983,7 +2983,7 @@
     </p>
     <p class="footer-copyright">
       <span data-i18n="copyrightLine2">جميع الحقوق محفوظة</span>
-      <span> · <img src="tracker-logo-full-dark.png" alt="TheTracker" class="brand-logo-inline brand-logo-inline--xs" data-brand-logo-footer> <span class="footer-year">© 2026</span></span>
+      <span> · <img src="tracker-logo-full-dark.png?v=2" alt="TheTracker" class="brand-logo-inline brand-logo-inline--xs" data-brand-logo-footer> <span class="footer-year">© 2026</span></span>
     </p>
   </footer>
 
@@ -3435,12 +3435,12 @@
       document.getElementById("check-dark").style.display = t === "dark" ? "inline" : "none";
       
       // Update all logos based on theme
-      const heroLogoSrc = t === "dark" ? "tracker-logo-full-dark.png" : "tracker-logo-full-light.png";
+      const heroLogoSrc = t === "dark" ? "tracker-logo-full-dark.png?v=2" : "tracker-logo-full-light.png?v=2";
       const heroLogo = document.getElementById("heroLogo");
       if (heroLogo) heroLogo.src = heroLogoSrc;
       document.querySelectorAll("[data-brand-logo]").forEach(img => { img.src = heroLogoSrc; });
       // Footer & chat header: خلفية داكنة → شعار أبيض
-      const footerLogoSrc = t === "dark" ? "tracker-logo-full-dark.png" : "tracker-logo-full-light.png";
+      const footerLogoSrc = t === "dark" ? "tracker-logo-full-dark.png?v=2" : "tracker-logo-full-light.png?v=2";
       document.querySelectorAll("[data-brand-logo-footer], [data-brand-logo-header]").forEach(img => { img.src = footerLogoSrc; });
 
     }
@@ -3844,7 +3844,7 @@
       div.className = "chat-msg " + (isBot ? "bot" : "user");
       const content = document.createElement("div");
       if (text.includes("TheTracker")) {
-        const logoHtml = '<img src="tracker-logo-full-dark.png" alt="TheTracker" class="brand-logo-inline brand-logo-inline--xs">';
+        const logoHtml = '<img src="tracker-logo-full-dark.png?v=2" alt="TheTracker" class="brand-logo-inline brand-logo-inline--xs">';
         const parts = text.split("TheTracker");
         content.innerHTML = parts.map((p, i) => p + (i < parts.length - 1 ? logoHtml : "")).join("");
       } else {

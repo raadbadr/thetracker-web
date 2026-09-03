@@ -544,7 +544,7 @@
     </p>
     <p class="footer-copyright">
       <span data-i18n="copyrightLine2">جميع الحقوق محفوظة</span>
-      <span> · <img src="/tracker-logo-full-dark.png" alt="TheTracker" id="footerLogo" class="brand-logo-inline brand-logo-inline--xs" data-brand-logo-footer style="height:1.3em;width:auto;display:inline-block;vertical-align:-0.35em;max-width:none;"> <span class="footer-year">© 2026</span></span>
+      <span> · <img src="/tracker-logo-full-dark.png?v=2" alt="TheTracker" id="footerLogo" class="brand-logo-inline brand-logo-inline--xs" data-brand-logo-footer style="height:1.3em;width:auto;display:inline-block;vertical-align:-0.35em;max-width:none;"> <span class="footer-year">© 2026</span></span>
     </p>
   </footer>
 
@@ -852,7 +852,7 @@
       const meta = document.getElementById("themeColorMeta");
       if (meta) meta.content = th === "dark" ? "#1a2933" : "#0068b8";
       const logo = document.getElementById("footerLogo");
-      if (logo) logo.src = th === "dark" ? "/tracker-logo-full-dark.png" : "/tracker-logo-full-light.png";
+      if (logo) logo.src = th === "dark" ? "/tracker-logo-full-dark.png?v=2" : "/tracker-logo-full-light.png?v=2";
       document.getElementById("themeIcon").textContent = th === "dark" ? "🌙" : "☀️";
       document.getElementById("currentThemeDisplay").textContent = translations[l][th === "dark" ? "dark" : "light"];
       document.getElementById("check-light").style.display = th === "light" ? "inline" : "none";
@@ -902,7 +902,7 @@
       const meta = document.getElementById("themeColorMeta");
       if (meta) meta.content = th === "dark" ? "#1a2933" : "#0068b8";
       const logo = document.getElementById("footerLogo");
-      if (logo) logo.src = th === "dark" ? "/tracker-logo-full-dark.png" : "/tracker-logo-full-light.png";
+      if (logo) logo.src = th === "dark" ? "/tracker-logo-full-dark.png?v=2" : "/tracker-logo-full-light.png?v=2";
       document.getElementById("themeIcon").textContent = th === "dark" ? "🌙" : "☀️";
       document.getElementById("currentThemeDisplay").textContent = translations[l][th === "dark" ? "dark" : "light"];
       document.getElementById("check-light").style.display = th === "light" ? "inline" : "none";

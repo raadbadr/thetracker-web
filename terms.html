@@ -285,7 +285,7 @@
     </p>
     <p class="footer-copyright">
       <span data-i18n="copyrightLine2">جميع الحقوق محفوظة</span>
-      <span> · <img src="tracker-logo-full-dark.png" alt="TheTracker" id="footerLogo" class="brand-logo-inline brand-logo-inline--xs" data-brand-logo-footer style="height:1.3em;width:auto;display:inline-block;vertical-align:-0.35em;max-width:none;"> <span class="footer-year">© 2026</span></span>
+      <span> · <img src="tracker-logo-full-dark.png?v=2" alt="TheTracker" id="footerLogo" class="brand-logo-inline brand-logo-inline--xs" data-brand-logo-footer style="height:1.3em;width:auto;display:inline-block;vertical-align:-0.35em;max-width:none;"> <span class="footer-year">© 2026</span></span>
     </p>
   </footer>
 
@@ -667,7 +667,7 @@
     document.documentElement.lang = l;
     document.documentElement.dir = (l === "ar" || l === "ur") ? "rtl" : "ltr";
     function setLang(c) { localStorage.setItem("tracker_lang", c); l = c; document.documentElement.lang = c; document.documentElement.dir = (c === "ar" || c === "ur") ? "rtl" : "ltr"; document.getElementById("currentLangDisplay").textContent = langNames[c] || c; ["ar","en","fr","ur"].forEach(x => { const e = document.getElementById("check-" + x); if (e) e.style.display = c === x ? "inline" : "none"; }); document.querySelectorAll("[data-i18n]").forEach(el => { const k = el.dataset.i18n; if (t[c] && t[c][k]) el.textContent = t[c][k]; }); document.getElementById("currentThemeDisplay").textContent = t[c][theme() === "dark" ? "dark" : "light"]; document.title = (t[c]?.title || "Terms of Use") + " | TheTracker"; }
-    function setTheme(th) { localStorage.setItem("tracker_theme", th); document.documentElement.dataset.theme = th; document.getElementById("themeColorMeta").content = th === "dark" ? "#1a2933" : "#0068b8"; document.getElementById("footerLogo").src = th === "dark" ? "tracker-logo-full-dark.png" : "tracker-logo-full-light.png"; document.getElementById("themeIcon").textContent = th === "dark" ? "🌙" : "☀️"; document.getElementById("currentThemeDisplay").textContent = t[l][th === "dark" ? "dark" : "light"]; document.getElementById("check-light").style.display = th === "light" ? "inline" : "none"; document.getElementById("check-dark").style.display = th === "dark" ? "inline" : "none"; }
+    function setTheme(th) { localStorage.setItem("tracker_theme", th); document.documentElement.dataset.theme = th; document.getElementById("themeColorMeta").content = th === "dark" ? "#1a2933" : "#0068b8"; document.getElementById("footerLogo").src = th === "dark" ? "tracker-logo-full-dark.png?v=2" : "tracker-logo-full-light.png?v=2"; document.getElementById("themeIcon").textContent = th === "dark" ? "🌙" : "☀️"; document.getElementById("currentThemeDisplay").textContent = t[l][th === "dark" ? "dark" : "light"]; document.getElementById("check-light").style.display = th === "light" ? "inline" : "none"; document.getElementById("check-dark").style.display = th === "dark" ? "inline" : "none"; }
     document.getElementById("langMenuBtn").onclick = e => { e.stopPropagation(); document.getElementById("langDropdown").classList.toggle("show"); document.getElementById("themeDropdown").classList.remove("show"); };
     document.getElementById("themeMenuBtn").onclick = e => { e.stopPropagation(); document.getElementById("themeDropdown").classList.toggle("show"); document.getElementById("langDropdown").classList.remove("show"); };
     document.addEventListener("click", () => { document.getElementById("langDropdown").classList.remove("show"); document.getElementById("themeDropdown").classList.remove("show"); });
@@ -677,7 +677,7 @@
     document.getElementById("currentLangDisplay").textContent = langNames[l] || l;
     ["ar","en","fr","ur"].forEach(x => { const e = document.getElementById("check-" + x); if (e) e.style.display = l === x ? "inline" : "none"; });
     document.title = (t[l]?.title || "Terms of Use") + " | TheTracker";
-    (function(){ const th = theme(); document.documentElement.dataset.theme = th; document.getElementById("themeColorMeta").content = th === "dark" ? "#1a2933" : "#0068b8"; document.getElementById("footerLogo").src = th === "dark" ? "tracker-logo-full-dark.png" : "tracker-logo-full-light.png"; document.getElementById("themeIcon").textContent = th === "dark" ? "🌙" : "☀️"; document.getElementById("currentThemeDisplay").textContent = t[l][th === "dark" ? "dark" : "light"]; document.getElementById("check-light").style.display = th === "light" ? "inline" : "none"; document.getElementById("check-dark").style.display = th === "dark" ? "inline" : "none"; })();
+    (function(){ const th = theme(); document.documentElement.dataset.theme = th; document.getElementById("themeColorMeta").content = th === "dark" ? "#1a2933" : "#0068b8"; document.getElementById("footerLogo").src = th === "dark" ? "tracker-logo-full-dark.png?v=2" : "tracker-logo-full-light.png?v=2"; document.getElementById("themeIcon").textContent = th === "dark" ? "🌙" : "☀️"; document.getElementById("currentThemeDisplay").textContent = t[l][th === "dark" ? "dark" : "light"]; document.getElementById("check-light").style.display = th === "light" ? "inline" : "none"; document.getElementById("check-dark").style.display = th === "dark" ? "inline" : "none"; })();
   </script>
   <script>
     if ("serviceWorker" in navigator) {

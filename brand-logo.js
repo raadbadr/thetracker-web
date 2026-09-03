@@ -4,8 +4,8 @@
  * with the wordmark image, following the active theme.
  */
 (function () {
-  var LOGO_DARK = '/tracker-logo-full-dark.png';
-  var LOGO_LIGHT = '/tracker-logo-full-light.png';
+  var LOGO_DARK = '/tracker-logo-full-dark.png?v=2';
+  var LOGO_LIGHT = '/tracker-logo-full-light.png?v=2';
   var SKIP_SELECTOR = 'script, style, noscript, code, pre, title, .brand-logo-mark, .brand-logo-inline, [data-brand-logo-footer]';
   var TARGET = 'TheTracker';
 
