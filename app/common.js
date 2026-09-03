@@ -1473,9 +1473,9 @@
       bellPanel.classList.toggle("is-open");
       if (!bellPanel.classList.contains("is-open")) return;
       var badge = document.getElementById("topBellBadge");
-      if (badge) badge.hidden = true;
-      markNotificationsRead().catch(function () { /* غير حرج */ });
-      loadBell();
+      if (badge) { badge.hidden = true; badge.textContent = "0"; }
+      /* نُعلّمها مقروءة أولاً ثم نُعيد التحميل، وإلا عاد العدّاد بصف لم يُحدَّث بعد. */
+      markNotificationsRead().then(function () { loadBell(); }).catch(function () { loadBell(); });
     });
 
     document.addEventListener("click", function () {
@@ -1550,9 +1550,12 @@
       });
       panel.innerHTML = html;
       var badge = document.getElementById("topBellBadge");
-      if (badge && unseen > 0 && !panel.classList.contains("is-open")) {
+      if (!badge) return;
+      if (unseen > 0 && !panel.classList.contains("is-open")) {
         badge.textContent = String(unseen);
         badge.hidden = false;
+      } else {
+        badge.hidden = true;
       }
     }).catch(function () { /* التنبيهات ليست حرجة */ });
   }
