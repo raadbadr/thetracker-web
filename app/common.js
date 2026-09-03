@@ -1134,9 +1134,6 @@
    * ============================================================ */
 
   var NAV_ITEMS = [
-    { href: "/app/dashboard.html", path: "dashboard",
-      icon: '<path d="M4 13h6V4H4v9zm0 7h6v-5H4v5zm9 0h7v-9h-7v9zm0-16v5h7V4h-7z"/>',
-      labels: { ar: "لوحة التحكم", en: "Dashboard", fr: "Tableau de bord", ur: "ڈیش بورڈ" } },
     { href: "/app/dashboard.html?type=cases", path: "type=cases",
       icon: '<path d="M20 6h-3V4a2 2 0 00-2-2H9a2 2 0 00-2 2v2H4a2 2 0 00-2 2v11a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2zM9 4h6v2H9V4zm11 15H4V8h16v11z"/><path d="M11 10h2v7h-2z"/>',
       labels: { ar: "القضايا", en: "Cases", fr: "Affaires", ur: "مقدمات" } },
@@ -1176,12 +1173,31 @@
     "border-inline-end:0;border-bottom:1px solid var(--glass-border);padding:.6rem;gap:.4rem}",
     ".app-sidebar-title,.app-sidebar-spacer{display:none}",
     ".app-sidebar a,.app-sidebar button{width:auto;white-space:nowrap;padding:.55rem .75rem;font-size:.85rem}",
-    "body.has-app-sidebar .container{padding-inline-start:1rem}}"
+    "body.has-app-sidebar .container{padding-inline-start:1rem}}",
+    "body.sidebar-off .app-sidebar{display:none}",
+    "body.sidebar-off.has-app-sidebar .container{padding-inline-start:1rem}"
   ].join("");
 
   function sidebarLabel(map) {
     var l = lang();
     return map[l] || map.ar;
+  }
+
+  var SIDEBAR_TOGGLE_LABELS = { ar: "إظهار الخدمات أو إخفاؤها", en: "Show or hide services", fr: "Afficher ou masquer les services", ur: "خدمات دکھائیں یا چھپائیں" };
+  var SIDEBAR_KEY = "tracker_sidebar";
+
+  /* القائمة الجانبية تُطوى وتُفتح، وتبقى على اختيار المستخدم بين الصفحات. */
+  function sidebarVisible() {
+    try { return localStorage.getItem(SIDEBAR_KEY) !== "off"; } catch (e) { return true; }
+  }
+
+  function applySidebarVisibility(on, remember) {
+    document.body.classList.toggle("sidebar-off", !on);
+    var nav = document.getElementById("appSidebar");
+    if (nav) nav.setAttribute("aria-hidden", on ? "false" : "true");
+    var btn = document.getElementById("topSidebarToggle");
+    if (btn) btn.setAttribute("aria-expanded", on ? "true" : "false");
+    if (remember) { try { localStorage.setItem(SIDEBAR_KEY, on ? "on" : "off"); } catch (e) { /* التخزين محجوب */ } }
   }
 
   function renderSidebar() {
@@ -1303,9 +1319,9 @@
    * وزر خروج صغير. يظهر أسفل شريط الموقع في كل صفحات /app.
    * ============================================================ */
 
+  /* الشريط العلوي للتنقل العام، والقائمة الجانبية للخدمات: لا يتكرر عنصر بينهما. */
   var TOPNAV = [
     { href: "/app/dashboard.html", labels: { ar: "لوحة المعلومات", en: "Dashboard", fr: "Tableau de bord", ur: "ڈیش بورڈ" } },
-    { menu: true, labels: { ar: "الخدمات الإلكترونية", en: "e-Services", fr: "Services en ligne", ur: "برقی خدمات" } },
     { href: "/about.html", labels: { ar: "الدليل", en: "Guide", fr: "Guide", ur: "رہنما" } },
     { href: "/#contact", labels: { ar: "تواصل معنا", en: "Contact us", fr: "Nous contacter", ur: "رابطہ کریں" } }
   ];
@@ -1320,7 +1336,8 @@
     ".app-topbar{position:fixed;inset-block-start:52px;inset-inline:0;height:60px;z-index:45;display:flex;align-items:center;",
     "justify-content:space-between;gap:1.5rem;padding:0 1.75rem;background:var(--glass);-webkit-backdrop-filter:blur(20px);",
     "backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-border);box-shadow:0 6px 18px rgba(0,0,0,.12)}",
-    ".app-topnav{display:flex;align-items:center;gap:.4rem;overflow:visible;scrollbar-width:none}",
+    ".app-topnav{display:flex;align-items:center;gap:.4rem;overflow:visible;scrollbar-width:none;margin-inline-end:auto}",
+    ".app-sidebar-toggle{flex:0 0 auto;margin-inline-end:-.9rem}",
     ".app-topnav::-webkit-scrollbar{display:none}",
     ".app-topnav>a,.app-topnav>button,.app-menu-wrap>button{position:relative;display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1rem;border:0;",
     ".app-topbar button{-webkit-appearance:none;appearance:none}",
@@ -1420,30 +1437,20 @@
     var bar = document.getElementById("appTopbar");
     if (!bar) return;
     var here = String(window.location.pathname || "");
-    var sidebar = document.getElementById("appSidebar");
-    var services = "";
-    NAV_ITEMS.forEach(function (item) {
-      if (item.adminOnly && !(sidebar && sidebar.dataset.admin)) return;
-      services += '<a href="' + item.href + '">' + escapeHtml(sidebarLabel(item.labels)) + "</a>";
-    });
     var nav = "";
-    TOPNAV.forEach(function (item, i) {
+    TOPNAV.forEach(function (item) {
       var label = escapeHtml(sidebarLabel(item.labels));
-      if (item.menu) {
-        nav += '<span class="app-menu-wrap">' +
-               '<button type="button" id="topServicesBtn" aria-haspopup="true" aria-expanded="false">' + label +
-               '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" style="fill:currentColor"><path d="M7 10l5 5 5-5z"/></svg></button>' +
-               '<div class="app-menu-panel" id="topServicesPanel">__SERVICES__</div></span>';
-      } else {
-        var inApp = item.href.indexOf("/app/") === 0;
-        var active = inApp && here.indexOf(item.href) === 0 ? "is-active" : "";
-        var target = inApp ? "" : ' target="_blank" rel="noopener"';
-        nav += '<a class="' + active + '" href="' + item.href + '"' + target + ">" + label + "</a>";
-      }
+      var inApp = item.href.indexOf("/app/") === 0;
+      var active = inApp && here.indexOf(item.href) === 0 ? "is-active" : "";
+      var target = inApp ? "" : ' target="_blank" rel="noopener"';
+      nav += '<a class="' + active + '" href="' + item.href + '"' + target + ">" + label + "</a>";
     });
 
     bar.innerHTML =
-      '<nav class="app-topnav">' + nav.replace("__SERVICES__", services) + "</nav>" +
+      '<button type="button" class="app-iconbtn app-sidebar-toggle" id="topSidebarToggle" aria-controls="appSidebar" ' +
+        'aria-label="' + escapeHtml(sidebarLabel(SIDEBAR_TOGGLE_LABELS)) + '" title="' + escapeHtml(sidebarLabel(SIDEBAR_TOGGLE_LABELS)) + '">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/></svg></button>' +
+      '<nav class="app-topnav">' + nav + "</nav>" +
       '<div class="app-userbox">' +
         orgBoxHtml() +
         '<span class="app-username" id="topUserName" title="' + escapeHtml(userDisplayName()) + '">' + escapeHtml(userDisplayName()) + "</span>" +
@@ -1457,19 +1464,18 @@
 
     var bell = document.getElementById("topBellBtn");
     var bellPanel = document.getElementById("topBellPanel");
-    var svcBtn = document.getElementById("topServicesBtn");
-    var svcPanel = document.getElementById("topServicesPanel");
 
-    if (svcBtn && svcPanel) svcBtn.addEventListener("click", function (ev) {
-      ev.stopPropagation();
-      if (bellPanel) bellPanel.classList.remove("is-open");
-      svcPanel.classList.toggle("is-open");
-      svcBtn.setAttribute("aria-expanded", svcPanel.classList.contains("is-open") ? "true" : "false");
-    });
+    var toggle = document.getElementById("topSidebarToggle");
+    if (toggle) {
+      applySidebarVisibility(sidebarVisible());
+      toggle.addEventListener("click", function (ev) {
+        ev.stopPropagation();
+        applySidebarVisibility(!sidebarVisible(), true);
+      });
+    }
 
     if (bell && bellPanel) bell.addEventListener("click", function (ev) {
       ev.stopPropagation();
-      if (svcPanel) svcPanel.classList.remove("is-open");
       bellPanel.classList.toggle("is-open");
       if (!bellPanel.classList.contains("is-open")) return;
       var badge = document.getElementById("topBellBadge");
@@ -1480,7 +1486,6 @@
 
     document.addEventListener("click", function () {
       if (bellPanel) bellPanel.classList.remove("is-open");
-      if (svcPanel) svcPanel.classList.remove("is-open");
     });
 
     var orgSel = document.getElementById("topOrgSelect");
