@@ -1,0 +1,17 @@
+/*
+  # HTTPS only - tell browsers to always use HTTPS for 1 year
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  # Block clickjacking - no one can embed your site in an iframe
+  X-Frame-Options: DENY
+  # Block MIME-type sniffing attacks
+  X-Content-Type-Options: nosniff
+  # Control referrer info sent to other sites
+  Referrer-Policy: strict-origin-when-cross-origin
+  # Disable browser features you don't use
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
+  # Content Security Policy
+  # cdn.jsdelivr.net: supabase-js — cdnjs.cloudflare.com: SheetJS (xlsx)
+  # *.supabase.co: المصادقة وقاعدة البيانات — cloudflareinsights: قياسات Cloudflare
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://cloudflareinsights.com; worker-src 'self' blob:;
+  # Stop XSS attacks in older browsers
+  X-XSS-Protection: 1; mode=block

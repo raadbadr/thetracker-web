@@ -1,0 +1,20 @@
+name = "thetracker"
+compatibility_date = "2026-02-17"
+main = "src/worker.js"
+
+# النطاق الوحيد للمنصة — يُربط تلقائياً عند أول نشر (Custom Domain)
+routes = [
+  { pattern = "appmails.net", custom_domain = true },
+  { pattern = "www.appmails.net", custom_domain = true }
+]
+
+[assets]
+directory = "./"
+# Expose the assets binding to the Worker. Without this line env.ASSETS is
+# undefined inside the Worker.
+binding = "ASSETS"
+
+# Workers AI — يشغّل مساعد الموقع مجاناً (الحصة اليومية المجانية) حين لا يوجد
+# ANTHROPIC_API_KEY؛ يظهر داخل الـ Worker كـ env.AI
+[ai]
+binding = "AI"

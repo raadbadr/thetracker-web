@@ -1,0 +1,16 @@
+{
+  "name": "TRACKER",
+  "short_name": "TRACKER",
+  "description": "تتبع أعمالك في مكان واحد",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#1a2933",
+  "theme_color": "#1a2933",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    { "src": "favicon-32x32.png", "sizes": "32x32", "type": "image/png" },
+    { "src": "apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}

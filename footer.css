@@ -1,0 +1,231 @@
+/* ============================================
+   Footer - موحد لجميع الصفحات
+   عدّل هنا فقط وطبق في index, privacy, refund
+   قواعد الشعار: راجع DESIGN_STANDARDS.md
+   ============================================ */
+
+.footer {
+  background: #26333d;
+  color: #ffffff;
+  text-align: center;
+  padding: 3rem 2rem;
+  margin-top: 2rem;
+  border-radius: 20px;
+  position: relative;
+}
+
+.footer::before,
+.footer::after { display: none; }
+
+.footer-links {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+  position: relative;
+  z-index: 1;
+}
+
+.footer-links a {
+  color: #ffffff;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.footer-social-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2em;
+  border-bottom: none !important;
+  opacity: 0.9;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.footer-social-icon:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+.footer-social-icon svg {
+  display: block;
+}
+
+.footer-logo-wrap {
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* السجل التجاري والرقم الضريبي — سطر واحد دائماً (الرقمان معاً)؛
+   clamp يقلّص الخط على الشاشات الضيقة بدل الالتفاف لسطرين */
+.footer-legal {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: clamp(0.6rem, 3vw, 1.8rem);
+  flex-wrap: nowrap;
+  margin: 1.1rem 0 0.3rem;
+  position: relative;
+  z-index: 1;
+}
+.footer-legal-item {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+.footer-legal-label {
+  font-size: clamp(0.56rem, 2.5vw, 0.85rem);
+  font-weight: 600;
+  opacity: 0.75;
+}
+.footer-legal-value {
+  font-size: clamp(0.62rem, 2.8vw, 1rem);
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+[data-theme="light"] .footer .footer-legal-label {
+  color: var(--text-secondary);
+  opacity: 1;
+}
+[data-theme="light"] .footer .footer-legal-value {
+  color: var(--text-primary);
+}
+
+.footer-copyright {
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  position: relative;
+  z-index: 1;
+  opacity: 0.9;
+}
+
+.footer-copyright-line1 { display: block; direction: ltr; unicode-bidi: isolate; }
+.footer-copyright-line2 { display: block; unicode-bidi: isolate; opacity: 0.85; }
+
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15em;
+  direction: ltr;
+}
+
+.brand-logo-img { height: 1em; width: auto; }
+.brand-logo--xs .brand-logo-img { height: 1em; }
+.brand-logo--xs .brand-logo-text { font-size: 1em; }
+
+/* الشعار المضمن في سطر الكوبي رايت */
+.brand-logo-inline {
+  height: 1.6em;
+  width: auto;
+  display: inline-block;
+  vertical-align: -0.45em;
+}
+.brand-logo-inline--xs {
+  height: 1.3em;
+  vertical-align: -0.35em;
+}
+
+/* Inline brand mark used by brand-logo.js to swap the word "PARKINZI"
+   inside body text for the small parkinzi-logo icon. Tuned to sit on
+   the baseline without bumping line-height. */
+.brand-logo-mark {
+  height: 1em;
+  width: auto;
+  display: inline-block;
+  vertical-align: -0.18em;
+  margin: 0 0.15em;
+  max-width: none;
+}
+/* When the mark sits inside a heading, scale it slightly down so it
+   doesn't dominate the H1/H2. */
+h1 .brand-logo-mark,
+h2 .brand-logo-mark,
+h3 .brand-logo-mark {
+  height: 0.85em;
+  vertical-align: -0.12em;
+}
+
+.brand-logo-text {
+  font-family: 'Monoton', cursive;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, var(--primary-light), var(--primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Dark theme - خلفية داكنة، شعار أبيض، ARKINZI أزرق */
+[data-theme="dark"] .footer {
+  background: #26333d;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .footer a,
+[data-theme="dark"] .footer-links a {
+  color: #ffffff;
+  border-bottom-color: rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="dark"] .footer-copyright,
+[data-theme="dark"] .footer .footer-copyright-line1,
+[data-theme="dark"] .footer .footer-copyright-line2 {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .footer .brand-logo-text {
+  color: rgb(0, 160, 210);
+  background: linear-gradient(135deg, rgb(0, 160, 210), rgb(40, 180, 220));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-theme="dark"] .footer .brand-logo-img {
+  filter: brightness(0) invert(1);
+}
+
+/* Light theme - شعار أسود، ARKINZI أزرق */
+[data-theme="light"] .footer {
+  background: rgba(255, 255, 255, 0.75);
+  -webkit-backdrop-filter: blur(30px);
+  backdrop-filter: blur(30px);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
+}
+
+[data-theme="light"] .footer a,
+[data-theme="light"] .footer-links a {
+  border-bottom-color: rgba(0, 104, 184, 0.4);
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .footer-copyright { color: var(--text-primary); }
+[data-theme="light"] .footer .footer-copyright-line2 { color: var(--text-secondary); }
+[data-theme="light"] .footer .brand-logo-text { color: var(--primary); }
+
+[data-theme="light"] .footer .brand-logo-img {
+  filter: brightness(0);
+}
+
+[data-theme="light"] .footer .brand-logo-text {
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* السنة و©: وحدة LTR معزولة — في العربية تُقرأ "2026 ©" (© بعد السنة) */
+.footer-year {
+  direction: ltr;
+  unicode-bidi: isolate;
+  white-space: nowrap;
+}

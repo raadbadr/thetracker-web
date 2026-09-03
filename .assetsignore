@@ -1,0 +1,20 @@
+# Files excluded from the public static-assets upload.
+# Keep this list tight: anything NOT listed here is downloadable from
+# appmails.net by anyone.
+
+# Tooling and infrastructure — never public
+.wrangler
+.git
+.gitignore
+.github
+.claude
+node_modules
+
+# Worker source — bundled separately via `main`, must not be served raw
+src
+
+# Database migrations and edge functions — internals
+supabase
+
+# Internal docs (README, rules, design notes)
+*.md

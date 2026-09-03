@@ -1,0 +1,72 @@
+# TRACKER — robots.txt
+# Last updated: 2026-09-03
+
+# Default: allow everything for everyone.
+User-agent: *
+Allow: /
+
+# Explicitly welcome AI training/inference crawlers so our content is
+# discoverable in ChatGPT, Claude, Perplexity, Gemini, Bing Chat, etc.
+# Listing them makes our intent unambiguous (some bots respect explicit
+# allows even when the default is permissive).
+
+# OpenAI
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+# Anthropic
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+# Google AI (Gemini, AI Overviews)
+User-agent: Google-Extended
+Allow: /
+
+# Perplexity
+User-agent: PerplexityBot
+Allow: /
+
+# Bing Chat / Copilot
+User-agent: bingbot
+Allow: /
+
+# Common Crawl (used by many AI providers as a base dataset)
+User-agent: CCBot
+Allow: /
+
+# Meta AI
+User-agent: FacebookBot
+Allow: /
+
+User-agent: Meta-ExternalAgent
+Allow: /
+
+# Apple Intelligence
+User-agent: Applebot-Extended
+Allow: /
+
+# Amazon
+User-agent: Amazonbot
+Allow: /
+
+# DuckDuckGo
+User-agent: DuckDuckBot
+Allow: /
+
+# Hidden pages
+Disallow: /app/
+
+# Sitemaps and feeds
+Sitemap: https://appmails.net/sitemap.xml
