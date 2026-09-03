@@ -1161,9 +1161,10 @@
     ".app-topbar{position:fixed;inset-block-start:52px;inset-inline:0;height:56px;z-index:45;display:flex;align-items:center;",
     "justify-content:space-between;gap:1rem;padding:0 1.1rem;background:var(--glass);-webkit-backdrop-filter:blur(20px);",
     "backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-border)}",
-    ".app-topnav{display:flex;align-items:center;gap:.25rem;overflow-x:auto;scrollbar-width:none}",
+    ".app-topnav{display:flex;align-items:center;gap:.25rem;overflow:visible;scrollbar-width:none}",
     ".app-topnav::-webkit-scrollbar{display:none}",
-    ".app-topnav>a,.app-topnav>button{position:relative;display:inline-flex;align-items:center;gap:.35rem;padding:.5rem .85rem;border:0;",
+    ".app-topnav>a,.app-topnav>button,.app-menu-wrap>button{position:relative;display:inline-flex;align-items:center;gap:.35rem;padding:.5rem .85rem;border:0;",
+    ".app-topbar button{-webkit-appearance:none;appearance:none}",
     "border-radius:10px;background:transparent;color:var(--text-secondary);font:inherit;font-size:.9rem;font-weight:600;",
     "white-space:nowrap;text-decoration:none;cursor:pointer;transition:all .25s ease}",
     ".app-topnav>a:hover,.app-topnav>button:hover{background:var(--glass-border);color:var(--text-primary)}",
@@ -1179,14 +1180,15 @@
     ".app-bell-badge{position:absolute;inset-block-start:-6px;inset-inline-end:-6px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;",
     "background:#e5484d;color:#fff;font-size:.68rem;font-weight:700;display:flex;align-items:center;justify-content:center}",
     ".app-bell-panel{position:absolute;inset-block-start:46px;inset-inline-end:0;width:300px;max-height:60vh;overflow-y:auto;padding:.5rem;",
-    "border-radius:16px;background:var(--card-bg,var(--glass));-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);",
+    "border-radius:16px;background:var(--bg-mid,#1a2933);",
     "border:1px solid var(--glass-border);box-shadow:0 18px 40px var(--shadow-dark);display:none;z-index:60}",
     ".app-bell-panel.is-open{display:block}",
     ".app-bell-item{padding:.6rem .7rem;border-radius:10px;font-size:.85rem;color:var(--text-secondary)}",
     ".app-bell-item strong{display:block;color:var(--text-primary);font-size:.9rem;margin-bottom:.15rem}",
     ".app-bell-empty{padding:.9rem .7rem;font-size:.85rem;color:var(--text-secondary);text-align:center}",
-    ".app-menu-panel{position:absolute;inset-block-start:46px;width:220px;padding:.4rem;border-radius:16px;background:var(--card-bg,var(--glass));",
-    "-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);border:1px solid var(--glass-border);",
+    ".app-menu-wrap{position:relative;display:inline-flex}",
+    ".app-menu-panel{position:absolute;inset-block-start:46px;inset-inline-start:0;width:220px;padding:.4rem;border-radius:16px;background:var(--bg-mid,#1a2933);",
+    "border:1px solid var(--glass-border);",
     "box-shadow:0 18px 40px var(--shadow-dark);display:none;z-index:60}",
     ".app-menu-panel.is-open{display:block}",
     ".app-menu-panel a{display:block;padding:.6rem .75rem;border-radius:10px;color:var(--text-secondary);font-size:.9rem;font-weight:600;text-decoration:none}",
@@ -1194,6 +1196,7 @@
     "body.has-app-topbar{padding-top:108px}",
     "body.has-app-topbar .app-sidebar{inset-block-start:108px}",
     "@media(max-width:900px){.app-topbar{position:static;height:auto;flex-wrap:wrap;padding:.5rem .75rem;gap:.5rem}",
+    ".app-topnav{overflow-x:auto}",
     "body.has-app-topbar{padding-top:52px}.app-username{max-width:150px}",
     ".app-bell-panel,.app-menu-panel{inset-block-start:auto;inset-inline-end:auto;position:fixed;inset-inline:1rem;width:auto}}"
   ].join("");
@@ -1224,12 +1227,20 @@
     var bar = document.getElementById("appTopbar");
     if (!bar) return;
     var here = String(window.location.pathname || "");
+    var sidebar = document.getElementById("appSidebar");
+    var services = "";
+    NAV_ITEMS.forEach(function (item) {
+      if (item.adminOnly && !(sidebar && sidebar.dataset.admin)) return;
+      services += '<a href="' + item.href + '">' + escapeHtml(sidebarLabel(item.labels)) + "</a>";
+    });
     var nav = "";
     TOPNAV.forEach(function (item, i) {
       var label = escapeHtml(sidebarLabel(item.labels));
       if (item.menu) {
-        nav += '<button type="button" id="topServicesBtn" aria-haspopup="true" aria-expanded="false">' + label +
-               '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" style="fill:currentColor"><path d="M7 10l5 5 5-5z"/></svg></button>';
+        nav += '<span class="app-menu-wrap">' +
+               '<button type="button" id="topServicesBtn" aria-haspopup="true" aria-expanded="false">' + label +
+               '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" style="fill:currentColor"><path d="M7 10l5 5 5-5z"/></svg></button>' +
+               '<div class="app-menu-panel" id="topServicesPanel">__SERVICES__</div></span>';
       } else {
         var inApp = item.href.indexOf("/app/") === 0;
         var active = inApp && here.indexOf(item.href) === 0 ? "is-active" : "";
@@ -1238,15 +1249,8 @@
       }
     });
 
-    var services = "";
-    NAV_ITEMS.forEach(function (item) {
-      if (item.adminOnly && !(document.getElementById("appSidebar") || {}).dataset) return;
-      if (item.adminOnly && !document.getElementById("appSidebar").dataset.admin) return;
-      services += '<a href="' + item.href + '">' + escapeHtml(sidebarLabel(item.labels)) + "</a>";
-    });
-
     bar.innerHTML =
-      '<nav class="app-topnav">' + nav + "</nav>" +
+      '<nav class="app-topnav">' + nav.replace("__SERVICES__", services) + "</nav>" +
       '<div class="app-userbox">' +
         '<span class="app-username" id="topUserName" title="' + escapeHtml(userDisplayName()) + '">' + escapeHtml(userDisplayName()) + "</span>" +
         '<button type="button" class="app-iconbtn" id="topBellBtn" aria-label="' + escapeHtml(sidebarLabel(BELL_LABELS)) + '">' +
@@ -1255,7 +1259,6 @@
         '<button type="button" class="app-iconbtn" id="topSignOut" aria-label="' + escapeHtml(sidebarLabel(SIGN_OUT_LABELS)) + '">' +
           '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg></button>' +
         '<div class="app-bell-panel" id="topBellPanel"><div class="app-bell-empty">' + escapeHtml(sidebarLabel(BELL_EMPTY)) + "</div></div>" +
-        '<div class="app-menu-panel" id="topServicesPanel">' + services + "</div>" +
       "</div>";
 
     var bell = document.getElementById("topBellBtn");
@@ -1327,6 +1330,11 @@
   /* داخل التطبيق لا يخرج المستخدم من حسابه: روابط الموقع العام تُفتح في تبويب
      جديد، ورابط "تسجيل الدخول" في التذييل لا معنى له بعد الدخول. */
   function keepInsideApp() {
+    /* لا شيء يُخرج المستخدم من لوحته: روابط الموقع العام في التذييل تُزال داخل
+       التطبيق، وما تبقّى من روابط خارجية يُفتح في تبويب جديد. */
+    var footerLinks = document.querySelectorAll(".footer-links");
+    for (var f = 0; f < footerLinks.length; f++) footerLinks[f].hidden = true;
+
     var links = document.querySelectorAll('a[href]');
     for (var i = 0; i < links.length; i++) {
       var a = links[i];
