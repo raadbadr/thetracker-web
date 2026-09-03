@@ -221,11 +221,19 @@
     .waitlist-msg.error { color: var(--error); }
     /* Sign-in card layout */
     .login-intro { text-align: center; }
-    .gsi-slot {
+    /* زر جوجل: الشكل الرسمي (أبيض بشعار جوجل) داخل قياسات أزرار الموقع */
+    .google-btn {
       display: flex;
+      align-items: center;
       justify-content: center;
-      min-height: 44px;
+      gap: 0.6rem;
+      background: #ffffff;
+      color: #1f1f1f;
+      border: 1px solid #dadce0;
+      font-weight: 600;
     }
+    .google-btn:hover { background: #f4f5f6; }
+    .google-g { width: 20px; height: 20px; flex: 0 0 auto; }
 
     .login-stack {
       display: flex;
@@ -296,18 +304,19 @@
     </div>
 
     <div class="content" id="loginCard">
-      <p class="login-intro" data-i18n="intro">سجّل دخولك إلى حسابك، وإن لم يكن لديك حساب فسيُنشأ تلقائياً عند أول تسجيل دخول.</p>
-
       <div class="login-stack">
-        <!-- زر جوجل الرسمي (Google Identity Services): يفتح نافذة الاختيار على نطاقنا
-             نفسه بدل تحويل المتصفح إلى سوبابيس، ويُرسم بتصميم جوجل من app.js.
-             الزر التالي مخفي تماماً ولا يظهر إلا إذا تعذّر تحميل مكتبة جوجل. -->
-        <div id="googleGsi" class="gsi-slot"></div>
-        <button type="button" class="waitlist-btn" id="googleBtn" style="width:100%;display:none" data-i18n="googleBtn">المتابعة بحساب Google</button>
+        <button type="button" class="waitlist-btn google-btn" id="googleBtn" style="width:100%">
+          <svg class="google-g" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          </svg>
+          <span data-i18n="googleBtn">المتابعة بحساب Google</span>
+        </button>
         <p class="waitlist-msg" id="loginStatus" style="display:none;" role="status" aria-live="polite"></p>
       </div>
 
-      <p class="login-note" data-i18n="newAccountNote">ليس لديك حساب؟ سيُنشأ تلقائياً عند أول تسجيل دخول.</p>
       <p class="login-note" data-i18n="termsNote">بمتابعتك فإنك توافق على شروط الاستخدام وسياسة الخصوصية.</p>
     </div>
 
@@ -608,7 +617,7 @@
     }
   </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
-<script src="/app.js?v=2" defer></script>
+<script src="/app.js?v=3" defer></script>
 <script src="/brand-logo.js?v=4" defer></script>
 </body>
 </html>

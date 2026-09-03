@@ -278,14 +278,16 @@
     return "statusError";
   }
 
-  /* ---------- تسجيل الدخول بجوجل من نطاقنا (Google Identity Services) ----------
-     مسار OAuth العادي ينقل المتصفح إلى <project>.supabase.co، فتُظهر جوجل ذلك
-     المضيف للمستخدم. زر جوجل الرسمي يبقي نافذة اختيار الحساب على appmails.net،
-     ثم نسلّم رمز الهوية (ID token) إلى سوبابيس مباشرة. إن تعذّر تحميل مكتبة جوجل
-     نرجع إلى مسار التحويل القديم. */
+  /* ---------- تسجيل الدخول بجوجل من نطاقنا ----------
+     مسار OAuth عبر سوبابيس ينقل المتصفح إلى <project>.supabase.co فتُظهر جوجل ذلك
+     المضيف للمستخدم. هنا نطلب رمز الهوية من جوجل مباشرة بتحويل كامل للصفحة
+     (OpenID Connect implicit) فتظهر appmails.net على شاشة جوجل، ثم نسلّم الرمز
+     لسوبابيس. تحويل كامل بلا نوافذ منبثقة ولا إطارات، فيعمل في سفاري وغيره. */
 
-  var gsiPromise = null;   /* Promise<google.accounts.id | null> */
-  var gsiNonce = null;     /* النسخة الأصلية من nonce؛ سوبابيس يطابقها مع بصمتها */
+  var GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
+  var NONCE_KEY = "tracker_google_nonce";
+  var STATE_KEY = "tracker_google_state";
+  var NEXT_KEY = "tracker_google_next";
 
   function randomNonce() {
     var bytes = new Uint8Array(32);
@@ -305,79 +307,67 @@
     });
   }
 
-  function loadGsi() {
-    if (gsiPromise) return gsiPromise;
-    gsiPromise = new Promise(function (resolve) {
-      if (!googleClientId || !window.crypto || !window.crypto.subtle || !window.TextEncoder) { resolve(null); return; }
-      if (window.google && window.google.accounts && window.google.accounts.id) { resolve(window.google.accounts.id); return; }
-      var el = document.createElement("script");
-      el.src = GSI_SRC;
-      el.async = true;
-      el.defer = true;
-      el.onload = function () {
-        resolve((window.google && window.google.accounts && window.google.accounts.id) || null);
-      };
-      el.onerror = function () { resolve(null); };
-      document.head.appendChild(el);
+  function googleReady() {
+    return !!(googleClientId && window.crypto && window.crypto.subtle && window.TextEncoder);
+  }
+
+  /* يبدأ الدخول: nonce أصلي يُحفظ محلياً وبصمته تُرسل لجوجل داخل الرمز. */
+  function startGoogleSignIn() {
+    if (!googleReady()) return auth.signInWithGoogle();
+    var nonce = randomNonce();
+    var state = randomNonce();
+    return sha256Hex(nonce).then(function (hashed) {
+      try {
+        window.sessionStorage.setItem(NONCE_KEY, nonce);
+        window.sessionStorage.setItem(STATE_KEY, state);
+        window.sessionStorage.setItem(NEXT_KEY, nextPath());
+      } catch (e) {
+        return auth.signInWithGoogle();   /* لا تخزين محلي: نرجع للمسار القديم */
+      }
+      var q = "client_id=" + encodeURIComponent(googleClientId) +
+              "&redirect_uri=" + encodeURIComponent(window.location.origin + "/login") +
+              "&response_type=id_token" +
+              "&scope=" + encodeURIComponent("openid email profile") +
+              "&nonce=" + encodeURIComponent(hashed) +
+              "&state=" + encodeURIComponent(state) +
+              "&prompt=select_account";
+      window.location.href = GOOGLE_AUTH_URL + "?" + q;
     });
-    return gsiPromise;
   }
 
-  function gsiButtonOptions(slot) {
-    var width = Math.round((slot.getBoundingClientRect && slot.getBoundingClientRect().width) || 0);
-    if (!width) width = 320;
-    return {
-      type: "standard",
-      theme: "outline",              /* زر جوجل الأبيض الرسمي — أوضح على البطاقة الداكنة */
-      size: "large",
-      text: "signin_with",           /* "تسجيل الدخول باستخدام Google" بالعربية */
-      shape: "rectangular",
-      logo_alignment: "left",
-      locale: currentLang(),
-      width: Math.max(200, Math.min(400, width))
-    };
-  }
+  /* يُستدعى عند فتح صفحة الدخول: إن عاد رمز الهوية في العنوان نُسلّمه لسوبابيس. */
+  function completeGoogleSignIn() {
+    var hash = String(window.location.hash || "").replace(/^#/, "");
+    if (!hash) return Promise.resolve(null);
+    var params = new URLSearchParams(hash);
+    var token = params.get("id_token");
+    var err = params.get("error");
+    if (!token && !err) return Promise.resolve(null);
 
-  /* يعرض زر جوجل داخل `slot` ويعيد Promise<boolean> بنجاح العرض. */
-  function mountGoogleButton(slot, hooks) {
-    return loadGsi().then(function (idApi) {
-      if (!idApi || !auth.client) return false;
-      gsiNonce = randomNonce();
-      return sha256Hex(gsiNonce).then(function (hashed) {
-        idApi.initialize({
-          client_id: googleClientId,
-          nonce: hashed,
-          ux_mode: "popup",
-          auto_select: false,
-          cancel_on_tap_outside: true,
-          callback: function (resp) {
-            var credential = resp && resp.credential;
-            if (!credential) { hooks.onError({ code: "gsi_no_credential" }); return; }
-            hooks.onStart();
-            auth.client.auth.signInWithIdToken({ provider: "google", token: credential, nonce: gsiNonce })
-              .then(function (res) {
-                if (res && res.error) { hooks.onError(res.error); return; }
-                window.location.href = nextPath();
-              })
-              .catch(function (err) { hooks.onError(err); });
-          }
-        });
-        renderGoogleButton(slot, idApi);
-        /* إعادة الرسم عند تغيير المظهر أو اللغة (setTheme/setLang يغيّران <html>). */
-        if (typeof MutationObserver !== "undefined") {
-          new MutationObserver(function () { renderGoogleButton(slot, idApi); })
-            .observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "lang", "dir"] });
-        }
-        return true;
-      });
-    }).catch(function () { return false; });
-  }
-
-  function renderGoogleButton(slot, idApi) {
+    var nonce = null, state = null, next = DASHBOARD_PATH;
     try {
-      slot.innerHTML = "";
-      idApi.renderButton(slot, gsiButtonOptions(slot));
-    } catch (e) { /* لو فشل الرسم يظهر الزر البديل */ }
+      nonce = window.sessionStorage.getItem(NONCE_KEY);
+      state = window.sessionStorage.getItem(STATE_KEY);
+      next = window.sessionStorage.getItem(NEXT_KEY) || DASHBOARD_PATH;
+      window.sessionStorage.removeItem(NONCE_KEY);
+      window.sessionStorage.removeItem(STATE_KEY);
+      window.sessionStorage.removeItem(NEXT_KEY);
+    } catch (e) { /* ignore */ }
+
+    /* ننظف العنوان حتى لا يبقى الرمز ظاهراً. */
+    try { window.history.replaceState(null, "", window.location.pathname + window.location.search); } catch (e) {}
+
+    if (err) return Promise.reject({ code: "google_" + err, message: err });
+    if (!state || state !== params.get("state")) return Promise.reject({ code: "google_state_mismatch" });
+
+    return auth.ready.then(function () {
+      if (!auth.client) throw { code: "unavailable" };
+      return auth.client.auth.signInWithIdToken({ provider: "google", token: token, nonce: nonce || undefined });
+    }).then(function (res) {
+      if (res && res.error) throw res.error;
+      window.location.replace(next);
+      return res;
+    });
   }
 
   function initLoginPage() {
@@ -438,27 +428,13 @@
       if (guardUnavailable()) return;
       setBusy(true);
       setStatus("statusRedirecting");
-      auth.signInWithGoogle().catch(function (err) { fail(err, "oauth"); });
+      startGoogleSignIn().catch(function (err) { fail(err, "oauth"); });
     });
 
-    /* زر جوجل الرسمي يحل مكان الزر أعلاه حين تتوفر مكتبة جوجل ومعرّف العميل. */
-    var googleSlot = document.getElementById("googleGsi");
-    if (googleSlot) {
-      auth.ready.then(function () {
-        return mountGoogleButton(googleSlot, {
-          onStart: function () { setBusy(true); setStatus("statusVerifying"); },
-          onError: function (err) { fail(err, "oauth"); }
-        });
-      }).then(function (ok) {
-        if (ok) return;
-        /* تعذّر تحميل مكتبة جوجل: نكشف الزر البديل بمسار التحويل. */
-        googleSlot.style.display = "none";
-        if (googleBtn) googleBtn.style.display = "";
-      }).catch(function () {
-        googleSlot.style.display = "none";
-        if (googleBtn) googleBtn.style.display = "";
-      });
-    }
+    /* العودة من جوجل: الرمز يصل في نهاية العنوان فنُكمل الدخول فوراً. */
+    completeGoogleSignIn().then(function (res) {
+      if (res) { setBusy(true); setStatus("statusSuccess", "success"); }
+    }).catch(function (err) { fail(err, "oauth"); });
 
     if (appleBtn) appleBtn.addEventListener("click", function () {
       if (guardUnavailable()) return;
