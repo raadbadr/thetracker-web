@@ -517,23 +517,14 @@
     <!-- Invite (owner / admin only) -->
     <div class="content" id="inviteCard" hidden>
       <h2 data-i18n="inviteTitle">دعوة عضو جديد</h2>
-      <p data-i18n="inviteIntro">أدخل البريد الإلكتروني للعضو واختر دوره. لا يُرسل بريد تلقائي؛ ينضم المدعو تلقائياً إلى الفريق عند تسجيل دخوله بالبريد نفسه من صفحة تسجيل الدخول:</p>
+      <p data-i18n="inviteIntro">أدخل البريد الإلكتروني للعضو واختر دوره. إن كان مسجّلاً في المنصة وصله تنبيه في جرس التنبيهات فوراً، وينضم إلى الفريق عند فتحه التطبيق. وإن لم يكن مسجّلاً فأرسل له رابط تسجيل الدخول:</p>
       <p>
         <a href="/login.html" id="loginLinkText" dir="ltr">https://appmails.net/login.html</a>
         <button type="button" class="chat-option-btn" id="copyLinkBtn" data-i18n="copyLinkBtn">نسخ رابط تسجيل الدخول</button>
       </p>
 
       <div class="invite-block">
-        <h3 class="invite-block-title" data-i18n="lookupTitle">من المسجّلين في المنصة</h3>
-        <div class="invite-row" id="lookupRow">
-          <input type="text" class="waitlist-input" id="lookupQuery" placeholder="بريد أو جوال أو رقم مستخدم" data-i18n-placeholder="lookupPlaceholder" autocomplete="off">
-          <button type="button" class="waitlist-btn" id="lookupBtn" data-i18n="lookupBtn">عرض المستخدمين</button>
-        </div>
-        <div class="user-list" id="lookupResult" hidden></div>
-      </div>
-
-      <div class="invite-block">
-        <h3 class="invite-block-title" data-i18n="inviteByEmailTitle">أو بالبريد الإلكتروني مباشرة</h3>
+        <h3 class="invite-block-title" data-i18n="inviteByEmailTitle">بالبريد الإلكتروني</h3>
       <form class="invite-row" id="inviteForm" novalidate>
         <input type="email" class="waitlist-input" id="inviteEmail" placeholder="بريد العضو الإلكتروني" required autocomplete="off" inputmode="email" dir="ltr">
         <select class="waitlist-input" id="inviteRole" aria-label="الدور">
@@ -542,6 +533,15 @@
         </select>
         <button type="submit" class="waitlist-btn" id="inviteBtn" data-i18n="inviteBtn">دعوة</button>
       </form>
+      </div>
+
+      <div class="invite-block">
+        <h3 class="invite-block-title" data-i18n="lookupTitle">أو من المسجّلين في المنصة</h3>
+        <div class="invite-row" id="lookupRow">
+          <input type="text" class="waitlist-input" id="lookupQuery" placeholder="بريد أو جوال أو رقم مستخدم" data-i18n-placeholder="lookupPlaceholder" autocomplete="off">
+          <button type="button" class="waitlist-btn" id="lookupBtn" data-i18n="lookupBtn">عرض المستخدمين</button>
+        </div>
+        <div class="user-list" id="lookupResult" hidden></div>
       </div>
       <p class="waitlist-msg" id="inviteMsg" role="status" aria-live="polite" hidden></p>
       <p class="waitlist-msg error" id="inviteLimitMsg" hidden></p>
@@ -606,13 +606,13 @@
         memberRemoved: "تمت إزالة العضو.",
         roleUpdated: "تم تحديث الدور.",
         inviteTitle: "دعوة عضو جديد",
-        inviteIntro: "أدخل البريد الإلكتروني للعضو واختر دوره. لا يُرسل بريد تلقائي؛ ينضم المدعو تلقائياً إلى الفريق عند تسجيل دخوله بالبريد نفسه من صفحة تسجيل الدخول:",
+        inviteIntro: "أدخل البريد الإلكتروني للعضو واختر دوره. إن كان مسجّلاً في المنصة وصله تنبيه في جرس التنبيهات فوراً، وينضم إلى الفريق عند فتحه التطبيق. وإن لم يكن مسجّلاً فأرسل له رابط تسجيل الدخول:",
         copyLinkBtn: "نسخ رابط تسجيل الدخول",
         linkCopied: "تم نسخ الرابط.",
         inviteEmailPlaceholder: "بريد العضو الإلكتروني",
         inviteBtn: "دعوة",
-        lookupTitle: "من المسجّلين في المنصة",
-        inviteByEmailTitle: "أو بالبريد الإلكتروني مباشرة",
+        lookupTitle: "أو من المسجّلين في المنصة",
+        inviteByEmailTitle: "بالبريد الإلكتروني",
         lookupBtn: "عرض المستخدمين",
         lookupPlaceholder: "بريد أو جوال أو رقم مستخدم",
         lookupNone: "لا يوجد مستخدم مطابق. تستطيع دعوته ببريده مباشرة.",
@@ -675,13 +675,13 @@
         memberRemoved: "Member removed.",
         roleUpdated: "Role updated.",
         inviteTitle: "Invite a new member",
-        inviteIntro: "Enter the member's email and choose a role. No email is sent automatically: the invitee joins the team as soon as they sign in with the same email on the sign-in page:",
+        inviteIntro: "Enter the member's email and choose a role. If they are registered on the platform they get a notification in the bell right away, and they join the team the next time they open the app. Otherwise, send them the sign-in link:",
         copyLinkBtn: "Copy sign-in link",
         linkCopied: "Link copied.",
         inviteEmailPlaceholder: "Member's email address",
         inviteBtn: "Invite",
-        lookupTitle: "From registered users",
-        inviteByEmailTitle: "Or invite by email",
+        lookupTitle: "Or from registered users",
+        inviteByEmailTitle: "By email",
         lookupBtn: "Show users",
         lookupPlaceholder: "Email, mobile or user number",
         lookupNone: "No matching user. You can still invite them by email.",
@@ -744,13 +744,13 @@
         memberRemoved: "Membre retiré.",
         roleUpdated: "Rôle mis à jour.",
         inviteTitle: "Inviter un nouveau membre",
-        inviteIntro: "Saisissez l'e-mail du membre et choisissez son rôle. Aucun e-mail n'est envoyé automatiquement : l'invité rejoint l'équipe dès qu'il se connecte avec la même adresse sur la page de connexion :",
+        inviteIntro: "Saisissez l'e-mail du membre et choisissez son rôle. S'il est inscrit sur la plateforme, il reçoit aussitôt une notification dans la cloche et rejoint l'équipe à sa prochaine ouverture de l'application. Sinon, envoyez-lui le lien de connexion :",
         copyLinkBtn: "Copier le lien de connexion",
         linkCopied: "Lien copié.",
         inviteEmailPlaceholder: "Adresse e-mail du membre",
         inviteBtn: "Inviter",
-        lookupTitle: "Parmi les utilisateurs inscrits",
-        inviteByEmailTitle: "Ou inviter par e-mail",
+        lookupTitle: "Ou parmi les utilisateurs inscrits",
+        inviteByEmailTitle: "Par e-mail",
         lookupBtn: "Afficher les utilisateurs",
         lookupPlaceholder: "E-mail, mobile ou numéro",
         lookupNone: "Aucun utilisateur trouvé. Vous pouvez l'inviter par e-mail.",
@@ -813,13 +813,13 @@
         memberRemoved: "رکن ہٹا دیا گیا۔",
         roleUpdated: "کردار اپ ڈیٹ ہو گیا۔",
         inviteTitle: "نئے رکن کو دعوت دیں",
-        inviteIntro: "رکن کا ای میل درج کریں اور اس کا کردار منتخب کریں۔ کوئی ای میل خود بخود نہیں بھیجی جاتی: مدعو شخص سائن ان صفحے پر اسی ای میل سے سائن ان کرتے ہی ٹیم میں شامل ہو جائے گا:",
+        inviteIntro: "رکن کا ای میل درج کریں اور اس کا کردار منتخب کریں۔ اگر وہ پلیٹ فارم پر رجسٹرڈ ہے تو اسے فوراً بیل میں اطلاع ملے گی، اور ایپ کھولتے ہی ٹیم میں شامل ہو جائے گا۔ ورنہ اسے سائن اِن لنک بھیجیں:",
         copyLinkBtn: "سائن ان لنک کاپی کریں",
         linkCopied: "لنک کاپی ہو گیا۔",
         inviteEmailPlaceholder: "رکن کا ای میل ایڈریس",
         inviteBtn: "دعوت دیں",
-        lookupTitle: "رجسٹرڈ صارفین میں سے",
-        inviteByEmailTitle: "یا ای میل سے دعوت دیں",
+        lookupTitle: "یا رجسٹرڈ صارفین میں سے",
+        inviteByEmailTitle: "ای میل سے",
         lookupBtn: "صارفین دکھائیں",
         lookupPlaceholder: "ای میل، موبائل یا صارف نمبر",
         lookupNone: "کوئی صارف نہیں ملا۔ آپ ای میل سے دعوت دے سکتے ہیں۔",

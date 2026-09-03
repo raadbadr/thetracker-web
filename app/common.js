@@ -1466,6 +1466,30 @@
     });
   }
 
+  /* تنبيهات الفريق تُخزَّن بنوعها لا بنصها، فيقرأها كل مستخدم بلغته. */
+  var BELL_TEAM_TEXT = {
+    invite: {
+      ar: "دعوة للانضمام إلى شركة {org}", en: "Invitation to join {org}",
+      fr: "Invitation à rejoindre {org}", ur: "{org} میں شامل ہونے کی دعوت"
+    },
+    joined: {
+      ar: "انضممت إلى شركة {org}", en: "You joined {org}",
+      fr: "Vous avez rejoint {org}", ur: "آپ {org} میں شامل ہو گئے"
+    },
+    member_joined: {
+      ar: "{actor} انضم إلى شركة {org}", en: "{actor} joined {org}",
+      fr: "{actor} a rejoint {org}", ur: "{actor} {org} میں شامل ہو گئے"
+    }
+  };
+
+  function bellTitle(payload) {
+    var map = BELL_TEAM_TEXT[payload.kind];
+    if (!map) return "";
+    return sidebarLabel(map)
+      .replace("{org}", payload.org_name || "")
+      .replace("{actor}", payload.actor || "");
+  }
+
   function loadBell() {
     var panel = document.getElementById("topBellPanel");
     if (!panel) return;
@@ -1479,7 +1503,7 @@
       var unseen = 0;
       list.forEach(function (n) {
         var payload = n.payload || {};
-        var title = payload.title || payload.item_title || "";
+        var title = bellTitle(payload) || payload.title || payload.item_title || "";
         var due = payload.due_at || null;
         var number = payload.item_number || "";
         if (!n.read_at) unseen++;
