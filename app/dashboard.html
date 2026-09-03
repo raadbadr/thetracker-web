@@ -481,6 +481,18 @@
     .svc-icon { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
       border-radius: 12px; background: var(--primary); color: #fff; }
     .svc-icon svg { width: 20px; height: 20px; fill: currentColor; }
+    /* جدول المخالفات ومجاميعه */
+    .violations-toolbar { margin-bottom: 1rem; }
+    .totals-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0.75rem; margin-bottom: 1.25rem; }
+    .total-card {
+      padding: 0.9rem 1.1rem; border-radius: 16px; background: var(--glass);
+      border: 1px solid var(--glass-border);
+      box-shadow: 4px 4px 10px var(--shadow-dark), -4px -4px 10px var(--shadow-light);
+    }
+    .total-card .total-label { display: block; font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0.3rem; }
+    .total-card .total-value { font-size: 1.25rem; font-weight: 800; color: var(--primary); font-variant-numeric: tabular-nums; }
+    .cell-num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
     /* المرفقات */
     .attach-block { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--glass-border); }
     .attach-title { margin: 0 0 0.75rem; font-size: 0.95rem; color: var(--text-secondary); }
@@ -817,6 +829,35 @@
           </div>
 
           <p class="waitlist-msg" id="listMsg" hidden role="status" aria-live="polite"></p>
+
+          <!-- شريط المخالفات: اختيار الشركة والمجاميع -->
+          <div id="violationsBar" hidden>
+            <div class="waitlist-form violations-toolbar">
+              <select class="waitlist-input" id="clientFilter"></select>
+            </div>
+            <div class="totals-row" id="violationTotals"></div>
+          </div>
+
+          <div class="table-wrap" id="violationsWrap" hidden>
+            <table class="items-table" id="violationsTable">
+              <thead>
+                <tr>
+                  <th data-i18n="colVNumber">رقم المخالفة</th>
+                  <th data-i18n="colVDate">تاريخ المخالفة</th>
+                  <th data-i18n="colClient">الشركة</th>
+                  <th data-i18n="colIssuer">جهة الإصدار</th>
+                  <th data-i18n="colAmount">المبلغ</th>
+                  <th data-i18n="colVType">نوع المخالفة</th>
+                  <th data-i18n="colObjection">حالة التظلم</th>
+                  <th data-i18n="colPayDue">موعد السداد</th>
+                  <th data-i18n="colStatus">الحالة</th>
+                  <th data-i18n="colActions">الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="violationsBody"></tbody>
+            </table>
+          </div>
+
           <div class="table-wrap" id="tableWrap" hidden>
             <table class="items-table">
               <thead>
@@ -917,6 +958,20 @@
         statOverdue: "متأخرة",
         statDone: "مكتملة",
         tabList: "القائمة",
+        colVNumber: "رقم المخالفة",
+        colVDate: "تاريخ المخالفة",
+        colClient: "الشركة",
+        colIssuer: "جهة الإصدار",
+        colAmount: "المبلغ",
+        colVType: "نوع المخالفة",
+        colObjection: "حالة التظلم",
+        colPayDue: "موعد السداد",
+        allClients: "كل الشركات",
+        totalCount: "عدد المخالفات",
+        totalAmount: "إجمالي المبالغ",
+        totalUnpaid: "غير المسددة",
+        totalOverdue: "تجاوزت موعد السداد",
+        sar: "ر.س",
         attachTitle: "المرفقات",
         attachUpload: "رفع ملف (PDF أو Word)",
         attachLinkPlaceholder: "أو الصق رابط جوجل درايف",
@@ -1076,6 +1131,20 @@
         statOverdue: "Overdue",
         statDone: "Done",
         tabList: "List",
+        colVNumber: "Violation no.",
+        colVDate: "Violation date",
+        colClient: "Client",
+        colIssuer: "Issuer",
+        colAmount: "Amount",
+        colVType: "Violation type",
+        colObjection: "Appeal status",
+        colPayDue: "Payment due",
+        allClients: "All clients",
+        totalCount: "Violations",
+        totalAmount: "Total amount",
+        totalUnpaid: "Unpaid",
+        totalOverdue: "Past due",
+        sar: "SAR",
         attachTitle: "Attachments",
         attachUpload: "Upload a file (PDF or Word)",
         attachLinkPlaceholder: "Or paste a Google Drive link",
@@ -1235,6 +1304,20 @@
         statOverdue: "En retard",
         statDone: "Terminés",
         tabList: "Liste",
+        colVNumber: "N° d'infraction",
+        colVDate: "Date de l'infraction",
+        colClient: "Client",
+        colIssuer: "Émetteur",
+        colAmount: "Montant",
+        colVType: "Type d'infraction",
+        colObjection: "Statut du recours",
+        colPayDue: "Échéance de paiement",
+        allClients: "Tous les clients",
+        totalCount: "Infractions",
+        totalAmount: "Montant total",
+        totalUnpaid: "Impayées",
+        totalOverdue: "En retard",
+        sar: "SAR",
         attachTitle: "Pièces jointes",
         attachUpload: "Téléverser un fichier (PDF ou Word)",
         attachLinkPlaceholder: "Ou collez un lien Google Drive",
@@ -1394,6 +1477,20 @@
         statOverdue: "تاخیر شدہ",
         statDone: "مکمل",
         tabList: "فہرست",
+        colVNumber: "خلاف ورزی نمبر",
+        colVDate: "خلاف ورزی کی تاریخ",
+        colClient: "کمپنی",
+        colIssuer: "جاری کنندہ",
+        colAmount: "رقم",
+        colVType: "قسم",
+        colObjection: "اعتراض کی حالت",
+        colPayDue: "ادائیگی کی تاریخ",
+        allClients: "تمام کمپنیاں",
+        totalCount: "خلاف ورزیاں",
+        totalAmount: "کل رقم",
+        totalUnpaid: "غیر ادا شدہ",
+        totalOverdue: "مدت گزر گئی",
+        sar: "ریال",
         attachTitle: "منسلکات",
         attachUpload: "فائل اپ لوڈ کریں (PDF یا Word)",
         attachLinkPlaceholder: "یا گوگل ڈرائیو لنک چسپاں کریں",
@@ -1655,6 +1752,7 @@
         items: [],
         calItems: [],
         viewType: "",
+        clientFilter: "",
         filters: { tracker: "", status: "", search: "" },
         tab: "list",
         month: null,
@@ -2186,6 +2284,12 @@
         if (searchTimer) clearTimeout(searchTimer);
         searchTimer = setTimeout(function () { state.filters.search = v.trim(); loadItems(); }, SEARCH_DELAY);
       });
+      document.addEventListener("change", function (ev) {
+        if (!ev.target || ev.target.id !== "clientFilter") return;
+        state.clientFilter = ev.target.value || "";
+        renderList();
+      });
+
       $("filterForm").addEventListener("submit", function (ev) {
         ev.preventDefault();
         if (searchTimer) clearTimeout(searchTimer);
@@ -2217,8 +2321,114 @@
           '" data-id="' + esc(item.id) + '">' + esc(T(key)) + "</button>";
       }
 
+      /* ---------- جدول المخالفات ---------- */
+
+      function dataOf(item, keys) {
+        var d = item.data || {};
+        for (var i = 0; i < keys.length; i++) {
+          var k = keys[i];
+          if (d[k] !== undefined && d[k] !== null && String(d[k]).trim() !== "") return String(d[k]).trim();
+        }
+        return "";
+      }
+
+      function violationFields(item) {
+        return {
+          number: dataOf(item, ["violation_number", "رقم المخالفة"]) || item.item_number || "",
+          date: dataOf(item, ["violation_date", "تاريخ المخالفة"]),
+          issuer: dataOf(item, ["location", "جهة اصدار المخالفة", "جهة الإصدار"]),
+          vtype: dataOf(item, ["نوع المخالفة", "violation_type"]),
+          objection: dataOf(item, ["حالة التظلم", "التظلم امام الامانة", "objection"]),
+          client: item.client_name || dataOf(item, ["الشركة", "client"])
+        };
+      }
+
+      function money(n) {
+        var v = Number(n);
+        if (!isFinite(v) || !v) return "-";
+        return v.toLocaleString("en-US", { maximumFractionDigits: 2 }) + " " + T("sar");
+      }
+
+      function shortDate(v) {
+        if (!v) return "-";
+        var d = new Date(v);
+        if (!isNaN(d.getTime())) return app.fmtDate(d.toISOString());
+        return String(v);
+      }
+
+      function renderClientFilter(items) {
+        var sel = $("clientFilter");
+        if (!sel) return;
+        var names = {};
+        items.forEach(function (it) { if (it.client_name) names[it.client_name] = true; });
+        var list = Object.keys(names).sort();
+        var current = state.clientFilter || "";
+        sel.innerHTML = '<option value="">' + esc(T("allClients")) + "</option>" +
+          list.map(function (n) { return '<option value="' + esc(n) + '"' + (n === current ? " selected" : "") + ">" + esc(n) + "</option>"; }).join("");
+      }
+
+      function renderTotals(items) {
+        var box = $("violationTotals");
+        if (!box) return;
+        var total = items.length;
+        var sum = 0, unpaidSum = 0, overdue = 0;
+        var now = Date.now();
+        items.forEach(function (it) {
+          var amt = Number(it.amount) || 0;
+          sum += amt;
+          if (it.status !== "done") unpaidSum += amt;
+          if (it.status === "open" && it.due_at && new Date(it.due_at).getTime() < now) overdue++;
+        });
+        box.innerHTML =
+          '<div class="total-card"><span class="total-label">' + esc(T("totalCount")) + '</span><span class="total-value">' + esc(String(total)) + "</span></div>" +
+          '<div class="total-card"><span class="total-label">' + esc(T("totalAmount")) + '</span><span class="total-value">' + esc(money(sum)) + "</span></div>" +
+          '<div class="total-card"><span class="total-label">' + esc(T("totalUnpaid")) + '</span><span class="total-value">' + esc(money(unpaidSum)) + "</span></div>" +
+          '<div class="total-card"><span class="total-label">' + esc(T("totalOverdue")) + '</span><span class="total-value">' + esc(String(overdue)) + "</span></div>";
+      }
+
+      function renderViolations() {
+        var items = state.items.filter(function (it) {
+          return !state.clientFilter || it.client_name === state.clientFilter;
+        });
+        renderClientFilter(state.items);
+        renderTotals(items);
+        var body = $("violationsBody");
+        body.innerHTML = "";
+        $("violationsWrap").hidden = items.length === 0;
+        $("emptyList").hidden = items.length > 0;
+        items.forEach(function (item) {
+          var f = violationFields(item);
+          var sk = statusKeyOf(item);
+          var tr = document.createElement("tr");
+          tr.innerHTML =
+            '<td class="cell-num">' + esc(f.number || "-") + "</td>" +
+            '<td class="cell-num">' + esc(shortDate(f.date)) + "</td>" +
+            "<td>" + esc(f.client || "-") + "</td>" +
+            "<td>" + esc(f.issuer || "-") + "</td>" +
+            '<td class="cell-num">' + esc(money(item.amount)) + "</td>" +
+            "<td>" + esc(f.vtype || "-") + "</td>" +
+            "<td>" + esc(f.objection || "-") + "</td>" +
+            '<td class="cell-num">' + (item.due_at ? esc(app.fmtDate(item.due_at)) : "-") + "</td>" +
+            '<td><span class="status-' + sk + '">' + esc(T(STATUS_KEYS[sk])) + "</span></td>" +
+            '<td><div class="chat-options row-actions">' +
+              (item.status === "done" ? actionBtn(item, "reopen", "actionReopen") : actionBtn(item, "done", "actionDone")) +
+              actionBtn(item, "edit", "actionEdit") +
+              actionBtn(item, "delete", "actionDelete", "is-danger") +
+            "</div></td>";
+          body.appendChild(tr);
+        });
+      }
+
       function renderList() {
         renderChart();
+        if (state.viewType === "violations") {
+          $("violationsBar").hidden = false;
+          $("tableWrap").hidden = true;
+          renderViolations();
+          return;
+        }
+        $("violationsBar").hidden = true;
+        $("violationsWrap").hidden = true;
         var body = $("itemsBody");
         body.innerHTML = "";
         var items = state.items;
