@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://cloudflareinsights.com; worker-src 'self' blob:;">
+  <meta name="theme-color" content="#1a2933" id="themeColorMeta">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <title>إدارة الفريق | TRACKER</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Monoton&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/header.css">
+  <link rel="stylesheet" href="/footer.css?v=3">
+  <style>
+    /* Cross-browser reset + font enforcement (verbatim from login.html) */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    html {
+      -webkit-text-size-adjust: 100%;
+      -moz-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+    button, input, select, textarea, optgroup {
+      font-family: inherit;
+      font-size: inherit;
+      line-height: inherit;
+      color: inherit;
+      margin: 0;
+    }
+    button, [type="button"], [type="reset"], [type="submit"] {
+      -webkit-appearance: button;
+      appearance: button;
+    }
+    img, svg, video, canvas {
+      display: block;
+      max-width: 100%;
+    }
+    a { color: inherit; }
+    [hidden] { display: none !important; }
+
+    /* Theme tokens (verbatim from login.html; --secondary / --accent / --warning as in index.html) */
+    :root, [data-theme="light"] {
+      --primary: rgb(0, 104, 184);
+      --primary-light: rgb(25, 140, 220);
+      --primary-dark: rgb(0, 88, 160);
+      --secondary: rgb(0, 130, 190);
+      --accent: rgb(50, 150, 200);
+      --text-primary: rgb(26, 26, 38);
+      --text-secondary: rgb(77, 77, 89);
+      --text-tertiary: rgb(100, 112, 128);
+      --bg-top: rgb(250, 252, 255);
+      --bg-mid: rgb(242, 247, 252);
+      --bg-bottom: rgb(237, 245, 250);
+      --glass: rgba(255,255,255,0.85);
+      --glass-border: rgba(0,0,0,0.08);
+      --glass-strong: rgba(255, 255, 255, 0.95);
+      --shadow-light: rgba(255, 255, 255, 0.3);
+      --shadow-dark: rgba(0, 0, 0, 0.08);
+      --white: #ffffff;
+      --primary-shadow: rgba(0, 104, 184, 0.3);
+      --success: rgb(52, 199, 89);
+      --warning: rgb(255, 159, 10);
+      --error: rgb(255, 59, 48);
+    }
+    [data-theme="dark"] {
+      --primary: rgb(0, 160, 210);
+      --primary-light: rgb(40, 180, 220);
+      --primary-dark: rgb(0, 140, 190);
+      --secondary: rgb(0, 160, 210);
+      --accent: rgb(50, 160, 210);
+      --text-primary: rgb(255, 255, 255);
+      --text-secondary: rgba(255, 255, 255, 0.7);
+      --text-tertiary: rgba(255, 255, 255, 0.55);
+      --bg-top: rgb(31, 46, 56);
+      --bg-mid: rgb(26, 41, 51);
+      --bg-bottom: rgb(20, 36, 46);
+      --glass: rgba(255,255,255,0.08);
+      --glass-border: rgba(255,255,255,0.15);
+      --glass-strong: rgba(255, 255, 255, 0.12);
+      --shadow-light: rgba(255, 255, 255, 0.05);
+      --shadow-dark: rgba(5, 10, 15, 0.3);
+      --primary-shadow: rgba(0, 160, 210, 0.35);
+      --success: rgb(52, 199, 89);
+      --warning: rgb(255, 159, 10);
+      --error: rgb(255, 59, 48);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    html { background: var(--bg-bottom); }
+    body {
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      background: linear-gradient(135deg, var(--bg-top), var(--bg-bottom));
+      color: var(--text-primary);
+      line-height: 1.8;
+      min-height: 100vh;
+    }
+    .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+    body.has-site-header { padding-top: 52px; }
+    .header {
+      text-align: center;
+      padding: 3rem 2rem;
+      background: var(--glass);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      margin-bottom: 2rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+    [data-theme="dark"] .header { box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .content {
+      background: var(--glass);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      padding: 3rem;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+    [data-theme="dark"] .content { box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+    h2 {
+      font-size: 1.8rem;
+      margin: 2rem 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--primary);
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    h2:first-of-type { margin-top: 0; }
+    p { margin-bottom: 1rem; color: var(--text-secondary); }
+    .content a { color: var(--primary); text-decoration: none; }
+    .content a:hover { text-decoration: underline; }
+    .highlight { font-weight: 600; color: var(--primary); }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: var(--white);
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px var(--primary-shadow);
+    }
+    .back-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px var(--primary-shadow);
+    }
+    /* Form controls (verbatim from index.html / login.html) */
+    .waitlist-form {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+    .waitlist-input {
+      flex: 1;
+      min-width: 140px;
+      padding: 0.7rem 0.85rem;
+      border-radius: 10px;
+      border: 1px solid var(--glass-border);
+      background: var(--glass);
+      color: var(--text-primary);
+      font-size: 0.9rem;
+    }
+    .waitlist-input::placeholder { color: var(--text-tertiary); }
+    .waitlist-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(0, 160, 210, 0.2);
+    }
+    .waitlist-btn {
+      padding: 0.7rem 1.2rem;
+      border-radius: 10px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .waitlist-btn:hover { background: var(--primary-light); transform: translateY(-1px); }
+    .waitlist-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+    .waitlist-msg { margin-top: 0.5rem; font-size: 0.85rem; }
+    .waitlist-msg.success { color: var(--success); }
+    .waitlist-msg.error { color: var(--error); }
+    /* Card layout helpers (verbatim from login.html) */
+    .login-intro { text-align: center; }
+    .login-note { text-align: center; font-size: 0.85rem; margin-top: 1.5rem; margin-bottom: 0; }
+    .login-note + .login-note { margin-top: 0.5rem; }
+
+    /* Feature cards grid (verbatim from index.html) */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .feature-card {
+      background: var(--glass);
+      backdrop-filter: blur(30px) saturate(180%);
+      -webkit-backdrop-filter: blur(30px) saturate(180%);
+      padding: 2rem; /* NeumorphicTheme.Spacing.cardPadding = 20px */
+      border-radius: 24px; /* NeumorphicTheme.CornerRadius.xxxl */
+      box-shadow:
+        0 8px 32px var(--shadow-dark),
+        0 0 0 1px var(--glass-border),
+        inset 0 0 0 1px rgba(255,255,255,0.1);
+      border: 1px solid var(--glass-border);
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      transform-style: preserve-3d;
+    }
+
+    /* Gradient Border Effect */
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 24px;
+      padding: 2px;
+      background: linear-gradient(
+        135deg,
+        var(--primary),
+        var(--primary-light),
+        var(--secondary),
+        var(--accent)
+      );
+      -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      z-index: -1;
+    }
+
+    /* Shine Effect */
+    .feature-card::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(255,255,255,0.1) 50%,
+        transparent 70%
+      );
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-8px) scale(1.02) rotateX(2deg);
+      box-shadow:
+        0 20px 60px rgba(0,104,184,0.25),
+        0 0 40px rgba(0,104,184,0.15),
+        inset 0 0 0 1px rgba(255,255,255,0.2);
+      border-color: var(--primary);
+    }
+
+    .feature-card:hover::before {
+      opacity: 1;
+    }
+
+    .feature-card:hover::after {
+      transform: translateX(100%);
+    }
+
+    [data-theme="dark"] .feature-card {
+      box-shadow:
+        0 8px 32px rgba(0,0,0,0.6),
+        0 0 0 1px var(--glass-border),
+        inset 0 0 0 1px rgba(255,255,255,0.05);
+    }
+
+    [data-theme="dark"] .feature-card:hover {
+      box-shadow:
+        0 20px 60px rgba(0,160,210,0.3),
+        0 0 50px rgba(0,160,210,0.2),
+        inset 0 0 0 1px rgba(255,255,255,0.15);
+    }
+
+    .feature-card h3 {
+      color: var(--text-primary);
+      margin-bottom: 0.75rem;
+      font-weight: 700;
+      font-size: 1.4rem;
+      transition: all 0.3s ease;
+    }
+
+    .feature-card:hover h3 {
+      color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    [data-theme="dark"] .feature-card:hover h3 {
+      color: var(--primary-light);
+    }
+
+    .feature-card p {
+      color: var(--text-secondary);
+      line-height: 1.7;
+      transition: color 0.3s ease;
+    }
+
+    .feature-card:hover p {
+      color: var(--text-primary);
+    }
+
+    /* Pill buttons / badges (verbatim from index.html) */
+    .chat-option-btn {
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      border: 1.5px solid var(--primary);
+      background: transparent;
+      color: var(--primary);
+      font-family: inherit;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .chat-option-btn:hover {
+      background: var(--primary);
+      color: var(--white);
+      transform: translateY(-1px);
+    }
+
+    /* Detail rows (verbatim from index.html .platform-stat-card family) */
+    .platform-stat-detail {
+      width: 100%;
+      padding: 0 1.15rem 1.1rem;
+      margin-top: 0;
+      border-top: 1px solid var(--glass-border);
+    }
+    .platform-stat-detail-row {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.4rem 0;
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+    }
+    .platform-stat-detail-row span:first-child {
+      flex: 1;
+      text-align: start;
+    }
+    .platform-stat-detail-val {
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-primary);
+      min-width: 2ch;
+      text-align: end;
+      display: inline-block;
+      transform-origin: center center;
+    }
+
+    @media (max-width: 768px) {
+      .container { padding: 1rem; margin: 0 auto; }
+      .content { padding: 2rem 1.5rem; }
+      .header, .content h1, .content h2 { text-align: center; }
+      h1 { font-size: 2rem; }
+      h2 { font-size: 1.5rem; }
+      .features-grid {
+        justify-items: stretch;
+        grid-auto-rows: 1fr;
+      }
+      .feature-card {
+        text-align: center;
+        width: 100%;
+        min-width: 0;
+      }
+      .feature-card h3 {
+        font-size: 1.15rem;
+      }
+      .feature-card p {
+        font-size: 0.95rem;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body class="has-site-header">
+  <header class="site-header">
+    <div class="menu-btn" id="langMenuBtn">
+      <div class="icon-circle"><span class="icon">🌐</span></div>
+      <div class="menu-text">
+        <div class="menu-label" data-i18n="language">اللغة</div>
+        <div class="menu-value" id="currentLangDisplay">العربية</div>
+      </div>
+      <span class="menu-icon">⋯</span>
+      <div class="menu-dropdown" id="langDropdown">
+        <div class="menu-dropdown-item" data-lang="ar"><span class="checkmark" id="check-ar">✓</span><span>العربية</span></div>
+        <div class="menu-dropdown-item" data-lang="en"><span class="checkmark" id="check-en" style="display:none">✓</span><span>English</span></div>
+        <div class="menu-dropdown-item" data-lang="fr"><span class="checkmark" id="check-fr" style="display:none">✓</span><span>Français</span></div>
+        <div class="menu-dropdown-item" data-lang="ur"><span class="checkmark" id="check-ur" style="display:none">✓</span><span>اردو</span></div>
+      </div>
+    </div>
+    <div class="menu-btn" id="themeMenuBtn">
+      <div class="icon-circle"><span class="icon" id="themeIcon">🌙</span></div>
+      <div class="menu-text">
+        <div class="menu-label" data-i18n="appearance">المظهر</div>
+        <div class="menu-value" id="currentThemeDisplay">داكن</div>
+      </div>
+      <span class="menu-icon">⋯</span>
+      <div class="menu-dropdown" id="themeDropdown">
+        <div class="menu-dropdown-item" data-theme="light"><span class="checkmark" id="check-light" style="display:none">✓</span><span data-i18n="light">فاتح</span></div>
+        <div class="menu-dropdown-item" data-theme="dark"><span class="checkmark" id="check-dark">✓</span><span data-i18n="dark">داكن</span></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="header">
+      <h1 data-i18n="title">إدارة الفريق</h1>
+    </div>
+
+    <!-- Supabase not configured yet -->
+    <div class="content" id="unavailableCard" hidden>
+      <h2 data-i18n="serviceUnavailableTitle">الخدمة قيد التجهيز</h2>
+      <p data-i18n="serviceUnavailableText">نعمل حالياً على تجهيز الخدمة، حاول مرة أخرى لاحقاً.</p>
+    </div>
+
+    <!-- Signed in but no organization yet -->
+    <div class="content" id="noOrgCard" hidden>
+      <h2 data-i18n="noOrg">لا توجد شركة محددة، أنشئ شركتك أولاً.</h2>
+      <p data-i18n="noOrgHint">انتقل إلى لوحة التحكم لإنشاء شركتك ثم عد إلى هذه الصفحة.</p>
+    </div>
+
+    <!-- Members -->
+    <div class="content" id="teamCard">
+      <p class="login-intro" data-i18n="intro">أضف أعضاء فريقك وحدّد أدوارهم، وتابع الدعوات المعلقة.</p>
+      <p class="waitlist-msg" id="teamStatus" role="status" aria-live="polite" data-i18n="loading">جارٍ التحميل...</p>
+      <p id="capacityLine" hidden></p>
+
+      <h2 data-i18n="membersTitle">أعضاء الفريق</h2>
+      <p class="login-note" id="readOnlyNote" data-i18n="readOnlyNote" hidden>يمكن للمالك والمشرفين فقط إدارة الأعضاء والدعوات.</p>
+      <div class="features-grid" id="membersGrid" role="list"></div>
+      <p id="membersEmpty" data-i18n="membersEmpty" hidden>لا يوجد أعضاء بعد.</p>
+    </div>
+
+    <!-- Invite (owner / admin only) -->
+    <div class="content" id="inviteCard" hidden>
+      <h2 data-i18n="inviteTitle">دعوة عضو جديد</h2>
+      <p data-i18n="inviteIntro">أدخل البريد الإلكتروني للعضو واختر دوره. لا يُرسل بريد تلقائي؛ ينضم المدعو تلقائياً إلى الفريق عند تسجيل دخوله بالبريد نفسه من صفحة تسجيل الدخول:</p>
+      <p>
+        <a href="/login.html" id="loginLinkText" dir="ltr">https://appmails.net/login.html</a>
+        <button type="button" class="chat-option-btn" id="copyLinkBtn" data-i18n="copyLinkBtn">نسخ رابط تسجيل الدخول</button>
+      </p>
+
+      <form class="waitlist-form" id="inviteForm" novalidate>
+        <input type="email" class="waitlist-input" id="inviteEmail" placeholder="بريد العضو الإلكتروني" required autocomplete="off" inputmode="email" dir="ltr">
+        <select class="waitlist-input" id="inviteRole" aria-label="الدور">
+          <option value="member" data-i18n="roleMember">عضو</option>
+          <option value="admin" data-i18n="roleAdmin">مشرف</option>
+        </select>
+        <button type="submit" class="waitlist-btn" id="inviteBtn" data-i18n="inviteBtn">دعوة</button>
+      </form>
+      <p class="waitlist-msg" id="inviteMsg" role="status" aria-live="polite" hidden></p>
+      <p class="waitlist-msg error" id="inviteLimitMsg" hidden></p>
+
+      <h2 data-i18n="invitationsTitle">الدعوات المعلقة</h2>
+      <div class="platform-stat-detail" id="invitationsList" hidden></div>
+      <p id="invitationsEmpty" data-i18n="invitationsEmpty" hidden>لا توجد دعوات معلقة.</p>
+    </div>
+
+    <div style="text-align: center; padding: 2rem;">
+      <a href="/app/dashboard.html" class="back-btn" data-i18n="backBtn">العودة إلى لوحة التحكم</a>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p class="footer-links">
+      <a href="/about.html" data-i18n="aboutLink">من نحن</a>
+      <a href="/terms.html" data-i18n="termsLink">شروط الاستخدام</a>
+      <a href="/pricing.html" data-i18n="pricingLink">الباقات والأسعار</a>
+      <a href="/privacy.html" data-i18n="privacyLink">سياسة الخصوصية</a>
+      <a href="/login.html" data-i18n="loginLink">تسجيل الدخول</a>
+      <a href="/index.html#contact" data-i18n="contactLink">تواصل معنا</a>
+      <a href="mailto:support@appmails.net" class="footer-social-icon" aria-label="support@appmails.net"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></a>
+    </p>
+    <p class="footer-copyright">
+      <span data-i18n="copyrightLine2">جميع الحقوق محفوظة</span>
+      <span> · <img src="/tracker-logo-full-dark.png" alt="TRACKER" id="footerLogo" class="brand-logo-inline brand-logo-inline--xs" data-brand-logo-footer style="height:1.3em;width:auto;display:inline-block;vertical-align:-0.35em;max-width:none;"> <span class="footer-year">© 2026</span></span>
+    </p>
+  </footer>
+
+  <script>
+    const translations = {
+      ar: {
+        title: "إدارة الفريق",
+        intro: "أضف أعضاء فريقك وحدّد أدوارهم، وتابع الدعوات المعلقة.",
+        backBtn: "العودة إلى لوحة التحكم",
+        serviceUnavailableTitle: "الخدمة قيد التجهيز",
+        serviceUnavailableText: "نعمل حالياً على تجهيز الخدمة، حاول مرة أخرى لاحقاً.",
+        noOrg: "لا توجد شركة محددة، أنشئ شركتك أولاً.",
+        noOrgHint: "انتقل إلى لوحة التحكم لإنشاء شركتك ثم عد إلى هذه الصفحة.",
+        loading: "جارٍ التحميل...",
+        loadError: "تعذّر تحميل بيانات الفريق، حاول مرة أخرى.",
+        membersTitle: "أعضاء الفريق",
+        membersEmpty: "لا يوجد أعضاء بعد.",
+        readOnlyNote: "يمكن للمالك والمشرفين فقط إدارة الأعضاء والدعوات.",
+        capacityLimited: "الأعضاء: {used} من {limit}",
+        capacityUnlimited: "الأعضاء: {used} (بلا حد)",
+        capacityPending: "الدعوات المعلقة: {n}",
+        capacityFull: "وصلت إلى الحد الأقصى لعدد الأعضاء في باقتك الحالية.",
+        upgradeLink: "ترقية الباقة",
+        roleOwner: "المالك",
+        roleAdmin: "مشرف",
+        roleMember: "عضو",
+        roleLabel: "الدور",
+        statusInvited: "بانتظار الانضمام",
+        you: "أنت",
+        emailLabel: "البريد الإلكتروني",
+        joinedLabel: "تاريخ الانضمام",
+        changeRoleLabel: "تغيير الدور",
+        removeBtn: "إزالة",
+        confirmRemove: "هل تريد إزالة {name} من الفريق؟",
+        memberRemoved: "تمت إزالة العضو.",
+        roleUpdated: "تم تحديث الدور.",
+        inviteTitle: "دعوة عضو جديد",
+        inviteIntro: "أدخل البريد الإلكتروني للعضو واختر دوره. لا يُرسل بريد تلقائي؛ ينضم المدعو تلقائياً إلى الفريق عند تسجيل دخوله بالبريد نفسه من صفحة تسجيل الدخول:",
+        copyLinkBtn: "نسخ رابط تسجيل الدخول",
+        linkCopied: "تم نسخ الرابط.",
+        inviteEmailPlaceholder: "بريد العضو الإلكتروني",
+        inviteBtn: "دعوة",
+        inviteSending: "جارٍ الإضافة...",
+        inviteCreated: "أُضيفت الدعوة لـ {email}، وسينضم تلقائياً عند تسجيل دخوله.",
+        invitationsTitle: "الدعوات المعلقة",
+        invitationsEmpty: "لا توجد دعوات معلقة.",
+        invitedOn: "أُرسلت في {date}",
+        cancelInviteBtn: "إلغاء",
+        confirmCancelInvite: "هل تريد إلغاء دعوة {email}؟",
+        inviteCancelled: "أُلغيت الدعوة.",
+        invalidEmail: "أدخل بريداً إلكترونياً صحيحاً.",
+        alreadyMember: "هذا البريد عضو في الفريق بالفعل.",
+        alreadyInvited: "توجد دعوة معلقة لهذا البريد بالفعل.",
+        notAllowed: "ليست لديك صلاحية لتنفيذ هذا الإجراء.",
+        genericError: "حدث خطأ، حاول مرة أخرى.",
+        planLimitMembers: "وصلت إلى الحد الأقصى لعدد الأعضاء في باقتك الحالية، رقِّ باقتك لإضافة المزيد.",
+        copyrightLine2: "جميع الحقوق محفوظة",
+        aboutLink: "من نحن",
+        termsLink: "شروط الاستخدام",
+        pricingLink: "الباقات والأسعار",
+        privacyLink: "سياسة الخصوصية",
+        loginLink: "تسجيل الدخول",
+        dashboardLink: "لوحة التحكم",
+        contactLink: "تواصل معنا",
+        language: "اللغة",
+        appearance: "المظهر",
+        light: "فاتح",
+        dark: "داكن"
+      },
+      en: {
+        title: "Team management",
+        intro: "Add your team members, set their roles, and follow up on pending invitations.",
+        backBtn: "Back to Dashboard",
+        serviceUnavailableTitle: "Service is being prepared",
+        serviceUnavailableText: "We are setting up the service. Please try again later.",
+        noOrg: "No company selected. Create your company first.",
+        noOrgHint: "Go to the dashboard to create your company, then come back to this page.",
+        loading: "Loading...",
+        loadError: "Could not load the team data. Please try again.",
+        membersTitle: "Team members",
+        membersEmpty: "No members yet.",
+        readOnlyNote: "Only the owner and admins can manage members and invitations.",
+        capacityLimited: "Members: {used} of {limit}",
+        capacityUnlimited: "Members: {used} (unlimited)",
+        capacityPending: "Pending invitations: {n}",
+        capacityFull: "You have reached the member limit of your current plan.",
+        upgradeLink: "Upgrade plan",
+        roleOwner: "Owner",
+        roleAdmin: "Admin",
+        roleMember: "Member",
+        roleLabel: "Role",
+        statusInvited: "Awaiting sign-in",
+        you: "You",
+        emailLabel: "Email",
+        joinedLabel: "Joined on",
+        changeRoleLabel: "Change role",
+        removeBtn: "Remove",
+        confirmRemove: "Remove {name} from the team?",
+        memberRemoved: "Member removed.",
+        roleUpdated: "Role updated.",
+        inviteTitle: "Invite a new member",
+        inviteIntro: "Enter the member's email and choose a role. No email is sent automatically: the invitee joins the team as soon as they sign in with the same email on the sign-in page:",
+        copyLinkBtn: "Copy sign-in link",
+        linkCopied: "Link copied.",
+        inviteEmailPlaceholder: "Member's email address",
+        inviteBtn: "Invite",
+        inviteSending: "Adding...",
+        inviteCreated: "Invitation added for {email}. They will join automatically when they sign in.",
+        invitationsTitle: "Pending invitations",
+        invitationsEmpty: "No pending invitations.",
+        invitedOn: "sent on {date}",
+        cancelInviteBtn: "Cancel",
+        confirmCancelInvite: "Cancel the invitation for {email}?",
+        inviteCancelled: "Invitation cancelled.",
+        invalidEmail: "Enter a valid email address.",
+        alreadyMember: "This email already belongs to a team member.",
+        alreadyInvited: "There is already a pending invitation for this email.",
+        notAllowed: "You do not have permission to perform this action.",
+        genericError: "Something went wrong. Please try again.",
+        planLimitMembers: "You have reached the member limit of your current plan. Upgrade to add more.",
+        copyrightLine2: "All rights reserved",
+        aboutLink: "About Us",
+        termsLink: "Terms of Use",
+        pricingLink: "Plans & Pricing",
+        privacyLink: "Privacy Policy",
+        loginLink: "Sign in",
+        dashboardLink: "Dashboard",
+        contactLink: "Contact Us",
+        language: "Language",
+        appearance: "Appearance",
+        light: "Light",
+        dark: "Dark"
+      },
+      fr: {
+        title: "Gestion de l'équipe",
+        intro: "Ajoutez les membres de votre équipe, définissez leurs rôles et suivez les invitations en attente.",
+        backBtn: "Retour au tableau de bord",
+        serviceUnavailableTitle: "Service en cours de préparation",
+        serviceUnavailableText: "Nous préparons le service. Veuillez réessayer plus tard.",
+        noOrg: "Aucune entreprise sélectionnée. Créez d'abord votre entreprise.",
+        noOrgHint: "Rendez-vous sur le tableau de bord pour créer votre entreprise, puis revenez sur cette page.",
+        loading: "Chargement...",
+        loadError: "Impossible de charger les données de l'équipe. Veuillez réessayer.",
+        membersTitle: "Membres de l'équipe",
+        membersEmpty: "Aucun membre pour le moment.",
+        readOnlyNote: "Seuls le propriétaire et les administrateurs peuvent gérer les membres et les invitations.",
+        capacityLimited: "Membres : {used} sur {limit}",
+        capacityUnlimited: "Membres : {used} (illimité)",
+        capacityPending: "Invitations en attente : {n}",
+        capacityFull: "Vous avez atteint la limite de membres de votre forfait actuel.",
+        upgradeLink: "Changer de forfait",
+        roleOwner: "Propriétaire",
+        roleAdmin: "Administrateur",
+        roleMember: "Membre",
+        roleLabel: "Rôle",
+        statusInvited: "En attente de connexion",
+        you: "Vous",
+        emailLabel: "E-mail",
+        joinedLabel: "Membre depuis le",
+        changeRoleLabel: "Changer le rôle",
+        removeBtn: "Retirer",
+        confirmRemove: "Retirer {name} de l'équipe ?",
+        memberRemoved: "Membre retiré.",
+        roleUpdated: "Rôle mis à jour.",
+        inviteTitle: "Inviter un nouveau membre",
+        inviteIntro: "Saisissez l'e-mail du membre et choisissez son rôle. Aucun e-mail n'est envoyé automatiquement : l'invité rejoint l'équipe dès qu'il se connecte avec la même adresse sur la page de connexion :",
+        copyLinkBtn: "Copier le lien de connexion",
+        linkCopied: "Lien copié.",
+        inviteEmailPlaceholder: "Adresse e-mail du membre",
+        inviteBtn: "Inviter",
+        inviteSending: "Ajout en cours...",
+        inviteCreated: "Invitation ajoutée pour {email}. Cette personne rejoindra l'équipe automatiquement lors de sa connexion.",
+        invitationsTitle: "Invitations en attente",
+        invitationsEmpty: "Aucune invitation en attente.",
+        invitedOn: "envoyée le {date}",
+        cancelInviteBtn: "Annuler",
+        confirmCancelInvite: "Annuler l'invitation de {email} ?",
+        inviteCancelled: "Invitation annulée.",
+        invalidEmail: "Saisissez une adresse e-mail valide.",
+        alreadyMember: "Cette adresse appartient déjà à un membre de l'équipe.",
+        alreadyInvited: "Une invitation est déjà en attente pour cette adresse.",
+        notAllowed: "Vous n'avez pas l'autorisation d'effectuer cette action.",
+        genericError: "Une erreur est survenue. Veuillez réessayer.",
+        planLimitMembers: "Vous avez atteint la limite de membres de votre forfait actuel. Passez à un forfait supérieur pour en ajouter.",
+        copyrightLine2: "Tous droits réservés",
+        aboutLink: "À propos",
+        termsLink: "Conditions d'utilisation",
+        pricingLink: "Forfaits et tarifs",
+        privacyLink: "Politique de confidentialité",
+        loginLink: "Connexion",
+        dashboardLink: "Tableau de bord",
+        contactLink: "Contactez-nous",
+        language: "Langue",
+        appearance: "Apparence",
+        light: "Clair",
+        dark: "Sombre"
+      },
+      ur: {
+        title: "ٹیم کا انتظام",
+        intro: "اپنی ٹیم کے اراکین شامل کریں، ان کے کردار طے کریں اور زیرِ التوا دعوتوں پر نظر رکھیں۔",
+        backBtn: "ڈیش بورڈ پر واپس جائیں",
+        serviceUnavailableTitle: "سروس تیار کی جا رہی ہے",
+        serviceUnavailableText: "ہم سروس تیار کر رہے ہیں، براہ کرم بعد میں دوبارہ کوشش کریں۔",
+        noOrg: "کوئی کمپنی منتخب نہیں، پہلے اپنی کمپنی بنائیں۔",
+        noOrgHint: "اپنی کمپنی بنانے کے لیے ڈیش بورڈ پر جائیں، پھر اس صفحے پر واپس آئیں۔",
+        loading: "لوڈ ہو رہا ہے...",
+        loadError: "ٹیم کا ڈیٹا لوڈ نہیں ہو سکا، براہ کرم دوبارہ کوشش کریں۔",
+        membersTitle: "ٹیم کے اراکین",
+        membersEmpty: "ابھی کوئی رکن نہیں ہے۔",
+        readOnlyNote: "صرف مالک اور منتظمین اراکین اور دعوتوں کا انتظام کر سکتے ہیں۔",
+        capacityLimited: "اراکین: {limit} میں سے {used}",
+        capacityUnlimited: "اراکین: {used} (لامحدود)",
+        capacityPending: "زیرِ التوا دعوتیں: {n}",
+        capacityFull: "آپ اپنے موجودہ پلان میں اراکین کی حد تک پہنچ چکے ہیں۔",
+        upgradeLink: "پلان اپ گریڈ کریں",
+        roleOwner: "مالک",
+        roleAdmin: "منتظم",
+        roleMember: "رکن",
+        roleLabel: "کردار",
+        statusInvited: "سائن ان کا انتظار",
+        you: "آپ",
+        emailLabel: "ای میل",
+        joinedLabel: "شمولیت کی تاریخ",
+        changeRoleLabel: "کردار تبدیل کریں",
+        removeBtn: "ہٹائیں",
+        confirmRemove: "کیا آپ {name} کو ٹیم سے ہٹانا چاہتے ہیں؟",
+        memberRemoved: "رکن ہٹا دیا گیا۔",
+        roleUpdated: "کردار اپ ڈیٹ ہو گیا۔",
+        inviteTitle: "نئے رکن کو دعوت دیں",
+        inviteIntro: "رکن کا ای میل درج کریں اور اس کا کردار منتخب کریں۔ کوئی ای میل خود بخود نہیں بھیجی جاتی: مدعو شخص سائن ان صفحے پر اسی ای میل سے سائن ان کرتے ہی ٹیم میں شامل ہو جائے گا:",
+        copyLinkBtn: "سائن ان لنک کاپی کریں",
+        linkCopied: "لنک کاپی ہو گیا۔",
+        inviteEmailPlaceholder: "رکن کا ای میل ایڈریس",
+        inviteBtn: "دعوت دیں",
+        inviteSending: "شامل کیا جا رہا ہے...",
+        inviteCreated: "{email} کے لیے دعوت شامل کر دی گئی، سائن ان کرتے ہی وہ خود بخود شامل ہو جائے گا۔",
+        invitationsTitle: "زیرِ التوا دعوتیں",
+        invitationsEmpty: "کوئی زیرِ التوا دعوت نہیں۔",
+        invitedOn: "بھیجی گئی: {date}",
+        cancelInviteBtn: "منسوخ کریں",
+        confirmCancelInvite: "کیا آپ {email} کی دعوت منسوخ کرنا چاہتے ہیں؟",
+        inviteCancelled: "دعوت منسوخ کر دی گئی۔",
+        invalidEmail: "درست ای میل ایڈریس درج کریں۔",
+        alreadyMember: "یہ ای میل پہلے ہی ٹیم کے ایک رکن کا ہے۔",
+        alreadyInvited: "اس ای میل کے لیے پہلے ہی ایک دعوت زیرِ التوا ہے۔",
+        notAllowed: "آپ کو یہ کارروائی کرنے کی اجازت نہیں ہے۔",
+        genericError: "کچھ غلط ہو گیا، براہ کرم دوبارہ کوشش کریں۔",
+        planLimitMembers: "آپ اپنے موجودہ پلان میں اراکین کی حد تک پہنچ چکے ہیں، مزید شامل کرنے کے لیے پلان اپ گریڈ کریں۔",
+        copyrightLine2: "جملہ حقوق محفوظ ہیں",
+        aboutLink: "ہمارے بارے میں",
+        termsLink: "استعمال کی شرائط",
+        pricingLink: "پلانز اور قیمتیں",
+        privacyLink: "رازداری کی پالیسی",
+        loginLink: "سائن ان",
+        dashboardLink: "ڈیش بورڈ",
+        contactLink: "ہم سے رابطہ کریں",
+        language: "زبان",
+        appearance: "ظہور",
+        light: "روشن",
+        dark: "اندھیرا"
+      }
+    };
+
+    const lang = () => localStorage.getItem("tracker_lang") || "ar";
+    const theme = () => localStorage.getItem("tracker_theme") || "dark";
+    const langNames = { ar: "العربية", en: "English", fr: "Français", ur: "اردو" };
+    let l = lang();
+    document.documentElement.lang = l;
+    document.documentElement.dir = (l === "ar" || l === "ur") ? "rtl" : "ltr";
+
+    const placeholderKeys = { inviteEmail: "inviteEmailPlaceholder" };
+    const ariaKeys = { inviteRole: "roleLabel" };
+    function applyPlaceholders(code) {
+      const dict = translations[code] || translations.ar;
+      Object.keys(placeholderKeys).forEach(id => {
+        const el = document.getElementById(id);
+        if (el && dict[placeholderKeys[id]]) el.placeholder = dict[placeholderKeys[id]];
+      });
+      Object.keys(ariaKeys).forEach(id => {
+        const el = document.getElementById(id);
+        if (el && dict[ariaKeys[id]]) el.setAttribute("aria-label", dict[ariaKeys[id]]);
+      });
+    }
+
+    function setLang(code) {
+      localStorage.setItem("tracker_lang", code);
+      l = code;
+      document.documentElement.lang = code;
+      document.documentElement.dir = (code === "ar" || code === "ur") ? "rtl" : "ltr";
+      document.getElementById("currentLangDisplay").textContent = langNames[code] || code;
+      ["ar","en","fr","ur"].forEach(c => {
+        const el = document.getElementById("check-" + c);
+        if (el) el.style.display = c === code ? "inline" : "none";
+      });
+      const th = theme();
+      document.getElementById("currentThemeDisplay").textContent = translations[code][th === "dark" ? "dark" : "light"];
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const k = el.dataset.i18n;
+        if (translations[code] && translations[code][k]) el.innerHTML = translations[code][k];
+      });
+      applyPlaceholders(code);
+      document.title = (translations[code] && translations[code].title ? translations[code].title : "Team") + " | TRACKER";
+      if (typeof window.__trackerAuthRefresh === "function") window.__trackerAuthRefresh();
+      if (typeof window.__teamRender === "function") window.__teamRender();
+    }
+
+    function setTheme(th) {
+      localStorage.setItem("tracker_theme", th);
+      document.documentElement.dataset.theme = th;
+      const meta = document.getElementById("themeColorMeta");
+      if (meta) meta.content = th === "dark" ? "#1a2933" : "#0068b8";
+      const logo = document.getElementById("footerLogo");
+      if (logo) logo.src = th === "dark" ? "/tracker-logo-full-dark.png" : "/tracker-logo-full-light.png";
+      document.getElementById("themeIcon").textContent = th === "dark" ? "🌙" : "☀️";
+      document.getElementById("currentThemeDisplay").textContent = translations[l][th === "dark" ? "dark" : "light"];
+      document.getElementById("check-light").style.display = th === "light" ? "inline" : "none";
+      document.getElementById("check-dark").style.display = th === "dark" ? "inline" : "none";
+    }
+
+    document.getElementById("langMenuBtn").addEventListener("click", e => {
+      e.stopPropagation();
+      document.getElementById("langDropdown").classList.toggle("show");
+      document.getElementById("themeDropdown").classList.remove("show");
+    });
+    document.getElementById("themeMenuBtn").addEventListener("click", e => {
+      e.stopPropagation();
+      document.getElementById("themeDropdown").classList.toggle("show");
+      document.getElementById("langDropdown").classList.remove("show");
+    });
+    document.addEventListener("click", () => {
+      document.getElementById("langDropdown").classList.remove("show");
+      document.getElementById("themeDropdown").classList.remove("show");
+    });
+
+    document.querySelectorAll("#langDropdown .menu-dropdown-item").forEach(item => {
+      item.addEventListener("click", () => setLang(item.dataset.lang));
+    });
+    document.querySelectorAll("#themeDropdown .menu-dropdown-item").forEach(item => {
+      item.addEventListener("click", () => {
+        setTheme(item.dataset.theme);
+        document.getElementById("themeDropdown").classList.remove("show");
+      });
+    });
+
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+      const k = el.dataset.i18n;
+      if (translations[l] && translations[l][k]) el.textContent = translations[l][k];
+    });
+    applyPlaceholders(l);
+    document.getElementById("currentLangDisplay").textContent = langNames[l] || l;
+    ["ar","en","fr","ur"].forEach(c => {
+      const el = document.getElementById("check-" + c);
+      if (el) el.style.display = l === c ? "inline" : "none";
+    });
+    document.title = (translations[l] && translations[l].title ? translations[l].title : "Team") + " | TRACKER";
+
+    (function() {
+      const th = theme();
+      document.documentElement.dataset.theme = th;
+      const meta = document.getElementById("themeColorMeta");
+      if (meta) meta.content = th === "dark" ? "#1a2933" : "#0068b8";
+      const logo = document.getElementById("footerLogo");
+      if (logo) logo.src = th === "dark" ? "/tracker-logo-full-dark.png" : "/tracker-logo-full-light.png";
+      document.getElementById("themeIcon").textContent = th === "dark" ? "🌙" : "☀️";
+      document.getElementById("currentThemeDisplay").textContent = translations[l][th === "dark" ? "dark" : "light"];
+      document.getElementById("check-light").style.display = th === "light" ? "inline" : "none";
+      document.getElementById("check-dark").style.display = th === "dark" ? "inline" : "none";
+    })();
+  </script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js", { scope: "/", updateViaCache: "none" }).catch(() => {});
+      });
+    }
+  </script>
+  <script>
+    /* Team page logic — runs after the deferred scripts (supabase-js, app.js, common.js). */
+    (function () {
+      "use strict";
+
+      var PRICING_PATH = "/pricing.html";
+      var LOGIN_URL = window.location.origin + "/login.html";
+      var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      var app = null;
+      var state = { loaded: false, error: null, canManage: false, members: [], invitations: [], limits: {} };
+
+      function $(id) { return document.getElementById(id); }
+
+      function t(key) {
+        if (app && typeof app.t === "function") return app.t(key);
+        var dict = translations[lang()] || translations.ar;
+        return dict[key] || translations.ar[key] || key;
+      }
+
+      /* Plain-text placeholder fill: "{name}" → value. */
+      function tf(key, vars) {
+        var s = t(key);
+        Object.keys(vars || {}).forEach(function (k) { s = s.split("{" + k + "}").join(String(vars[k])); });
+        return s;
+      }
+
+      function esc(s) {
+        if (app && typeof app.escapeHtml === "function") return app.escapeHtml(s);
+        return String(s === null || s === undefined ? "" : s)
+          .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      }
+
+      /* HTML placeholder fill: the template is escaped, the values are HTML already. */
+      function tfHtml(key, htmlVars) {
+        var s = esc(t(key));
+        Object.keys(htmlVars || {}).forEach(function (k) { s = s.split("{" + k + "}").join(htmlVars[k]); });
+        return s;
+      }
+
+      function fmtDate(iso) { return (app && app.fmtDate) ? app.fmtDate(iso) : ""; }
+      function toast(message, kind) { if (app && app.toast) app.toast(message, kind); }
+      function show(id, on) { var el = $(id); if (el) el.hidden = !on; }
+
+      function roleName(role) {
+        if (role === "owner") return t("roleOwner");
+        if (role === "admin") return t("roleAdmin");
+        return t("roleMember");
+      }
+      function memberEmail(m) { var p = m.profiles || {}; return p.email || m.invited_email || ""; }
+      function memberName(m) { var p = m.profiles || {}; return p.full_name || memberEmail(m) || "-"; }
+      function findMember(userId) {
+        for (var i = 0; i < state.members.length; i++) if (state.members[i].user_id === userId) return state.members[i];
+        return null;
+      }
+
+      function errorMessage(err) {
+        if (!err) return t("genericError");
+        if (err.code === "PLAN_LIMIT") return t("planLimitMembers");
+        if (err.code === "NO_ORG") return t("noOrg");
+        var msg = String(err.message || "").toLowerCase();
+        if (msg === "invalid email") return t("invalidEmail");
+        if (err.sbCode === "23505" || msg.indexOf("duplicate key") !== -1) return t("alreadyInvited");
+        if (err.sbCode === "42501" || msg.indexOf("row-level security") !== -1 || msg.indexOf("permission denied") !== -1 || msg === "not allowed") return t("notAllowed");
+        return t("genericError");
+      }
+
+      /* ---------- status lines ---------- */
+
+      function setStatus(key, kind) {
+        var el = $("teamStatus");
+        if (!el) return;
+        el.textContent = key ? t(key) : "";
+        el.className = "waitlist-msg" + (kind ? " " + kind : "");
+        el.hidden = !key;
+      }
+
+      function setInviteMsg(text, kind) {
+        var el = $("inviteMsg");
+        if (!el) return;
+        el.textContent = text || "";
+        el.className = "waitlist-msg" + (kind ? " " + kind : "");
+        el.hidden = !text;
+      }
+
+      /* ---------- plan capacity ---------- */
+
+      function memberLimit() {
+        var lim = state.limits ? state.limits.members : null;
+        return (typeof lim === "number" && lim > 0) ? lim : null;
+      }
+
+      /* Pending invitations count as reserved seats: the DB enforces the limit when the invitee joins. */
+      function isFull() {
+        var lim = memberLimit();
+        if (lim === null) return false;
+        return (state.members.length + state.invitations.length) >= lim;
+      }
+
+      function upgradeLinkHtml() {
+        return '<a href="' + PRICING_PATH + '">' + esc(t("upgradeLink")) + "</a>";
+      }
+
+      function renderCapacity() {
+        var el = $("capacityLine");
+        if (!el) return;
+        if (!state.loaded) { el.hidden = true; return; }
+        var lim = memberLimit();
+        var used = '<span class="highlight">' + state.members.length + "</span>";
+        var html = lim === null
+          ? tfHtml("capacityUnlimited", { used: used })
+          : tfHtml("capacityLimited", { used: used, limit: '<span class="highlight">' + lim + "</span>" });
+        if (state.canManage && state.invitations.length) {
+          html += " · " + tfHtml("capacityPending", { n: '<span class="highlight">' + state.invitations.length + "</span>" });
+        }
+        if (isFull()) html += "<br>" + esc(t("capacityFull")) + " " + upgradeLinkHtml();
+        el.innerHTML = html;
+        el.hidden = false;
+      }
+
+      /* ---------- members ---------- */
+
+      function renderMembers() {
+        var grid = $("membersGrid");
+        if (!grid) return;
+        show("readOnlyNote", state.loaded && !state.canManage);
+        if (!state.loaded) { grid.innerHTML = ""; show("membersEmpty", false); return; }
+
+        var me = (app && app.user) ? app.user.id : null;
+        grid.innerHTML = state.members.map(function (m) {
+          var isOwner = m.role === "owner";
+          var isSelf = !!me && m.user_id === me;
+          var name = memberName(m);
+          var email = memberEmail(m);
+
+          var badges = '<span class="chat-option-btn" style="cursor:default">' + esc(roleName(m.role)) + "</span>";
+          if (isSelf) badges += ' <span class="chat-option-btn" style="cursor:default">' + esc(t("you")) + "</span>";
+          if (m.status && m.status !== "active") badges += ' <span class="chat-option-btn" style="cursor:default">' + esc(t("statusInvited")) + "</span>";
+
+          var rows =
+            '<div class="platform-stat-detail-row"><span>' + esc(t("emailLabel")) + "</span>" +
+              '<span class="platform-stat-detail-val" dir="ltr" style="overflow-wrap:anywhere">' + esc(email || "-") + "</span></div>" +
+            '<div class="platform-stat-detail-row"><span>' + esc(t("joinedLabel")) + "</span>" +
+              '<span class="platform-stat-detail-val">' + esc(fmtDate(m.created_at) || "-") + "</span></div>";
+
+          var controls = "";
+          if (state.canManage && !isOwner && !isSelf) {
+            controls =
+              '<div class="waitlist-form">' +
+                '<select class="waitlist-input" data-role-user="' + esc(m.user_id) + '" aria-label="' + esc(t("changeRoleLabel")) + '">' +
+                  '<option value="member"' + (m.role === "member" ? " selected" : "") + ">" + esc(t("roleMember")) + "</option>" +
+                  '<option value="admin"' + (m.role === "admin" ? " selected" : "") + ">" + esc(t("roleAdmin")) + "</option>" +
+                "</select>" +
+                '<button type="button" class="chat-option-btn" data-remove-user="' + esc(m.user_id) + '" data-name="' + esc(name) + '">' + esc(t("removeBtn")) + "</button>" +
+              "</div>";
+          }
+
+          return '<div class="feature-card" role="listitem">' +
+                   "<h3>" + esc(name) + "</h3>" +
+                   "<p>" + badges + "</p>" +
+                   '<div class="platform-stat-detail">' + rows + controls + "</div>" +
+                 "</div>";
+        }).join("");
+        show("membersEmpty", !state.members.length);
+      }
+
+      function onMembersClick(ev) {
+        var btn = ev.target.closest("[data-remove-user]");
+        if (!btn) return;
+        var userId = btn.getAttribute("data-remove-user");
+        var name = btn.getAttribute("data-name") || "";
+        if (!window.confirm(tf("confirmRemove", { name: name }))) return;
+        btn.disabled = true;
+        app.removeMember(userId).then(function () {
+          toast(t("memberRemoved"), "success");
+          return loadAll();
+        }).catch(function (err) {
+          btn.disabled = false;
+          toast(errorMessage(err), "error");
+        });
+      }
+
+      function onMembersChange(ev) {
+        var sel = ev.target.closest("[data-role-user]");
+        if (!sel) return;
+        var userId = sel.getAttribute("data-role-user");
+        var member = findMember(userId);
+        var prevRole = member ? member.role : "member";
+        var nextRole = sel.value;
+        if (nextRole === prevRole) return;
+        sel.disabled = true;
+        app.setMemberRole(userId, nextRole).then(function (rows) {
+          /* RLS silently updates nothing when the caller is not allowed. */
+          if (!rows || !rows.length) throw new Error("not allowed");
+          if (member) member.role = nextRole;
+          toast(t("roleUpdated"), "success");
+          render();
+        }).catch(function (err) {
+          sel.value = prevRole;
+          sel.disabled = false;
+          toast(errorMessage(err), "error");
+        });
+      }
+
+      /* ---------- invitations ---------- */
+
+      function renderInvite() {
+        var visible = state.loaded && state.canManage;
+        show("inviteCard", visible);
+        if (!visible) return;
+
+        var link = $("loginLinkText");
+        if (link) { link.textContent = LOGIN_URL; link.href = LOGIN_URL; }
+
+        var full = isFull();
+        var busy = $("inviteForm").getAttribute("data-busy") === "1";
+        $("inviteEmail").disabled = full || busy;
+        $("inviteRole").disabled = full || busy;
+        $("inviteBtn").disabled = full || busy;
+        var limitMsg = $("inviteLimitMsg");
+        if (full) {
+          limitMsg.innerHTML = esc(t("planLimitMembers")) + " " + upgradeLinkHtml();
+          limitMsg.hidden = false;
+        } else {
+          limitMsg.hidden = true;
+        }
+        renderInvitations();
+      }
+
+      function renderInvitations() {
+        var list = $("invitationsList");
+        if (!list) return;
+        list.innerHTML = state.invitations.map(function (inv) {
+          var email = String(inv.email || "");
+          return '<div class="platform-stat-detail-row">' +
+                   '<span><span dir="ltr" style="overflow-wrap:anywhere">' + esc(email) + "</span> · " + esc(roleName(inv.role)) + " · " + esc(tf("invitedOn", { date: fmtDate(inv.created_at) || "-" })) + "</span>" +
+                   '<span class="platform-stat-detail-val"><button type="button" class="chat-option-btn" data-cancel-invite="' + esc(inv.id) + '" data-email="' + esc(email) + '">' + esc(t("cancelInviteBtn")) + "</button></span>" +
+                 "</div>";
+        }).join("");
+        list.hidden = !state.invitations.length;
+        show("invitationsEmpty", !state.invitations.length);
+      }
+
+      function onInvitationsClick(ev) {
+        var btn = ev.target.closest("[data-cancel-invite]");
+        if (!btn) return;
+        var id = btn.getAttribute("data-cancel-invite");
+        var email = btn.getAttribute("data-email") || "";
+        if (!window.confirm(tf("confirmCancelInvite", { email: email }))) return;
+        btn.disabled = true;
+        app.cancelInvitation(id).then(function () {
+          toast(t("inviteCancelled"), "success");
+          return loadAll();
+        }).catch(function (err) {
+          btn.disabled = false;
+          toast(errorMessage(err), "error");
+        });
+      }
+
+      function onInviteSubmit(ev) {
+        ev.preventDefault();
+        var form = $("inviteForm");
+        var input = $("inviteEmail");
+        var role = $("inviteRole").value === "admin" ? "admin" : "member";
+        var email = String(input.value || "").trim().toLowerCase();
+
+        if (!EMAIL_RE.test(email)) { setInviteMsg(t("invalidEmail"), "error"); input.focus(); return; }
+        if (isFull()) { setInviteMsg(t("planLimitMembers"), "error"); return; }
+        if (state.members.some(function (m) { return memberEmail(m).toLowerCase() === email; })) { setInviteMsg(t("alreadyMember"), "error"); return; }
+        if (state.invitations.some(function (i) { return String(i.email || "").toLowerCase() === email; })) { setInviteMsg(t("alreadyInvited"), "error"); return; }
+
+        form.setAttribute("data-busy", "1");
+        renderInvite();
+        setInviteMsg(t("inviteSending"));
+        app.inviteMember(email, role).then(function () {
+          input.value = "";
+          setInviteMsg(tf("inviteCreated", { email: email }), "success");
+          return loadAll();
+        }).catch(function (err) {
+          setInviteMsg(errorMessage(err), "error");
+        }).then(function () {
+          form.removeAttribute("data-busy");
+          renderInvite();
+        });
+      }
+
+      function onCopyLink() {
+        var done = function () { toast(t("linkCopied"), "success"); };
+        var fallback = function () {
+          try {
+            var range = document.createRange();
+            range.selectNodeContents($("loginLinkText"));
+            var sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+            if (document.execCommand("copy")) done();
+            sel.removeAllRanges();
+          } catch (e) { /* clipboard blocked: the link stays visible and selectable */ }
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(LOGIN_URL).then(done).catch(fallback);
+        } else {
+          fallback();
+        }
+      }
+
+      /* ---------- load & render ---------- */
+
+      function render() {
+        if (state.error) setStatus("loadError", "error");
+        else if (!state.loaded) setStatus("loading");
+        else setStatus(null);
+        renderCapacity();
+        renderMembers();
+        renderInvite();
+      }
+
+      function loadAll() {
+        return Promise.all([
+          app.listMembers(),
+          app.planLimits().catch(function () { return {}; }),
+          state.canManage ? app.listInvitations().catch(function () { return []; }) : Promise.resolve([])
+        ]).then(function (res) {
+          state.members = res[0] || [];
+          state.limits = res[1] || {};
+          state.invitations = res[2] || [];
+          state.loaded = true;
+          state.error = null;
+          render();
+        }).catch(function (err) {
+          state.error = err;
+          render();
+        });
+      }
+
+      function showUnavailable() {
+        show("teamCard", false);
+        show("inviteCard", false);
+        show("noOrgCard", false);
+        show("unavailableCard", true);
+      }
+
+      function showNoOrg() {
+        show("teamCard", false);
+        show("inviteCard", false);
+        show("unavailableCard", false);
+        show("noOrgCard", true);
+      }
+
+      function boot() {
+        app = window.trackerApp || null;
+        window.__teamRender = render;
+
+        $("membersGrid").addEventListener("click", onMembersClick);
+        $("membersGrid").addEventListener("change", onMembersChange);
+        $("invitationsList").addEventListener("click", onInvitationsClick);
+        $("inviteForm").addEventListener("submit", onInviteSubmit);
+        $("copyLinkBtn").addEventListener("click", onCopyLink);
+
+        if (!app || !app.ready) { showUnavailable(); return; }
+        setStatus("loading");
+        app.ready.then(function (res) {
+          if (app.unavailable || (res && res.unavailable)) { showUnavailable(); return; }
+          if (!app.org) { showNoOrg(); return; }
+          var role = app.role();
+          state.canManage = role === "owner" || role === "admin";
+          return loadAll();
+        }).catch(function (err) {
+          state.error = err;
+          render();
+        });
+      }
+
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+      else boot();
+    })();
+  </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+<script src="/app.js?v=1" defer></script>
+<script src="/app/common.js?v=1" defer></script>
+<script src="/brand-logo.js?v=3" defer></script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 // --- تقويم ICS ---------------------------------------------------------------
 // GET /api/calendar/:token.ics — يعيد عناصر الشركة المرتبطة بالرمز كتقويم
 // يُشترَك فيه من آبل/جوجل/أوتلوك. الرمز خاص بكل مستخدم ولا يكشف بيانات غيره.
+import { rpc } from "./notify.js";
 
 function icsEscape(s) {
   return String(s == null ? "" : s)
@@ -61,34 +62,14 @@ export function buildIcs(items, calName) {
   return lines.join("\r\n") + "\r\n";
 }
 
-export async function handleCalendar(token, env, serviceHeaders) {
+export async function handleCalendar(token, env) {
   const safe = String(token || "").replace(/[^a-f0-9]/gi, "");
   if (!safe || safe.length < 16) return new Response("not found", { status: 404 });
-  const tokRes = await fetch(
-    `${env.SUPABASE_URL}/rest/v1/calendar_tokens?select=user_id,org_id&token=eq.${safe}&limit=1`,
-    { headers: { ...serviceHeaders, Accept: "application/json" }, cf: { cacheTtl: 0, cacheEverything: false } }
-  );
-  const rows = tokRes.ok ? await tokRes.json() : [];
-  if (!rows.length) return new Response("not found", { status: 404 });
-  const { org_id } = rows[0];
-
-  const itemsRes = await fetch(
-    `${env.SUPABASE_URL}/rest/v1/items?select=id,title,category,due_at,status,trackers(name)&org_id=eq.${org_id}&due_at=not.is.null&status=neq.cancelled&order=due_at.asc&limit=2000`,
-    { headers: { ...serviceHeaders, Accept: "application/json" }, cf: { cacheTtl: 0, cacheEverything: false } }
-  );
-  const items = itemsRes.ok ? await itemsRes.json() : [];
-  const normalized = items.map((r) => ({
-    id: r.id, title: r.title, category: r.category, due_at: r.due_at, status: r.status,
-    tracker_name: r.trackers && r.trackers.name,
-  }));
-
-  const orgRes = await fetch(`${env.SUPABASE_URL}/rest/v1/organizations?select=name&id=eq.${org_id}&limit=1`, {
-    headers: { ...serviceHeaders, Accept: "application/json" }, cf: { cacheTtl: 0, cacheEverything: false },
-  });
-  const orgRows = orgRes.ok ? await orgRes.json() : [];
-  const calName = orgRows.length ? `TRACKER — ${orgRows[0].name}` : "TRACKER";
-
-  return new Response(buildIcs(normalized, calName), {
+  let feed;
+  try { feed = await rpc(env, "calendar_feed", { p_token: safe }); } catch { feed = null; }
+  if (!feed || typeof feed !== "object") return new Response("not found", { status: 404 });
+  const calName = feed.org_name ? `TRACKER — ${feed.org_name}` : "TRACKER";
+  return new Response(buildIcs(Array.isArray(feed.items) ? feed.items : [], calName), {
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
       "Content-Disposition": 'inline; filename="tracker.ics"',

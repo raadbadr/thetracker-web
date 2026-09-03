@@ -132,8 +132,8 @@
   vertical-align: -0.35em;
 }
 
-/* Inline brand mark used by brand-logo.js to swap the word "PARKINZI"
-   inside body text for the small parkinzi-logo icon. Tuned to sit on
+/* Inline brand mark used by brand-logo.js to swap the word "TRACKER"
+   inside body text for the small tracker-logo icon. Tuned to sit on
    the baseline without bumping line-height. */
 .brand-logo-mark {
   height: 1em;

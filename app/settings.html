@@ -1,0 +1,1857 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://cloudflareinsights.com; worker-src 'self' blob:;">
+  <meta name="theme-color" content="#1a2933" id="themeColorMeta">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <title>الإعدادات | TRACKER</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Monoton&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/header.css">
+  <link rel="stylesheet" href="/footer.css?v=3">
+  <style>
+    /* Cross-browser reset + font enforcement */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    html {
+      -webkit-text-size-adjust: 100%;
+      -moz-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+    button, input, select, textarea, optgroup {
+      font-family: inherit;
+      font-size: inherit;
+      line-height: inherit;
+      color: inherit;
+      margin: 0;
+    }
+    button, [type="button"], [type="reset"], [type="submit"] {
+      -webkit-appearance: button;
+      appearance: button;
+    }
+    img, svg, video, canvas {
+      display: block;
+      max-width: 100%;
+    }
+    a { color: inherit; }
+
+    :root, [data-theme="light"] {
+      --primary: rgb(0, 104, 184);
+      --primary-light: rgb(25, 140, 220);
+      --primary-dark: rgb(0, 88, 160);
+      --secondary: rgb(0, 130, 190);
+      --accent: rgb(50, 150, 200);
+      --text-primary: rgb(26, 26, 38);
+      --text-secondary: rgb(77, 77, 89);
+      --text-tertiary: rgb(100, 112, 128);
+      --bg-top: rgb(250, 252, 255);
+      --bg-mid: rgb(242, 247, 252);
+      --bg-bottom: rgb(237, 245, 250);
+      --glass: rgba(255,255,255,0.85);
+      --glass-border: rgba(0,0,0,0.08);
+      --glass-strong: rgba(255, 255, 255, 0.95);
+      --shadow-light: rgba(255, 255, 255, 0.3);
+      --shadow-dark: rgba(0, 0, 0, 0.08);
+      --white: #ffffff;
+      --primary-shadow: rgba(0, 104, 184, 0.3);
+      --success: rgb(52, 199, 89);
+      --warning: rgb(255, 159, 10);
+      --error: rgb(255, 59, 48);
+    }
+    [data-theme="dark"] {
+      --primary: rgb(0, 160, 210);
+      --primary-light: rgb(40, 180, 220);
+      --primary-dark: rgb(0, 140, 190);
+      --secondary: rgb(0, 160, 210);
+      --accent: rgb(50, 160, 210);
+      --text-primary: rgb(255, 255, 255);
+      --text-secondary: rgba(255, 255, 255, 0.7);
+      --text-tertiary: rgba(255, 255, 255, 0.55);
+      --bg-top: rgb(31, 46, 56);
+      --bg-mid: rgb(26, 41, 51);
+      --bg-bottom: rgb(20, 36, 46);
+      --glass: rgba(255,255,255,0.08);
+      --glass-border: rgba(255,255,255,0.15);
+      --glass-strong: rgba(255, 255, 255, 0.12);
+      --shadow-light: rgba(255, 255, 255, 0.05);
+      --shadow-dark: rgba(5, 10, 15, 0.3);
+      --primary-shadow: rgba(0, 160, 210, 0.35);
+      --success: rgb(52, 199, 89);
+      --warning: rgb(255, 159, 10);
+      --error: rgb(255, 59, 48);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { background: var(--bg-bottom); }
+    body {
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      background: linear-gradient(135deg, var(--bg-top), var(--bg-bottom));
+      color: var(--text-primary);
+      line-height: 1.8;
+      min-height: 100vh;
+    }
+    .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+    body.has-site-header { padding-top: 52px; }
+    .header {
+      text-align: center;
+      padding: 3rem 2rem;
+      background: var(--glass);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      margin-bottom: 2rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+    [data-theme="dark"] .header { box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .content {
+      background: var(--glass);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      padding: 3rem;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+    [data-theme="dark"] .content { box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+    h2 {
+      font-size: 1.8rem;
+      margin: 2rem 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--primary);
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    h2:first-of-type { margin-top: 0; }
+    p { margin-bottom: 1rem; color: var(--text-secondary); }
+    .content a { color: var(--primary); text-decoration: none; }
+    .content a:hover { text-decoration: underline; }
+    .highlight { font-weight: 600; color: var(--primary); }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: var(--white);
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px var(--primary-shadow);
+    }
+    .back-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px var(--primary-shadow);
+    }
+    .content a.back-btn { color: var(--white); }
+    .content a.back-btn:hover { text-decoration: none; }
+    /* Form controls (verbatim from index.html) */
+    .waitlist-form {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+    .waitlist-input {
+      flex: 1;
+      min-width: 140px;
+      padding: 0.7rem 0.85rem;
+      border-radius: 10px;
+      border: 1px solid var(--glass-border);
+      background: var(--glass);
+      color: var(--text-primary);
+      font-size: 0.9rem;
+    }
+    .waitlist-input::placeholder { color: var(--text-tertiary); }
+    .waitlist-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(0, 160, 210, 0.2);
+    }
+    .waitlist-btn {
+      padding: 0.7rem 1.2rem;
+      border-radius: 10px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .waitlist-btn:hover { background: var(--primary-light); transform: translateY(-1px); }
+    .waitlist-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+    .waitlist-msg { margin-top: 0.5rem; font-size: 0.85rem; }
+    .waitlist-msg.success { color: var(--success); }
+    .waitlist-msg.error { color: var(--error); }
+    /* Feature cards (verbatim from index.html) */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .feature-card {
+      background: var(--glass);
+      backdrop-filter: blur(30px) saturate(180%);
+      -webkit-backdrop-filter: blur(30px) saturate(180%);
+      padding: 2rem; /* NeumorphicTheme.Spacing.cardPadding = 20px */
+      border-radius: 24px; /* NeumorphicTheme.CornerRadius.xxxl */
+      box-shadow:
+        0 8px 32px var(--shadow-dark),
+        0 0 0 1px var(--glass-border),
+        inset 0 0 0 1px rgba(255,255,255,0.1);
+      border: 1px solid var(--glass-border);
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      transform-style: preserve-3d;
+    }
+
+    /* Gradient Border Effect */
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 24px;
+      padding: 2px;
+      background: linear-gradient(
+        135deg,
+        var(--primary),
+        var(--primary-light),
+        var(--secondary),
+        var(--accent)
+      );
+      -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      z-index: -1;
+    }
+
+    /* Shine Effect */
+    .feature-card::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(255,255,255,0.1) 50%,
+        transparent 70%
+      );
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-8px) scale(1.02) rotateX(2deg);
+      box-shadow:
+        0 20px 60px rgba(0,104,184,0.25),
+        0 0 40px rgba(0,104,184,0.15),
+        inset 0 0 0 1px rgba(255,255,255,0.2);
+      border-color: var(--primary);
+    }
+
+    .feature-card:hover::before {
+      opacity: 1;
+    }
+
+    .feature-card:hover::after {
+      transform: translateX(100%);
+    }
+
+    [data-theme="dark"] .feature-card {
+      box-shadow:
+        0 8px 32px rgba(0,0,0,0.6),
+        0 0 0 1px var(--glass-border),
+        inset 0 0 0 1px rgba(255,255,255,0.05);
+    }
+
+    [data-theme="dark"] .feature-card:hover {
+      box-shadow:
+        0 20px 60px rgba(0,160,210,0.3),
+        0 0 50px rgba(0,160,210,0.2),
+        inset 0 0 0 1px rgba(255,255,255,0.15);
+    }
+
+    .feature-icon-wrapper {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 24px;
+      background: linear-gradient(
+        135deg,
+        var(--glass),
+        var(--glass-strong)
+      );
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      box-shadow:
+        0 8px 32px var(--shadow-dark),
+        inset 0 0 0 1px rgba(255,255,255,0.1);
+      transition: all 0.5s ease;
+    }
+
+    .feature-card:hover .feature-icon-wrapper {
+      transform: translateY(-10px) scale(1.1);
+      box-shadow:
+        0 20px 60px rgba(0,104,184,0.3),
+        inset 0 0 0 1px rgba(255,255,255,0.2);
+      background: linear-gradient(
+        135deg,
+        var(--primary),
+        var(--primary-light)
+      );
+    }
+
+    [data-theme="dark"] .feature-card:hover .feature-icon-wrapper {
+      box-shadow:
+        0 20px 60px rgba(0,160,210,0.4),
+        inset 0 0 0 1px rgba(255,255,255,0.2);
+    }
+
+    /* SVG Icons */
+    .feature-icon-svg {
+      width: 48px;
+      height: 48px;
+      color: var(--primary);
+      transition: all 0.5s ease;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2));
+    }
+
+    [data-theme="dark"] .feature-icon-svg {
+      color: var(--primary-light);
+    }
+
+    .feature-card:hover .feature-icon-svg {
+      color: white;
+      transform: scale(1.1);
+      filter: drop-shadow(0 8px 20px rgba(255,255,255,0.5));
+    }
+
+    .feature-card h3 {
+      color: var(--text-primary);
+      margin-bottom: 0.75rem;
+      font-weight: 700;
+      font-size: 1.4rem;
+      transition: all 0.3s ease;
+    }
+
+    .feature-card:hover h3 {
+      color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    [data-theme="dark"] .feature-card:hover h3 {
+      color: var(--primary-light);
+    }
+
+    .feature-card p {
+      color: var(--text-secondary);
+      line-height: 1.7;
+      transition: color 0.3s ease;
+    }
+
+    .feature-card:hover p {
+      color: var(--text-primary);
+    }
+    /* Option buttons (verbatim from index.html) */
+    .chat-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .chat-option-btn {
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      border: 1.5px solid var(--primary);
+      background: transparent;
+      color: var(--primary);
+      font-family: inherit;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .chat-option-btn:hover {
+      background: var(--primary);
+      color: var(--white);
+      transform: translateY(-1px);
+    }
+    .chat-option-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+    .content a.chat-option-btn { color: var(--primary); text-decoration: none; }
+    .content a.chat-option-btn:hover { color: var(--white); text-decoration: none; }
+    /* Settings layout (positions only; colors come from the theme variables) */
+    .settings-field { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1rem; }
+    .settings-field label { font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); }
+    .settings-field .waitlist-input { width: 100%; min-width: 0; }
+    .settings-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: 0.5rem; }
+    .settings-note { font-size: 0.85rem; }
+    .feature-card { text-align: center; }
+    .feature-card .chat-options { justify-content: center; }
+    .feature-card .waitlist-form { margin-bottom: 0.75rem; }
+    .channel-status { font-size: 0.85rem; font-weight: 600; }
+    .channel-status.success { color: var(--success); }
+    .channel-status.warning { color: var(--warning); }
+    .channel-status.error { color: var(--error); }
+    .channel-code {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--primary);
+      direction: ltr;
+      unicode-bidi: isolate;
+      margin-bottom: 0.5rem;
+    }
+    .table-wrap { overflow-x: auto; }
+    .rules-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .rules-table th, .rules-table td {
+      padding: 0.75rem 0.5rem;
+      border-bottom: 1px solid var(--glass-border);
+      text-align: start;
+      vertical-align: middle;
+    }
+    .rules-table th { color: var(--text-secondary); font-weight: 600; white-space: nowrap; }
+    .rules-table .waitlist-input { min-width: 150px; width: 100%; }
+    .rule-channels { display: flex; flex-wrap: wrap; gap: 0.4rem 0.9rem; }
+    .rule-check { display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; white-space: nowrap; }
+    .rule-check input { accent-color: var(--primary); }
+    .rule-check input:disabled + span { opacity: 0.5; }
+    .rules-table .chat-options { margin-top: 0; flex-wrap: nowrap; }
+    .plan-limits { list-style: none; margin-bottom: 1.5rem; }
+    .plan-limits li {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--glass-border);
+      color: var(--text-secondary);
+    }
+    .plan-limits li span:last-child { color: var(--text-primary); font-weight: 600; }
+    @media (max-width: 768px) {
+      .container { padding: 1rem; margin: 0 auto; }
+      .content { padding: 2rem 1.5rem; }
+      .header, .content h1, .content h2 { text-align: center; }
+      h1 { font-size: 2rem; }
+      h2 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body class="has-site-header">
+  <header class="site-header">
+    <div class="menu-btn" id="langMenuBtn">
+      <div class="icon-circle"><span class="icon">🌐</span></div>
+      <div class="menu-text">
+        <div class="menu-label" data-i18n="language">اللغة</div>
+        <div class="menu-value" id="currentLangDisplay">العربية</div>
+      </div>
+      <span class="menu-icon">⋯</span>
+      <div class="menu-dropdown" id="langDropdown">
+        <div class="menu-dropdown-item" data-lang="ar"><span class="checkmark" id="check-ar">✓</span><span>العربية</span></div>
+        <div class="menu-dropdown-item" data-lang="en"><span class="checkmark" id="check-en" style="display:none">✓</span><span>English</span></div>
+        <div class="menu-dropdown-item" data-lang="fr"><span class="checkmark" id="check-fr" style="display:none">✓</span><span>Français</span></div>
+        <div class="menu-dropdown-item" data-lang="ur"><span class="checkmark" id="check-ur" style="display:none">✓</span><span>اردو</span></div>
+      </div>
+    </div>
+    <div class="menu-btn" id="themeMenuBtn">
+      <div class="icon-circle"><span class="icon" id="themeIcon">🌙</span></div>
+      <div class="menu-text">
+        <div class="menu-label" data-i18n="appearance">المظهر</div>
+        <div class="menu-value" id="currentThemeDisplay">داكن</div>
+      </div>
+      <span class="menu-icon">⋯</span>
+      <div class="menu-dropdown" id="themeDropdown">
+        <div class="menu-dropdown-item" data-theme="light"><span class="checkmark" id="check-light" style="display:none">✓</span><span data-i18n="light">فاتح</span></div>
+        <div class="menu-dropdown-item" data-theme="dark"><span class="checkmark" id="check-dark">✓</span><span data-i18n="dark">داكن</span></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="header">
+      <h1 data-i18n="title">الإعدادات</h1>
+      <p data-i18n="intro">إدارة ملفك الشخصي وقنوات التنبيه وقواعد التذكير والتقويم والاشتراك.</p>
+    </div>
+
+    <div class="content" id="loadingCard">
+      <p class="waitlist-msg" role="status" aria-live="polite" data-i18n="loading">جارٍ التحميل...</p>
+    </div>
+
+    <div class="content" id="unavailableCard" style="display:none">
+      <h2 data-i18n="serviceUnavailableTitle">الخدمة قيد التجهيز</h2>
+      <p data-i18n="serviceUnavailableText">نعمل حالياً على تجهيز الخدمة، حاول مرة أخرى لاحقاً.</p>
+    </div>
+
+    <div id="settingsMain" style="display:none">
+
+      <!-- (1) Profile -->
+      <div class="content" id="profileCard">
+        <h2 data-i18n="profileTitle">الملف الشخصي</h2>
+        <form id="profileForm" novalidate>
+          <div class="settings-field">
+            <label for="fullName" data-i18n="fullNameLabel">الاسم الكامل</label>
+            <input type="text" class="waitlist-input" id="fullName" placeholder="اسمك الكامل" autocomplete="name" maxlength="120">
+          </div>
+          <div class="settings-field">
+            <label for="profileEmail" data-i18n="emailLabel">البريد الإلكتروني</label>
+            <input type="email" class="waitlist-input" id="profileEmail" readonly dir="ltr">
+          </div>
+          <div class="settings-field">
+            <label for="profileLang" data-i18n="langLabel">لغة الواجهة</label>
+            <select class="waitlist-input" id="profileLang">
+              <option value="ar">العربية</option>
+              <option value="en">English</option>
+              <option value="fr">Français</option>
+              <option value="ur">اردو</option>
+            </select>
+          </div>
+          <div class="settings-field">
+            <label for="profileTz" data-i18n="tzLabel">المنطقة الزمنية</label>
+            <select class="waitlist-input" id="profileTz" dir="ltr">
+              <option value="Asia/Riyadh">Asia/Riyadh (UTC+3)</option>
+              <option value="Asia/Kuwait">Asia/Kuwait (UTC+3)</option>
+              <option value="Asia/Bahrain">Asia/Bahrain (UTC+3)</option>
+              <option value="Asia/Qatar">Asia/Qatar (UTC+3)</option>
+              <option value="Asia/Dubai">Asia/Dubai (UTC+4)</option>
+              <option value="Asia/Muscat">Asia/Muscat (UTC+4)</option>
+              <option value="Asia/Amman">Asia/Amman (UTC+3)</option>
+              <option value="Asia/Baghdad">Asia/Baghdad (UTC+3)</option>
+              <option value="Africa/Cairo">Africa/Cairo (UTC+2/+3)</option>
+              <option value="Asia/Karachi">Asia/Karachi (UTC+5)</option>
+              <option value="Europe/Istanbul">Europe/Istanbul (UTC+3)</option>
+              <option value="Europe/Paris">Europe/Paris (UTC+1/+2)</option>
+              <option value="Europe/London">Europe/London (UTC+0/+1)</option>
+              <option value="America/New_York">America/New_York (UTC-5/-4)</option>
+              <option value="UTC">UTC</option>
+            </select>
+          </div>
+          <div class="settings-actions">
+            <button type="submit" class="waitlist-btn" id="profileSaveBtn" data-i18n="saveBtn">حفظ</button>
+            <p class="waitlist-msg" id="profileMsg" style="display:none;margin:0" role="status" aria-live="polite"></p>
+          </div>
+        </form>
+      </div>
+
+      <!-- (2) Notification channels -->
+      <div class="content" id="channelsCard">
+        <h2 data-i18n="channelsTitle">قنوات التنبيه</h2>
+        <p data-i18n="channelsIntro">اربط القنوات التي تريد استقبال التذكيرات عبرها. البريد الإلكتروني مفعّل دائماً.</p>
+        <div class="features-grid" id="channelsGrid">
+
+          <div class="feature-card" id="emailCard">
+            <div class="feature-icon-wrapper">
+              <svg class="feature-icon-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+            </div>
+            <h3 data-i18n="chEmail">البريد الإلكتروني</h3>
+            <p class="channel-status" id="emailStatus"></p>
+            <div id="emailBody"></div>
+          </div>
+
+          <div class="feature-card" id="telegramCard">
+            <div class="feature-icon-wrapper">
+              <svg class="feature-icon-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9.04 15.47l-.37 5.2c.53 0 .76-.23 1.04-.5l2.5-2.39 5.18 3.79c.95.52 1.63.25 1.88-.88l3.4-15.95c.31-1.4-.5-1.95-1.43-1.6L1.6 10.8c-1.36.53-1.34 1.29-.23 1.63l5.1 1.59L18.3 6.58c.56-.36 1.06-.16.65.2L9.04 15.47z"/></svg>
+            </div>
+            <h3 data-i18n="chTelegram">تيليجرام</h3>
+            <p class="channel-status" id="telegramStatus"></p>
+            <div id="telegramBody"></div>
+          </div>
+
+          <div class="feature-card" id="whatsappCard">
+            <div class="feature-icon-wrapper">
+              <svg class="feature-icon-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm0 18.15c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24 4.54 0 8.24 3.7 8.24 8.24 0 4.54-3.69 8.24-8.23 8.24zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.22.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.14-1.18-.06-.1-.22-.16-.47-.28z"/></svg>
+            </div>
+            <h3 data-i18n="chWhatsapp">واتساب</h3>
+            <p class="channel-status" id="whatsappStatus"></p>
+            <div id="whatsappBody"></div>
+          </div>
+
+          <div class="feature-card" id="smsCard">
+            <div class="feature-icon-wrapper">
+              <svg class="feature-icon-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM9 11H7V9h2v2zm4 0h-2V9h2v2zm4 0h-2V9h2v2z"/></svg>
+            </div>
+            <h3 data-i18n="chSms">الرسائل النصية</h3>
+            <p class="channel-status" id="smsStatus"></p>
+            <div id="smsBody"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- (3) Reminder rules -->
+      <div class="content" id="rulesCard">
+        <h2 data-i18n="rulesTitle">قواعد التذكير</h2>
+        <p data-i18n="rulesIntro">حدّد لكل متتبع موعد التذكير والقنوات والمستلمين.</p>
+        <div id="rulesWrap"></div>
+      </div>
+
+      <!-- (4) Calendar -->
+      <div class="content" id="calendarCard">
+        <h2 data-i18n="calendarTitle">التقويم</h2>
+        <p data-i18n="calendarIntro">أضف هذا الرابط إلى تقويم Google أو Apple أو Outlook لعرض مواعيدك تلقائياً.</p>
+        <div class="waitlist-form">
+          <input type="text" class="waitlist-input" id="calendarUrl" readonly dir="ltr">
+          <button type="button" class="waitlist-btn" id="copyUrlBtn" data-i18n="copyUrlBtn">نسخ الرابط</button>
+          <button type="button" class="chat-option-btn" id="regenerateBtn" data-i18n="regenerateBtn">إعادة توليد الرابط</button>
+        </div>
+        <p class="waitlist-msg" id="calendarMsg" style="display:none" role="status" aria-live="polite"></p>
+      </div>
+
+      <!-- (5) Subscription -->
+      <div class="content" id="subscriptionCard">
+        <h2 data-i18n="subscriptionTitle">الاشتراك</h2>
+        <ul class="plan-limits" id="planSummary"></ul>
+        <a class="back-btn" id="upgradeLink" href="mailto:support@appmails.net" data-i18n="upgradeBtn">طلب ترقية</a>
+      </div>
+
+      <!-- (6) Sign out -->
+      <div class="content" id="signOutCard">
+        <h2 data-i18n="signOutTitle">تسجيل الخروج</h2>
+        <p data-i18n="signOutText">يمكنك تسجيل الدخول مرة أخرى في أي وقت.</p>
+        <button type="button" class="waitlist-btn" id="signOutBtn" data-i18n="signOutBtn">تسجيل الخروج</button>
+      </div>
+
+    </div>
+
+    <div style="text-align: center; padding: 2rem;">
+      <a href="/app/dashboard.html" class="back-btn" data-i18n="backBtn">العودة إلى لوحة التحكم</a>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p class="footer-links">
+      <a href="/about.html" data-i18n="aboutLink">من نحن</a>
+      <a href="/terms.html" data-i18n="termsLink">شروط الاستخدام</a>
+      <a href="/pricing.html" data-i18n="pricingLink">الباقات والأسعار</a>
+      <a href="/privacy.html" data-i18n="privacyLink">سياسة الخصوصية</a>
+      <a href="/app/dashboard.html" data-i18n="dashboardLink">لوحة التحكم</a>
+      <a href="/index.html#contact" data-i18n="contactLink">تواصل معنا</a>
+      <a href="mailto:support@appmails.net" class="footer-social-icon" aria-label="support@appmails.net"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></a>
+    </p>
+    <p class="footer-copyright">
+      <span data-i18n="copyrightLine2">جميع الحقوق محفوظة</span>
+      <span> · <img src="/tracker-logo-full-dark.png" alt="TRACKER" id="footerLogo" class="brand-logo-inline brand-logo-inline--xs" data-brand-logo-footer style="height:1.3em;width:auto;display:inline-block;vertical-align:-0.35em;max-width:none;"> <span class="footer-year">© 2026</span></span>
+    </p>
+  </footer>
+
+  <script>
+    const translations = {
+      ar: {
+        title: "الإعدادات",
+        intro: "إدارة ملفك الشخصي وقنوات التنبيه وقواعد التذكير والتقويم والاشتراك.",
+        loading: "جارٍ التحميل...",
+        serviceUnavailableTitle: "الخدمة قيد التجهيز",
+        serviceUnavailableText: "نعمل حالياً على تجهيز الخدمة، حاول مرة أخرى لاحقاً.",
+        noOrg: "لا توجد شركة محددة، أنشئ شركتك أولاً من لوحة التحكم.",
+        genericError: "حدث خطأ، حاول مرة أخرى.",
+        saved: "تم الحفظ.",
+        deleted: "تم الحذف.",
+        planLimitItems: "وصلت إلى الحد الأقصى لعدد العناصر في باقتك الحالية، رقِّ باقتك لإضافة المزيد.",
+        planLimitMembers: "وصلت إلى الحد الأقصى لعدد الأعضاء في باقتك الحالية، رقِّ باقتك لإضافة المزيد.",
+        profileTitle: "الملف الشخصي",
+        fullNameLabel: "الاسم الكامل",
+        fullNamePlaceholder: "اسمك الكامل",
+        emailLabel: "البريد الإلكتروني",
+        langLabel: "لغة الواجهة",
+        tzLabel: "المنطقة الزمنية",
+        saveBtn: "حفظ",
+        saving: "جارٍ الحفظ...",
+        profileSaved: "تم حفظ الملف الشخصي.",
+        channelsTitle: "قنوات التنبيه",
+        channelsIntro: "اربط القنوات التي تريد استقبال التذكيرات عبرها. البريد الإلكتروني مفعّل دائماً.",
+        chEmail: "البريد الإلكتروني",
+        chTelegram: "تيليجرام",
+        chWhatsapp: "واتساب",
+        chSms: "الرسائل النصية",
+        statusLinked: "مرتبط",
+        statusPending: "بانتظار التحقق",
+        statusNotLinked: "غير مرتبط",
+        statusUnavailable: "غير متاح حالياً",
+        planChannelLocked: "هذه القناة غير متاحة في باقتك الحالية.",
+        genCodeBtn: "توليد رمز",
+        regenCodeBtn: "توليد رمز جديد",
+        testBtn: "إرسال رسالة تجريبية",
+        unlinkBtn: "إلغاء الربط",
+        linkBtn: "ربط الرقم",
+        refreshBtn: "تحديث الحالة",
+        smsPhoneLabel: "رقم الجوال بالصيغة الدولية",
+        smsPhonePlaceholder: "+9665xxxxxxx",
+        yourCode: "رمز الربط",
+        tgInstruction: "افتح {bot} في تيليجرام وأرسل الأمر {command}",
+        waInstruction: "أرسل الرمز {code} إلى الرقم {number} على واتساب.",
+        openTelegram: "فتح تيليجرام",
+        openWhatsapp: "فتح واتساب",
+        testSending: "جارٍ الإرسال...",
+        testSent: "أُرسلت الرسالة التجريبية.",
+        testFailed: "تعذّر إرسال الرسالة التجريبية، حاول لاحقاً.",
+        testNotLinked: "القناة غير مرتبطة بعد.",
+        unlinked: "تم إلغاء ربط القناة.",
+        invalidPhone: "أدخل رقم الجوال بالصيغة الدولية، مثل +9665xxxxxxx",
+        phoneLinked: "تم ربط الرقم.",
+        codeGenerated: "تم توليد الرمز، أكمل خطوات الربط.",
+        rulesTitle: "قواعد التذكير",
+        rulesIntro: "حدّد لكل متتبع موعد التذكير والقنوات والمستلمين.",
+        colTracker: "المتتبع",
+        colOffset: "موعد التذكير",
+        colChannels: "القنوات",
+        colTarget: "المستلمون",
+        colActions: "الإجراءات",
+        off60: "قبل ساعة واحدة",
+        off1440: "قبل يوم واحد",
+        off4320: "قبل 3 أيام",
+        off10080: "قبل 7 أيام",
+        off43200: "قبل 30 يوماً",
+        offCustom: "قبل {n} دقيقة",
+        targetAssignee: "المسؤول فقط",
+        targetAll: "جميع الأعضاء",
+        saveRuleBtn: "حفظ",
+        deleteRuleBtn: "حذف",
+        deleteRuleConfirm: "هل تريد حذف قاعدة التذكير لهذا المتتبع؟",
+        ruleSaved: "تم حفظ قاعدة التذكير.",
+        ruleDeleted: "تم حذف قاعدة التذكير.",
+        noTrackers: "لا توجد متتبعات بعد، أنشئ متتبعاً أولاً.",
+        ruleActive: "مفعّلة",
+        calendarTitle: "التقويم",
+        calendarIntro: "أضف هذا الرابط إلى تقويم Google أو Apple أو Outlook لعرض مواعيدك تلقائياً.",
+        copyUrlBtn: "نسخ الرابط",
+        urlCopied: "تم نسخ الرابط.",
+        copyFailed: "تعذّر النسخ، انسخ الرابط يدوياً.",
+        regenerateBtn: "إعادة توليد الرابط",
+        regenerateConfirm: "سيتوقف الرابط القديم عن العمل. هل تريد المتابعة؟",
+        calendarRegenerated: "تم توليد رابط جديد.",
+        subscriptionTitle: "الاشتراك",
+        currentPlanLabel: "الباقة الحالية",
+        expiresLabel: "تاريخ الانتهاء",
+        noExpiry: "بلا تاريخ انتهاء",
+        limitMembers: "الأعضاء",
+        limitItems: "العناصر",
+        limitChannels: "القنوات",
+        limitImports: "عمليات الاستيراد شهرياً",
+        unlimited: "غير محدود",
+        upgradeBtn: "طلب ترقية",
+        upgradeSubject: "طلب ترقية الباقة",
+        signOutTitle: "تسجيل الخروج",
+        signOutText: "يمكنك تسجيل الدخول مرة أخرى في أي وقت.",
+        signOutBtn: "تسجيل الخروج",
+        signingOut: "جارٍ تسجيل الخروج...",
+        backBtn: "العودة إلى لوحة التحكم",
+        copyrightLine2: "جميع الحقوق محفوظة",
+        aboutLink: "من نحن",
+        termsLink: "شروط الاستخدام",
+        pricingLink: "الباقات والأسعار",
+        privacyLink: "سياسة الخصوصية",
+        loginLink: "تسجيل الدخول",
+        dashboardLink: "لوحة التحكم",
+        contactLink: "تواصل معنا",
+        language: "اللغة",
+        appearance: "المظهر",
+        light: "فاتح",
+        dark: "داكن"
+      },
+      en: {
+        title: "Settings",
+        intro: "Manage your profile, notification channels, reminder rules, calendar and subscription.",
+        loading: "Loading...",
+        serviceUnavailableTitle: "Service is being prepared",
+        serviceUnavailableText: "We are setting up the service. Please try again later.",
+        noOrg: "No company selected. Create your company first from the dashboard.",
+        genericError: "Something went wrong. Please try again.",
+        saved: "Saved.",
+        deleted: "Deleted.",
+        planLimitItems: "You have reached the item limit of your current plan. Upgrade to add more.",
+        planLimitMembers: "You have reached the member limit of your current plan. Upgrade to add more.",
+        profileTitle: "Profile",
+        fullNameLabel: "Full name",
+        fullNamePlaceholder: "Your full name",
+        emailLabel: "Email address",
+        langLabel: "Interface language",
+        tzLabel: "Time zone",
+        saveBtn: "Save",
+        saving: "Saving...",
+        profileSaved: "Profile saved.",
+        channelsTitle: "Notification channels",
+        channelsIntro: "Link the channels you want to receive reminders on. Email is always enabled.",
+        chEmail: "Email",
+        chTelegram: "Telegram",
+        chWhatsapp: "WhatsApp",
+        chSms: "SMS",
+        statusLinked: "Linked",
+        statusPending: "Awaiting verification",
+        statusNotLinked: "Not linked",
+        statusUnavailable: "Not available right now",
+        planChannelLocked: "This channel is not included in your current plan.",
+        genCodeBtn: "Generate code",
+        regenCodeBtn: "Generate a new code",
+        testBtn: "Send a test message",
+        unlinkBtn: "Unlink",
+        linkBtn: "Link number",
+        refreshBtn: "Refresh status",
+        smsPhoneLabel: "Phone number in international format",
+        smsPhonePlaceholder: "+9665xxxxxxx",
+        yourCode: "Linking code",
+        tgInstruction: "Open {bot} in Telegram and send the command {command}",
+        waInstruction: "Send the code {code} to {number} on WhatsApp.",
+        openTelegram: "Open Telegram",
+        openWhatsapp: "Open WhatsApp",
+        testSending: "Sending...",
+        testSent: "Test message sent.",
+        testFailed: "The test message could not be sent. Please try again later.",
+        testNotLinked: "This channel is not linked yet.",
+        unlinked: "Channel unlinked.",
+        invalidPhone: "Enter your phone number in international format, e.g. +9665xxxxxxx",
+        phoneLinked: "Number linked.",
+        codeGenerated: "Code generated. Complete the linking steps.",
+        rulesTitle: "Reminder rules",
+        rulesIntro: "Set the reminder time, channels and recipients for each tracker.",
+        colTracker: "Tracker",
+        colOffset: "Reminder time",
+        colChannels: "Channels",
+        colTarget: "Recipients",
+        colActions: "Actions",
+        off60: "1 hour before",
+        off1440: "1 day before",
+        off4320: "3 days before",
+        off10080: "7 days before",
+        off43200: "30 days before",
+        offCustom: "{n} minutes before",
+        targetAssignee: "Assignee only",
+        targetAll: "All members",
+        saveRuleBtn: "Save",
+        deleteRuleBtn: "Delete",
+        deleteRuleConfirm: "Delete the reminder rule for this tracker?",
+        ruleSaved: "Reminder rule saved.",
+        ruleDeleted: "Reminder rule deleted.",
+        noTrackers: "No trackers yet. Create a tracker first.",
+        ruleActive: "Active",
+        calendarTitle: "Calendar",
+        calendarIntro: "Add this link to Google, Apple or Outlook Calendar to see your due dates automatically.",
+        copyUrlBtn: "Copy link",
+        urlCopied: "Link copied.",
+        copyFailed: "Could not copy. Please copy the link manually.",
+        regenerateBtn: "Regenerate link",
+        regenerateConfirm: "The old link will stop working. Continue?",
+        calendarRegenerated: "A new link was generated.",
+        subscriptionTitle: "Subscription",
+        currentPlanLabel: "Current plan",
+        expiresLabel: "Expires on",
+        noExpiry: "No expiry date",
+        limitMembers: "Members",
+        limitItems: "Items",
+        limitChannels: "Channels",
+        limitImports: "Imports per month",
+        unlimited: "Unlimited",
+        upgradeBtn: "Request an upgrade",
+        upgradeSubject: "Plan upgrade request",
+        signOutTitle: "Sign out",
+        signOutText: "You can sign in again at any time.",
+        signOutBtn: "Sign out",
+        signingOut: "Signing out...",
+        backBtn: "Back to dashboard",
+        copyrightLine2: "All rights reserved",
+        aboutLink: "About Us",
+        termsLink: "Terms of Use",
+        pricingLink: "Plans & Pricing",
+        privacyLink: "Privacy Policy",
+        loginLink: "Sign in",
+        dashboardLink: "Dashboard",
+        contactLink: "Contact Us",
+        language: "Language",
+        appearance: "Appearance",
+        light: "Light",
+        dark: "Dark"
+      },
+      fr: {
+        title: "Paramètres",
+        intro: "Gérez votre profil, vos canaux de notification, vos règles de rappel, votre calendrier et votre abonnement.",
+        loading: "Chargement...",
+        serviceUnavailableTitle: "Service en cours de préparation",
+        serviceUnavailableText: "Nous préparons le service. Veuillez réessayer plus tard.",
+        noOrg: "Aucune entreprise sélectionnée. Créez d'abord votre entreprise depuis le tableau de bord.",
+        genericError: "Une erreur est survenue. Veuillez réessayer.",
+        saved: "Enregistré.",
+        deleted: "Supprimé.",
+        planLimitItems: "Vous avez atteint la limite d'éléments de votre forfait actuel. Passez à un forfait supérieur pour en ajouter.",
+        planLimitMembers: "Vous avez atteint la limite de membres de votre forfait actuel. Passez à un forfait supérieur pour en ajouter.",
+        profileTitle: "Profil",
+        fullNameLabel: "Nom complet",
+        fullNamePlaceholder: "Votre nom complet",
+        emailLabel: "Adresse e-mail",
+        langLabel: "Langue de l'interface",
+        tzLabel: "Fuseau horaire",
+        saveBtn: "Enregistrer",
+        saving: "Enregistrement...",
+        profileSaved: "Profil enregistré.",
+        channelsTitle: "Canaux de notification",
+        channelsIntro: "Liez les canaux sur lesquels vous souhaitez recevoir les rappels. L'e-mail est toujours activé.",
+        chEmail: "E-mail",
+        chTelegram: "Telegram",
+        chWhatsapp: "WhatsApp",
+        chSms: "SMS",
+        statusLinked: "Lié",
+        statusPending: "En attente de vérification",
+        statusNotLinked: "Non lié",
+        statusUnavailable: "Indisponible pour le moment",
+        planChannelLocked: "Ce canal n'est pas inclus dans votre forfait actuel.",
+        genCodeBtn: "Générer un code",
+        regenCodeBtn: "Générer un nouveau code",
+        testBtn: "Envoyer un message test",
+        unlinkBtn: "Dissocier",
+        linkBtn: "Lier le numéro",
+        refreshBtn: "Actualiser l'état",
+        smsPhoneLabel: "Numéro de téléphone au format international",
+        smsPhonePlaceholder: "+9665xxxxxxx",
+        yourCode: "Code de liaison",
+        tgInstruction: "Ouvrez {bot} dans Telegram et envoyez la commande {command}",
+        waInstruction: "Envoyez le code {code} au numéro {number} sur WhatsApp.",
+        openTelegram: "Ouvrir Telegram",
+        openWhatsapp: "Ouvrir WhatsApp",
+        testSending: "Envoi en cours...",
+        testSent: "Message test envoyé.",
+        testFailed: "Le message test n'a pas pu être envoyé. Veuillez réessayer plus tard.",
+        testNotLinked: "Ce canal n'est pas encore lié.",
+        unlinked: "Canal dissocié.",
+        invalidPhone: "Saisissez votre numéro au format international, par exemple +9665xxxxxxx",
+        phoneLinked: "Numéro lié.",
+        codeGenerated: "Code généré. Terminez les étapes de liaison.",
+        rulesTitle: "Règles de rappel",
+        rulesIntro: "Définissez pour chaque suivi le moment du rappel, les canaux et les destinataires.",
+        colTracker: "Suivi",
+        colOffset: "Moment du rappel",
+        colChannels: "Canaux",
+        colTarget: "Destinataires",
+        colActions: "Actions",
+        off60: "1 heure avant",
+        off1440: "1 jour avant",
+        off4320: "3 jours avant",
+        off10080: "7 jours avant",
+        off43200: "30 jours avant",
+        offCustom: "{n} minutes avant",
+        targetAssignee: "Responsable uniquement",
+        targetAll: "Tous les membres",
+        saveRuleBtn: "Enregistrer",
+        deleteRuleBtn: "Supprimer",
+        deleteRuleConfirm: "Supprimer la règle de rappel de ce suivi ?",
+        ruleSaved: "Règle de rappel enregistrée.",
+        ruleDeleted: "Règle de rappel supprimée.",
+        noTrackers: "Aucun suivi pour le moment. Créez d'abord un suivi.",
+        ruleActive: "Active",
+        calendarTitle: "Calendrier",
+        calendarIntro: "Ajoutez ce lien à Google Agenda, Apple Calendrier ou Outlook pour voir vos échéances automatiquement.",
+        copyUrlBtn: "Copier le lien",
+        urlCopied: "Lien copié.",
+        copyFailed: "Copie impossible. Veuillez copier le lien manuellement.",
+        regenerateBtn: "Régénérer le lien",
+        regenerateConfirm: "L'ancien lien cessera de fonctionner. Continuer ?",
+        calendarRegenerated: "Un nouveau lien a été généré.",
+        subscriptionTitle: "Abonnement",
+        currentPlanLabel: "Forfait actuel",
+        expiresLabel: "Date d'expiration",
+        noExpiry: "Sans date d'expiration",
+        limitMembers: "Membres",
+        limitItems: "Éléments",
+        limitChannels: "Canaux",
+        limitImports: "Importations par mois",
+        unlimited: "Illimité",
+        upgradeBtn: "Demander une mise à niveau",
+        upgradeSubject: "Demande de mise à niveau du forfait",
+        signOutTitle: "Déconnexion",
+        signOutText: "Vous pouvez vous reconnecter à tout moment.",
+        signOutBtn: "Se déconnecter",
+        signingOut: "Déconnexion en cours...",
+        backBtn: "Retour au tableau de bord",
+        copyrightLine2: "Tous droits réservés",
+        aboutLink: "À propos",
+        termsLink: "Conditions d'utilisation",
+        pricingLink: "Forfaits et tarifs",
+        privacyLink: "Politique de confidentialité",
+        loginLink: "Connexion",
+        dashboardLink: "Tableau de bord",
+        contactLink: "Contactez-nous",
+        language: "Langue",
+        appearance: "Apparence",
+        light: "Clair",
+        dark: "Sombre"
+      },
+      ur: {
+        title: "ترتیبات",
+        intro: "اپنی پروفائل، اطلاعاتی چینلز، یاد دہانی کے اصول، کیلنڈر اور سبسکرپشن کا انتظام کریں۔",
+        loading: "لوڈ ہو رہا ہے...",
+        serviceUnavailableTitle: "سروس تیار کی جا رہی ہے",
+        serviceUnavailableText: "ہم سروس تیار کر رہے ہیں، براہ کرم بعد میں دوبارہ کوشش کریں۔",
+        noOrg: "کوئی کمپنی منتخب نہیں، پہلے ڈیش بورڈ سے اپنی کمپنی بنائیں۔",
+        genericError: "کچھ غلط ہو گیا، براہ کرم دوبارہ کوشش کریں۔",
+        saved: "محفوظ ہو گیا۔",
+        deleted: "حذف ہو گیا۔",
+        planLimitItems: "آپ اپنے موجودہ پلان میں آئٹمز کی حد تک پہنچ چکے ہیں، مزید شامل کرنے کے لیے پلان اپ گریڈ کریں۔",
+        planLimitMembers: "آپ اپنے موجودہ پلان میں اراکین کی حد تک پہنچ چکے ہیں، مزید شامل کرنے کے لیے پلان اپ گریڈ کریں۔",
+        profileTitle: "پروفائل",
+        fullNameLabel: "پورا نام",
+        fullNamePlaceholder: "آپ کا پورا نام",
+        emailLabel: "ای میل ایڈریس",
+        langLabel: "انٹرفیس کی زبان",
+        tzLabel: "ٹائم زون",
+        saveBtn: "محفوظ کریں",
+        saving: "محفوظ کیا جا رہا ہے...",
+        profileSaved: "پروفائل محفوظ ہو گئی۔",
+        channelsTitle: "اطلاعاتی چینلز",
+        channelsIntro: "وہ چینلز منسلک کریں جن پر آپ یاد دہانیاں وصول کرنا چاہتے ہیں۔ ای میل ہمیشہ فعال رہتا ہے۔",
+        chEmail: "ای میل",
+        chTelegram: "ٹیلیگرام",
+        chWhatsapp: "واٹس ایپ",
+        chSms: "ایس ایم ایس",
+        statusLinked: "منسلک",
+        statusPending: "تصدیق کا انتظار",
+        statusNotLinked: "منسلک نہیں",
+        statusUnavailable: "فی الحال دستیاب نہیں",
+        planChannelLocked: "یہ چینل آپ کے موجودہ پلان میں شامل نہیں ہے۔",
+        genCodeBtn: "کوڈ بنائیں",
+        regenCodeBtn: "نیا کوڈ بنائیں",
+        testBtn: "آزمائشی پیغام بھیجیں",
+        unlinkBtn: "لنک ختم کریں",
+        linkBtn: "نمبر منسلک کریں",
+        refreshBtn: "حالت تازہ کریں",
+        smsPhoneLabel: "بین الاقوامی فارمیٹ میں موبائل نمبر",
+        smsPhonePlaceholder: "+9665xxxxxxx",
+        yourCode: "لنکنگ کوڈ",
+        tgInstruction: "ٹیلیگرام میں {bot} کھولیں اور یہ کمانڈ بھیجیں {command}",
+        waInstruction: "کوڈ {code} واٹس ایپ پر نمبر {number} کو بھیجیں۔",
+        openTelegram: "ٹیلیگرام کھولیں",
+        openWhatsapp: "واٹس ایپ کھولیں",
+        testSending: "بھیجا جا رہا ہے...",
+        testSent: "آزمائشی پیغام بھیج دیا گیا۔",
+        testFailed: "آزمائشی پیغام نہیں بھیجا جا سکا، براہ کرم بعد میں کوشش کریں۔",
+        testNotLinked: "یہ چینل ابھی منسلک نہیں ہے۔",
+        unlinked: "چینل کا لنک ختم کر دیا گیا۔",
+        invalidPhone: "بین الاقوامی فارمیٹ میں موبائل نمبر درج کریں، مثلاً +9665xxxxxxx",
+        phoneLinked: "نمبر منسلک ہو گیا۔",
+        codeGenerated: "کوڈ بن گیا، لنکنگ کے مراحل مکمل کریں۔",
+        rulesTitle: "یاد دہانی کے اصول",
+        rulesIntro: "ہر ٹریکر کے لیے یاد دہانی کا وقت، چینلز اور وصول کنندگان مقرر کریں۔",
+        colTracker: "ٹریکر",
+        colOffset: "یاد دہانی کا وقت",
+        colChannels: "چینلز",
+        colTarget: "وصول کنندگان",
+        colActions: "کارروائیاں",
+        off60: "1 گھنٹہ پہلے",
+        off1440: "1 دن پہلے",
+        off4320: "3 دن پہلے",
+        off10080: "7 دن پہلے",
+        off43200: "30 دن پہلے",
+        offCustom: "{n} منٹ پہلے",
+        targetAssignee: "صرف ذمہ دار",
+        targetAll: "تمام اراکین",
+        saveRuleBtn: "محفوظ کریں",
+        deleteRuleBtn: "حذف کریں",
+        deleteRuleConfirm: "کیا آپ اس ٹریکر کی یاد دہانی کا اصول حذف کرنا چاہتے ہیں؟",
+        ruleSaved: "یاد دہانی کا اصول محفوظ ہو گیا۔",
+        ruleDeleted: "یاد دہانی کا اصول حذف ہو گیا۔",
+        noTrackers: "ابھی کوئی ٹریکر نہیں، پہلے ایک ٹریکر بنائیں۔",
+        ruleActive: "فعال",
+        calendarTitle: "کیلنڈر",
+        calendarIntro: "اپنی آخری تاریخیں خود بخود دیکھنے کے لیے یہ لنک Google، Apple یا Outlook کیلنڈر میں شامل کریں۔",
+        copyUrlBtn: "لنک کاپی کریں",
+        urlCopied: "لنک کاپی ہو گیا۔",
+        copyFailed: "کاپی نہیں ہو سکا، براہ کرم لنک خود کاپی کریں۔",
+        regenerateBtn: "نیا لنک بنائیں",
+        regenerateConfirm: "پرانا لنک کام کرنا بند کر دے گا۔ کیا آپ جاری رکھنا چاہتے ہیں؟",
+        calendarRegenerated: "نیا لنک بن گیا۔",
+        subscriptionTitle: "سبسکرپشن",
+        currentPlanLabel: "موجودہ پلان",
+        expiresLabel: "ختم ہونے کی تاریخ",
+        noExpiry: "ختم ہونے کی کوئی تاریخ نہیں",
+        limitMembers: "اراکین",
+        limitItems: "آئٹمز",
+        limitChannels: "چینلز",
+        limitImports: "ماہانہ امپورٹس",
+        unlimited: "لامحدود",
+        upgradeBtn: "اپ گریڈ کی درخواست",
+        upgradeSubject: "پلان اپ گریڈ کی درخواست",
+        signOutTitle: "سائن آؤٹ",
+        signOutText: "آپ کسی بھی وقت دوبارہ سائن ان کر سکتے ہیں۔",
+        signOutBtn: "سائن آؤٹ",
+        signingOut: "سائن آؤٹ ہو رہا ہے...",
+        backBtn: "واپس ڈیش بورڈ",
+        copyrightLine2: "جملہ حقوق محفوظ ہیں",
+        aboutLink: "ہمارے بارے میں",
+        termsLink: "استعمال کی شرائط",
+        pricingLink: "پلانز اور قیمتیں",
+        privacyLink: "رازداری کی پالیسی",
+        loginLink: "سائن ان",
+        dashboardLink: "ڈیش بورڈ",
+        contactLink: "ہم سے رابطہ کریں",
+        language: "زبان",
+        appearance: "ظہور",
+        light: "روشن",
+        dark: "اندھیرا"
+      }
+    };
+
+    const lang = () => localStorage.getItem("tracker_lang") || "ar";
+    const theme = () => localStorage.getItem("tracker_theme") || "dark";
+    const langNames = { ar: "العربية", en: "English", fr: "Français", ur: "اردو" };
+    let l = lang();
+    document.documentElement.lang = l;
+    document.documentElement.dir = (l === "ar" || l === "ur") ? "rtl" : "ltr";
+
+    const placeholderKeys = { fullName: "fullNamePlaceholder", smsPhone: "smsPhonePlaceholder" };
+    function applyPlaceholders(code) {
+      const dict = translations[code] || translations.ar;
+      Object.keys(placeholderKeys).forEach(id => {
+        const el = document.getElementById(id);
+        if (el && dict[placeholderKeys[id]]) el.placeholder = dict[placeholderKeys[id]];
+      });
+    }
+
+    function setLang(code) {
+      localStorage.setItem("tracker_lang", code);
+      l = code;
+      document.documentElement.lang = code;
+      document.documentElement.dir = (code === "ar" || code === "ur") ? "rtl" : "ltr";
+      document.getElementById("currentLangDisplay").textContent = langNames[code] || code;
+      ["ar","en","fr","ur"].forEach(c => {
+        const el = document.getElementById("check-" + c);
+        if (el) el.style.display = c === code ? "inline" : "none";
+      });
+      const th = theme();
+      document.getElementById("currentThemeDisplay").textContent = translations[code][th === "dark" ? "dark" : "light"];
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const k = el.dataset.i18n;
+        if (translations[code] && translations[code][k]) el.innerHTML = translations[code][k];
+      });
+      applyPlaceholders(code);
+      document.title = (translations[code] && translations[code].title ? translations[code].title : "Settings") + " | TRACKER";
+      if (typeof window.__trackerAuthRefresh === "function") window.__trackerAuthRefresh();
+      if (typeof window.__settingsRerender === "function") window.__settingsRerender();
+    }
+
+    function setTheme(th) {
+      localStorage.setItem("tracker_theme", th);
+      document.documentElement.dataset.theme = th;
+      const meta = document.getElementById("themeColorMeta");
+      if (meta) meta.content = th === "dark" ? "#1a2933" : "#0068b8";
+      const logo = document.getElementById("footerLogo");
+      if (logo) logo.src = th === "dark" ? "/tracker-logo-full-dark.png" : "/tracker-logo-full-light.png";
+      document.getElementById("themeIcon").textContent = th === "dark" ? "🌙" : "☀️";
+      document.getElementById("currentThemeDisplay").textContent = translations[l][th === "dark" ? "dark" : "light"];
+      document.getElementById("check-light").style.display = th === "light" ? "inline" : "none";
+      document.getElementById("check-dark").style.display = th === "dark" ? "inline" : "none";
+    }
+
+    document.getElementById("langMenuBtn").addEventListener("click", e => {
+      e.stopPropagation();
+      document.getElementById("langDropdown").classList.toggle("show");
+      document.getElementById("themeDropdown").classList.remove("show");
+    });
+    document.getElementById("themeMenuBtn").addEventListener("click", e => {
+      e.stopPropagation();
+      document.getElementById("themeDropdown").classList.toggle("show");
+      document.getElementById("langDropdown").classList.remove("show");
+    });
+    document.addEventListener("click", () => {
+      document.getElementById("langDropdown").classList.remove("show");
+      document.getElementById("themeDropdown").classList.remove("show");
+    });
+
+    document.querySelectorAll("#langDropdown .menu-dropdown-item").forEach(item => {
+      item.addEventListener("click", () => setLang(item.dataset.lang));
+    });
+    document.querySelectorAll("#themeDropdown .menu-dropdown-item").forEach(item => {
+      item.addEventListener("click", () => {
+        setTheme(item.dataset.theme);
+        document.getElementById("themeDropdown").classList.remove("show");
+      });
+    });
+
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+      const k = el.dataset.i18n;
+      if (translations[l] && translations[l][k]) el.textContent = translations[l][k];
+    });
+    applyPlaceholders(l);
+    document.getElementById("currentLangDisplay").textContent = langNames[l] || l;
+    ["ar","en","fr","ur"].forEach(c => {
+      const el = document.getElementById("check-" + c);
+      if (el) el.style.display = l === c ? "inline" : "none";
+    });
+    document.title = (translations[l] && translations[l].title ? translations[l].title : "Settings") + " | TRACKER";
+
+    (function() {
+      const th = theme();
+      document.documentElement.dataset.theme = th;
+      const meta = document.getElementById("themeColorMeta");
+      if (meta) meta.content = th === "dark" ? "#1a2933" : "#0068b8";
+      const logo = document.getElementById("footerLogo");
+      if (logo) logo.src = th === "dark" ? "/tracker-logo-full-dark.png" : "/tracker-logo-full-light.png";
+      document.getElementById("themeIcon").textContent = th === "dark" ? "🌙" : "☀️";
+      document.getElementById("currentThemeDisplay").textContent = translations[l][th === "dark" ? "dark" : "light"];
+      document.getElementById("check-light").style.display = th === "light" ? "inline" : "none";
+      document.getElementById("check-dark").style.display = th === "dark" ? "inline" : "none";
+    })();
+  </script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {});
+      });
+    }
+  </script>
+  <script>
+    /* ============================================================
+     * Settings page logic — uses window.trackerApp (app/common.js)
+     * ============================================================ */
+    (function () {
+      "use strict";
+
+      var CHANNELS = ["email", "telegram", "whatsapp", "sms"];
+      var CHANNEL_KEYS = { email: "chEmail", telegram: "chTelegram", whatsapp: "chWhatsapp", sms: "chSms" };
+      var OFFSETS = [60, 1440, 4320, 10080, 43200];
+      var SUPPORT_EMAIL = "support@appmails.net";
+
+      var app = null;
+      var config = { telegramBot: null, whatsappNumber: null, smsEnabled: false };
+      var state = {
+        loaded: false,
+        links: [],
+        trackers: [],
+        rules: [],
+        limits: null,
+        planCode: "free",
+        plans: [],
+        sub: null,
+        calendarUrl: ""
+      };
+
+      /* ---------- helpers ---------- */
+
+      function el(id) { return document.getElementById(id); }
+
+      function t(key) {
+        var code = lang();
+        if (translations[code] && translations[code][key]) return translations[code][key];
+        if (translations.ar[key]) return translations.ar[key];
+        return key;
+      }
+
+      /* Escapes the template then fills {placeholders} with already-escaped HTML fragments. */
+      function fill(key, vars) {
+        var out = esc(t(key));
+        Object.keys(vars || {}).forEach(function (k) {
+          out = out.split("{" + k + "}").join(vars[k]);
+        });
+        return out;
+      }
+
+      function esc(s) {
+        return String(s === null || s === undefined ? "" : s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function toast(message, kind) {
+        if (app && typeof app.toast === "function") app.toast(message, kind);
+      }
+
+      function errorMessage(err) {
+        if (err && err.code === "PLAN_LIMIT") return t(err.limit === "members" ? "planLimitMembers" : "planLimitItems");
+        if (err && err.code === "NO_ORG") return t("noOrg");
+        return t("genericError");
+      }
+
+      function show(id, on) {
+        var node = el(id);
+        if (node) node.style.display = on ? "" : "none";
+      }
+
+      function setMsg(id, text, kind) {
+        var node = el(id);
+        if (!node) return;
+        node.textContent = text || "";
+        node.className = "waitlist-msg" + (kind ? " " + kind : "");
+        node.style.display = text ? "" : "none";
+      }
+
+      function fmtDate(iso) {
+        return app && typeof app.fmtDate === "function" ? app.fmtDate(iso) : String(iso || "");
+      }
+
+      function allowedChannels() {
+        var list = state.limits && Array.isArray(state.limits.channels) ? state.limits.channels : ["email"];
+        return list.indexOf("email") === -1 ? ["email"].concat(list) : list;
+      }
+
+      function planAllows(channel) {
+        return allowedChannels().indexOf(channel) !== -1;
+      }
+
+      function linkFor(channel) {
+        for (var i = 0; i < state.links.length; i++) if (state.links[i].channel === channel) return state.links[i];
+        return null;
+      }
+
+      function digitsOnly(s) { return String(s || "").replace(/\D/g, ""); }
+
+      /* ---------- profile ---------- */
+
+      function fillProfile() {
+        var p = app.profile || {};
+        var user = app.user || {};
+        el("fullName").value = p.full_name || "";
+        el("profileEmail").value = p.email || user.email || "";
+        var langSel = el("profileLang");
+        langSel.value = p.lang || lang();
+        if (!langSel.value) langSel.value = "ar";
+        var tzSel = el("profileTz");
+        var tz = p.tz || "Asia/Riyadh";
+        var found = false;
+        for (var i = 0; i < tzSel.options.length; i++) if (tzSel.options[i].value === tz) found = true;
+        if (!found) {
+          var opt = document.createElement("option");
+          opt.value = tz;
+          opt.textContent = tz;
+          tzSel.appendChild(opt);
+        }
+        tzSel.value = tz;
+      }
+
+      function saveProfile(ev) {
+        ev.preventDefault();
+        var btn = el("profileSaveBtn");
+        var patch = {
+          full_name: el("fullName").value,
+          lang: el("profileLang").value,
+          tz: el("profileTz").value
+        };
+        btn.disabled = true;
+        setMsg("profileMsg", t("saving"));
+        app.updateProfile(patch).then(function () {
+          if (patch.lang !== lang()) setLang(patch.lang);
+          btn.disabled = false;
+          setMsg("profileMsg", t("profileSaved"), "success");
+          toast(t("profileSaved"), "success");
+        }).catch(function (err) {
+          btn.disabled = false;
+          setMsg("profileMsg", errorMessage(err), "error");
+        });
+      }
+
+      /* ---------- notification channels ---------- */
+
+      function loadConfig() {
+        return fetch("/api/config", { cache: "no-store", headers: { Accept: "application/json" } })
+          .then(function (res) { return res.ok ? res.json() : {}; })
+          .then(function (cfg) {
+            cfg = cfg || {};
+            config.telegramBot = cfg.telegramBot ? String(cfg.telegramBot).replace(/^@/, "") : null;
+            config.whatsappNumber = cfg.whatsappNumber ? String(cfg.whatsappNumber) : null;
+            config.smsEnabled = !!cfg.smsEnabled;
+          })
+          .catch(function () { /* channels stay unavailable */ });
+      }
+
+      function reloadLinks() {
+        return app.channelLinks().then(function (rows) {
+          state.links = rows || [];
+          renderChannels();
+        }).catch(function (err) {
+          toast(errorMessage(err), "error");
+        });
+      }
+
+      function setStatus(channel, key, kind) {
+        var node = el(channel + "Status");
+        if (!node) return;
+        node.textContent = t(key);
+        node.className = "channel-status" + (kind ? " " + kind : "");
+      }
+
+      function actionBtn(action, channel, key, cls) {
+        return '<button type="button" class="' + (cls || "chat-option-btn") + '" data-action="' + action +
+               '" data-channel="' + channel + '">' + esc(t(key)) + "</button>";
+      }
+
+      function renderEmail() {
+        var email = (app.profile && app.profile.email) || (app.user && app.user.email) || "";
+        setStatus("email", "statusLinked", "success");
+        el("emailBody").innerHTML =
+          '<p dir="ltr">' + esc(email) + "</p>" +
+          '<div class="chat-options">' + actionBtn("test", "email", "testBtn") + "</div>";
+      }
+
+      function renderCoded(channel) {
+        var body = el(channel + "Body");
+        var available = channel === "telegram" ? !!config.telegramBot : !!config.whatsappNumber;
+        if (!available) {
+          setStatus(channel, "statusUnavailable", "");
+          body.innerHTML = "";
+          return;
+        }
+        var link = linkFor(channel);
+        var linked = !!(link && link.verified_at);
+        var code = (link && !link.verified_at && link.verify_code) ? String(link.verify_code) : null;
+        var html = "";
+
+        if (linked) setStatus(channel, "statusLinked", "success");
+        else if (code) setStatus(channel, "statusPending", "warning");
+        else setStatus(channel, "statusNotLinked", "error");
+
+        if (!planAllows(channel)) html += '<p class="settings-note">' + esc(t("planChannelLocked")) + "</p>";
+
+        if (code) {
+          html += '<p class="settings-note">' + esc(t("yourCode")) + "</p>";
+          html += '<div class="channel-code">' + esc(code) + "</div>";
+          if (channel === "telegram") {
+            html += "<p>" + fill("tgInstruction", {
+              bot: '<span dir="ltr">@' + esc(config.telegramBot) + "</span>",
+              command: '<span dir="ltr">/start ' + esc(code) + "</span>"
+            }) + "</p>";
+            html += '<div class="chat-options"><a class="chat-option-btn" target="_blank" rel="noopener" href="https://t.me/' +
+                    encodeURIComponent(config.telegramBot) + "?start=" + encodeURIComponent(code) + '">' +
+                    esc(t("openTelegram")) + "</a></div>";
+          } else {
+            html += "<p>" + fill("waInstruction", {
+              code: '<span dir="ltr">' + esc(code) + "</span>",
+              number: '<span dir="ltr">+' + esc(digitsOnly(config.whatsappNumber)) + "</span>"
+            }) + "</p>";
+            html += '<div class="chat-options"><a class="chat-option-btn" target="_blank" rel="noopener" href="https://wa.me/' +
+                    digitsOnly(config.whatsappNumber) + "?text=" + encodeURIComponent(code) + '">' +
+                    esc(t("openWhatsapp")) + "</a></div>";
+          }
+        }
+
+        html += '<div class="chat-options">';
+        if (!linked) html += actionBtn("code", channel, code ? "regenCodeBtn" : "genCodeBtn", "waitlist-btn");
+        if (code) html += actionBtn("refresh", channel, "refreshBtn");
+        if (linked) html += actionBtn("test", channel, "testBtn", "waitlist-btn");
+        if (link) html += actionBtn("unlink", channel, "unlinkBtn");
+        html += "</div>";
+        body.innerHTML = html;
+      }
+
+      function renderSms() {
+        var body = el("smsBody");
+        if (!config.smsEnabled) {
+          setStatus("sms", "statusUnavailable", "");
+          body.innerHTML = "";
+          return;
+        }
+        var link = linkFor("sms");
+        var linked = !!(link && link.verified_at && link.external_id);
+        setStatus("sms", linked ? "statusLinked" : "statusNotLinked", linked ? "success" : "error");
+        var html = "";
+        if (!planAllows("sms")) html += '<p class="settings-note">' + esc(t("planChannelLocked")) + "</p>";
+        if (linked) html += '<p dir="ltr">' + esc(link.external_id) + "</p>";
+        html += '<form class="waitlist-form" data-action="sms-link" novalidate>' +
+                '<input type="tel" class="waitlist-input" id="smsPhone" placeholder="' + esc(t("smsPhonePlaceholder")) +
+                '" autocomplete="tel" inputmode="tel" dir="ltr" aria-label="' + esc(t("smsPhoneLabel")) +
+                '" value="' + esc(linked ? link.external_id : "") + '">' +
+                '<button type="submit" class="waitlist-btn">' + esc(t("linkBtn")) + "</button></form>";
+        html += '<div class="chat-options">';
+        if (linked) html += actionBtn("test", "sms", "testBtn", "waitlist-btn");
+        if (link) html += actionBtn("unlink", "sms", "unlinkBtn");
+        html += "</div>";
+        body.innerHTML = html;
+      }
+
+      function renderChannels() {
+        if (!state.loaded) return;
+        renderEmail();
+        renderCoded("telegram");
+        renderCoded("whatsapp");
+        renderSms();
+      }
+
+      function testResultMessage(res) {
+        if (res && res.ok) return { text: t("testSent"), kind: "success" };
+        var code = res && res.error ? String(res.error) : "";
+        if (code === "channel_not_linked") return { text: t("testNotLinked"), kind: "error" };
+        if (code === "send_failed" || code === "unknown_channel") return { text: t("testFailed"), kind: "error" };
+        return { text: t("genericError"), kind: "error" };
+      }
+
+      function onChannelAction(ev) {
+        var btn = ev.target.closest("[data-action]");
+        if (!btn || btn.tagName === "FORM") return;
+        var action = btn.getAttribute("data-action");
+        var channel = btn.getAttribute("data-channel");
+        if (!action || !channel) return;
+        btn.disabled = true;
+
+        if (action === "code") {
+          app.requestChannelCode(channel).then(function () {
+            toast(t("codeGenerated"), "success");
+            return reloadLinks();
+          }).catch(function (err) { btn.disabled = false; toast(errorMessage(err), "error"); });
+        } else if (action === "refresh") {
+          reloadLinks().then(function () { btn.disabled = false; });
+        } else if (action === "test") {
+          toast(t("testSending"));
+          app.testChannel(channel).then(function (res) {
+            btn.disabled = false;
+            var m = testResultMessage(res);
+            toast(m.text, m.kind);
+          }).catch(function () { btn.disabled = false; toast(t("testFailed"), "error"); });
+        } else if (action === "unlink") {
+          app.unlinkChannel(channel).then(function () {
+            toast(t("unlinked"), "success");
+            return reloadLinks();
+          }).catch(function (err) { btn.disabled = false; toast(errorMessage(err), "error"); });
+        } else {
+          btn.disabled = false;
+        }
+      }
+
+      function onSmsSubmit(ev) {
+        var form = ev.target.closest('form[data-action="sms-link"]');
+        if (!form) return;
+        ev.preventDefault();
+        var input = el("smsPhone");
+        var phone = String(input ? input.value : "").replace(/[\s\-().]/g, "");
+        if (/^00\d+$/.test(phone)) phone = "+" + phone.slice(2);
+        if (!/^\+[1-9]\d{7,14}$/.test(phone)) {
+          toast(t("invalidPhone"), "error");
+          if (input) input.focus();
+          return;
+        }
+        var submit = form.querySelector("button[type=submit]");
+        if (submit) submit.disabled = true;
+        app.setSmsPhone(phone).then(function () {
+          toast(t("phoneLinked"), "success");
+          return reloadLinks();
+        }).catch(function (err) {
+          if (submit) submit.disabled = false;
+          toast(err && err.message === "invalid phone" ? t("invalidPhone") : errorMessage(err), "error");
+        });
+      }
+
+      /* ---------- reminder rules ---------- */
+
+      function loadRules() {
+        if (!app.org) { renderRules(); return Promise.resolve(); }
+        return Promise.all([app.listTrackers(), app.listRules()]).then(function (res) {
+          state.trackers = res[0] || [];
+          state.rules = res[1] || [];
+          renderRules();
+        }).catch(function (err) {
+          el("rulesWrap").innerHTML = '<p class="waitlist-msg error">' + esc(errorMessage(err)) + "</p>";
+        });
+      }
+
+      /* Tracker-level rule (item_id null); rules come newest first so the first match wins. */
+      function ruleForTracker(trackerId) {
+        for (var i = 0; i < state.rules.length; i++) {
+          var r = state.rules[i];
+          if (r.tracker_id === trackerId && !r.item_id) return r;
+        }
+        return null;
+      }
+
+      function offsetLabel(minutes) {
+        return OFFSETS.indexOf(minutes) !== -1 ? t("off" + minutes) : t("offCustom").replace("{n}", String(minutes));
+      }
+
+      function renderRules() {
+        var wrap = el("rulesWrap");
+        if (!wrap) return;
+        if (!app.org) { wrap.innerHTML = '<p class="waitlist-msg error">' + esc(t("noOrg")) + "</p>"; return; }
+        if (!state.trackers.length) { wrap.innerHTML = "<p>" + esc(t("noTrackers")) + "</p>"; return; }
+        var allowed = allowedChannels();
+        var html = '<div class="table-wrap"><table class="rules-table"><thead><tr>' +
+          "<th>" + esc(t("colTracker")) + "</th>" +
+          "<th>" + esc(t("colOffset")) + "</th>" +
+          "<th>" + esc(t("colChannels")) + "</th>" +
+          "<th>" + esc(t("colTarget")) + "</th>" +
+          "<th>" + esc(t("colActions")) + "</th>" +
+          "</tr></thead><tbody>";
+
+        state.trackers.forEach(function (tracker) {
+          var rule = ruleForTracker(tracker.id);
+          var offset = rule ? Number(rule.offset_minutes) || 1440 : 1440;
+          var channels = rule && Array.isArray(rule.channels) ? rule.channels : ["email"];
+          var target = rule && rule.target === "all" ? "all" : "assignee";
+          var offsets = OFFSETS.slice();
+          if (offsets.indexOf(offset) === -1) offsets.push(offset);
+
+          html += '<tr data-tracker="' + esc(tracker.id) + '"' + (rule ? ' data-rule="' + esc(rule.id) + '"' : "") + ">";
+          html += '<td><span class="highlight">' + esc(tracker.name) + "</span>" +
+                  (rule ? ' <span class="settings-note" style="color:var(--success)">' + esc(t("ruleActive")) + "</span>" : "") + "</td>";
+          html += '<td><select class="waitlist-input rule-offset">';
+          offsets.forEach(function (o) {
+            html += '<option value="' + o + '"' + (o === offset ? " selected" : "") + ">" + esc(offsetLabel(o)) + "</option>";
+          });
+          html += "</select></td>";
+          html += '<td><div class="rule-channels">';
+          CHANNELS.forEach(function (ch) {
+            var on = channels.indexOf(ch) !== -1;
+            var ok = allowed.indexOf(ch) !== -1;
+            html += '<label class="rule-check"><input type="checkbox" class="rule-channel" value="' + ch + '"' +
+                    (on && ok ? " checked" : "") + (ok ? "" : " disabled") + "><span>" + esc(t(CHANNEL_KEYS[ch])) + "</span></label>";
+          });
+          html += "</div></td>";
+          html += '<td><select class="waitlist-input rule-target">' +
+                  '<option value="assignee"' + (target === "assignee" ? " selected" : "") + ">" + esc(t("targetAssignee")) + "</option>" +
+                  '<option value="all"' + (target === "all" ? " selected" : "") + ">" + esc(t("targetAll")) + "</option>" +
+                  "</select></td>";
+          html += '<td><div class="chat-options">' +
+                  '<button type="button" class="waitlist-btn" data-rule-action="save">' + esc(t("saveRuleBtn")) + "</button>" +
+                  (rule ? '<button type="button" class="chat-option-btn" data-rule-action="delete">' + esc(t("deleteRuleBtn")) + "</button>" : "") +
+                  "</div></td>";
+          html += "</tr>";
+        });
+
+        html += "</tbody></table></div>";
+        wrap.innerHTML = html;
+      }
+
+      function onRuleAction(ev) {
+        var btn = ev.target.closest("[data-rule-action]");
+        if (!btn) return;
+        var row = btn.closest("tr[data-tracker]");
+        if (!row) return;
+        var action = btn.getAttribute("data-rule-action");
+        var trackerId = row.getAttribute("data-tracker");
+        var ruleId = row.getAttribute("data-rule") || null;
+        var allowed = allowedChannels();
+
+        if (action === "save") {
+          var channels = [];
+          row.querySelectorAll(".rule-channel").forEach(function (cb) {
+            if (cb.checked && !cb.disabled && allowed.indexOf(cb.value) !== -1) channels.push(cb.value);
+          });
+          if (!channels.length) channels = ["email"];
+          btn.disabled = true;
+          app.saveRule({
+            id: ruleId,
+            tracker_id: trackerId,
+            offset_minutes: Number(row.querySelector(".rule-offset").value) || 1440,
+            channels: channels,
+            target: row.querySelector(".rule-target").value
+          }).then(function () {
+            toast(t("ruleSaved"), "success");
+            return loadRules();
+          }).catch(function (err) { btn.disabled = false; toast(errorMessage(err), "error"); });
+        } else if (action === "delete" && ruleId) {
+          if (!window.confirm(t("deleteRuleConfirm"))) return;
+          btn.disabled = true;
+          app.deleteRule(ruleId).then(function () {
+            toast(t("ruleDeleted"), "success");
+            return loadRules();
+          }).catch(function (err) { btn.disabled = false; toast(errorMessage(err), "error"); });
+        }
+      }
+
+      /* ---------- calendar ---------- */
+
+      function loadCalendar() {
+        if (!app.org) {
+          setMsg("calendarMsg", t("noOrg"), "error");
+          el("copyUrlBtn").disabled = true;
+          el("regenerateBtn").disabled = true;
+          return Promise.resolve();
+        }
+        return app.calendarUrl().then(function (url) {
+          state.calendarUrl = url;
+          el("calendarUrl").value = url;
+        }).catch(function (err) {
+          setMsg("calendarMsg", errorMessage(err), "error");
+        });
+      }
+
+      function copyCalendarUrl() {
+        var url = state.calendarUrl || el("calendarUrl").value;
+        if (!url) return;
+        var done = function () { setMsg("calendarMsg", t("urlCopied"), "success"); toast(t("urlCopied"), "success"); };
+        var fallback = function () {
+          try {
+            var input = el("calendarUrl");
+            input.focus();
+            input.select();
+            input.setSelectionRange(0, url.length);
+            if (document.execCommand("copy")) { done(); return; }
+          } catch (e) { /* fall through */ }
+          setMsg("calendarMsg", t("copyFailed"), "error");
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(done).catch(fallback);
+        } else {
+          fallback();
+        }
+      }
+
+      function regenerateCalendar() {
+        if (!window.confirm(t("regenerateConfirm"))) return;
+        var btn = el("regenerateBtn");
+        btn.disabled = true;
+        app.regenerateCalendarToken().then(function (token) {
+          state.calendarUrl = window.location.origin + "/api/calendar/" + token + ".ics";
+          el("calendarUrl").value = state.calendarUrl;
+          btn.disabled = false;
+          setMsg("calendarMsg", t("calendarRegenerated"), "success");
+          toast(t("calendarRegenerated"), "success");
+        }).catch(function (err) {
+          btn.disabled = false;
+          setMsg("calendarMsg", errorMessage(err), "error");
+        });
+      }
+
+      /* ---------- subscription ---------- */
+
+      function loadSubscription() {
+        if (!app.org) { renderSubscription(); return Promise.resolve(); }
+        return Promise.all([app.effectivePlan(), app.plans(), app.subscription()]).then(function (res) {
+          state.planCode = res[0] || "free";
+          state.plans = res[1] || [];
+          state.sub = res[2] || null;
+          var plan = currentPlan();
+          state.limits = plan && plan.limits ? plan.limits : { channels: ["email"] };
+          renderSubscription();
+        }).catch(function (err) {
+          state.limits = { channels: ["email"] };
+          el("planSummary").innerHTML = '<li><span class="waitlist-msg error">' + esc(errorMessage(err)) + "</span></li>";
+        });
+      }
+
+      function currentPlan() {
+        for (var i = 0; i < state.plans.length; i++) if (state.plans[i].code === state.planCode) return state.plans[i];
+        return null;
+      }
+
+      function limitText(v) {
+        if (v === null || v === undefined) return t("unlimited");
+        return String(v);
+      }
+
+      function renderSubscription() {
+        var list = el("planSummary");
+        var upgrade = el("upgradeLink");
+        if (!app.org) {
+          list.innerHTML = '<li><span class="waitlist-msg error">' + esc(t("noOrg")) + "</span></li>";
+          upgrade.href = "mailto:" + SUPPORT_EMAIL + "?subject=" + encodeURIComponent(t("upgradeSubject"));
+          return;
+        }
+        var plan = currentPlan();
+        var code = lang();
+        var name = plan ? (plan["name_" + code] || plan.name_en || plan.code) : state.planCode;
+        var limits = (plan && plan.limits) || {};
+        var expiresAt = (state.sub && state.sub.expires_at) || app.org.plan_expires_at || null;
+        var channelNames = (Array.isArray(limits.channels) ? limits.channels : ["email"]).map(function (ch) {
+          return t(CHANNEL_KEYS[ch] || ch);
+        }).join("، ");
+        list.innerHTML =
+          "<li><span>" + esc(t("currentPlanLabel")) + "</span><span>" + esc(name) + "</span></li>" +
+          "<li><span>" + esc(t("expiresLabel")) + "</span><span>" + esc(expiresAt ? fmtDate(expiresAt) : t("noExpiry")) + "</span></li>" +
+          "<li><span>" + esc(t("limitMembers")) + "</span><span>" + esc(limitText(limits.members)) + "</span></li>" +
+          "<li><span>" + esc(t("limitItems")) + "</span><span>" + esc(limitText(limits.items)) + "</span></li>" +
+          "<li><span>" + esc(t("limitChannels")) + "</span><span>" + esc(channelNames) + "</span></li>" +
+          "<li><span>" + esc(t("limitImports")) + "</span><span>" + esc(limitText(limits.imports_per_month)) + "</span></li>";
+        upgrade.href = "mailto:" + SUPPORT_EMAIL + "?subject=" +
+          encodeURIComponent(t("upgradeSubject") + " - " + (app.org.name || "") + " (" + state.planCode + ")");
+      }
+
+      /* ---------- sign out ---------- */
+
+      function signOut() {
+        var btn = el("signOutBtn");
+        btn.disabled = true;
+        btn.textContent = t("signingOut");
+        var go = function () { window.location.href = "/login.html"; };
+        try { localStorage.removeItem("tracker_org"); } catch (e) { /* ignore */ }
+        window.trackerAuth.signOut().then(go).catch(go);
+      }
+
+      /* ---------- boot ---------- */
+
+      function showUnavailable() {
+        show("loadingCard", false);
+        show("settingsMain", false);
+        show("unavailableCard", true);
+      }
+
+      function rerender() {
+        if (!state.loaded) return;
+        renderChannels();
+        renderRules();
+        renderSubscription();
+        var so = el("signOutBtn");
+        if (so && !so.disabled) so.textContent = t("signOutBtn");
+      }
+      window.__settingsRerender = rerender;
+
+      function boot() {
+        app = window.trackerApp;
+        if (!app || !app.ready) { showUnavailable(); return; }
+        app.ready.then(function (st) {
+          if (!st || st.unavailable || app.unavailable) { showUnavailable(); return; }
+          show("loadingCard", false);
+          show("settingsMain", true);
+          state.loaded = true;
+          fillProfile();
+          renderChannels();
+
+          el("profileForm").addEventListener("submit", saveProfile);
+          el("channelsGrid").addEventListener("click", onChannelAction);
+          el("channelsGrid").addEventListener("submit", onSmsSubmit);
+          el("rulesWrap").addEventListener("click", onRuleAction);
+          el("copyUrlBtn").addEventListener("click", copyCalendarUrl);
+          el("regenerateBtn").addEventListener("click", regenerateCalendar);
+          el("signOutBtn").addEventListener("click", signOut);
+
+          /* Plan limits first: they decide which channels the rules and cards may offer. */
+          return loadSubscription().then(function () {
+            return Promise.all([
+              loadConfig().then(function () { return reloadLinks(); }),
+              loadRules(),
+              loadCalendar()
+            ]);
+          });
+        }).catch(function (err) {
+          if (window.console) console.error("settings:", err);
+          toast(errorMessage(err), "error");
+        });
+      }
+
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+      else boot();
+    })();
+  </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+<script src="/app.js?v=1" defer></script>
+<script src="/app/common.js?v=1" defer></script>
+<script src="/brand-logo.js?v=3" defer></script>
+</body>
+</html>

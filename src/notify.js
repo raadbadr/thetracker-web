@@ -1,16 +1,30 @@
 // --- مرسلات القنوات + Cron التنبيهات ----------------------------------------
 // البريد: دالة Edge في سوبابيس (send-zoho-email — نسخة باركينزي) عبر Zoho.
 // تيليغرام: Bot API. واتساب: Meta Cloud API. SMS: Unifonic أو Twilio.
-// كل ما هنا يعمل بمفتاح service role داخل الـ Worker فقط (أبداً في المتصفح).
+// الـ Worker لا يحمل مفتاح service role: يستخدم مفتاح anon + سرّ مشترك
+// (WORKER_SECRET) تتحقق منه دوال SECURITY DEFINER في قاعدة البيانات.
 
 const NO_CACHE = { cacheTtl: 0, cacheEverything: false };
 
-export function serviceHeaders(env) {
+export function anonHeaders(env) {
   return {
-    apikey: env.SUPABASE_SERVICE_ROLE_KEY,
-    Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+    apikey: env.SUPABASE_ANON_KEY,
+    Authorization: `Bearer ${env.SUPABASE_ANON_KEY}`,
     "Content-Type": "application/json",
+    Accept: "application/json",
   };
+}
+
+export async function rpc(env, name, args) {
+  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/${name}`, {
+    method: "POST",
+    headers: anonHeaders(env),
+    body: JSON.stringify(args || {}),
+    cf: NO_CACHE,
+  });
+  if (!res.ok) throw new Error(`rpc ${name} ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  const text = await res.text();
+  try { return text ? JSON.parse(text) : null; } catch { return text; }
 }
 
 const TEXT = {
@@ -43,10 +57,10 @@ function fmtDue(iso, lang) {
 
 // ---------- القنوات ----------
 export async function sendEmail(env, { to, lang, title, due_at, tracker_name, org_name }) {
-  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) throw new Error("email not configured");
+  if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY || !env.WORKER_SECRET) throw new Error("email not configured");
   const res = await fetch(`${env.SUPABASE_URL}/functions/v1/send-zoho-email`, {
     method: "POST",
-    headers: serviceHeaders(env),
+    headers: { ...anonHeaders(env), "x-tracker-secret": env.WORKER_SECRET },
     body: JSON.stringify({ action: "send-reminder", to, lang, title, due_at, tracker_name, org_name }),
     cf: NO_CACHE,
   });
@@ -104,81 +118,51 @@ export async function sendSms(env, phone, text) {
 // ---------- ربط القنوات (رمز تحقق من الإعدادات) ----------
 export async function linkChannelByCode(env, channel, code, externalId) {
   const safe = String(code || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
-  if (!safe) return null;
-  const q = `${env.SUPABASE_URL}/rest/v1/channel_links?select=id,user_id&channel=eq.${channel}&verify_code=eq.${safe}&verified_at=is.null&limit=1`;
-  const res = await fetch(q, { headers: { ...serviceHeaders(env), Accept: "application/json" }, cf: NO_CACHE });
-  const rows = res.ok ? await res.json() : [];
-  if (!rows.length) return null;
-  const upd = await fetch(`${env.SUPABASE_URL}/rest/v1/channel_links?id=eq.${rows[0].id}`, {
-    method: "PATCH",
-    headers: { ...serviceHeaders(env), Prefer: "return=minimal" },
-    body: JSON.stringify({ external_id: String(externalId), verified_at: new Date().toISOString(), verify_code: null }),
-  });
-  return upd.ok ? rows[0].user_id : null;
+  if (!safe || !env.WORKER_SECRET) return null;
+  try {
+    const userId = await rpc(env, "link_channel", { p_secret: env.WORKER_SECRET, p_channel: channel, p_code: safe, p_external_id: String(externalId) });
+    return userId || null;
+  } catch { return null; }
 }
 
-async function userLang(env, userId) {
-  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/profiles?select=lang&id=eq.${userId}&limit=1`, {
-    headers: { ...serviceHeaders(env), Accept: "application/json" }, cf: NO_CACHE,
-  });
-  const rows = res.ok ? await res.json() : [];
-  return (rows[0] && rows[0].lang) || "ar";
+export async function notifyTarget(env, userId, channel) {
+  return rpc(env, "notify_target", { p_secret: env.WORKER_SECRET, p_user_id: userId, p_channel: channel });
 }
 
 // ---------- Cron: توليد التنبيهات المستحقة وإرسالها ----------
 export async function runNotificationCron(env) {
-  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) return { skipped: "not configured" };
-  const H = serviceHeaders(env);
+  if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY || !env.WORKER_SECRET) return { skipped: "not configured" };
 
-  // 1) توليد التنبيهات من القواعد
-  await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/generate_due_notifications`, {
-    method: "POST", headers: { ...H, Accept: "application/json" }, body: "{}", cf: NO_CACHE,
-  });
-
-  // 2) قراءة المعلّقة المستحقة
-  const nowIso = new Date().toISOString();
-  const res = await fetch(
-    `${env.SUPABASE_URL}/rest/v1/notifications?select=id,org_id,item_id,user_id,channel,payload,items(title,due_at,trackers(name)),organizations(name),profiles:user_id(email,phone,lang)&status=eq.pending&scheduled_at=lte.${encodeURIComponent(nowIso)}&order=scheduled_at.asc&limit=100`,
-    { headers: { ...H, Accept: "application/json" }, cf: NO_CACHE }
-  );
-  if (!res.ok) return { error: `select ${res.status}` };
-  const pending = await res.json();
+  let pending;
+  try {
+    pending = await rpc(env, "cron_pending_notifications", { p_secret: env.WORKER_SECRET });
+  } catch (e) {
+    return { error: String((e && e.message) || e).slice(0, 200) };
+  }
+  if (!Array.isArray(pending)) pending = [];
   let sent = 0, failed = 0;
 
   for (const n of pending) {
-    const prof = n.profiles || {};
-    const lang = prof.lang || "ar";
-    const title = (n.items && n.items.title) || (n.payload && n.payload.title) || "";
-    const dueAt = (n.items && n.items.due_at) || (n.payload && n.payload.due_at) || null;
-    const trackerName = n.items && n.items.trackers && n.items.trackers.name;
-    const orgName = n.organizations && n.organizations.name;
-    const text = t(lang).reminder(title, dueAt ? fmtDue(dueAt, lang) : "-", trackerName);
+    const lang = n.lang || "ar";
+    const text = t(lang).reminder(n.title || "", n.due_at ? fmtDue(n.due_at, lang) : "-", n.tracker_name);
     let status = "sent", error = null;
     try {
       if (n.channel === "email") {
-        if (!prof.email) throw new Error("no email");
-        await sendEmail(env, { to: prof.email, lang, title, due_at: dueAt, tracker_name: trackerName, org_name: orgName });
-      } else {
-        const linkRes = await fetch(
-          `${env.SUPABASE_URL}/rest/v1/channel_links?select=external_id&user_id=eq.${n.user_id}&channel=eq.${n.channel}&verified_at=not.is.null&limit=1`,
-          { headers: { ...H, Accept: "application/json" }, cf: NO_CACHE }
-        );
-        const links = linkRes.ok ? await linkRes.json() : [];
-        const ext = links[0] && links[0].external_id;
-        if (!ext) { status = "skipped"; error = "channel not linked"; }
-        else if (n.channel === "telegram") await sendTelegram(env, ext, text);
-        else if (n.channel === "whatsapp") await sendWhatsapp(env, ext, text);
-        else if (n.channel === "sms") await sendSms(env, ext, text);
-        else { status = "skipped"; error = "unknown channel"; }
-      }
+        if (!n.email) throw new Error("no email");
+        await sendEmail(env, { to: n.email, lang, title: n.title, due_at: n.due_at, tracker_name: n.tracker_name, org_name: n.org_name });
+      } else if (!n.external_id) {
+        status = "skipped"; error = "channel not linked";
+      } else if (n.channel === "telegram") await sendTelegram(env, n.external_id, text);
+      else if (n.channel === "whatsapp") await sendWhatsapp(env, n.external_id, text);
+      else if (n.channel === "sms") await sendSms(env, n.external_id, text);
+      else { status = "skipped"; error = "unknown channel"; }
     } catch (e) {
       status = "failed"; error = String((e && e.message) || e).slice(0, 300);
     }
     if (status === "sent") sent++; else if (status === "failed") failed++;
-    await fetch(`${env.SUPABASE_URL}/rest/v1/notifications?id=eq.${n.id}`, {
-      method: "PATCH", headers: { ...H, Prefer: "return=minimal" },
-      body: JSON.stringify({ status, error, sent_at: status === "sent" ? new Date().toISOString() : null }),
-    });
+    try {
+      await rpc(env, "cron_mark_notification", { p_secret: env.WORKER_SECRET, p_id: n.id, p_status: status, p_error: error });
+    } catch {}
   }
   return { pending: pending.length, sent, failed };
 }

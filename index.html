@@ -142,7 +142,7 @@
       font-display: swap;
     }
     
-    /* TRACKER - NeumorphicTheme (ثيم باركينزي) - افتراضي داكن */
+    /* TRACKER - NeumorphicTheme - افتراضي داكن */
     :root {
       /* Primary Colors - ثيم داكن افتراضي */
       --primary: rgb(0, 160, 210);
@@ -1165,624 +1165,126 @@
     [data-accent="spots"] .platform-stat-value { color: rgb(242, 140, 26); }
     [data-accent="cars"] .platform-stat-value { color: rgb(52, 199, 89); }
 
-    .growth-data-area {
-      position: relative;
-    }
-    .growth-map-timeline.growth-map-timeline--sticky {
-      position: sticky;
-      top: 70px;
-      z-index: 20;
-      /* العرض = عرض حاوية الخريطة تماماً: 100% ناقص حشو القسم (2rem كل جهة)،
-         بحد أقصى 1136px (=1200 ناقص الحشو) موسّطاً */
-      width: calc(100% - 64px);
-      max-width: 1136px;
-      margin-left: auto;
-      margin-right: auto;
-      padding-left: 2rem;
-      padding-right: 2rem;
-    }
-    .growth-map-section {
-      padding: 0 2rem 2rem;
-      max-width: 1200px;
-      margin: 1rem auto 0;
-      position: relative;
-      z-index: 1;
-    }
-    .growth-map-section .section-title {
-      margin-bottom: 1.75rem;
-      padding-bottom: 1.5rem;
-    }
-    .growth-map-section .section-title::before {
-      width: min(200px, 52vw);
-      height: 6px;
-      bottom: 0.35rem;
-      border-radius: 12px;
-      box-shadow: 0 5px 18px var(--primary);
-    }
-    [data-theme="dark"] .growth-map-section .section-title::before {
-      box-shadow: 0 5px 22px rgba(0, 160, 210, 0.55);
-    }
-    .growth-map-container {
-      width: 100%;
-      height: min(420px, 55vh);
-      min-height: 280px;
-      border-radius: 16px;
-      overflow: hidden;
-      border: 1px solid var(--glass-border);
-      box-shadow: 0 8px 32px var(--shadow-dark);
-      background: var(--glass);
-    }
-    .growth-map-container.maplibregl-map {
-      font-family: 'IBM Plex Sans Arabic', system-ui, sans-serif;
-    }
+    
+    
+    
+    
+    
+    
+    
+    
 
     /* شريط زمني — أسلوب Liquid Glass (ضبابية + طبقات زجاجية) */
-    .growth-map-timeline {
-      --timeline-fill-pct: 100%;
-      margin-top: 0;
-      margin-bottom: 0.85rem;
-      padding: 4.5rem 1.2rem 3rem;
-      border-radius: 16px;
-      min-height: 0;
-      position: relative;
-      isolation: isolate;
-      backdrop-filter: blur(22px) saturate(1.65);
-      -webkit-backdrop-filter: blur(22px) saturate(1.65);
-      background: linear-gradient(
-        165deg,
-        rgba(255, 255, 255, 0.2) 0%,
-        rgba(255, 255, 255, 0.07) 42%,
-        rgba(255, 255, 255, 0.04) 100%
-      );
-      border: 1px solid rgba(255, 255, 255, 0.28);
-      box-shadow:
-        0 10px 40px rgba(0, 0, 0, 0.22),
-        inset 0 1px 0 rgba(255, 255, 255, 0.32),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.12);
-    }
-    [data-theme="light"] .growth-map-timeline {
-      backdrop-filter: blur(28px) saturate(1.45);
-      -webkit-backdrop-filter: blur(28px) saturate(1.45);
-      background: linear-gradient(
-        165deg,
-        rgba(255, 255, 255, 0.78) 0%,
-        rgba(255, 255, 255, 0.48) 45%,
-        rgba(255, 255, 255, 0.38) 100%
-      );
-      border: 1px solid rgba(255, 255, 255, 0.72);
-      box-shadow:
-        0 12px 40px rgba(0, 80, 140, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.95),
-        inset 0 -1px 0 rgba(0, 60, 100, 0.06);
-    }
-    .growth-map-timeline input[type="range"] {
-      width: 100%;
-      height: 20px;
-      border-radius: 999px;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      appearance: none;
-      cursor: default;
-      background: transparent;
-      -webkit-tap-highlight-color: transparent;
-      touch-action: none;
-      transform: translateZ(0);
-      backface-visibility: hidden;
-      -webkit-user-select: none;
-      user-select: none;
-      -moz-user-select: none;
-    }
-    .growth-map-timeline.is-slider-dragging input[type="range"] {
-      cursor: grabbing;
-    }
-    .growth-map-timeline input[type="range"]:focus,
-    .growth-map-timeline input[type="range"]:focus-visible {
-      outline: none;
-    }
-    .growth-map-timeline[dir="rtl"] input[type="range"] {
-      direction: rtl;
-    }
-    .growth-map-timeline[dir="ltr"] input[type="range"] {
-      direction: ltr;
-    }
+    
+    
+    
+    
+    
+    
+    
     /* صف التنقّل: زرّا المعالم على طرفي الشريط */
-    .growth-map-timeline-nav-row {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      --tl-nav-inset: calc(34px + 0.6rem);
-    }
-    .growth-map-timeline-nav-btn {
-      flex: 0 0 auto;
-      width: 34px;
-      height: 34px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0;
-      border-radius: 50%;
-      /* داخل حاوية زجاجية: بلا خلفية شبه شفافة (تتراكم الطبقات) — حدود فقط */
-      background: transparent;
-      border: 1px solid rgba(255, 255, 255, 0.35);
-      color: var(--text-secondary);
-      cursor: pointer;
-      transition: color 0.15s ease, border-color 0.15s ease, transform 0.12s ease, opacity 0.15s ease;
-    }
-    .growth-map-timeline-nav-btn:hover:not(:disabled) {
-      color: #4fc3f7;
-      border-color: rgba(79, 195, 247, 0.75);
-      transform: scale(1.08);
-    }
-    .growth-map-timeline-nav-btn:active:not(:disabled) {
-      transform: scale(0.94);
-    }
-    .growth-map-timeline-nav-btn:focus-visible {
-      outline: 2px solid #4fc3f7;
-      outline-offset: 2px;
-    }
-    .growth-map-timeline-nav-btn:disabled {
-      opacity: 0.3;
-      cursor: default;
-    }
-    [data-theme="light"] .growth-map-timeline-nav-btn {
-      border-color: rgba(0, 60, 100, 0.3);
-      color: rgba(0, 60, 100, 0.75);
-    }
-    [data-theme="light"] .growth-map-timeline-nav-btn:hover:not(:disabled) {
-      color: #0277bd;
-      border-color: rgba(2, 119, 189, 0.7);
-    }
+    
+    
+    
+    
+    
+    
+    
+    
     /* في RTL يُعكس اتجاه السهمين */
-    .growth-map-timeline[dir="rtl"] .growth-map-timeline-nav-btn svg {
-      transform: scaleX(-1);
-    }
-    .growth-map-timeline-range-wrap {
-      position: relative;
-      flex: 1 1 auto;
-      min-width: 0;
-      height: 20px;
-      margin-top: 0;
-      z-index: 0;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      user-select: none;
-    }
-    .growth-map-timeline-range-wrap::before {
-      content: "";
-      position: absolute;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      height: 14px;
-      border-radius: 999px;
-      width: var(--timeline-fill-pct, 100%);
-      max-width: 100%;
-      pointer-events: none;
-      z-index: 0;
-      transition: width 0.14s cubic-bezier(0.25, 0.8, 0.25, 1);
-      background: linear-gradient(
-        90deg,
-        rgba(0, 160, 220, 0.45) 0%,
-        rgba(80, 160, 230, 0.3) 55%,
-        rgba(130, 190, 240, 0.18) 100%
-      );
-      box-shadow: none;
-    }
-    .growth-map-timeline-range-wrap::after {
-      content: "";
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      height: 14px;
-      border-radius: 999px;
-      pointer-events: none;
-      z-index: -1;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      box-shadow:
-        inset 0 1px 2px rgba(0, 0, 0, 0.15),
-        inset 0 -1px 1px rgba(255, 255, 255, 0.12);
-    }
-    [data-theme="light"] .growth-map-timeline-range-wrap::after {
-      background: rgba(0, 60, 100, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.85);
-      box-shadow:
-        inset 0 1px 3px rgba(0, 0, 0, 0.08),
-        inset 0 -1px 1px rgba(255, 255, 255, 0.9);
-    }
-    .growth-map-timeline[dir="rtl"] .growth-map-timeline-range-wrap::before {
-      left: auto;
-      right: 0;
-    }
-    [data-theme="light"] .growth-map-timeline-range-wrap::before {
-      background: linear-gradient(
-        90deg,
-        rgba(0, 140, 220, 0.3) 0%,
-        rgba(80, 160, 230, 0.18) 100%
-      );
-      box-shadow: none;
-    }
-    .growth-map-timeline-range-wrap input[type="range"] {
-      position: relative;
-      z-index: 1;
-      width: 100%;
-      height: 20px;
-      margin: 0;
-      padding: 0;
-      display: block;
-    }
-    .growth-map-timeline input[type="range"]::-webkit-slider-runnable-track {
-      height: 20px;
-      border-radius: 999px;
-      background: transparent;
-      border: none;
-      box-shadow: none;
-    }
-    [data-theme="light"] .growth-map-timeline input[type="range"]::-webkit-slider-runnable-track {
-      background: transparent;
-      border: none;
-      box-shadow: none;
-    }
-    .growth-map-timeline input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 36px;
-      height: 20px;
-      margin-top: 0;
-      border-radius: 10px;
-      background: linear-gradient(180deg, #ffffff 0%, #f0f4f8 100%);
-      border: none;
-      box-shadow:
-        0 2px 12px rgba(0, 0, 0, 0.3),
-        0 0 0 1px rgba(255, 255, 255, 0.4) inset;
-      transition: background 0.15s ease;
-    }
-    .growth-map-timeline input[type="range"]::-webkit-slider-thumb:hover {
-      background: linear-gradient(180deg, #ffffff 0%, #f0f4f8 100%);
-    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     /* شفاف طالما زر الماوس الأيسر مضغوط (class من JS) — ليس :active لأنه يضيع لو خرج المؤشر عن السلايدر */
-    .growth-map-timeline.is-slider-dragging input[type="range"]::-webkit-slider-thumb {
-      background: rgba(255, 255, 255, 0.45);
-      box-shadow:
-        0 2px 12px rgba(0, 0, 0, 0.3),
-        0 0 0 1px rgba(255, 255, 255, 0.4) inset;
-    }
-    [data-theme="light"] .growth-map-timeline input[type="range"]::-webkit-slider-thumb {
-      box-shadow: 0 2px 10px rgba(0, 60, 100, 0.18);
-      border: 1px solid rgba(0, 0, 0, 0.06);
-    }
-    [data-theme="light"] .growth-map-timeline.is-slider-dragging input[type="range"]::-webkit-slider-thumb {
-      background: rgba(255, 255, 255, 0.45);
-    }
-    .growth-map-timeline input[type="range"]::-moz-range-track {
-      height: 20px;
-      border-radius: 999px;
-      background: transparent;
-      border: none;
-      box-shadow: none;
-    }
-    [data-theme="light"] .growth-map-timeline input[type="range"]::-moz-range-track {
-      background: transparent;
-      border: none;
-    }
-    .growth-map-timeline input[type="range"]::-moz-range-thumb {
-      width: 36px;
-      height: 20px;
-      border: none;
-      border-radius: 10px;
-      background: linear-gradient(180deg, #ffffff 0%, #f0f4f8 100%);
-      box-shadow:
-        0 2px 12px rgba(0, 0, 0, 0.3),
-        0 0 0 1px rgba(255, 255, 255, 0.4) inset;
-      transition: background 0.15s ease;
-    }
-    .growth-map-timeline input[type="range"]::-moz-range-thumb:hover {
-      background: linear-gradient(180deg, #ffffff 0%, #f0f4f8 100%);
-    }
-    .growth-map-timeline.is-slider-dragging input[type="range"]::-moz-range-thumb {
-      background: rgba(255, 255, 255, 0.45);
-      box-shadow:
-        0 2px 12px rgba(0, 0, 0, 0.3),
-        0 0 0 1px rgba(255, 255, 255, 0.4) inset;
-    }
-    [data-theme="light"] .growth-map-timeline input[type="range"]::-moz-range-thumb {
-      box-shadow: 0 2px 10px rgba(0, 60, 100, 0.18);
-      border: 1px solid rgba(0, 0, 0, 0.06);
-    }
-    [data-theme="light"] .growth-map-timeline.is-slider-dragging input[type="range"]::-moz-range-thumb {
-      background: rgba(255, 255, 255, 0.45);
-    }
-    .growth-map-timeline-ends {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 0.5rem;
-      /* نفس إزاحة زرّي التنقّل حتى يحاذي التاريخان طرفي المسار */
-      padding-inline: calc(34px + 0.6rem);
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      font-weight: 600;
-      letter-spacing: 0.02em;
-    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     /* علامة "اليوم" تحت السلايدر */
-    .growth-map-timeline-today {
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      transform: translateX(-50%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-      z-index: 10;
-      opacity: 0;
-      transition: opacity 0.18s ease;
-    }
-    .growth-map-timeline-today.is-at-today {
-      opacity: 1;
-    }
-    .growth-map-timeline-today-label {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      white-space: nowrap;
-      font-size: 0.46rem;
-      font-weight: 800;
-      line-height: 1;
-      text-align: center;
-      color: rgba(0, 100, 180, 0.9);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-    [data-theme="light"] .growth-map-timeline-today-label {
-      color: rgba(0, 80, 150, 0.95);
-    }
+    
+    
+    
+    
 
     /* نسخة تجريبية 1.1 — علامة على شريط التايملاين */
-    .growth-map-timeline--has-milestones {
-      padding-top: 2.6rem;
-      padding-bottom: 1.4rem;
-    }
-    .growth-map-timeline-launch {
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-      z-index: 2;
-    }
+    
+    
     /* بدون هذا، display:flex يتغلّب على [hidden] الافتراضية فلا يختفي المعلم */
-    .growth-map-timeline-launch[hidden] {
-      display: none !important;
-    }
+    
     /* كل التيكات ظاهرة دائماً (المعالم موجودة) — التيك النشِط أبرز، وتظهر تسميته فقط */
-    .growth-map-timeline-launch-tick {
-      opacity: 0.5;
-      transition: opacity 0.16s ease, transform 0.16s ease;
-    }
-    .growth-map-timeline-launch.is-active-milestone .growth-map-timeline-launch-tick {
-      opacity: 1;
-      transform: scaleY(1.35);
-    }
-    .growth-map-timeline-launch.is-active-milestone .growth-map-timeline-launch-label,
-    .growth-map-timeline-launch.is-active-milestone .growth-map-timeline-launch-date {
-      opacity: 1;
-    }
-    .growth-map-timeline-launch-label {
-      position: absolute;
-      bottom: calc(50% + 30px);
-      left: 50%;
-      transform: translateX(-50%);
-      white-space: nowrap;
-      font-size: 0.72rem;
-      font-weight: 700;
-      line-height: 1;
-      text-align: center;
-      color: #ffb347;
-      letter-spacing: 0.03em;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
-      opacity: 0;
-      transition: opacity 0.16s ease;
-    }
-    [data-theme="light"] .growth-map-timeline-launch-label {
-      color: #c2410c;
-      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
-    }
-    .growth-map-timeline-launch-date {
-      position: absolute;
-      top: auto;
-      bottom: calc(50% + 16px);
-      left: 50%;
-      transform: translateX(-50%);
-      white-space: nowrap;
-      font-size: 0.58rem;
-      font-weight: 600;
-      line-height: 1;
-      text-align: center;
-      color: rgba(255, 179, 71, 0.7);
-      letter-spacing: 0.02em;
-      opacity: 0;
-      transition: opacity 0.16s ease;
-    }
-    [data-theme="light"] .growth-map-timeline-launch-date {
-      color: rgba(194, 65, 12, 0.65);
-    }
-    .growth-map-timeline-launch-tick {
-      width: 3px;
-      height: 26px;
-      border-radius: 2px;
-      background: linear-gradient(180deg, #ffd180 0%, #ff9100 45%, #e65100 100%);
-      box-shadow:
-        0 0 10px rgba(255, 145, 0, 0.5),
-        0 0 3px rgba(255, 180, 80, 0.8),
-        inset 0 1px 0 rgba(255, 255, 255, 0.45);
-    }
-    [data-theme="light"] .growth-map-timeline-launch-tick {
-      box-shadow:
-        0 0 8px rgba(230, 100, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.5);
-    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
     /* الإطلاق الرسمي — لون أخضر مميز */
-    .growth-map-timeline-release .growth-map-timeline-launch-label {
-      color: #69f0ae;
-    }
-    [data-theme="light"] .growth-map-timeline-release .growth-map-timeline-launch-label {
-      color: #2e7d32;
-    }
-    .growth-map-timeline-release .growth-map-timeline-launch-tick {
-      background: linear-gradient(180deg, #b9f6ca 0%, #69f0ae 45%, #2e7d32 100%);
-      box-shadow:
-        0 0 10px rgba(105, 240, 174, 0.5),
-        0 0 3px rgba(185, 246, 202, 0.8),
-        inset 0 1px 0 rgba(255, 255, 255, 0.45);
-    }
-    [data-theme="light"] .growth-map-timeline-release .growth-map-timeline-launch-tick {
-      box-shadow:
-        0 0 8px rgba(46, 125, 50, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.5);
-    }
+    
+    
+    
+    
     /* إطلاق iOS — لون أزرق (App Store) */
-    .growth-map-timeline-ios .growth-map-timeline-launch-label {
-      color: #64b5f6;
-    }
-    [data-theme="light"] .growth-map-timeline-ios .growth-map-timeline-launch-label {
-      color: #1565c0;
-    }
-    .growth-map-timeline-ios .growth-map-timeline-launch-date {
-      color: rgba(100, 181, 246, 0.7);
-    }
-    [data-theme="light"] .growth-map-timeline-ios .growth-map-timeline-launch-date {
-      color: rgba(21, 101, 192, 0.65);
-    }
-    .growth-map-timeline-ios .growth-map-timeline-launch-tick {
-      background: linear-gradient(180deg, #bbdefb 0%, #42a5f5 45%, #1565c0 100%);
-      box-shadow:
-        0 0 10px rgba(66, 165, 245, 0.5),
-        0 0 3px rgba(187, 222, 251, 0.8),
-        inset 0 1px 0 rgba(255, 255, 255, 0.45);
-    }
-    [data-theme="light"] .growth-map-timeline-ios .growth-map-timeline-launch-tick {
-      box-shadow:
-        0 0 8px rgba(21, 101, 192, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.5);
-    }
+    
+    
+    
+    
+    
+    
     /* iOS 1.3 — نفس لون iOS بس درجة أفتح */
-    .growth-map-timeline-ios13 .growth-map-timeline-launch-label { color: #90caf9; }
-    [data-theme="light"] .growth-map-timeline-ios13 .growth-map-timeline-launch-label { color: #1976d2; }
-    .growth-map-timeline-ios13 .growth-map-timeline-launch-date { color: rgba(144, 202, 249, 0.7); }
-    [data-theme="light"] .growth-map-timeline-ios13 .growth-map-timeline-launch-date { color: rgba(25, 118, 210, 0.65); }
-    .growth-map-timeline-ios13 .growth-map-timeline-launch-tick {
-      background: linear-gradient(180deg, #e3f2fd 0%, #64b5f6 45%, #1976d2 100%);
-      box-shadow:
-        0 0 10px rgba(100, 181, 246, 0.5),
-        0 0 3px rgba(227, 242, 253, 0.8),
-        inset 0 1px 0 rgba(255, 255, 255, 0.45);
-    }
-    [data-theme="light"] .growth-map-timeline-ios13 .growth-map-timeline-launch-tick {
-      box-shadow:
-        0 0 8px rgba(25, 118, 210, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.5);
-    }
+    
+    
+    
+    
+    
+    
     /* إضافة استثنائية — لون ذهبي */
-    .growth-map-timeline-exceptional .growth-map-timeline-launch-label {
-      color: #ffd700;
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7), 0 0 8px rgba(255, 215, 0, 0.4);
-    }
-    [data-theme="light"] .growth-map-timeline-exceptional .growth-map-timeline-launch-label {
-      color: #b8860b;
-      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
-    }
-    .growth-map-timeline-exceptional .growth-map-timeline-launch-date {
-      color: rgba(255, 215, 0, 0.75);
-    }
-    [data-theme="light"] .growth-map-timeline-exceptional .growth-map-timeline-launch-date {
-      color: rgba(184, 134, 11, 0.7);
-    }
-    .growth-map-timeline-exceptional .growth-map-timeline-launch-tick {
-      background: linear-gradient(180deg, #fff8dc 0%, #ffd700 45%, #b8860b 100%);
-      box-shadow:
-        0 0 12px rgba(255, 215, 0, 0.65),
-        0 0 4px rgba(255, 248, 220, 0.9),
-        inset 0 1px 0 rgba(255, 255, 255, 0.55);
-    }
-    [data-theme="light"] .growth-map-timeline-exceptional .growth-map-timeline-launch-tick {
-      box-shadow:
-        0 0 10px rgba(184, 134, 11, 0.35),
-        inset 0 1px 0 rgba(255, 255, 255, 0.55);
-    }
+    
+    
+    
+    
+    
+    
     /* تواصل اجتماعي — لون وردي */
-    .growth-map-timeline-social .growth-map-timeline-launch-label {
-      color: #f06292;
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7), 0 0 8px rgba(240, 98, 146, 0.35);
-    }
-    [data-theme="light"] .growth-map-timeline-social .growth-map-timeline-launch-label {
-      color: #c2185b;
-      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
-    }
-    .growth-map-timeline-social .growth-map-timeline-launch-date {
-      color: rgba(240, 98, 146, 0.75);
-    }
-    [data-theme="light"] .growth-map-timeline-social .growth-map-timeline-launch-date {
-      color: rgba(194, 24, 91, 0.7);
-    }
-    .growth-map-timeline-social .growth-map-timeline-launch-tick {
-      background: linear-gradient(180deg, #fce4ec 0%, #ec407a 45%, #c2185b 100%);
-      box-shadow:
-        0 0 12px rgba(236, 64, 122, 0.55),
-        0 0 4px rgba(252, 228, 236, 0.9),
-        inset 0 1px 0 rgba(255, 255, 255, 0.5);
-    }
-    [data-theme="light"] .growth-map-timeline-social .growth-map-timeline-launch-tick {
-      box-shadow:
-        0 0 10px rgba(194, 24, 91, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.55);
-    }
+    
+    
+    
+    
+    
+    
     /* اجتماع تسويق — لون برتقالي */
-    .growth-map-timeline-marketing .growth-map-timeline-launch-label {
-      color: #ffb74d;
-    }
-    [data-theme="light"] .growth-map-timeline-marketing .growth-map-timeline-launch-label { color: #e65100; }
-    .growth-map-timeline-marketing .growth-map-timeline-launch-date { color: rgba(255, 183, 77, 0.7); }
-    [data-theme="light"] .growth-map-timeline-marketing .growth-map-timeline-launch-date { color: rgba(230, 81, 0, 0.65); }
-    .growth-map-timeline-marketing .growth-map-timeline-launch-tick {
-      background: linear-gradient(180deg, #ffe0b2 0%, #ffa726 45%, #e65100 100%);
-      box-shadow:
-        0 0 10px rgba(255, 167, 38, 0.5),
-        0 0 3px rgba(255, 224, 178, 0.8),
-        inset 0 1px 0 rgba(255, 255, 255, 0.45);
-    }
-    [data-theme="light"] .growth-map-timeline-marketing .growth-map-timeline-launch-tick {
-      box-shadow:
-        0 0 8px rgba(230, 81, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.5);
-    }
+    
+    
+    
+    
+    
+    
     /* اجتماع تطمين — مارون وذهبي (مستوحى من شعار الشركة) */
-    .growth-map-timeline-tatmin .growth-map-timeline-launch-label {
-      color: #d4af37;
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7), 0 0 8px rgba(212, 175, 55, 0.4);
-    }
-    [data-theme="light"] .growth-map-timeline-tatmin .growth-map-timeline-launch-label {
-      color: #7b1f2c;
-      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
-    }
-    .growth-map-timeline-tatmin .growth-map-timeline-launch-date { color: rgba(212, 175, 55, 0.75); }
-    [data-theme="light"] .growth-map-timeline-tatmin .growth-map-timeline-launch-date { color: rgba(123, 31, 44, 0.7); }
-    .growth-map-timeline-tatmin .growth-map-timeline-launch-tick {
-      background: linear-gradient(180deg, #f4e1a4 0%, #d4af37 35%, #8b1f3c 75%, #4a1525 100%);
-      animation: tatminGoldGlow 3.2s ease-in-out infinite;
-    }
-    [data-theme="light"] .growth-map-timeline-tatmin .growth-map-timeline-launch-tick {
-      animation: tatminGoldGlowLight 3.2s ease-in-out infinite;
-    }
+    
+    
+    
+    
+    
+    
     @keyframes tatminGoldGlow {
       0%, 100% {
         box-shadow:
@@ -1810,354 +1312,112 @@
           inset 0 1px 0 rgba(255, 255, 255, 0.65);
       }
     }
-    @media (prefers-reduced-motion: reduce) {
-      .growth-map-timeline-tatmin .growth-map-timeline-launch-tick,
-      [data-theme="light"] .growth-map-timeline-tatmin .growth-map-timeline-launch-tick {
-        animation: none;
-      }
-    }
+    
     /* Android — لون أخضر */
-    .growth-map-timeline-android .growth-map-timeline-launch-label { color: #a5d6a7; }
-    [data-theme="light"] .growth-map-timeline-android .growth-map-timeline-launch-label { color: #2e7d32; }
-    .growth-map-timeline-android .growth-map-timeline-launch-date { color: rgba(165, 214, 167, 0.7); }
-    [data-theme="light"] .growth-map-timeline-android .growth-map-timeline-launch-date { color: rgba(46, 125, 50, 0.65); }
-    .growth-map-timeline-android .growth-map-timeline-launch-tick {
-      background: linear-gradient(180deg, #c8e6c9 0%, #66bb6a 45%, #2e7d32 100%);
-      box-shadow:
-        0 0 10px rgba(102, 187, 106, 0.5),
-        0 0 3px rgba(200, 230, 201, 0.8),
-        inset 0 1px 0 rgba(255, 255, 255, 0.45);
-    }
-    [data-theme="light"] .growth-map-timeline-android .growth-map-timeline-launch-tick {
-      box-shadow:
-        0 0 8px rgba(46, 125, 50, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.5);
-    }
+    
+    
+    
+    
+    
+    
     /* إضافة متدرب — لون ليموني */
-    .growth-map-timeline-intern .growth-map-timeline-launch-label { color: #d4e157; }
-    [data-theme="light"] .growth-map-timeline-intern .growth-map-timeline-launch-label { color: #9e9d24; }
-    .growth-map-timeline-intern .growth-map-timeline-launch-date { color: rgba(212, 225, 87, 0.75); }
-    [data-theme="light"] .growth-map-timeline-intern .growth-map-timeline-launch-date { color: rgba(158, 157, 36, 0.7); }
-    .growth-map-timeline-intern .growth-map-timeline-launch-tick {
-      background: linear-gradient(180deg, #f9fbe7 0%, #d4e157 45%, #9e9d24 100%);
-      box-shadow:
-        0 0 10px rgba(212, 225, 87, 0.55),
-        0 0 3px rgba(249, 251, 231, 0.8),
-        inset 0 1px 0 rgba(255, 255, 255, 0.45);
-    }
-    [data-theme="light"] .growth-map-timeline-intern .growth-map-timeline-launch-tick {
-      box-shadow:
-        0 0 8px rgba(158, 157, 36, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.5);
-    }
+    
+    
+    
+    
+    
+    
     /* تأسيس الشركة ذ.م.م — لون بنفسجي */
-    .growth-map-timeline-company .growth-map-timeline-launch-label { color: #b388ff; }
-    [data-theme="light"] .growth-map-timeline-company .growth-map-timeline-launch-label { color: #6a1b9a; }
-    .growth-map-timeline-company .growth-map-timeline-launch-date { color: rgba(179, 136, 255, 0.75); }
-    [data-theme="light"] .growth-map-timeline-company .growth-map-timeline-launch-date { color: rgba(106, 27, 154, 0.7); }
-    .growth-map-timeline-company .growth-map-timeline-launch-tick {
-      background: linear-gradient(180deg, #ede7f6 0%, #9575cd 45%, #6a1b9a 100%);
-      box-shadow:
-        0 0 10px rgba(149, 117, 205, 0.55),
-        0 0 3px rgba(237, 231, 246, 0.8),
-        inset 0 1px 0 rgba(255, 255, 255, 0.45);
-    }
-    [data-theme="light"] .growth-map-timeline-company .growth-map-timeline-launch-tick {
-      box-shadow:
-        0 0 8px rgba(106, 27, 154, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.5);
-    }
+    
+    
+    
+    
+    
+    
     /* أول 50 مستخدماً — لون تركوازي */
-    .growth-map-timeline-users50 .growth-map-timeline-launch-label { color: #4dd0e1; }
-    [data-theme="light"] .growth-map-timeline-users50 .growth-map-timeline-launch-label { color: #00838f; }
-    .growth-map-timeline-users50 .growth-map-timeline-launch-date { color: rgba(77, 208, 225, 0.75); }
-    [data-theme="light"] .growth-map-timeline-users50 .growth-map-timeline-launch-date { color: rgba(0, 131, 143, 0.7); }
-    .growth-map-timeline-users50 .growth-map-timeline-launch-tick {
-      background: linear-gradient(180deg, #e0f7fa 0%, #26c6da 45%, #00838f 100%);
-      box-shadow:
-        0 0 10px rgba(38, 198, 218, 0.55),
-        0 0 3px rgba(224, 247, 250, 0.8),
-        inset 0 1px 0 rgba(255, 255, 255, 0.45);
-    }
-    [data-theme="light"] .growth-map-timeline-users50 .growth-map-timeline-launch-tick {
-      box-shadow:
-        0 0 8px rgba(0, 131, 143, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.5);
-    }
+    
+    
+    
+    
+    
+    
 
     /* معلم واحد نشِط فقط — موضع موحّد فوق الشريط (بلا توزيع رأسي H1/H2) */
-    .growth-map-timeline-launch-label { font-size: 0.60rem; }
-    .growth-map-timeline-launch-date  { font-size: 0.50rem; }
+    
+    
 
     /* Responsive: timeline milestones — stagger labels to avoid overlap */
     @media (max-width: 600px) {
-      .growth-map-timeline {
-        padding: 0.8rem 0.5rem;
-      }
-      .growth-map-timeline--has-milestones {
-        padding-top: 2.2rem;
-        padding-bottom: 1.6rem;
-      }
-      .growth-map-timeline-launch-tick {
-        height: 18px;
-      }
-      .growth-map-timeline-nav-row {
-        gap: 0.4rem;
-      }
-      .growth-map-timeline-nav-btn {
-        width: 28px;
-        height: 28px;
-      }
-      .growth-map-timeline-nav-btn svg {
-        width: 13px;
-        height: 13px;
-      }
-      .growth-map-timeline-ends {
-        font-size: 0.65rem;
-        padding-inline: calc(28px + 0.4rem);
-      }
+      
+      
+      
+      
+      
+      
+      
       /* All labels: smaller */
-      .growth-map-timeline-launch-label {
-        font-size: 0.52rem !important;
-        line-height: 1.15 !important;
-        white-space: nowrap !important;
-      }
-      .growth-map-timeline-launch-date {
-        display: none !important;
-      }
-      .growth-map-timeline-today-label {
-        font-size: 0.48rem;
-      }
+      
+      
+      
       /* الجوال: تكفي الفواصل — أسماء الأشهر تزدحم */
-      .growth-map-timeline-month-label {
-        display: none;
-      }
+      
     }
     @media (max-width: 600px) {
       /* Smaller thumb on mobile — easier to tap, less overlap */
-      .growth-map-timeline input[type="range"]::-webkit-slider-thumb {
-        width: 26px;
-        height: 16px;
-        border-radius: 8px;
-      }
-      .growth-map-timeline input[type="range"]::-moz-range-thumb {
-        width: 26px;
-        height: 16px;
-        border-radius: 8px;
-      }
-      .growth-map-timeline input[type="range"]::-moz-range-track {
-        height: 16px;
-      }
-      .growth-map-timeline-range-wrap::after {
-        height: 16px;
-        border-radius: 8px;
-      }
-      .growth-map-timeline-range-wrap::before {
-        height: 16px;
-        border-radius: 8px;
-      }
+      
+      
+      
+      
+      
     }
-    @media (max-width: 380px) {
-      .growth-map-timeline-launch-label {
-        font-size: 0.46rem !important;
-      }
-      .growth-map-timeline-ends {
-        font-size: 0.58rem;
-      }
-    }
+    
 
     /* نافذة النقر على العلامة — نص وخلفية حسب الثيم (داكن: أبيض، فاتح: أسود) */
-    .growth-map-container .maplibregl-popup-content {
-      font-family: 'IBM Plex Sans Arabic', system-ui, sans-serif;
-      font-weight: 600;
-      font-size: 0.95rem;
-      padding: 12px 14px;
-      border-radius: 12px;
-      color: var(--text-primary);
-      background: var(--bg-mid);
-      border: 1px solid var(--glass-border);
-      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.2);
-    }
-    [data-theme="dark"] .growth-map-container .maplibregl-popup-content {
-      color: #fff;
-      background: rgba(26, 41, 51, 0.96);
-      border-color: rgba(255, 255, 255, 0.12);
-    }
-    [data-theme="light"] .growth-map-container .maplibregl-popup-content {
-      color: #161c28;
-      background: rgba(255, 255, 255, 0.98);
-      border-color: rgba(0, 0, 0, 0.1);
-    }
-    .growth-map-container .maplibregl-popup-close-button {
-      color: var(--text-primary);
-      font-size: 1.25rem;
-      padding: 4px 8px;
-    }
-    [data-theme="dark"] .growth-map-container .maplibregl-popup-close-button {
-      color: #fff;
-    }
-    [data-theme="light"] .growth-map-container .maplibregl-popup-close-button {
-      color: #161c28;
-    }
-    .growth-map-container .maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
-      border-top-color: var(--bg-mid);
-    }
-    [data-theme="dark"] .growth-map-container .maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
-      border-top-color: rgba(26, 41, 51, 0.96);
-    }
-    [data-theme="light"] .growth-map-container .maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
-      border-top-color: rgba(255, 255, 255, 0.98);
-    }
-    .growth-map-container .maplibregl-popup-anchor-top .maplibregl-popup-tip {
-      border-bottom-color: var(--bg-mid);
-    }
-    [data-theme="dark"] .growth-map-container .maplibregl-popup-anchor-top .maplibregl-popup-tip {
-      border-bottom-color: rgba(26, 41, 51, 0.96);
-    }
-    [data-theme="light"] .growth-map-container .maplibregl-popup-anchor-top .maplibregl-popup-tip {
-      border-bottom-color: rgba(255, 255, 255, 0.98);
-    }
-    .growth-map-container .maplibregl-popup-anchor-left .maplibregl-popup-tip {
-      border-right-color: var(--bg-mid);
-    }
-    [data-theme="dark"] .growth-map-container .maplibregl-popup-anchor-left .maplibregl-popup-tip {
-      border-right-color: rgba(26, 41, 51, 0.96);
-    }
-    [data-theme="light"] .growth-map-container .maplibregl-popup-anchor-left .maplibregl-popup-tip {
-      border-right-color: rgba(255, 255, 255, 0.98);
-    }
-    .growth-map-container .maplibregl-popup-anchor-right .maplibregl-popup-tip {
-      border-left-color: var(--bg-mid);
-    }
-    [data-theme="dark"] .growth-map-container .maplibregl-popup-anchor-right .maplibregl-popup-tip {
-      border-left-color: rgba(26, 41, 51, 0.96);
-    }
-    [data-theme="light"] .growth-map-container .maplibregl-popup-anchor-right .maplibregl-popup-tip {
-      border-left-color: rgba(255, 255, 255, 0.98);
-    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
-    /* أزرار +/− — أيقونات MapLibre سوداء افتراضيا: داكن = خلفية داكنة + invert للأيقونة، فاتح = أبيض وبدون invert */
-    .growth-map-container .maplibregl-ctrl-group {
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    }
-    .growth-map-container .maplibregl-ctrl-group button {
-      background-color: var(--bg-mid);
-      border-color: var(--glass-border);
-    }
-    [data-theme="dark"] .growth-map-container .maplibregl-ctrl-group button {
-      background-color: rgba(26, 41, 51, 0.94);
-      border-color: rgba(255, 255, 255, 0.18);
-    }
-    [data-theme="dark"] .growth-map-container .maplibregl-ctrl-group button:hover {
-      background-color: rgba(34, 52, 64, 0.98);
-    }
-    [data-theme="dark"] .growth-map-container .maplibregl-ctrl-icon {
-      filter: invert(1);
-    }
-    [data-theme="light"] .growth-map-container .maplibregl-ctrl-group button {
-      background-color: rgba(255, 255, 255, 0.96);
-      border-color: rgba(0, 0, 0, 0.1);
-    }
-    [data-theme="light"] .growth-map-container .maplibregl-ctrl-group button:hover {
-      background-color: #fff;
-    }
-    [data-theme="light"] .growth-map-container .maplibregl-ctrl-icon {
-      filter: none;
-    }
-    /* إسناد MapLibre — الحبة بيضاء من المكتبة؛ النص يبقى داكن في كل ثيمات الموقع */
-    .growth-map-container .maplibregl-ctrl-attrib,
-    .growth-map-container .maplibregl-ctrl-attrib a,
-    .growth-map-container .maplibregl-ctrl-attrib button {
-      color: rgba(22, 28, 40, 0.88) !important;
-    }
-    .growth-map-container .maplibregl-ctrl-attrib a:hover,
-    .growth-map-container .maplibregl-ctrl-attrib a:focus {
-      color: #121620 !important;
-    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
-    /* الخارجي: MapLibre يضع transform للموضع — لا تضع scale هنا. الداخلي: scale فقط */
-    .growth-map-container .parkinzi-map-marker-anchor {
-      display: block;
-    }
+    
+    
     /* علامة مضمومة داخل عنقود (تجميع حسب الزوم) — تُخفى ويمثلها عنقودها */
-    .growth-map-container .parkinzi-map-marker-clustered {
-      display: none !important;
-    }
+    
     /* فواصل الفترات الشهرية على شريط التايم لاين */
-    .growth-map-timeline-month-tick {
-      position: absolute;
-      top: calc(50% - 7px);
-      width: 1px;
-      height: 14px;
-      background: rgba(255, 255, 255, 0.22);
-      transform: translateX(-50%);
-      pointer-events: none;
-      z-index: 1;
-    }
-    [data-theme="light"] .growth-map-timeline-month-tick {
-      background: rgba(0, 60, 100, 0.18);
-    }
-    .growth-map-timeline-month-label {
-      position: absolute;
-      top: calc(50% + 13px);
-      transform: translateX(-50%);
-      white-space: nowrap;
-      font-size: 0.58rem;
-      font-weight: 600;
-      line-height: 1;
-      color: var(--text-secondary);
-      opacity: 0.75;
-      pointer-events: none;
-      z-index: 1;
-    }
-    .growth-map-container .parkinzi-map-marker {
-      cursor: pointer;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      user-select: none;
-      transform-origin: bottom center;
-      filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.38));
-    }
-    .growth-map-container .parkinzi-map-marker-icon-wrap {
-      position: relative;
-      width: calc(26px * 1.25);
-      height: calc(26px * 1.25);
-      direction: ltr;
-    }
-    .growth-map-container .parkinzi-map-marker-img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block;
-      vertical-align: middle;
-    }
-    .growth-map-container .parkinzi-map-marker-badge {
-      position: absolute;
-      /* فوق الشعار بالكامل — الأرقام الكبيرة (122+) تتمدد يساراً دون أن تغطي P */
-      top: -2px;
-      right: -2px;
-      transform: translateY(-100%);
-      min-width: calc(11px * 1.25);
-      height: calc(11px * 1.25);
-      padding: 0 calc(3px * 1.25);
-      border-radius: 999px;
-      background: rgb(52, 199, 89);
-      border: 1px solid #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-sizing: border-box;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.22);
-      z-index: 2;
-    }
-    .growth-map-container .parkinzi-map-marker-count {
-      font-family: 'IBM Plex Sans Arabic', system-ui, sans-serif;
-      font-weight: 800;
-      font-size: calc(0.5rem * 1.25);
-      color: #fff;
-      font-variant-numeric: tabular-nums;
-      line-height: 1;
-    }
+    
+    
+    
+    
+    
+    
+    
+    
 
     .section-title {
       text-align: center;
@@ -2778,27 +2038,12 @@
         padding: 3rem 1.5rem;
       }
 
-      .growth-map-timeline--sticky {
-        padding-left: 1.5rem;
-        padding-right: 1.5rem;
-      }
-      .growth-map-section {
-        padding: 0 1.5rem 2rem;
-        margin-top: 1rem;
-      }
+      
+      
 
-      .growth-map-timeline.growth-map-timeline--sticky {
-        width: calc(100% - 48px);
-        max-width: none;
-      }
-      .growth-map-timeline {
-        padding: 1.15rem 1.2rem 1.3rem;
-        min-height: 5rem;
-      }
-      .growth-map-timeline--has-milestones {
-        padding-top: 2.2rem;
-        padding-bottom: 1.6rem;
-      }
+      
+      
+      
 
       .platform-stats {
         padding: 0.5rem 1.5rem 1.75rem;
@@ -2893,27 +2138,12 @@
         padding: 2.5rem 1rem;
       }
 
-      .growth-map-timeline--sticky {
-        padding-left: 1rem;
-        padding-right: 1rem;
-      }
-      .growth-map-section {
-        padding: 0 1rem 1.5rem;
-        margin-top: 0.75rem;
-      }
+      
+      
 
-      .growth-map-timeline.growth-map-timeline--sticky {
-        width: calc(100% - 32px);
-        max-width: none;
-      }
-      .growth-map-timeline {
-        padding: 1.05rem 1rem 1.2rem;
-        min-height: 4.75rem;
-      }
-      .growth-map-timeline--has-milestones {
-        padding-top: 2.2rem;
-        padding-bottom: 1.6rem;
-      }
+      
+      
+      
 
       .platform-stats {
         padding: 0.25rem 1rem 1.5rem;
@@ -3560,11 +2790,10 @@
         <img src="tracker-logo-full-dark.png" alt="TRACKER" class="hero-logo-full" id="heroLogo">
         <h1 class="sr-only">TRACKER</h1>
       </div>
-      <p class="tagline" data-i18n="tagline">موقفك في جيبك</p>
+      <p class="tagline" data-i18n="tagline">تتبع أعمالك في مكان واحد</p>
     </div>
   </section>
 
-  <div class="growth-data-area">
   <section class="platform-stats" id="platform-stats" aria-labelledby="platformStatsHeading">
     <h2 class="section-title platform-stats-heading" id="platformStatsHeading" data-i18n="statsSectionTitle">أرقام المنصة</h2>
     <div class="platform-stats-list">
@@ -3615,7 +2844,6 @@
       </div>
     </div>
   </section>
-  </div>
 
   <section class="features" id="features">
     <h2 class="section-title">

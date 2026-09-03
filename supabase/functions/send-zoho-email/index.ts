@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 // TRACKER — نسخة من دالة باركينزي send-zoho-email (Zoho Mail API عبر accounts.zoho.sa)
-// الأسرار: ZOHO_REFRESH_TOKEN, ZOHO_CLIENT_ID, ZOHO_CLIENT_SECRET, ZOHO_REDIRECT_URI, SUPABASE_SERVICE_ROLE_KEY
+// الأسرار: ZOHO_REFRESH_TOKEN, ZOHO_CLIENT_ID, ZOHO_CLIENT_SECRET, ZOHO_REDIRECT_URI (SUPABASE_URL/ANON_KEY تلقائيان)
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 
 const corsHeaders = {
@@ -204,15 +204,29 @@ async function sendReminder(p: ReminderPayload) {
   return { ok: true, result: sendJson };
 }
 
+async function verifyWorkerSecret(secret: string): Promise<boolean> {
+  if (!secret || secret.length < 32) return false;
+  const url = Deno.env.get("SUPABASE_URL") || "";
+  const anon = Deno.env.get("SUPABASE_ANON_KEY") || "";
+  if (!url || !anon) return false;
+  const res = await fetch(`${url}/rest/v1/rpc/check_worker_secret`, {
+    method: "POST",
+    headers: { apikey: anon, Authorization: `Bearer ${anon}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ p_secret: secret }),
+  });
+  if (!res.ok) return false;
+  const v = await res.json().catch(() => false);
+  return v === true;
+}
+
 // ─── Router ───
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return responseJson({ error: "Method not allowed" }, 405);
 
-  // يُستدعى من الـ Worker بمفتاح service role فقط
-  const auth = req.headers.get("authorization") || "";
-  const expected = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-  if (!expected || auth !== `Bearer ${expected}`) return responseJson({ error: "Unauthorized" }, 401);
+  // يُستدعى من الـ Worker بسرّ مشترك (x-tracker-secret) تتحقق منه قاعدة البيانات
+  const secret = req.headers.get("x-tracker-secret") || "";
+  if (!(await verifyWorkerSecret(secret))) return responseJson({ error: "Unauthorized" }, 401);
 
   try {
     const body = await req.json().catch(() => ({}));

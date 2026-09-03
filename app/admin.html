@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://cloudflareinsights.com; worker-src 'self' blob:;">
+  <meta name="theme-color" content="#1a2933" id="themeColorMeta">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <title>لوحة إدارة المنصة | TRACKER</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Monoton&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/header.css">
+  <link rel="stylesheet" href="/footer.css?v=3">
+  <style>
+    /* Cross-browser reset + font enforcement (verbatim from login.html) */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    html {
+      -webkit-text-size-adjust: 100%;
+      -moz-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+    button, input, select, textarea, optgroup {
+      font-family: inherit;
+      font-size: inherit;
+      line-height: inherit;
+      color: inherit;
+      margin: 0;
+    }
+    button, [type="button"], [type="reset"], [type="submit"] {
+      -webkit-appearance: button;
+      appearance: button;
+    }
+    img, svg, video, canvas {
+      display: block;
+      max-width: 100%;
+    }
+    a { color: inherit; }
+
+    /* Theme tokens (verbatim from login.html; --secondary/--accent/--warning/--text-dim added verbatim from index.html
+       because the feature-card gradient border references them) */
+    :root, [data-theme="light"] {
+      --primary: rgb(0, 104, 184);
+      --primary-light: rgb(25, 140, 220);
+      --primary-dark: rgb(0, 88, 160);
+      --secondary: rgb(0, 130, 190);
+      --accent: rgb(50, 150, 200);
+      --text-primary: rgb(26, 26, 38);
+      --text-secondary: rgb(77, 77, 89);
+      --text-tertiary: rgb(100, 112, 128);
+      --text-dim: rgb(125, 135, 150);
+      --bg-top: rgb(250, 252, 255);
+      --bg-mid: rgb(242, 247, 252);
+      --bg-bottom: rgb(237, 245, 250);
+      --glass: rgba(255,255,255,0.85);
+      --glass-border: rgba(0,0,0,0.08);
+      --glass-strong: rgba(255, 255, 255, 0.95);
+      --shadow-light: rgba(255, 255, 255, 0.3);
+      --shadow-dark: rgba(0, 0, 0, 0.08);
+      --white: #ffffff;
+      --primary-shadow: rgba(0, 104, 184, 0.3);
+      --success: rgb(52, 199, 89);
+      --warning: rgb(255, 159, 10);
+      --error: rgb(255, 59, 48);
+    }
+    [data-theme="dark"] {
+      --primary: rgb(0, 160, 210);
+      --primary-light: rgb(40, 180, 220);
+      --primary-dark: rgb(0, 140, 190);
+      --secondary: rgb(0, 160, 210);
+      --accent: rgb(50, 160, 210);
+      --text-primary: rgb(255, 255, 255);
+      --text-secondary: rgba(255, 255, 255, 0.7);
+      --text-tertiary: rgba(255, 255, 255, 0.55);
+      --text-dim: rgba(255, 255, 255, 0.4);
+      --bg-top: rgb(31, 46, 56);
+      --bg-mid: rgb(26, 41, 51);
+      --bg-bottom: rgb(20, 36, 46);
+      --glass: rgba(255,255,255,0.08);
+      --glass-border: rgba(255,255,255,0.15);
+      --glass-strong: rgba(255, 255, 255, 0.12);
+      --shadow-light: rgba(255, 255, 255, 0.05);
+      --shadow-dark: rgba(5, 10, 15, 0.3);
+      --primary-shadow: rgba(0, 160, 210, 0.35);
+      --success: rgb(52, 199, 89);
+      --warning: rgb(255, 159, 10);
+      --error: rgb(255, 59, 48);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { background: var(--bg-bottom); }
+    body {
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      background: linear-gradient(135deg, var(--bg-top), var(--bg-bottom));
+      color: var(--text-primary);
+      line-height: 1.8;
+      min-height: 100vh;
+    }
+    .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+    body.has-site-header { padding-top: 52px; }
+    .header {
+      text-align: center;
+      padding: 3rem 2rem;
+      background: var(--glass);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      margin-bottom: 2rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+    [data-theme="dark"] .header { box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .content {
+      background: var(--glass);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      padding: 3rem;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+    [data-theme="dark"] .content { box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+    h2 {
+      font-size: 1.8rem;
+      margin: 2rem 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--primary);
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    h2:first-of-type { margin-top: 0; }
+    p { margin-bottom: 1rem; color: var(--text-secondary); }
+    .content a { color: var(--primary); text-decoration: none; }
+    .content a:hover { text-decoration: underline; }
+    .highlight { font-weight: 600; color: var(--primary); }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: var(--white);
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px var(--primary-shadow);
+    }
+    .back-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px var(--primary-shadow);
+    }
+    /* Form controls (verbatim from index.html / login.html) */
+    .waitlist-form {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+    .waitlist-input {
+      flex: 1;
+      min-width: 140px;
+      padding: 0.7rem 0.85rem;
+      border-radius: 10px;
+      border: 1px solid var(--glass-border);
+      background: var(--glass);
+      color: var(--text-primary);
+      font-size: 0.9rem;
+    }
+    .waitlist-input::placeholder { color: var(--text-tertiary); }
+    .waitlist-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(0, 160, 210, 0.2);
+    }
+    /* Native <select> popups ignore the glass background; keep the options readable with the theme tokens only. */
+    .waitlist-input option { color: var(--text-primary); background: var(--bg-mid); }
+    .waitlist-btn {
+      padding: 0.7rem 1.2rem;
+      border-radius: 10px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .waitlist-btn:hover { background: var(--primary-light); transform: translateY(-1px); }
+    .waitlist-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+    .waitlist-msg { margin-top: 0.5rem; font-size: 0.85rem; }
+    .waitlist-msg.success { color: var(--success); }
+    .waitlist-msg.error { color: var(--error); }
+    /* Card layout (verbatim from login.html) */
+    .login-intro { text-align: center; }
+    .login-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+    .login-stack .waitlist-msg { text-align: center; margin-bottom: 0; }
+    .login-note { text-align: center; font-size: 0.85rem; margin-top: 1.5rem; margin-bottom: 0; }
+    .login-note + .login-note { margin-top: 0.5rem; }
+
+    /* ============================================
+       Feature Cards - Neumorphic Glass Cards
+       (verbatim from index.html / pricing.html)
+       ============================================ */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .feature-card {
+      background: var(--glass);
+      backdrop-filter: blur(30px) saturate(180%);
+      -webkit-backdrop-filter: blur(30px) saturate(180%);
+      padding: 2rem; /* NeumorphicTheme.Spacing.cardPadding = 20px */
+      border-radius: 24px; /* NeumorphicTheme.CornerRadius.xxxl */
+      box-shadow:
+        0 8px 32px var(--shadow-dark),
+        0 0 0 1px var(--glass-border),
+        inset 0 0 0 1px rgba(255,255,255,0.1);
+      border: 1px solid var(--glass-border);
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      transform-style: preserve-3d;
+    }
+
+    /* Gradient Border Effect */
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 24px;
+      padding: 2px;
+      background: linear-gradient(
+        135deg,
+        var(--primary),
+        var(--primary-light),
+        var(--secondary),
+        var(--accent)
+      );
+      -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      z-index: -1;
+    }
+
+    /* Shine Effect */
+    .feature-card::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(255,255,255,0.1) 50%,
+        transparent 70%
+      );
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-8px) scale(1.02) rotateX(2deg);
+      box-shadow:
+        0 20px 60px rgba(0,104,184,0.25),
+        0 0 40px rgba(0,104,184,0.15),
+        inset 0 0 0 1px rgba(255,255,255,0.2);
+      border-color: var(--primary);
+    }
+
+    .feature-card:hover::before {
+      opacity: 1;
+    }
+
+    .feature-card:hover::after {
+      transform: translateX(100%);
+    }
+
+    [data-theme="dark"] .feature-card {
+      box-shadow:
+        0 8px 32px rgba(0,0,0,0.6),
+        0 0 0 1px var(--glass-border),
+        inset 0 0 0 1px rgba(255,255,255,0.05);
+    }
+
+    [data-theme="dark"] .feature-card:hover {
+      box-shadow:
+        0 20px 60px rgba(0,160,210,0.3),
+        0 0 50px rgba(0,160,210,0.2),
+        inset 0 0 0 1px rgba(255,255,255,0.15);
+    }
+
+    .feature-card h3 {
+      color: var(--text-primary);
+      margin-bottom: 0.75rem;
+      font-weight: 700;
+      font-size: 1.4rem;
+      transition: all 0.3s ease;
+    }
+
+    .feature-card:hover h3 {
+      color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    [data-theme="dark"] .feature-card:hover h3 {
+      color: var(--primary-light);
+    }
+
+    .feature-card p {
+      color: var(--text-secondary);
+      line-height: 1.7;
+      transition: color 0.3s ease;
+    }
+
+    .feature-card:hover p {
+      color: var(--text-primary);
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .feature-card {
+      animation: fadeInUp 0.6s ease-out backwards;
+    }
+
+    .feature-card:nth-child(1) { animation-delay: 0.1s; }
+    .feature-card:nth-child(2) { animation-delay: 0.2s; }
+    .feature-card:nth-child(3) { animation-delay: 0.3s; }
+
+    /* Label / value rows (verbatim from index.html .platform-stat-card family) */
+    .platform-stat-detail-row {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.4rem 0;
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+    }
+    .platform-stat-detail-row span:first-child {
+      flex: 1;
+      text-align: start;
+    }
+    .platform-stat-detail-val {
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-primary);
+      min-width: 2ch;
+      text-align: end;
+      display: inline-block;
+      transform-origin: center center;
+    }
+
+    /* Pill buttons (verbatim from index.html chat) */
+    .chat-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .chat-option-btn {
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      border: 1.5px solid var(--primary);
+      background: transparent;
+      color: var(--primary);
+      font-family: inherit;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .chat-option-btn:hover {
+      background: var(--primary);
+      color: var(--white);
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 768px) {
+      .container { padding: 1rem; margin: 0 auto; }
+      .content { padding: 2rem 1.5rem; }
+      .header, .content h1, .content h2 { text-align: center; }
+      h1 { font-size: 2rem; }
+      h2 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body class="has-site-header">
+  <header class="site-header">
+    <div class="menu-btn" id="langMenuBtn">
+      <div class="icon-circle"><span class="icon">🌐</span></div>
+      <div class="menu-text">
+        <div class="menu-label" data-i18n="language">اللغة</div>
+        <div class="menu-value" id="currentLangDisplay">العربية</div>
+      </div>
+      <span class="menu-icon">⋯</span>
+      <div class="menu-dropdown" id="langDropdown">
+        <div class="menu-dropdown-item" data-lang="ar"><span class="checkmark" id="check-ar">✓</span><span>العربية</span></div>
+        <div class="menu-dropdown-item" data-lang="en"><span class="checkmark" id="check-en" style="display:none">✓</span><span>English</span></div>
+        <div class="menu-dropdown-item" data-lang="fr"><span class="checkmark" id="check-fr" style="display:none">✓</span><span>Français</span></div>
+        <div class="menu-dropdown-item" data-lang="ur"><span class="checkmark" id="check-ur" style="display:none">✓</span><span>اردو</span></div>
+      </div>
+    </div>
+    <div class="menu-btn" id="themeMenuBtn">
+      <div class="icon-circle"><span class="icon" id="themeIcon">🌙</span></div>
+      <div class="menu-text">
+        <div class="menu-label" data-i18n="appearance">المظهر</div>
+        <div class="menu-value" id="currentThemeDisplay">داكن</div>
+      </div>
+      <span class="menu-icon">⋯</span>
+      <div class="menu-dropdown" id="themeDropdown">
+        <div class="menu-dropdown-item" data-theme="light"><span class="checkmark" id="check-light" style="display:none">✓</span><span data-i18n="light">فاتح</span></div>
+        <div class="menu-dropdown-item" data-theme="dark"><span class="checkmark" id="check-dark">✓</span><span data-i18n="dark">داكن</span></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="header">
+      <h1 data-i18n="title">لوحة إدارة المنصة</h1>
+    </div>
+
+    <!-- loading -->
+    <div class="content" id="loadingCard">
+      <p class="login-intro" data-i18n="loading">جارٍ التحميل...</p>
+    </div>
+
+    <!-- Supabase not configured yet -->
+    <div class="content" id="unavailableCard" style="display:none">
+      <h2 data-i18n="serviceUnavailableTitle">الخدمة قيد التجهيز</h2>
+      <p data-i18n="serviceUnavailableText">نعمل حالياً على تجهيز الخدمة، حاول مرة أخرى لاحقاً.</p>
+      <p><a href="/app/dashboard.html" class="back-btn" data-i18n="dashboardBtn">العودة إلى لوحة التحكم</a></p>
+    </div>
+
+    <!-- not a platform admin -->
+    <div class="content" id="deniedCard" style="display:none">
+      <h2 data-i18n="deniedTitle">غير مصرح</h2>
+      <p data-i18n="deniedText">هذه الصفحة مخصصة لمشرفي المنصة فقط.</p>
+      <p><a href="/app/dashboard.html" class="back-btn" data-i18n="dashboardBtn">العودة إلى لوحة التحكم</a></p>
+    </div>
+
+    <div id="adminView" style="display:none">
+      <!-- (1) organizations -->
+      <div class="content" id="orgsCard">
+        <h2 data-i18n="orgsTitle">الشركات</h2>
+        <p data-i18n="orgsIntro">جميع الشركات المسجلة في المنصة مع باقتها الحالية وعدد أعضائها وعناصرها.</p>
+        <div class="waitlist-form">
+          <input type="search" class="waitlist-input" id="orgFilter" placeholder="ابحث باسم الشركة أو بريد المالك" autocomplete="off">
+          <button type="button" class="waitlist-btn" id="orgsRefresh" data-i18n="refreshBtn">تحديث</button>
+        </div>
+        <p class="waitlist-msg" id="orgsStatus" role="status" aria-live="polite" style="display:none"></p>
+        <p id="orgsCount"></p>
+        <div class="features-grid" id="orgsGrid"></div>
+      </div>
+
+      <!-- (2) activate a subscription -->
+      <div class="content" id="activateCard">
+        <h2 data-i18n="activateTitle">تفعيل اشتراك</h2>
+        <p class="login-intro" data-i18n="activateIntro">اختر الشركة والباقة والمدة ثم اضغط «تفعيل». يُسجَّل الاشتراك باسمك وتُحدَّث باقة الشركة فوراً.</p>
+        <form class="login-stack" id="activateForm" novalidate>
+          <div class="waitlist-form"><select class="waitlist-input" id="actOrg" required></select></div>
+          <div class="waitlist-form"><select class="waitlist-input" id="actPlan" required></select></div>
+          <div class="waitlist-form">
+            <select class="waitlist-input" id="actMonths">
+              <option value="1" data-i18n="monthsOne">شهر واحد</option>
+              <option value="12" data-i18n="monthsTwelve">12 شهراً</option>
+            </select>
+          </div>
+          <div class="waitlist-form"><input type="text" class="waitlist-input" id="actNote" placeholder="ملاحظة (اختياري)" maxlength="500" autocomplete="off"></div>
+          <button type="submit" class="waitlist-btn" id="actBtn" style="width:100%" data-i18n="activateBtn">تفعيل</button>
+          <p class="waitlist-msg" id="actStatus" role="status" aria-live="polite" style="display:none"></p>
+        </form>
+      </div>
+
+      <!-- (3) contact messages -->
+      <div class="content" id="messagesCard">
+        <h2 data-i18n="messagesTitle">رسائل التواصل</h2>
+        <p data-i18n="messagesIntro">الرسائل الواردة من نموذج التواصل في الموقع، الأحدث أولاً.</p>
+        <div class="waitlist-form">
+          <button type="button" class="waitlist-btn" id="msgsRefresh" data-i18n="refreshBtn">تحديث</button>
+        </div>
+        <p class="waitlist-msg" id="msgsStatus" role="status" aria-live="polite" style="display:none"></p>
+        <p id="msgsCount"></p>
+        <div class="features-grid" id="msgsGrid"></div>
+      </div>
+    </div>
+
+    <div style="text-align: center; padding: 2rem;">
+      <a href="/app/dashboard.html" class="back-btn" data-i18n="dashboardBtn">العودة إلى لوحة التحكم</a>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p class="footer-links">
+      <a href="/about.html" data-i18n="aboutLink">من نحن</a>
+      <a href="/terms.html" data-i18n="termsLink">شروط الاستخدام</a>
+      <a href="/pricing.html" data-i18n="pricingLink">الباقات والأسعار</a>
+      <a href="/privacy.html" data-i18n="privacyLink">سياسة الخصوصية</a>
+      <a href="/login.html" data-i18n="loginLink">تسجيل الدخول</a>
+      <a href="/index.html#contact" data-i18n="contactLink">تواصل معنا</a>
+      <a href="mailto:support@appmails.net" class="footer-social-icon" aria-label="support@appmails.net"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></a>
+    </p>
+    <p class="footer-copyright">
+      <span data-i18n="copyrightLine2">جميع الحقوق محفوظة</span>
+      <span> · <img src="/tracker-logo-full-dark.png" alt="TRACKER" id="footerLogo" class="brand-logo-inline brand-logo-inline--xs" data-brand-logo-footer style="height:1.3em;width:auto;display:inline-block;vertical-align:-0.35em;max-width:none;"> <span class="footer-year">© 2026</span></span>
+    </p>
+  </footer>
+
+  <script>
+    const translations = {
+      ar: {
+        title: "لوحة إدارة المنصة",
+        loading: "جارٍ التحميل...",
+        serviceUnavailableTitle: "الخدمة قيد التجهيز",
+        serviceUnavailableText: "نعمل حالياً على تجهيز الخدمة، حاول مرة أخرى لاحقاً.",
+        deniedTitle: "غير مصرح",
+        deniedText: "هذه الصفحة مخصصة لمشرفي المنصة فقط.",
+        dashboardBtn: "العودة إلى لوحة التحكم",
+        orgsTitle: "الشركات",
+        orgsIntro: "جميع الشركات المسجلة في المنصة مع باقتها الحالية وعدد أعضائها وعناصرها.",
+        filterPlaceholder: "ابحث باسم الشركة أو بريد المالك",
+        refreshBtn: "تحديث",
+        orgsEmpty: "لا توجد شركات مسجلة بعد.",
+        orgsCountLabel: "عدد الشركات:",
+        colOwner: "بريد المالك",
+        colPlan: "الباقة الحالية",
+        colExpires: "انتهاء الباقة",
+        colMembers: "عدد الأعضاء",
+        colItems: "عدد العناصر",
+        colCreated: "تاريخ الإنشاء",
+        noExpiry: "بلا انتهاء",
+        expired: "منتهية",
+        activateRowBtn: "تفعيل اشتراك",
+        activateTitle: "تفعيل اشتراك",
+        activateIntro: "اختر الشركة والباقة والمدة ثم اضغط «تفعيل». يُسجَّل الاشتراك باسمك وتُحدَّث باقة الشركة فوراً.",
+        orgSelectPlaceholder: "اختر الشركة",
+        planSelectPlaceholder: "اختر الباقة",
+        monthsOne: "شهر واحد",
+        monthsTwelve: "12 شهراً",
+        notePlaceholder: "ملاحظة (اختياري)",
+        activateBtn: "تفعيل",
+        activating: "جارٍ التفعيل...",
+        activated: "تم تفعيل الاشتراك بنجاح.",
+        activateMissing: "اختر الشركة والباقة أولاً.",
+        messagesTitle: "رسائل التواصل",
+        messagesIntro: "الرسائل الواردة من نموذج التواصل في الموقع، الأحدث أولاً.",
+        messagesEmpty: "لا توجد رسائل بعد.",
+        messagesCountLabel: "عدد الرسائل:",
+        colDate: "التاريخ",
+        colName: "الاسم",
+        colEmail: "البريد الإلكتروني",
+        colStatus: "الحالة",
+        noSubject: "بدون موضوع",
+        statusNew: "جديدة",
+        statusRead: "مقروءة",
+        statusReplied: "تم الرد",
+        statusClosed: "مغلقة",
+        loadError: "تعذّر التحميل:",
+        genericError: "حدث خطأ، حاول مرة أخرى.",
+        planLimitItems: "وصلت إلى الحد الأقصى لعدد العناصر في باقتك الحالية، رقِّ باقتك لإضافة المزيد.",
+        planLimitMembers: "وصلت إلى الحد الأقصى لعدد الأعضاء في باقتك الحالية، رقِّ باقتك لإضافة المزيد.",
+        copyrightLine2: "جميع الحقوق محفوظة",
+        aboutLink: "من نحن",
+        termsLink: "شروط الاستخدام",
+        pricingLink: "الباقات والأسعار",
+        privacyLink: "سياسة الخصوصية",
+        loginLink: "تسجيل الدخول",
+        dashboardLink: "لوحة التحكم",
+        contactLink: "تواصل معنا",
+        language: "اللغة",
+        appearance: "المظهر",
+        light: "فاتح",
+        dark: "داكن"
+      },
+      en: {
+        title: "Platform Admin Console",
+        loading: "Loading...",
+        serviceUnavailableTitle: "Service is being prepared",
+        serviceUnavailableText: "We are setting up the service. Please try again later.",
+        deniedTitle: "Not authorized",
+        deniedText: "This page is for platform administrators only.",
+        dashboardBtn: "Back to Dashboard",
+        orgsTitle: "Organizations",
+        orgsIntro: "All organizations registered on the platform, with their current plan, member count and item count.",
+        filterPlaceholder: "Search by organization name or owner email",
+        refreshBtn: "Refresh",
+        orgsEmpty: "No organizations registered yet.",
+        orgsCountLabel: "Organizations:",
+        colOwner: "Owner email",
+        colPlan: "Current plan",
+        colExpires: "Plan expires",
+        colMembers: "Members",
+        colItems: "Items",
+        colCreated: "Created",
+        noExpiry: "No expiry",
+        expired: "expired",
+        activateRowBtn: "Activate subscription",
+        activateTitle: "Activate a subscription",
+        activateIntro: "Choose the organization, plan and duration, then press Activate. The subscription is recorded under your name and the organization's plan is updated immediately.",
+        orgSelectPlaceholder: "Choose organization",
+        planSelectPlaceholder: "Choose plan",
+        monthsOne: "1 month",
+        monthsTwelve: "12 months",
+        notePlaceholder: "Note (optional)",
+        activateBtn: "Activate",
+        activating: "Activating...",
+        activated: "Subscription activated successfully.",
+        activateMissing: "Choose the organization and plan first.",
+        messagesTitle: "Contact messages",
+        messagesIntro: "Messages received through the website contact form, newest first.",
+        messagesEmpty: "No messages yet.",
+        messagesCountLabel: "Messages:",
+        colDate: "Date",
+        colName: "Name",
+        colEmail: "Email",
+        colStatus: "Status",
+        noSubject: "No subject",
+        statusNew: "New",
+        statusRead: "Read",
+        statusReplied: "Replied",
+        statusClosed: "Closed",
+        loadError: "Could not load:",
+        genericError: "Something went wrong. Please try again.",
+        planLimitItems: "You have reached the item limit of your current plan. Upgrade to add more.",
+        planLimitMembers: "You have reached the member limit of your current plan. Upgrade to add more.",
+        copyrightLine2: "All rights reserved",
+        aboutLink: "About Us",
+        termsLink: "Terms of Use",
+        pricingLink: "Plans & Pricing",
+        privacyLink: "Privacy Policy",
+        loginLink: "Sign in",
+        dashboardLink: "Dashboard",
+        contactLink: "Contact Us",
+        language: "Language",
+        appearance: "Appearance",
+        light: "Light",
+        dark: "Dark"
+      },
+      fr: {
+        title: "Console d'administration",
+        loading: "Chargement...",
+        serviceUnavailableTitle: "Service en cours de préparation",
+        serviceUnavailableText: "Nous préparons le service. Veuillez réessayer plus tard.",
+        deniedTitle: "Accès non autorisé",
+        deniedText: "Cette page est réservée aux administrateurs de la plateforme.",
+        dashboardBtn: "Retour au tableau de bord",
+        orgsTitle: "Entreprises",
+        orgsIntro: "Toutes les entreprises inscrites sur la plateforme, avec leur forfait actuel, le nombre de membres et le nombre d'éléments.",
+        filterPlaceholder: "Rechercher par nom d'entreprise ou e-mail du propriétaire",
+        refreshBtn: "Actualiser",
+        orgsEmpty: "Aucune entreprise inscrite pour le moment.",
+        orgsCountLabel: "Nombre d'entreprises :",
+        colOwner: "E-mail du propriétaire",
+        colPlan: "Forfait actuel",
+        colExpires: "Expiration du forfait",
+        colMembers: "Membres",
+        colItems: "Éléments",
+        colCreated: "Date de création",
+        noExpiry: "Sans expiration",
+        expired: "expiré",
+        activateRowBtn: "Activer un abonnement",
+        activateTitle: "Activer un abonnement",
+        activateIntro: "Choisissez l'entreprise, le forfait et la durée, puis cliquez sur « Activer ». L'abonnement est enregistré à votre nom et le forfait de l'entreprise est mis à jour immédiatement.",
+        orgSelectPlaceholder: "Choisir l'entreprise",
+        planSelectPlaceholder: "Choisir le forfait",
+        monthsOne: "1 mois",
+        monthsTwelve: "12 mois",
+        notePlaceholder: "Note (facultatif)",
+        activateBtn: "Activer",
+        activating: "Activation en cours...",
+        activated: "Abonnement activé avec succès.",
+        activateMissing: "Choisissez d'abord l'entreprise et le forfait.",
+        messagesTitle: "Messages de contact",
+        messagesIntro: "Messages reçus via le formulaire de contact du site, les plus récents en premier.",
+        messagesEmpty: "Aucun message pour le moment.",
+        messagesCountLabel: "Nombre de messages :",
+        colDate: "Date",
+        colName: "Nom",
+        colEmail: "E-mail",
+        colStatus: "Statut",
+        noSubject: "Sans objet",
+        statusNew: "Nouveau",
+        statusRead: "Lu",
+        statusReplied: "Répondu",
+        statusClosed: "Fermé",
+        loadError: "Chargement impossible :",
+        genericError: "Une erreur est survenue. Veuillez réessayer.",
+        planLimitItems: "Vous avez atteint la limite d'éléments de votre forfait actuel. Passez à un forfait supérieur pour en ajouter.",
+        planLimitMembers: "Vous avez atteint la limite de membres de votre forfait actuel. Passez à un forfait supérieur pour en ajouter.",
+        copyrightLine2: "Tous droits réservés",
+        aboutLink: "À propos",
+        termsLink: "Conditions d'utilisation",
+        pricingLink: "Forfaits et tarifs",
+        privacyLink: "Politique de confidentialité",
+        loginLink: "Connexion",
+        dashboardLink: "Tableau de bord",
+        contactLink: "Contactez-nous",
+        language: "Langue",
+        appearance: "Apparence",
+        light: "Clair",
+        dark: "Sombre"
+      },
+      ur: {
+        title: "پلیٹ فارم ایڈمن پینل",
+        loading: "لوڈ ہو رہا ہے...",
+        serviceUnavailableTitle: "سروس تیار کی جا رہی ہے",
+        serviceUnavailableText: "ہم سروس تیار کر رہے ہیں، براہ کرم بعد میں دوبارہ کوشش کریں۔",
+        deniedTitle: "اجازت نہیں",
+        deniedText: "یہ صفحہ صرف پلیٹ فارم ایڈمنز کے لیے ہے۔",
+        dashboardBtn: "ڈیش بورڈ پر واپس جائیں",
+        orgsTitle: "کمپنیاں",
+        orgsIntro: "پلیٹ فارم پر رجسٹرڈ تمام کمپنیاں، ان کے موجودہ پلان، اراکین اور آئٹمز کی تعداد کے ساتھ۔",
+        filterPlaceholder: "کمپنی کے نام یا مالک کے ای میل سے تلاش کریں",
+        refreshBtn: "تازہ کریں",
+        orgsEmpty: "ابھی کوئی کمپنی رجسٹرڈ نہیں۔",
+        orgsCountLabel: "کمپنیوں کی تعداد:",
+        colOwner: "مالک کا ای میل",
+        colPlan: "موجودہ پلان",
+        colExpires: "پلان کی میعاد ختم",
+        colMembers: "اراکین کی تعداد",
+        colItems: "آئٹمز کی تعداد",
+        colCreated: "بنانے کی تاریخ",
+        noExpiry: "بلا میعاد",
+        expired: "میعاد ختم",
+        activateRowBtn: "سبسکرپشن فعال کریں",
+        activateTitle: "سبسکرپشن فعال کریں",
+        activateIntro: "کمپنی، پلان اور مدت منتخب کریں، پھر «فعال کریں» دبائیں۔ سبسکرپشن آپ کے نام سے درج ہو گی اور کمپنی کا پلان فوراً اپ ڈیٹ ہو جائے گا۔",
+        orgSelectPlaceholder: "کمپنی منتخب کریں",
+        planSelectPlaceholder: "پلان منتخب کریں",
+        monthsOne: "ایک مہینہ",
+        monthsTwelve: "12 مہینے",
+        notePlaceholder: "نوٹ (اختیاری)",
+        activateBtn: "فعال کریں",
+        activating: "فعال کیا جا رہا ہے...",
+        activated: "سبسکرپشن کامیابی سے فعال ہو گئی۔",
+        activateMissing: "پہلے کمپنی اور پلان منتخب کریں۔",
+        messagesTitle: "رابطہ پیغامات",
+        messagesIntro: "ویب سائٹ کے رابطہ فارم سے موصول پیغامات، تازہ ترین پہلے۔",
+        messagesEmpty: "ابھی کوئی پیغام نہیں۔",
+        messagesCountLabel: "پیغامات کی تعداد:",
+        colDate: "تاریخ",
+        colName: "نام",
+        colEmail: "ای میل",
+        colStatus: "حیثیت",
+        noSubject: "بغیر موضوع",
+        statusNew: "نیا",
+        statusRead: "پڑھا گیا",
+        statusReplied: "جواب دیا گیا",
+        statusClosed: "بند",
+        loadError: "لوڈ نہیں ہو سکا:",
+        genericError: "کچھ غلط ہو گیا، براہ کرم دوبارہ کوشش کریں۔",
+        planLimitItems: "آپ اپنے موجودہ پلان میں آئٹمز کی حد تک پہنچ چکے ہیں، مزید شامل کرنے کے لیے پلان اپ گریڈ کریں۔",
+        planLimitMembers: "آپ اپنے موجودہ پلان میں اراکین کی حد تک پہنچ چکے ہیں، مزید شامل کرنے کے لیے پلان اپ گریڈ کریں۔",
+        copyrightLine2: "جملہ حقوق محفوظ ہیں",
+        aboutLink: "ہمارے بارے میں",
+        termsLink: "استعمال کی شرائط",
+        pricingLink: "پلانز اور قیمتیں",
+        privacyLink: "رازداری کی پالیسی",
+        loginLink: "سائن ان",
+        dashboardLink: "ڈیش بورڈ",
+        contactLink: "ہم سے رابطہ کریں",
+        language: "زبان",
+        appearance: "ظہور",
+        light: "روشن",
+        dark: "اندھیرا"
+      }
+    };
+
+    const lang = () => localStorage.getItem("tracker_lang") || "ar";
+    const theme = () => localStorage.getItem("tracker_theme") || "dark";
+    const langNames = { ar: "العربية", en: "English", fr: "Français", ur: "اردو" };
+    let l = lang();
+    document.documentElement.lang = l;
+    document.documentElement.dir = (l === "ar" || l === "ur") ? "rtl" : "ltr";
+
+    const placeholderKeys = { orgFilter: "filterPlaceholder", actNote: "notePlaceholder" };
+    function applyPlaceholders(code) {
+      const dict = translations[code] || translations.ar;
+      Object.keys(placeholderKeys).forEach(id => {
+        const el = document.getElementById(id);
+        if (el && dict[placeholderKeys[id]]) el.placeholder = dict[placeholderKeys[id]];
+      });
+    }
+
+    function setLang(code) {
+      localStorage.setItem("tracker_lang", code);
+      l = code;
+      document.documentElement.lang = code;
+      document.documentElement.dir = (code === "ar" || code === "ur") ? "rtl" : "ltr";
+      document.getElementById("currentLangDisplay").textContent = langNames[code] || code;
+      ["ar","en","fr","ur"].forEach(c => {
+        const el = document.getElementById("check-" + c);
+        if (el) el.style.display = c === code ? "inline" : "none";
+      });
+      const th = theme();
+      document.getElementById("currentThemeDisplay").textContent = translations[code][th === "dark" ? "dark" : "light"];
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const k = el.dataset.i18n;
+        if (translations[code] && translations[code][k]) el.innerHTML = translations[code][k];
+      });
+      applyPlaceholders(code);
+      document.title = (translations[code] && translations[code].title ? translations[code].title : "Admin") + " | TRACKER";
+      if (typeof window.__trackerAuthRefresh === "function") window.__trackerAuthRefresh();
+      if (typeof window.__adminRefresh === "function") window.__adminRefresh();
+    }
+
+    function setTheme(th) {
+      localStorage.setItem("tracker_theme", th);
+      document.documentElement.dataset.theme = th;
+      const meta = document.getElementById("themeColorMeta");
+      if (meta) meta.content = th === "dark" ? "#1a2933" : "#0068b8";
+      const logo = document.getElementById("footerLogo");
+      if (logo) logo.src = th === "dark" ? "/tracker-logo-full-dark.png" : "/tracker-logo-full-light.png";
+      document.getElementById("themeIcon").textContent = th === "dark" ? "🌙" : "☀️";
+      document.getElementById("currentThemeDisplay").textContent = translations[l][th === "dark" ? "dark" : "light"];
+      document.getElementById("check-light").style.display = th === "light" ? "inline" : "none";
+      document.getElementById("check-dark").style.display = th === "dark" ? "inline" : "none";
+    }
+
+    document.getElementById("langMenuBtn").addEventListener("click", e => {
+      e.stopPropagation();
+      document.getElementById("langDropdown").classList.toggle("show");
+      document.getElementById("themeDropdown").classList.remove("show");
+    });
+    document.getElementById("themeMenuBtn").addEventListener("click", e => {
+      e.stopPropagation();
+      document.getElementById("themeDropdown").classList.toggle("show");
+      document.getElementById("langDropdown").classList.remove("show");
+    });
+    document.addEventListener("click", () => {
+      document.getElementById("langDropdown").classList.remove("show");
+      document.getElementById("themeDropdown").classList.remove("show");
+    });
+
+    document.querySelectorAll("#langDropdown .menu-dropdown-item").forEach(item => {
+      item.addEventListener("click", () => setLang(item.dataset.lang));
+    });
+    document.querySelectorAll("#themeDropdown .menu-dropdown-item").forEach(item => {
+      item.addEventListener("click", () => {
+        setTheme(item.dataset.theme);
+        document.getElementById("themeDropdown").classList.remove("show");
+      });
+    });
+
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+      const k = el.dataset.i18n;
+      if (translations[l] && translations[l][k]) el.textContent = translations[l][k];
+    });
+    applyPlaceholders(l);
+    document.getElementById("currentLangDisplay").textContent = langNames[l] || l;
+    ["ar","en","fr","ur"].forEach(c => {
+      const el = document.getElementById("check-" + c);
+      if (el) el.style.display = l === c ? "inline" : "none";
+    });
+    document.title = (translations[l] && translations[l].title ? translations[l].title : "Admin") + " | TRACKER";
+
+    (function() {
+      const th = theme();
+      document.documentElement.dataset.theme = th;
+      const meta = document.getElementById("themeColorMeta");
+      if (meta) meta.content = th === "dark" ? "#1a2933" : "#0068b8";
+      const logo = document.getElementById("footerLogo");
+      if (logo) logo.src = th === "dark" ? "/tracker-logo-full-dark.png" : "/tracker-logo-full-light.png";
+      document.getElementById("themeIcon").textContent = th === "dark" ? "🌙" : "☀️";
+      document.getElementById("currentThemeDisplay").textContent = translations[l][th === "dark" ? "dark" : "light"];
+      document.getElementById("check-light").style.display = th === "light" ? "inline" : "none";
+      document.getElementById("check-dark").style.display = th === "dark" ? "inline" : "none";
+    })();
+  </script>
+  <script>
+    /* Platform admin console — data via window.trackerApp (app/common.js). */
+    (function () {
+      "use strict";
+
+      const COUNT_CHUNK = 6;          /* organizations counted per round (2 HEAD requests each) */
+      const OWNER_CHUNK = 100;        /* profile ids per "in" query */
+      const STATUS_KEYS = { new: "statusNew", read: "statusRead", replied: "statusReplied", closed: "statusClosed" };
+
+      let app = null;
+      let orgs = [];                  /* organizations (+ subscriptions) from adminListOrgs() */
+      let owners = {};                /* owner_id → { email, full_name } */
+      let counts = {};                /* org_id → { members, items } (null = count unavailable) */
+      let plansList = [];
+      let messages = [];
+      let orgsLoaded = false;
+      let msgsLoaded = false;
+      let filterText = "";
+
+      const $ = (id) => document.getElementById(id);
+      const T = (key) => {
+        const dict = translations[l] || translations.ar;
+        return dict[key] || translations.ar[key] || key;
+      };
+      const esc = (s) => String(s === null || s === undefined ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      const fmtDate = (iso, opts) => (app && app.fmtDate) ? app.fmtDate(iso, opts) : String(iso || "");
+
+      /* ---------- view state ---------- */
+
+      function show(id) {
+        ["loadingCard", "unavailableCard", "deniedCard", "adminView"].forEach(c => {
+          const el = $(c);
+          if (el) el.style.display = c === id ? "" : "none";
+        });
+      }
+
+      function setStatus(el, text, kind) {
+        if (!el) return;
+        if (!text) { el.style.display = "none"; el.textContent = ""; return; }
+        el.textContent = text;
+        el.className = "waitlist-msg" + (kind ? " " + kind : "");
+        el.style.display = "block";
+      }
+
+      function errorText(err) {
+        if (err && err.code === "PLAN_LIMIT") return T(err.limit === "members" ? "planLimitMembers" : "planLimitItems");
+        const msg = err && err.message ? String(err.message) : "";
+        return T("genericError") + (msg ? " (" + msg + ")" : "");
+      }
+
+      /* ---------- helpers ---------- */
+
+      function planByCode(code) {
+        for (let i = 0; i < plansList.length; i++) if (plansList[i].code === code) return plansList[i];
+        return null;
+      }
+
+      function planName(code) {
+        const p = planByCode(code);
+        if (!p) return code || "—";
+        return p["name_" + l] || p.name_en || p.code;
+      }
+
+      function defaultMonthsFor(code) {
+        const p = planByCode(code);
+        if (code === "yearly") return "12";
+        if (p && p.price_yearly_sar !== null && p.price_yearly_sar !== undefined && (p.price_monthly_sar === null || p.price_monthly_sar === undefined)) return "12";
+        return "1";
+      }
+
+      function ownerEmail(org) {
+        const p = owners[org.owner_id];
+        return p && p.email ? p.email : "";
+      }
+
+      function countText(orgId, field) {
+        const c = counts[orgId];
+        if (!c || c[field] === undefined) return "…";
+        if (c[field] === null) return "—";
+        return String(c[field]);
+      }
+
+      function expiryText(org) {
+        if (!org.plan_expires_at) return T("noExpiry");
+        const d = new Date(org.plan_expires_at);
+        const text = fmtDate(org.plan_expires_at);
+        if (!isNaN(d.getTime()) && d.getTime() < Date.now()) return text + " (" + T("expired") + ")";
+        return text;
+      }
+
+      function matchesFilter(org) {
+        if (!filterText) return true;
+        const hay = (String(org.name || "") + " " + ownerEmail(org)).toLowerCase();
+        return hay.indexOf(filterText) !== -1;
+      }
+
+      function row(labelKey, valueHtml, extraAttrs) {
+        return '<div class="platform-stat-detail-row"><span>' + esc(T(labelKey)) + '</span>' +
+               '<span class="platform-stat-detail-val"' + (extraAttrs || "") + '>' + valueHtml + '</span></div>';
+      }
+
+      /* ---------- (1) organizations ---------- */
+
+      function orgCard(org) {
+        const email = ownerEmail(org);
+        return '<div class="feature-card" data-org="' + esc(org.id) + '">' +
+          '<h3>' + esc(org.name) + '</h3>' +
+          row("colOwner", email ? esc(email) : "—", ' style="overflow-wrap:anywhere"') +
+          row("colPlan", esc(planName(org.plan_code))) +
+          row("colExpires", esc(expiryText(org))) +
+          row("colMembers", esc(countText(org.id, "members")), ' data-count="members:' + esc(org.id) + '"') +
+          row("colItems", esc(countText(org.id, "items")), ' data-count="items:' + esc(org.id) + '"') +
+          row("colCreated", esc(fmtDate(org.created_at, { withTime: true }))) +
+          '<div class="chat-options"><button type="button" class="chat-option-btn" data-activate="' + esc(org.id) + '">' +
+          esc(T("activateRowBtn")) + '</button></div>' +
+          '</div>';
+      }
+
+      function renderOrgs() {
+        const grid = $("orgsGrid");
+        const countEl = $("orgsCount");
+        if (!grid) return;
+        if (!orgs.length) {
+          grid.innerHTML = "";
+          countEl.textContent = "";
+          setStatus($("orgsStatus"), T("orgsEmpty"));
+          return;
+        }
+        const list = orgs.filter(matchesFilter);
+        grid.innerHTML = list.map(orgCard).join("");
+        countEl.textContent = T("orgsCountLabel") + " " + list.length + (filterText ? " / " + orgs.length : "");
+        grid.querySelectorAll("[data-activate]").forEach(btn => {
+          btn.addEventListener("click", () => openActivate(btn.getAttribute("data-activate")));
+        });
+      }
+
+      function refreshCountCells() {
+        document.querySelectorAll("[data-count]").forEach(el => {
+          const parts = String(el.getAttribute("data-count")).split(":");
+          el.textContent = countText(parts.slice(1).join(":"), parts[0]);
+        });
+      }
+
+      function countRows(table, orgId) {
+        return app.client.from(table).select("*", { count: "exact", head: true }).eq("org_id", orgId)
+          .then(r => {
+            if (r && r.error) throw new Error(r.error.message);
+            return (r && typeof r.count === "number") ? r.count : 0;
+          })
+          .catch(() => null);
+      }
+
+      function loadCounts(snapshot) {
+        const ids = snapshot.map(o => o.id);
+        let i = 0;
+        function next() {
+          if (orgs !== snapshot) return Promise.resolve();      /* a reload replaced the list */
+          const chunk = ids.slice(i, i + COUNT_CHUNK);
+          if (!chunk.length) return Promise.resolve();
+          i += COUNT_CHUNK;
+          return Promise.all(chunk.map(id =>
+            Promise.all([countRows("org_members", id), countRows("items", id)])
+              .then(res => { counts[id] = { members: res[0], items: res[1] }; })
+          )).then(() => { refreshCountCells(); return next(); });
+        }
+        return next();
+      }
+
+      function loadOwners(snapshot) {
+        const ids = [];
+        snapshot.forEach(o => { if (o.owner_id && ids.indexOf(o.owner_id) === -1) ids.push(o.owner_id); });
+        const chunks = [];
+        for (let i = 0; i < ids.length; i += OWNER_CHUNK) chunks.push(ids.slice(i, i + OWNER_CHUNK));
+        return chunks.reduce((p, chunk) => p.then(() =>
+          app.client.from("profiles").select("id,email,full_name").in("id", chunk).then(r => {
+            if (r && r.error) throw new Error(r.error.message);
+            (r.data || []).forEach(p => { owners[p.id] = p; });
+          })
+        ), Promise.resolve()).catch(() => { /* owner email is optional */ });
+      }
+
+      function loadOrgs() {
+        setStatus($("orgsStatus"), T("loading"));
+        $("orgsRefresh").disabled = true;
+        return Promise.all([app.adminListOrgs(), plansList.length ? Promise.resolve(plansList) : app.plans()])
+          .then(res => {
+            orgs = res[0] || [];
+            plansList = res[1] || [];
+            counts = {};
+            orgsLoaded = true;
+            setStatus($("orgsStatus"), "");
+            renderOrgs();
+            renderActivateOptions();
+            const snapshot = orgs;
+            return loadOwners(snapshot).then(() => {
+              if (orgs === snapshot) renderOrgs();
+              return loadCounts(snapshot);
+            });
+          })
+          .catch(err => { setStatus($("orgsStatus"), T("loadError") + " " + (err && err.message ? err.message : ""), "error"); })
+          .then(() => { $("orgsRefresh").disabled = false; });
+      }
+
+      /* ---------- (2) activate a subscription ---------- */
+
+      function fillSelect(sel, placeholderKey, options, keep) {
+        const current = keep !== undefined ? keep : sel.value;
+        let html = '<option value="" disabled' + (current ? "" : " selected") + '>' + esc(T(placeholderKey)) + '</option>';
+        options.forEach(o => {
+          html += '<option value="' + esc(o.value) + '"' + (o.value === current ? " selected" : "") + '>' + esc(o.label) + '</option>';
+        });
+        sel.innerHTML = html;
+        if (current && sel.value !== current) sel.value = "";
+      }
+
+      function renderActivateOptions() {
+        const sorted = orgs.slice().sort((a, b) => String(a.name || "").localeCompare(String(b.name || ""), l));
+        fillSelect($("actOrg"), "orgSelectPlaceholder", sorted.map(o => ({
+          value: o.id,
+          label: (o.name || "") + (ownerEmail(o) ? " — " + ownerEmail(o) : "")
+        })));
+        fillSelect($("actPlan"), "planSelectPlaceholder", plansList.map(p => ({ value: p.code, label: planName(p.code) })));
+      }
+
+      function openActivate(orgId) {
+        const org = orgs.filter(o => o.id === orgId)[0];
+        if (!org) return;
+        $("actOrg").value = orgId;
+        if (planByCode(org.plan_code)) {
+          $("actPlan").value = org.plan_code;
+          $("actMonths").value = defaultMonthsFor(org.plan_code);
+        }
+        setStatus($("actStatus"), "");
+        const card = $("activateCard");
+        if (card && card.scrollIntoView) card.scrollIntoView({ behavior: "smooth", block: "start" });
+        $("actPlan").focus({ preventScroll: true });
+      }
+
+      function onActivateSubmit(ev) {
+        ev.preventDefault();
+        const orgId = $("actOrg").value;
+        const planCode = $("actPlan").value;
+        const months = Number($("actMonths").value) || 1;
+        const note = String($("actNote").value || "").trim();
+        const btn = $("actBtn");
+        if (!orgId || !planCode) { setStatus($("actStatus"), T("activateMissing"), "error"); return; }
+        btn.disabled = true;
+        setStatus($("actStatus"), T("activating"));
+        app.adminActivate({ org_id: orgId, plan_code: planCode, months: months, note: note || null })
+          .then(() => {
+            btn.disabled = false;
+            $("actNote").value = "";
+            setStatus($("actStatus"), T("activated"), "success");
+            app.toast(T("activated"), "success");
+            return loadOrgs();
+          })
+          .catch(err => {
+            btn.disabled = false;
+            setStatus($("actStatus"), errorText(err), "error");
+          });
+      }
+
+      /* ---------- (3) contact messages ---------- */
+
+      function statusLabel(status) {
+        const s = String(status || "").toLowerCase();
+        return STATUS_KEYS[s] ? T(STATUS_KEYS[s]) : (status || "—");
+      }
+
+      function messageCard(m) {
+        const email = String(m.email || "").trim();
+        const emailHtml = email
+          ? '<a href="mailto:' + esc(email) + '">' + esc(email) + '</a>'
+          : "—";
+        return '<div class="feature-card" data-message="' + esc(m.id) + '">' +
+          '<h3>' + esc(m.subject && String(m.subject).trim() ? m.subject : T("noSubject")) + '</h3>' +
+          row("colDate", esc(fmtDate(m.created_at, { withTime: true }))) +
+          row("colName", m.name ? esc(m.name) : "—", ' style="overflow-wrap:anywhere"') +
+          row("colEmail", emailHtml, ' style="overflow-wrap:anywhere"') +
+          row("colStatus", '<span class="highlight">' + esc(statusLabel(m.status)) + '</span>') +
+          '<p style="white-space:pre-wrap;overflow-wrap:anywhere;margin-top:0.75rem;margin-bottom:0">' + esc(m.message) + '</p>' +
+          '</div>';
+      }
+
+      function renderMessages() {
+        const grid = $("msgsGrid");
+        const countEl = $("msgsCount");
+        if (!grid) return;
+        if (!messages.length) {
+          grid.innerHTML = "";
+          countEl.textContent = "";
+          setStatus($("msgsStatus"), T("messagesEmpty"));
+          return;
+        }
+        grid.innerHTML = messages.map(messageCard).join("");
+        countEl.textContent = T("messagesCountLabel") + " " + messages.length;
+      }
+
+      function loadMessages() {
+        setStatus($("msgsStatus"), T("loading"));
+        $("msgsRefresh").disabled = true;
+        return app.adminContactMessages()
+          .then(rows => {
+            messages = rows || [];
+            msgsLoaded = true;
+            setStatus($("msgsStatus"), "");
+            renderMessages();
+          })
+          .catch(err => { setStatus($("msgsStatus"), T("loadError") + " " + (err && err.message ? err.message : ""), "error"); })
+          .then(() => { $("msgsRefresh").disabled = false; });
+      }
+
+      /* ---------- wiring ---------- */
+
+      function bind() {
+        $("orgFilter").addEventListener("input", () => {
+          filterText = String($("orgFilter").value || "").trim().toLowerCase();
+          if (orgsLoaded) renderOrgs();
+        });
+        $("orgsRefresh").addEventListener("click", () => { loadOrgs(); });
+        $("msgsRefresh").addEventListener("click", () => { loadMessages(); });
+        $("actPlan").addEventListener("change", () => { $("actMonths").value = defaultMonthsFor($("actPlan").value); });
+        $("activateForm").addEventListener("submit", onActivateSubmit);
+      }
+
+      /* Re-render the dynamic parts after setLang(). */
+      window.__adminRefresh = function () {
+        if (orgsLoaded) { renderOrgs(); renderActivateOptions(); }
+        if (msgsLoaded) renderMessages();
+      };
+
+      function boot() {
+        app = window.trackerApp;
+        if (!app || !app.ready) { show("unavailableCard"); return; }
+        app.ready.then(state => {
+          if (app.unavailable || (state && state.unavailable)) { show("unavailableCard"); return; }
+          if (!app.isPlatformAdmin()) { show("deniedCard"); return; }
+          show("adminView");
+          bind();
+          loadOrgs();
+          loadMessages();
+        }).catch(() => { show("unavailableCard"); });
+      }
+
+      /* Deferred scripts (supabase-js, /app.js, /app/common.js) run before DOMContentLoaded. */
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+      else boot();
+    })();
+  </script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {});
+      });
+    }
+  </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+<script src="/app.js?v=1" defer></script>
+<script src="/app/common.js?v=1" defer></script>
+<script src="/brand-logo.js?v=3" defer></script>
+</body>
+</html>

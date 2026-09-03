@@ -6,7 +6,7 @@
 
 import { handleAssistantRequest } from "./assistant.js";
 import { handleCalendar } from "./calendar.js";
-import { serviceHeaders, runNotificationCron, linkChannelByCode, sendTelegram, sendWhatsapp, sendSms, sendEmail, t as channelText } from "./notify.js";
+import { runNotificationCron, linkChannelByCode, notifyTarget, sendTelegram, sendWhatsapp, sendSms, sendEmail, t as channelText } from "./notify.js";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -91,24 +91,20 @@ async function authedUser(request, env) {
 async function handleNotifyTest(request, env) {
   const user = await authedUser(request, env);
   if (!user) return json({ error: "unauthorized" }, 401);
+  if (!env.WORKER_SECRET) return json({ error: "not configured" }, 503);
   let body;
   try { body = await request.json(); } catch { body = {}; }
   const channel = String((body && body.channel) || "email");
-  const H = serviceHeaders(env);
-  const profRes = await fetch(`${env.SUPABASE_URL}/rest/v1/profiles?select=email,lang&id=eq.${user.id}&limit=1`, {
-    headers: { ...H, Accept: "application/json" }, cf: NO_CACHE,
-  });
-  const prof = (profRes.ok ? await profRes.json() : [])[0] || {};
-  const lang = prof.lang || "ar";
+  let target;
+  try { target = await notifyTarget(env, user.id, channel); } catch { target = null; }
+  const lang = (target && target.lang) || "ar";
   try {
     if (channel === "email") {
-      await sendEmail(env, { to: prof.email || user.email, lang, title: channelText(lang).test, due_at: new Date().toISOString() });
+      const to = (target && target.email) || user.email;
+      if (!to) return json({ error: "no_email" }, 400);
+      await sendEmail(env, { to, lang, title: channelText(lang).test, due_at: new Date().toISOString() });
     } else {
-      const linkRes = await fetch(
-        `${env.SUPABASE_URL}/rest/v1/channel_links?select=external_id&user_id=eq.${user.id}&channel=eq.${channel}&verified_at=not.is.null&limit=1`,
-        { headers: { ...H, Accept: "application/json" }, cf: NO_CACHE }
-      );
-      const ext = ((linkRes.ok ? await linkRes.json() : [])[0] || {}).external_id;
+      const ext = target && target.external_id;
       if (!ext) return json({ error: "channel_not_linked" }, 400);
       const text = channelText(lang).test;
       if (channel === "telegram") await sendTelegram(env, ext, text);
@@ -185,8 +181,8 @@ export default {
     // تقويم ICS — /api/calendar/<token>.ics
     const cal = path.match(/^\/api\/calendar\/([a-f0-9]{16,64})\.ics$/i);
     if (cal && request.method === "GET") {
-      if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) return new Response("not configured", { status: 503 });
-      return handleCalendar(cal[1], env, serviceHeaders(env));
+      if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) return new Response("not configured", { status: 503 });
+      return handleCalendar(cal[1], env);
     }
 
     // Only handle /api/* routes — everything else is static assets
