@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://cloudflareinsights.com; worker-src 'self' blob:;">
+  <meta name="theme-color" content="#1a2933" id="themeColorMeta">
+  <meta name="robots" content="index, follow">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="description" content="تسجيل الدخول إلى منصة TRACKER - عبر حساب Google أو Apple، أو رابط يصلك على بريدك الإلكتروني، أو رمز تحقق يصلك على جوالك. يُنشأ حسابك تلقائياً عند أول دخول.">
+  <link rel="canonical" href="https://appmails.net/login.html">
+  <link rel="alternate" hreflang="ar" href="https://appmails.net/login.html">
+  <link rel="alternate" hreflang="en" href="https://appmails.net/login.html">
+  <link rel="alternate" hreflang="fr" href="https://appmails.net/login.html">
+  <link rel="alternate" hreflang="ur" href="https://appmails.net/login.html">
+  <link rel="alternate" hreflang="x-default" href="https://appmails.net/login.html">
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://appmails.net/login.html">
+  <meta property="og:title" content="تسجيل الدخول | TRACKER">
+  <meta property="og:description" content="تسجيل الدخول إلى منصة TRACKER - عبر حساب Google أو Apple، أو رابط يصلك على بريدك الإلكتروني، أو رمز تحقق يصلك على جوالك. يُنشأ حسابك تلقائياً عند أول دخول.">
+  <meta property="og:image" content="https://appmails.net/logo.png">
+  <meta property="og:locale" content="ar_SA">
+  <meta property="og:site_name" content="TRACKER">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="تسجيل الدخول | TRACKER">
+  <meta name="twitter:description" content="تسجيل الدخول إلى منصة TRACKER - عبر حساب Google أو Apple، أو رابط يصلك على بريدك الإلكتروني، أو رمز تحقق يصلك على جوالك. يُنشأ حسابك تلقائياً عند أول دخول.">
+  <meta name="twitter:image" content="https://appmails.net/logo.png">
+  <title>تسجيل الدخول | TRACKER</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Monoton&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="header.css">
+  <link rel="stylesheet" href="footer.css?v=3">
+  <style>
+    /* Cross-browser reset + font enforcement */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    html {
+      -webkit-text-size-adjust: 100%;
+      -moz-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+    button, input, select, textarea, optgroup {
+      font-family: inherit;
+      font-size: inherit;
+      line-height: inherit;
+      color: inherit;
+      margin: 0;
+    }
+    button, [type="button"], [type="reset"], [type="submit"] {
+      -webkit-appearance: button;
+      appearance: button;
+    }
+    img, svg, video, canvas {
+      display: block;
+      max-width: 100%;
+    }
+    a { color: inherit; }
+
+    :root, [data-theme="light"] {
+      --primary: rgb(0, 104, 184);
+      --primary-light: rgb(25, 140, 220);
+      --primary-dark: rgb(0, 88, 160);
+      --text-primary: rgb(26, 26, 38);
+      --text-secondary: rgb(77, 77, 89);
+      --text-tertiary: rgb(100, 112, 128);
+      --bg-top: rgb(250, 252, 255);
+      --bg-mid: rgb(242, 247, 252);
+      --bg-bottom: rgb(237, 245, 250);
+      --glass: rgba(255,255,255,0.85);
+      --glass-border: rgba(0,0,0,0.08);
+      --glass-strong: rgba(255, 255, 255, 0.95);
+      --shadow-light: rgba(255, 255, 255, 0.3);
+      --shadow-dark: rgba(0, 0, 0, 0.08);
+      --white: #ffffff;
+      --primary-shadow: rgba(0, 104, 184, 0.3);
+      --success: rgb(52, 199, 89);
+      --error: rgb(255, 59, 48);
+    }
+    [data-theme="dark"] {
+      --primary: rgb(0, 160, 210);
+      --primary-light: rgb(40, 180, 220);
+      --primary-dark: rgb(0, 140, 190);
+      --text-primary: rgb(255, 255, 255);
+      --text-secondary: rgba(255, 255, 255, 0.7);
+      --text-tertiary: rgba(255, 255, 255, 0.55);
+      --bg-top: rgb(31, 46, 56);
+      --bg-mid: rgb(26, 41, 51);
+      --bg-bottom: rgb(20, 36, 46);
+      --glass: rgba(255,255,255,0.08);
+      --glass-border: rgba(255,255,255,0.15);
+      --glass-strong: rgba(255, 255, 255, 0.12);
+      --shadow-light: rgba(255, 255, 255, 0.05);
+      --shadow-dark: rgba(5, 10, 15, 0.3);
+      --primary-shadow: rgba(0, 160, 210, 0.35);
+      --success: rgb(52, 199, 89);
+      --error: rgb(255, 59, 48);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { background: var(--bg-bottom); }
+    body {
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      background: linear-gradient(135deg, var(--bg-top), var(--bg-bottom));
+      color: var(--text-primary);
+      line-height: 1.8;
+      min-height: 100vh;
+    }
+    .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+    body.has-site-header { padding-top: 52px; }
+    .header {
+      text-align: center;
+      padding: 3rem 2rem;
+      background: var(--glass);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      margin-bottom: 2rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+    [data-theme="dark"] .header { box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .content {
+      background: var(--glass);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      padding: 3rem;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+    [data-theme="dark"] .content { box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+    h2 {
+      font-size: 1.8rem;
+      margin: 2rem 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--primary);
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    h2:first-of-type { margin-top: 0; }
+    p { margin-bottom: 1rem; color: var(--text-secondary); }
+    .content a { color: var(--primary); text-decoration: none; }
+    .content a:hover { text-decoration: underline; }
+    .highlight { font-weight: 600; color: var(--primary); }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: var(--white);
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px var(--primary-shadow);
+    }
+    .back-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px var(--primary-shadow);
+    }
+    /* Sign-in form controls (verbatim from index.html) */
+    .waitlist-form {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+    .waitlist-input {
+      flex: 1;
+      min-width: 140px;
+      padding: 0.7rem 0.85rem;
+      border-radius: 10px;
+      border: 1px solid var(--glass-border);
+      background: var(--glass);
+      color: var(--text-primary);
+      font-size: 0.9rem;
+    }
+    .waitlist-input::placeholder { color: var(--text-tertiary); }
+    .waitlist-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(0, 160, 210, 0.2);
+    }
+    .waitlist-btn {
+      padding: 0.7rem 1.2rem;
+      border-radius: 10px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .waitlist-btn:hover { background: var(--primary-light); transform: translateY(-1px); }
+    .waitlist-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+    .waitlist-msg { margin-top: 0.5rem; font-size: 0.85rem; }
+    .waitlist-msg.success { color: var(--success); }
+    .waitlist-msg.error { color: var(--error); }
+    /* Sign-in card layout */
+    .login-intro { text-align: center; }
+    .login-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+    .login-divider {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      margin: 0.25rem 0;
+    }
+    .login-divider::before, .login-divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--glass-border);
+    }
+    .login-stack .waitlist-msg { text-align: center; margin-bottom: 0; }
+    .login-note { text-align: center; font-size: 0.85rem; margin-top: 1.5rem; margin-bottom: 0; }
+    .login-note + .login-note { margin-top: 0.5rem; }
+    @media (max-width: 768px) {
+      .container { padding: 1rem; margin: 0 auto; }
+      .content { padding: 2rem 1.5rem; }
+      .header, .content h1, .content h2 { text-align: center; }
+      h1 { font-size: 2rem; }
+      h2 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body class="has-site-header">
+  <header class="site-header">
+    <div class="menu-btn" id="langMenuBtn">
+      <div class="icon-circle"><span class="icon">🌐</span></div>
+      <div class="menu-text">
+        <div class="menu-label" data-i18n="language">اللغة</div>
+        <div class="menu-value" id="currentLangDisplay">العربية</div>
+      </div>
+      <span class="menu-icon">⋯</span>
+      <div class="menu-dropdown" id="langDropdown">
+        <div class="menu-dropdown-item" data-lang="ar"><span class="checkmark" id="check-ar">✓</span><span>العربية</span></div>
+        <div class="menu-dropdown-item" data-lang="en"><span class="checkmark" id="check-en" style="display:none">✓</span><span>English</span></div>
+        <div class="menu-dropdown-item" data-lang="fr"><span class="checkmark" id="check-fr" style="display:none">✓</span><span>Français</span></div>
+        <div class="menu-dropdown-item" data-lang="ur"><span class="checkmark" id="check-ur" style="display:none">✓</span><span>اردو</span></div>
+      </div>
+    </div>
+    <div class="menu-btn" id="themeMenuBtn">
+      <div class="icon-circle"><span class="icon" id="themeIcon">🌙</span></div>
+      <div class="menu-text">
+        <div class="menu-label" data-i18n="appearance">المظهر</div>
+        <div class="menu-value" id="currentThemeDisplay">داكن</div>
+      </div>
+      <span class="menu-icon">⋯</span>
+      <div class="menu-dropdown" id="themeDropdown">
+        <div class="menu-dropdown-item" data-theme="light"><span class="checkmark" id="check-light" style="display:none">✓</span><span data-i18n="light">فاتح</span></div>
+        <div class="menu-dropdown-item" data-theme="dark"><span class="checkmark" id="check-dark">✓</span><span data-i18n="dark">داكن</span></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="header">
+      <h1 data-i18n="title">تسجيل الدخول أو إنشاء حساب</h1>
+    </div>
+
+    <div class="content" id="loginCard">
+      <p class="login-intro" data-i18n="intro">سجّل دخولك إلى حسابك، وإن لم يكن لديك حساب فسيُنشأ تلقائياً عند أول تسجيل دخول.</p>
+
+      <div class="login-stack">
+        <button type="button" class="waitlist-btn" id="googleBtn" style="width:100%" data-i18n="googleBtn">المتابعة بحساب Google</button>
+        <button type="button" class="waitlist-btn" id="appleBtn" style="width:100%" data-i18n="appleBtn">المتابعة بحساب Apple</button>
+
+        <div class="login-divider"><span data-i18n="or">أو</span></div>
+
+        <form class="waitlist-form" id="emailForm" novalidate>
+          <input type="email" class="waitlist-input" id="loginEmail" placeholder="بريدك الإلكتروني" required autocomplete="email" inputmode="email">
+          <button type="submit" class="waitlist-btn" id="emailBtn" data-i18n="emailBtn">أرسل لي رابط الدخول</button>
+        </form>
+
+        <div class="login-divider"><span data-i18n="or">أو</span></div>
+
+        <form class="waitlist-form" id="phoneForm" novalidate>
+          <input type="tel" class="waitlist-input" id="loginPhone" placeholder="+9665xxxxxxx" required autocomplete="tel" inputmode="tel" dir="ltr">
+          <button type="submit" class="waitlist-btn" id="phoneBtn" data-i18n="phoneBtn">أرسل رمز التحقق</button>
+        </form>
+
+        <form class="waitlist-form" id="otpForm" novalidate style="display:none">
+          <input type="text" class="waitlist-input" id="loginOtp" placeholder="رمز التحقق (6 أرقام)" required inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code">
+          <button type="submit" class="waitlist-btn" id="otpBtn" data-i18n="otpBtn">تأكيد</button>
+        </form>
+
+        <p class="waitlist-msg" id="loginStatus" style="display:none;" role="status" aria-live="polite"></p>
+      </div>
+
+      <p class="login-note" data-i18n="newAccountNote">ليس لديك حساب؟ سيُنشأ تلقائياً عند أول تسجيل دخول.</p>
+      <p class="login-note" data-i18n="termsNote">بمتابعتك فإنك توافق على شروط الاستخدام وسياسة الخصوصية.</p>
+    </div>
+
+    <div style="text-align: center; padding: 2rem;">
+      <a href="index.html" class="back-btn" data-i18n="backBtn">العودة للرئيسية</a>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p class="footer-links">
+      <a href="about.html" data-i18n="aboutLink">من نحن</a>
+      <a href="terms.html" data-i18n="termsLink">شروط الاستخدام</a>
+      <a href="pricing.html" data-i18n="pricingLink">الباقات والأسعار</a>
+      <a href="privacy.html" data-i18n="privacyLink">سياسة الخصوصية</a>
+      <a href="login.html" data-i18n="loginLink">تسجيل الدخول</a>
+      <a href="index.html#contact" data-i18n="contactLink">تواصل معنا</a>
+      <a href="mailto:support@appmails.net" class="footer-social-icon" aria-label="support@appmails.net"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></a>
+    </p>
+    <p class="footer-copyright">
+      <span data-i18n="copyrightLine2">جميع الحقوق محفوظة</span>
+      <span> · <img src="tracker-logo-full-dark.png" alt="TRACKER" id="footerLogo" class="brand-logo-inline brand-logo-inline--xs" data-brand-logo-footer style="height:1.3em;width:auto;display:inline-block;vertical-align:-0.35em;max-width:none;"> <span class="footer-year">© 2026</span></span>
+    </p>
+  </footer>
+
+  <script>
+    const translations = {
+      ar: {
+        title: "تسجيل الدخول أو إنشاء حساب",
+        intro: "سجّل دخولك إلى حسابك، وإن لم يكن لديك حساب فسيُنشأ تلقائياً عند أول تسجيل دخول.",
+        googleBtn: "المتابعة بحساب Google",
+        appleBtn: "المتابعة بحساب Apple",
+        or: "أو",
+        emailPlaceholder: "بريدك الإلكتروني",
+        emailBtn: "أرسل لي رابط الدخول",
+        phonePlaceholder: "+9665xxxxxxx",
+        phoneBtn: "أرسل رمز التحقق",
+        otpPlaceholder: "رمز التحقق (6 أرقام)",
+        otpBtn: "تأكيد",
+        newAccountNote: "ليس لديك حساب؟ سيُنشأ تلقائياً عند أول تسجيل دخول.",
+        termsNote: "بمتابعتك فإنك توافق على شروط الاستخدام وسياسة الخصوصية.",
+        statusSending: "جارٍ الإرسال...",
+        statusRedirecting: "جارٍ تحويلك إلى مزوّد الخدمة...",
+        statusEmailSent: "تحقق من بريدك الإلكتروني، فقد أرسلنا إليك رابط الدخول.",
+        statusCodeSent: "أرسلنا رمز التحقق إلى جوالك.",
+        statusVerifying: "جارٍ التحقق...",
+        statusSuccess: "تم تسجيل الدخول، جارٍ تحويلك...",
+        statusWrongCode: "رمز التحقق غير صحيح أو منتهي الصلاحية، حاول مرة أخرى.",
+        statusUnavailable: "خدمة تسجيل الدخول غير متاحة حالياً، حاول لاحقاً أو تواصل مع الدعم.",
+        statusProviderUnavailable: "هذه الطريقة غير متاحة حالياً، جرّب طريقة أخرى.",
+        statusRateLimit: "محاولات كثيرة، حاول مرة أخرى بعد قليل.",
+        statusInvalidEmail: "أدخل بريداً إلكترونياً صحيحاً.",
+        statusInvalidPhone: "أدخل رقم الجوال بالصيغة الدولية، مثل ⁦+9665xxxxxxx⁩",
+        statusError: "حدث خطأ، حاول مرة أخرى.",
+        backBtn: "العودة للرئيسية",
+        copyrightLine2: "جميع الحقوق محفوظة",
+        aboutLink: "من نحن",
+        termsLink: "شروط الاستخدام",
+        pricingLink: "الباقات والأسعار",
+        privacyLink: "سياسة الخصوصية",
+        loginLink: "تسجيل الدخول",
+        dashboardLink: "لوحة التحكم",
+        contactLink: "تواصل معنا",
+        language: "اللغة",
+        appearance: "المظهر",
+        light: "فاتح",
+        dark: "داكن"
+      },
+      en: {
+        title: "Sign in or create an account",
+        intro: "Sign in to your account. If you don't have one yet, it will be created automatically the first time you sign in.",
+        googleBtn: "Continue with Google",
+        appleBtn: "Continue with Apple",
+        or: "or",
+        emailPlaceholder: "Your email address",
+        emailBtn: "Send me a sign-in link",
+        phonePlaceholder: "+9665xxxxxxx",
+        phoneBtn: "Send verification code",
+        otpPlaceholder: "6-digit code",
+        otpBtn: "Confirm",
+        newAccountNote: "Don't have an account? It will be created automatically on your first sign-in.",
+        termsNote: "By continuing, you agree to the Terms of Use and the Privacy Policy.",
+        statusSending: "Sending...",
+        statusRedirecting: "Redirecting you to the provider...",
+        statusEmailSent: "Check your email: we sent you a sign-in link.",
+        statusCodeSent: "We sent a verification code to your phone.",
+        statusVerifying: "Verifying...",
+        statusSuccess: "Signed in, redirecting...",
+        statusWrongCode: "Incorrect or expired code, please try again.",
+        statusUnavailable: "Sign-in is temporarily unavailable. Please try again later or contact support.",
+        statusProviderUnavailable: "This method is not available right now, please try another one.",
+        statusRateLimit: "Too many attempts, please try again in a moment.",
+        statusInvalidEmail: "Enter a valid email address.",
+        statusInvalidPhone: "Enter your phone number in international format, e.g. +9665xxxxxxx",
+        statusError: "Something went wrong, please try again.",
+        backBtn: "Back to Home",
+        copyrightLine2: "All rights reserved",
+        aboutLink: "About Us",
+        termsLink: "Terms of Use",
+        pricingLink: "Plans & Pricing",
+        privacyLink: "Privacy Policy",
+        loginLink: "Sign in",
+        dashboardLink: "Dashboard",
+        contactLink: "Contact Us",
+        language: "Language",
+        appearance: "Appearance",
+        light: "Light",
+        dark: "Dark"
+      },
+      fr: {
+        title: "Connexion ou création de compte",
+        intro: "Connectez-vous à votre compte. S'il n'existe pas encore, il sera créé automatiquement lors de votre première connexion.",
+        googleBtn: "Continuer avec Google",
+        appleBtn: "Continuer avec Apple",
+        or: "ou",
+        emailPlaceholder: "Votre adresse e-mail",
+        emailBtn: "M'envoyer un lien de connexion",
+        phonePlaceholder: "+9665xxxxxxx",
+        phoneBtn: "Envoyer le code de vérification",
+        otpPlaceholder: "Code à 6 chiffres",
+        otpBtn: "Confirmer",
+        newAccountNote: "Pas encore de compte ? Il sera créé automatiquement lors de votre première connexion.",
+        termsNote: "En continuant, vous acceptez les Conditions d'utilisation et la Politique de confidentialité.",
+        statusSending: "Envoi en cours...",
+        statusRedirecting: "Redirection vers le fournisseur...",
+        statusEmailSent: "Vérifiez votre boîte e-mail : nous vous avons envoyé un lien de connexion.",
+        statusCodeSent: "Nous avons envoyé un code de vérification sur votre mobile.",
+        statusVerifying: "Vérification en cours...",
+        statusSuccess: "Connexion réussie, redirection en cours...",
+        statusWrongCode: "Code incorrect ou expiré, veuillez réessayer.",
+        statusUnavailable: "Le service de connexion est momentanément indisponible. Réessayez plus tard ou contactez le support.",
+        statusProviderUnavailable: "Cette méthode n'est pas disponible pour le moment, essayez-en une autre.",
+        statusRateLimit: "Trop de tentatives, veuillez réessayer dans quelques instants.",
+        statusInvalidEmail: "Saisissez une adresse e-mail valide.",
+        statusInvalidPhone: "Saisissez votre numéro au format international, par exemple +9665xxxxxxx",
+        statusError: "Une erreur est survenue, veuillez réessayer.",
+        backBtn: "Retour à l'accueil",
+        copyrightLine2: "Tous droits réservés",
+        aboutLink: "À propos",
+        termsLink: "Conditions d'utilisation",
+        pricingLink: "Forfaits et tarifs",
+        privacyLink: "Politique de confidentialité",
+        loginLink: "Connexion",
+        dashboardLink: "Tableau de bord",
+        contactLink: "Contactez-nous",
+        language: "Langue",
+        appearance: "Apparence",
+        light: "Clair",
+        dark: "Sombre"
+      },
+      ur: {
+        title: "سائن ان کریں یا اکاؤنٹ بنائیں",
+        intro: "اپنے اکاؤنٹ سے سائن ان کریں۔ اگر آپ کا اکاؤنٹ ابھی نہیں ہے تو پہلی بار سائن ان کرنے پر یہ خود بخود بن جائے گا۔",
+        googleBtn: "Google کے ساتھ جاری رکھیں",
+        appleBtn: "Apple کے ساتھ جاری رکھیں",
+        or: "یا",
+        emailPlaceholder: "آپ کا ای میل",
+        emailBtn: "مجھے سائن ان لنک بھیجیں",
+        phonePlaceholder: "+9665xxxxxxx",
+        phoneBtn: "تصدیقی کوڈ بھیجیں",
+        otpPlaceholder: "6 ہندسوں کا کوڈ",
+        otpBtn: "تصدیق کریں",
+        newAccountNote: "اکاؤنٹ نہیں ہے؟ پہلی بار سائن ان کرنے پر یہ خود بخود بن جائے گا۔",
+        termsNote: "جاری رکھنے کا مطلب ہے کہ آپ استعمال کی شرائط اور رازداری کی پالیسی سے اتفاق کرتے ہیں۔",
+        statusSending: "بھیجا جا رہا ہے...",
+        statusRedirecting: "آپ کو فراہم کنندہ کی طرف بھیجا جا رہا ہے...",
+        statusEmailSent: "اپنا ای میل چیک کریں، ہم نے آپ کو سائن ان لنک بھیج دیا ہے۔",
+        statusCodeSent: "ہم نے آپ کے موبائل پر تصدیقی کوڈ بھیج دیا ہے۔",
+        statusVerifying: "تصدیق کی جا رہی ہے...",
+        statusSuccess: "سائن ان مکمل، آپ کو منتقل کیا جا رہا ہے...",
+        statusWrongCode: "کوڈ غلط ہے یا اس کی میعاد ختم ہو گئی ہے، دوبارہ کوشش کریں۔",
+        statusUnavailable: "سائن ان سروس فی الحال دستیاب نہیں ہے۔ بعد میں کوشش کریں یا سپورٹ سے رابطہ کریں۔",
+        statusProviderUnavailable: "یہ طریقہ فی الحال دستیاب نہیں ہے، کوئی دوسرا طریقہ آزمائیں۔",
+        statusRateLimit: "بہت زیادہ کوششیں، تھوڑی دیر بعد دوبارہ کوشش کریں۔",
+        statusInvalidEmail: "درست ای میل ایڈریس درج کریں۔",
+        statusInvalidPhone: "بین الاقوامی فارمیٹ میں موبائل نمبر درج کریں، مثلاً ⁦+9665xxxxxxx⁩",
+        statusError: "خرابی پیش آئی، دوبارہ کوشش کریں۔",
+        backBtn: "واپس ہوم",
+        copyrightLine2: "جملہ حقوق محفوظ ہیں",
+        aboutLink: "ہمارے بارے میں",
+        termsLink: "استعمال کی شرائط",
+        pricingLink: "پلانز اور قیمتیں",
+        privacyLink: "رازداری کی پالیسی",
+        loginLink: "سائن ان",
+        dashboardLink: "ڈیش بورڈ",
+        contactLink: "ہم سے رابطہ کریں",
+        language: "زبان",
+        appearance: "ظہور",
+        light: "روشن",
+        dark: "اندھیرا"
+      }
+    };
+
+    const lang = () => localStorage.getItem("tracker_lang") || "ar";
+    const theme = () => localStorage.getItem("tracker_theme") || "dark";
+    const langNames = { ar: "العربية", en: "English", fr: "Français", ur: "اردو" };
+    let l = lang();
+    document.documentElement.lang = l;
+    document.documentElement.dir = (l === "ar" || l === "ur") ? "rtl" : "ltr";
+
+    const placeholderKeys = { loginEmail: "emailPlaceholder", loginPhone: "phonePlaceholder", loginOtp: "otpPlaceholder" };
+    function applyPlaceholders(code) {
+      const dict = translations[code] || translations.ar;
+      Object.keys(placeholderKeys).forEach(id => {
+        const el = document.getElementById(id);
+        if (el && dict[placeholderKeys[id]]) el.placeholder = dict[placeholderKeys[id]];
+      });
+    }
+
+    function setLang(code) {
+      localStorage.setItem("tracker_lang", code);
+      l = code;
+      document.documentElement.lang = code;
+      document.documentElement.dir = (code === "ar" || code === "ur") ? "rtl" : "ltr";
+      document.getElementById("currentLangDisplay").textContent = langNames[code] || code;
+      ["ar","en","fr","ur"].forEach(c => {
+        const el = document.getElementById("check-" + c);
+        if (el) el.style.display = c === code ? "inline" : "none";
+      });
+      const th = theme();
+      document.getElementById("currentThemeDisplay").textContent = translations[code][th === "dark" ? "dark" : "light"];
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const k = el.dataset.i18n;
+        if (translations[code] && translations[code][k]) el.innerHTML = translations[code][k];
+      });
+      applyPlaceholders(code);
+      document.title = (translations[code] && translations[code].title ? translations[code].title : "Sign in") + " | TRACKER";
+      if (typeof window.__trackerAuthRefresh === "function") window.__trackerAuthRefresh();
+    }
+
+    function setTheme(th) {
+      localStorage.setItem("tracker_theme", th);
+      document.documentElement.dataset.theme = th;
+      const meta = document.getElementById("themeColorMeta");
+      if (meta) meta.content = th === "dark" ? "#1a2933" : "#0068b8";
+      const logo = document.getElementById("footerLogo");
+      if (logo) logo.src = th === "dark" ? "tracker-logo-full-dark.png" : "tracker-logo-full-light.png";
+      document.getElementById("themeIcon").textContent = th === "dark" ? "🌙" : "☀️";
+      document.getElementById("currentThemeDisplay").textContent = translations[l][th === "dark" ? "dark" : "light"];
+      document.getElementById("check-light").style.display = th === "light" ? "inline" : "none";
+      document.getElementById("check-dark").style.display = th === "dark" ? "inline" : "none";
+    }
+
+    document.getElementById("langMenuBtn").addEventListener("click", e => {
+      e.stopPropagation();
+      document.getElementById("langDropdown").classList.toggle("show");
+      document.getElementById("themeDropdown").classList.remove("show");
+    });
+    document.getElementById("themeMenuBtn").addEventListener("click", e => {
+      e.stopPropagation();
+      document.getElementById("themeDropdown").classList.toggle("show");
+      document.getElementById("langDropdown").classList.remove("show");
+    });
+    document.addEventListener("click", () => {
+      document.getElementById("langDropdown").classList.remove("show");
+      document.getElementById("themeDropdown").classList.remove("show");
+    });
+
+    document.querySelectorAll("#langDropdown .menu-dropdown-item").forEach(item => {
+      item.addEventListener("click", () => setLang(item.dataset.lang));
+    });
+    document.querySelectorAll("#themeDropdown .menu-dropdown-item").forEach(item => {
+      item.addEventListener("click", () => {
+        setTheme(item.dataset.theme);
+        document.getElementById("themeDropdown").classList.remove("show");
+      });
+    });
+
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+      const k = el.dataset.i18n;
+      if (translations[l] && translations[l][k]) el.textContent = translations[l][k];
+    });
+    applyPlaceholders(l);
+    document.getElementById("currentLangDisplay").textContent = langNames[l] || l;
+    ["ar","en","fr","ur"].forEach(c => {
+      const el = document.getElementById("check-" + c);
+      if (el) el.style.display = l === c ? "inline" : "none";
+    });
+    document.title = (translations[l] && translations[l].title ? translations[l].title : "Sign in") + " | TRACKER";
+
+    (function() {
+      const th = theme();
+      document.documentElement.dataset.theme = th;
+      const meta = document.getElementById("themeColorMeta");
+      if (meta) meta.content = th === "dark" ? "#1a2933" : "#0068b8";
+      const logo = document.getElementById("footerLogo");
+      if (logo) logo.src = th === "dark" ? "tracker-logo-full-dark.png" : "tracker-logo-full-light.png";
+      document.getElementById("themeIcon").textContent = th === "dark" ? "🌙" : "☀️";
+      document.getElementById("currentThemeDisplay").textContent = translations[l][th === "dark" ? "dark" : "light"];
+      document.getElementById("check-light").style.display = th === "light" ? "inline" : "none";
+      document.getElementById("check-dark").style.display = th === "dark" ? "inline" : "none";
+    })();
+  </script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js", { scope: "./" }).catch(() => {});
+      });
+    }
+  </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+<script src="/app.js?v=1" defer></script>
+<script src="/brand-logo.js?v=3" defer></script>
+</body>
+</html>

@@ -18,3 +18,7 @@ binding = "ASSETS"
 # ANTHROPIC_API_KEY؛ يظهر داخل الـ Worker كـ env.AI
 [ai]
 binding = "AI"
+
+# Cron التنبيهات — كل 5 دقائق (يعمل فقط حين تُضبط أسرار Supabase)
+[triggers]
+crons = ["*/5 * * * *"]
