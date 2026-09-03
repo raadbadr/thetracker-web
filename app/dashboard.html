@@ -2282,14 +2282,21 @@
         calCard.innerHTML = "<h2>" + esc(T("calendarCardTitle")) + "</h2>";
 
         dash.insertBefore(grid, dash.firstChild);
-        /* مؤشر المخالفات يتصدّر الصفحة بعرضها كاملاً */
-        if (state.viewType === "violations") {
+
+        /* لكل شاشة مؤشرها فوق بعرض الصفحة: القضايا مؤشرها، والمخالفات مؤشرها،
+           ولوحة التحكم تجمع الاثنين. */
+        function addChart(id) {
           var chart = document.createElement("div");
           chart.className = "content chart-card";
-          chart.id = "violationsChart";
+          chart.id = id;
           dash.insertBefore(chart, dash.firstChild);
         }
-        mainCol.appendChild(services);
+        if (state.viewType === "violations") addChart("violationsChart");
+        else if (state.viewType === "cases") addChart("casesChart");
+        else { addChart("violationsChart"); addChart("casesChart"); }
+
+        /* بطاقة الخدمات هي بوابة لوحة التحكم؛ عرضها داخل شاشة جاء منها الزر تكرار. */
+        if (!state.viewType) mainCol.appendChild(services);
         mainCol.appendChild(main);
         calCard.appendChild(calendar);
         sideCol.appendChild(calCard);
