@@ -1311,6 +1311,8 @@
   ];
 
   var BELL_LABELS = { ar: "التنبيهات", en: "Notifications", fr: "Notifications", ur: "اطلاعات" };
+  var ORG_LABELS = { ar: "الشركة", en: "Company", fr: "Entreprise", ur: "کمپنی" };
+  var NEW_ORG_LABELS = { ar: "＋ شركة جديدة", en: "＋ New company", fr: "＋ Nouvelle entreprise", ur: "＋ نئی کمپنی" };
   var BELL_EMPTY = { ar: "لا توجد تنبيهات بعد.", en: "No notifications yet.", fr: "Aucune notification pour le moment.", ur: "ابھی کوئی اطلاع نہیں۔" };
   var BELL_SEEN_KEY = "tracker_bell_seen";
 
@@ -1329,6 +1331,13 @@
     ".app-topnav>a.is-active{background:var(--glass-border);color:var(--text-primary)}",
     ".app-topnav>a.is-active::after{content:'';position:absolute;inset-inline:1rem;bottom:-.65rem;height:3px;border-radius:3px;background:var(--primary)}",
     ".app-userbox{display:flex;align-items:center;gap:.5rem;flex:0 0 auto}",
+    ".app-orgbox{display:flex;align-items:center;gap:.5rem;padding:.35rem .5rem .35rem .85rem;border-radius:14px;",
+    "background:var(--primary);color:#fff;box-shadow:0 6px 16px var(--shadow-dark)}",
+    ".app-orglabel{font-size:.72rem;font-weight:700;opacity:.85;letter-spacing:.02em}",
+    ".app-orgselect{max-width:190px;padding:.35rem .5rem;border:0;border-radius:10px;background:rgba(255,255,255,.14);",
+    "color:#fff;font:inherit;font-size:.85rem;font-weight:700;cursor:pointer}",
+    ".app-orgselect option{color:#12212b;background:#fff}",
+    "@media(max-width:900px){.app-orgselect{max-width:130px}}",
     ".app-username{display:inline-flex;align-items:center;gap:.5rem;max-width:240px;padding:.5rem 1rem;border-radius:14px;",
     "background:var(--glass-border);color:var(--text-primary);font-size:.85rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
     ".app-iconbtn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;padding:0;border:1px solid var(--glass-border);",
@@ -1391,6 +1400,22 @@
     });
   }
 
+  /* أين أنا الآن؟ اسم الشركة الحالية ظاهر دائماً ويُبدَّل من مكانه. */
+  function orgBoxHtml() {
+    var orgs = (app && app.orgs) || [];
+    var current = app && app.org ? app.org : null;
+    if (!current && !orgs.length) return "";
+    var opts = orgs.map(function (o) {
+      return '<option value="' + escapeHtml(o.id) + '"' + (current && o.id === current.id ? " selected" : "") + ">" +
+             escapeHtml(o.name || "") + "</option>";
+    }).join("");
+    opts += '<option value="__new">' + escapeHtml(sidebarLabel(NEW_ORG_LABELS)) + "</option>";
+    return '<div class="app-orgbox" title="' + escapeHtml(sidebarLabel(ORG_LABELS)) + '">' +
+             '<span class="app-orglabel">' + escapeHtml(sidebarLabel(ORG_LABELS)) + "</span>" +
+             '<select class="app-orgselect" id="topOrgSelect">' + opts + "</select>" +
+           "</div>";
+  }
+
   function renderTopbar() {
     var bar = document.getElementById("appTopbar");
     if (!bar) return;
@@ -1420,6 +1445,7 @@
     bar.innerHTML =
       '<nav class="app-topnav">' + nav.replace("__SERVICES__", services) + "</nav>" +
       '<div class="app-userbox">' +
+        orgBoxHtml() +
         '<span class="app-username" id="topUserName" title="' + escapeHtml(userDisplayName()) + '">' + escapeHtml(userDisplayName()) + "</span>" +
         '<button type="button" class="app-iconbtn" id="topBellBtn" aria-label="' + escapeHtml(sidebarLabel(BELL_LABELS)) + '">' +
           '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5S10.5 3.17 10.5 4v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>' +
@@ -1455,6 +1481,15 @@
     document.addEventListener("click", function () {
       if (bellPanel) bellPanel.classList.remove("is-open");
       if (svcPanel) svcPanel.classList.remove("is-open");
+    });
+
+    var orgSel = document.getElementById("topOrgSelect");
+    if (orgSel) orgSel.addEventListener("change", function () {
+      if (this.value === "__new") {
+        window.location.href = "/app/dashboard.html?neworg=1";
+        return;
+      }
+      if (app.org && this.value !== app.org.id) setCurrentOrg(this.value);
     });
 
     var out = document.getElementById("topSignOut");

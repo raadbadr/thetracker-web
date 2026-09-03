@@ -2189,6 +2189,12 @@
           show("dashboard");
           layoutDashboard();
           wireAttachments();
+          try {
+            if (new URLSearchParams(window.location.search).get("neworg")) {
+              var f = $("newOrgForm");
+              if (f) { f.hidden = false; $("newOrgName").focus(); }
+            }
+          } catch (e) { /* ignore */ }
           return loadAll();
         }).catch(function (err) {
           hide("loadingCard");
