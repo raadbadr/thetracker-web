@@ -187,6 +187,14 @@ export default {
       return handleCalendar(cal[1], env);
     }
 
+    // إثبات ملكية النطاق لجوجل — يُقدَّم من الـ Worker لأن طبقة الأصول تحوّل
+    // /x.html إلى /x، وجوجل تطلب الملف على مساره الحرفي بامتداده.
+    if (env.GOOGLE_SITE_VERIFICATION_FILE && path === "/" + env.GOOGLE_SITE_VERIFICATION_FILE) {
+      return new Response("google-site-verification: " + env.GOOGLE_SITE_VERIFICATION_FILE, {
+        headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" },
+      });
+    }
+
     // Only handle /api/* routes — everything else is static assets
     if (!path.startsWith("/api/")) return env.ASSETS.fetch(request);
 

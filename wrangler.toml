@@ -13,6 +13,9 @@ directory = "./"
 # Expose the assets binding to the Worker. Without this line env.ASSETS is
 # undefined inside the Worker.
 binding = "ASSETS"
+# طبقة الملفات الثابتة تحوّل /x.html إلى /x، وجوجل تطلب ملف إثبات الملكية على
+# مساره الحرفي بامتداده، فيمر الطلب على الـ Worker أولاً ثم يعيد الباقي للأصول.
+run_worker_first = true
 
 # Workers AI — يشغّل مساعد الموقع مجاناً (الحصة اليومية المجانية) حين لا يوجد
 # ANTHROPIC_API_KEY؛ يظهر داخل الـ Worker كـ env.AI
@@ -26,3 +29,5 @@ crons = ["*/5 * * * *"]
 # معرّف عميل جوجل للويب (عام، ليس سراً) — يمرّ إلى المتصفح عبر /api/config
 [vars]
 GOOGLE_CLIENT_ID = "641714324296-bhfpk6hf8hnfkfctrtrjvl7uivt5g8p1.apps.googleusercontent.com"
+# ملف إثبات ملكية النطاق في Google Search Console (اسم الملف نفسه هو المحتوى)
+GOOGLE_SITE_VERIFICATION_FILE = "google28464cb207d3c7aa.html"
