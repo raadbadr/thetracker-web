@@ -1051,18 +1051,18 @@
   var SIGN_OUT_LABELS = { ar: "تسجيل الخروج", en: "Sign out", fr: "Se déconnecter", ur: "سائن آؤٹ" };
 
   var SIDEBAR_CSS = [
-    ".app-sidebar{position:fixed;inset-block:52px 0;inset-inline-start:0;width:232px;padding:1.25rem .85rem;",
+    ".app-sidebar{position:fixed;inset-block:52px 0;inset-inline-start:0;width:240px;padding:1.5rem 1rem;",
     "display:flex;flex-direction:column;gap:.35rem;z-index:40;overflow-y:auto;background:var(--glass);",
     "-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-inline-end:1px solid var(--glass-border)}",
-    ".app-sidebar-title{font-size:.75rem;font-weight:700;letter-spacing:.04em;opacity:.6;padding:0 .6rem .5rem;color:var(--text-secondary)}",
-    ".app-sidebar a,.app-sidebar button{display:flex;align-items:center;justify-content:space-between;gap:.65rem;width:100%;padding:.7rem .8rem;border:0;border-radius:14px;",
+    ".app-sidebar-title{font-size:.72rem;font-weight:700;letter-spacing:.08em;opacity:.55;padding:0 .75rem .75rem;color:var(--text-secondary);text-transform:uppercase}",
+    ".app-sidebar a,.app-sidebar button{display:flex;align-items:center;justify-content:flex-start;gap:.7rem;width:100%;padding:.75rem .9rem;border:0;border-radius:14px;",
     "background:transparent;color:var(--text-secondary);font:inherit;font-size:.95rem;font-weight:600;text-decoration:none;cursor:pointer;text-align:start;",
     "transition:all .25s cubic-bezier(.4,0,.2,1)}",
     ".app-sidebar a:hover,.app-sidebar button:hover{background:var(--glass-border);color:var(--text-primary)}",
     ".app-sidebar a.is-active{background:var(--primary);color:#fff;box-shadow:0 6px 18px var(--shadow-dark)}",
     ".app-sidebar svg{width:20px;height:20px;flex:0 0 auto;fill:currentColor}",
     ".app-sidebar-spacer{flex:1 1 auto}",
-    "body.has-app-sidebar .container{max-width:1400px;padding-inline-start:calc(232px + 1.5rem)}",
+    "body.has-app-sidebar .container{max-width:1400px;padding-inline-start:calc(240px + 2rem)}",
     "@media(max-width:900px){.app-sidebar{position:static;inset:auto;width:auto;flex-direction:row;overflow-x:auto;",
     "border-inline-end:0;border-bottom:1px solid var(--glass-border);padding:.6rem;gap:.4rem}",
     ".app-sidebar-title,.app-sidebar-spacer{display:none}",
@@ -1095,18 +1095,7 @@
               "<span>" + escapeHtml(sidebarLabel(item.labels)) + "</span>" +
               '<svg viewBox="0 0 24 24" aria-hidden="true">' + item.icon + "</svg></a>";
     });
-    html += '<div class="app-sidebar-spacer"></div>';
-    html += '<button type="button" id="sidebarSignOut">' +
-            "<span>" + escapeHtml(sidebarLabel(SIGN_OUT_LABELS)) + "</span>" +
-            '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg></button>';
     nav.innerHTML = html;
-    var out = document.getElementById("sidebarSignOut");
-    if (out) out.addEventListener("click", function () {
-      var auth = window.trackerAuth;
-      var done = function () { window.location.replace("/login"); };
-      if (auth && typeof auth.signOut === "function") auth.signOut().then(done, done);
-      else done();
-    });
   }
 
   function mountSidebar() {
@@ -1210,20 +1199,21 @@
   var BELL_SEEN_KEY = "tracker_bell_seen";
 
   var TOPBAR_CSS = [
-    ".app-topbar{position:fixed;inset-block-start:52px;inset-inline:0;height:56px;z-index:45;display:flex;align-items:center;",
-    "justify-content:space-between;gap:1rem;padding:0 1.1rem;background:var(--glass);-webkit-backdrop-filter:blur(20px);",
-    "backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-border)}",
-    ".app-topnav{display:flex;align-items:center;gap:.25rem;overflow:visible;scrollbar-width:none}",
+    ".app-topbar{position:fixed;inset-block-start:52px;inset-inline:0;height:60px;z-index:45;display:flex;align-items:center;",
+    "justify-content:space-between;gap:1.5rem;padding:0 1.75rem;background:var(--glass);-webkit-backdrop-filter:blur(20px);",
+    "backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-border);box-shadow:0 6px 18px rgba(0,0,0,.12)}",
+    ".app-topnav{display:flex;align-items:center;gap:.4rem;overflow:visible;scrollbar-width:none}",
     ".app-topnav::-webkit-scrollbar{display:none}",
-    ".app-topnav>a,.app-topnav>button,.app-menu-wrap>button{position:relative;display:inline-flex;align-items:center;gap:.35rem;padding:.5rem .85rem;border:0;",
+    ".app-topnav>a,.app-topnav>button,.app-menu-wrap>button{position:relative;display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1rem;border:0;",
     ".app-topbar button{-webkit-appearance:none;appearance:none}",
-    "border-radius:10px;background:transparent;color:var(--text-secondary);font:inherit;font-size:.9rem;font-weight:600;",
+    "border-radius:12px;background:transparent;color:var(--text-secondary);font:inherit;font-size:.92rem;font-weight:600;",
     "white-space:nowrap;text-decoration:none;cursor:pointer;transition:all .25s ease}",
     ".app-topnav>a:hover,.app-topnav>button:hover{background:var(--glass-border);color:var(--text-primary)}",
     ".app-topnav>a.is-active{color:var(--primary)}",
-    ".app-topnav>a.is-active::after{content:'';position:absolute;inset-inline:.85rem;bottom:-.55rem;height:3px;border-radius:3px;background:var(--primary)}",
+    ".app-topnav>a.is-active{background:var(--glass-border);color:var(--text-primary)}",
+    ".app-topnav>a.is-active::after{content:'';position:absolute;inset-inline:1rem;bottom:-.65rem;height:3px;border-radius:3px;background:var(--primary)}",
     ".app-userbox{display:flex;align-items:center;gap:.5rem;flex:0 0 auto}",
-    ".app-username{display:inline-flex;align-items:center;gap:.5rem;max-width:230px;padding:.45rem .85rem;border-radius:12px;",
+    ".app-username{display:inline-flex;align-items:center;gap:.5rem;max-width:240px;padding:.5rem 1rem;border-radius:14px;",
     "background:var(--glass-border);color:var(--text-primary);font-size:.85rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
     ".app-iconbtn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;padding:0;border:1px solid var(--glass-border);",
     "border-radius:12px;background:transparent;color:var(--text-secondary);cursor:pointer;transition:all .25s ease}",
@@ -1245,8 +1235,9 @@
     ".app-menu-panel.is-open{display:block}",
     ".app-menu-panel a{display:block;padding:.6rem .75rem;border-radius:10px;color:var(--text-secondary);font-size:.9rem;font-weight:600;text-decoration:none}",
     ".app-menu-panel a:hover{background:var(--glass-border);color:var(--text-primary)}",
-    "body.has-app-topbar{padding-top:108px}",
-    "body.has-app-topbar .app-sidebar{inset-block-start:108px}",
+    "body.has-app-topbar{padding-top:112px}",
+    "body.has-app-topbar .container{padding-top:2rem}",
+    "body.has-app-topbar .app-sidebar{inset-block-start:112px}",
     "@media(max-width:900px){.app-topbar{position:static;height:auto;flex-wrap:wrap;padding:.5rem .75rem;gap:.5rem}",
     ".app-topnav{overflow-x:auto}",
     "body.has-app-topbar{padding-top:52px}.app-username{max-width:150px}",
