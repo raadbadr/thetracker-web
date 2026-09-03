@@ -458,7 +458,8 @@
     .dash-main, .dash-side { min-width: 0; }
     .dash-side { display: grid; gap: 1.5rem; align-content: start; }
     /* التقويم داخل العمود الجانبي: خلايا مضغوطة وأزرار في سطر واحد */
-    .dash-side .cal-nav { flex-wrap: nowrap; gap: 0.4rem; }
+    .dash-side .cal-nav { gap: 0.4rem; }
+    .dash-side .cal-title { min-width: 7rem; }
     .dash-side .cal-nav .chat-option-btn { padding: 0.35rem 0.6rem; font-size: 0.75rem; white-space: nowrap; }
     .dash-side .cal-title { font-size: 0.95rem; }
     .dash-side .cal-grid { gap: 0.25rem; }
@@ -598,8 +599,16 @@
     .empty-note { text-align: center; margin: 1rem 0 0; }
 
     /* Calendar (theme tokens only) */
-    .cal-nav { align-items: center; justify-content: space-between; margin-bottom: 1rem; }
-    .cal-title { font-size: 1.15rem; font-weight: 700; color: var(--text-primary); }
+    .cal-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem;
+    }
+    .cal-nav-group { display: flex; align-items: center; gap: 0.5rem; }
+    .cal-nav .chat-option-btn { margin: 0; }
+    .cal-title {
+      font-size: 1.15rem; font-weight: 700; color: var(--text-primary);
+      min-width: 10rem; text-align: center; line-height: 1.3;
+    }
     .cal-modes { display: inline-flex; padding: 0.2rem; border-radius: 12px; background: var(--glass-border); gap: 0.15rem; }
     .cal-mode {
       padding: 0.35rem 0.8rem; border: 0; border-radius: 10px; background: transparent;
@@ -914,16 +923,18 @@
         </div>
 
         <div id="calendarPanel" role="tabpanel" hidden>
-          <div class="chat-options cal-nav">
-            <div class="cal-modes" role="group">
-              <button type="button" class="cal-mode is-active" id="calGregBtn" data-cal-mode="greg" data-i18n="calGregorian">ميلادي</button>
-              <button type="button" class="cal-mode" id="calHijriBtn" data-cal-mode="hijri" data-i18n="calHijri">هجري</button>
-            </div>
-            <button type="button" class="chat-option-btn" id="calPrevBtn" data-i18n="calPrev">الشهر السابق</button>
-            <strong class="cal-title" id="calTitle" aria-live="polite"></strong>
-            <div class="chat-options" style="margin-top:0">
-              <button type="button" class="chat-option-btn" id="calTodayBtn" data-i18n="calToday">اليوم</button>
+          <div class="cal-nav">
+            <div class="cal-nav-group">
+              <button type="button" class="chat-option-btn" id="calPrevBtn" data-i18n="calPrev">الشهر السابق</button>
+              <strong class="cal-title" id="calTitle" aria-live="polite"></strong>
               <button type="button" class="chat-option-btn" id="calNextBtn" data-i18n="calNext">الشهر التالي</button>
+            </div>
+            <div class="cal-nav-group">
+              <button type="button" class="chat-option-btn" id="calTodayBtn" data-i18n="calToday">اليوم</button>
+              <div class="cal-modes" role="group">
+                <button type="button" class="cal-mode is-active" id="calGregBtn" data-cal-mode="greg" data-i18n="calGregorian">ميلادي</button>
+                <button type="button" class="cal-mode" id="calHijriBtn" data-cal-mode="hijri" data-i18n="calHijri">هجري</button>
+              </div>
             </div>
           </div>
           <div class="cal-grid" id="calGrid"></div>
@@ -2900,14 +2911,19 @@
 
       function startOfMonth(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
 
-      /* Grid always starts on Sunday; rows = as many full weeks as the month needs. */
+      function addDays(d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+
+      /* Grid always starts on Sunday; rows = as many full weeks as the month needs.
+         الشهر هنا هو الشهر المعروض فعلاً: ميلادي أو هجري بحسب الوضع. */
       function calRange() {
-        var first = state.month;
-        var daysInMonth = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+        var first = calendarIsHijri() ? startOfHijriMonth(state.month) : startOfMonth(state.month);
+        var daysInMonth = calendarIsHijri()
+          ? Math.round((shiftHijriMonth(first, 1) - first) / 86400000)
+          : new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
         var rows = Math.ceil((first.getDay() + daysInMonth) / 7);
-        var start = new Date(first.getFullYear(), first.getMonth(), 1 - first.getDay());
-        var end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + rows * 7);
-        return { start: start, end: end, cells: rows * 7 };
+        var start = addDays(first, -first.getDay());
+        var end = addDays(start, rows * 7);
+        return { start: start, end: end, cells: rows * 7, first: first, days: daysInMonth };
       }
 
       function loadCalendar() {
@@ -2922,7 +2938,7 @@
         });
       }
 
-      /* تقويم أم القرى عبر Intl، والشبكة تبقى على المحور الميلادي نفسه */
+      /* تقويم أم القرى عبر Intl: الشبكة نفسها تتبع الشهر الهجري في الوضع الهجري */
       var HIJRI_LOCALE = "ar-SA-u-ca-islamic-umalqura-nu-latn";   /* الأرقام غربية دائماً */
 
       function hijriParts(date) {
@@ -2938,7 +2954,7 @@
 
       function hijriTitle(date) {
         try {
-          return new Intl.DateTimeFormat(HIJRI_LOCALE, { month: "long", year: "numeric" }).format(date) + " هـ";
+          return new Intl.DateTimeFormat(HIJRI_LOCALE, { month: "long", year: "numeric" }).format(date);
         } catch (e) { return ""; }
       }
 
@@ -2990,12 +3006,14 @@
 
         var r = calRange();
         var todayKey = dateKey(new Date());
+        var monthEnd = addDays(r.first, r.days);
         for (var i = 0; i < r.cells; i++) {
-          var d = new Date(r.start.getFullYear(), r.start.getMonth(), r.start.getDate() + i);
+          var d = addDays(r.start, i);
           var key = dateKey(d);
+          var outside = d < r.first || d >= monthEnd;
           var cell = document.createElement("div");
           cell.className = "cal-cell" +
-            (d.getMonth() !== state.month.getMonth() ? " is-outside" : "") +
+            (outside ? " is-outside" : "") +
             (key === todayKey ? " is-today" : "");
           var num = document.createElement("div");
           num.className = "cal-day";
@@ -3063,7 +3081,8 @@
         loadCalendar();
       });
       $("calTodayBtn").addEventListener("click", function () {
-        state.month = startOfMonth(new Date());
+        var now = new Date();
+        state.month = calendarIsHijri() ? startOfHijriMonth(now) : startOfMonth(now);
         loadCalendar();
       });
 

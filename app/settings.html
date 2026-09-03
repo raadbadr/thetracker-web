@@ -1984,7 +1984,8 @@
           });
           loadPlanRequests();
           el("regenerateBtn").addEventListener("click", regenerateCalendar);
-          el("signOutBtn").addEventListener("click", signOut);
+          var soBtn = el("signOutBtn");
+          if (soBtn) soBtn.addEventListener("click", signOut);
 
           /* Plan limits first: they decide which channels the rules and cards may offer. */
           return loadSubscription().then(function () {
