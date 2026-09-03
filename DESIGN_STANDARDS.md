@@ -1,4 +1,6 @@
-# معايير التصميم - موقع Parkinzi
+# معايير التصميم - موقع TRACKER
+
+> الثيم موروث حرفياً من موقع Parkinzi (NeumorphicTheme) ولا يُعدَّل — خط أحمر للمالك. كل ما يخص TRACKER هنا هو الشعار فقط.
 
 ## 🎨 نظام الألوان (من NeumorphicTheme)
 
@@ -119,25 +121,29 @@ transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 - ✅ نفس الحركات (cubic-bezier timing)
 - ✅ دعم Dark Mode كامل
 
-## 🏷️ شعار PARKINZI - قواعد ثابتة لكل المشروع
+## 🏷️ شعار TRACKER - قواعد ثابتة لكل المشروع
 
-**الهيكل:** حرف P (صورة) + نص ARKINZI
+**الهيكل:** حرف T + نص RACKER
 
 ### الثيم الداكن (Dark)
 | العنصر | اللون | CSS |
 |--------|-------|-----|
-| الشعار (P) | أبيض | `filter: brightness(0) invert(1)` |
-| ARKINZI | أزرق | `linear-gradient(135deg, rgb(0, 160, 210), rgb(40, 180, 220))` |
-| ملف الصورة | `parkinzi-logo-light.png` | — |
+| الحرف (T) | أبيض | `color: #ffffff` |
+| RACKER | أزرق العلامة | `rgb(0, 160, 210)` |
+| ملف الشعار الكامل | `tracker-logo-full-dark.png` | — |
+| العلامة الصغيرة | `tracker-logo-dark.png` | — |
 
 ### الثيم الفاتح (Light)
 | العنصر | اللون | CSS |
 |--------|-------|-----|
-| الشعار (P) | أسود | `filter: brightness(0)` |
-| ARKINZI | أزرق | `linear-gradient(135deg, var(--primary), var(--primary-light))` |
-| ملف الصورة | `parkinzi-logo-dark.png` | — |
+| الحرف (T) | أسود | `color: #000000` |
+| RACKER | أزرق العلامة | `rgb(0, 160, 210)` |
+| ملف الشعار الكامل | `tracker-logo-full-light.png` | — |
+| العلامة الصغيرة | `tracker-logo-light.png` | — |
 
-**ملف التطبيق:** `footer.css` — مصدر واحد للفوتر في index, privacy, refund
+**ملف التطبيق:** `footer.css` — مصدر واحد للفوتر في index, pricing, login, about, privacy, terms
+**الاستبدال التلقائي:** `brand-logo.js` يستبدل كلمة "TRACKER" الحرفية في النصوص بصورة `tracker-logo-dark.png`
+**ملاحظة:** الثيم (الألوان، المسافات، الزوايا، الزجاج، الظلال، الخطوط، الحركات) موروث حرفياً من Parkinzi ولا يتغير
 
 ---
 
@@ -174,5 +180,5 @@ backdrop-filter: blur(30px) saturate(180%)
 
 ---
 
-آخر تحديث: 2026-02-17
-النسخة: 1.1 (إضافة قواعد الشعار)
+آخر تحديث: 2026-09-03
+النسخة: 1.2 (شعار TRACKER — الثيم موروث من Parkinzi)
