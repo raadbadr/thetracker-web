@@ -1,0 +1,2106 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://cloudflareinsights.com; worker-src 'self' blob:;">
+  <meta name="theme-color" content="#1a2933" id="themeColorMeta">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <title>لوحة التحكم | TRACKER</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Monoton&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/header.css">
+  <link rel="stylesheet" href="/footer.css?v=3">
+  <style>
+    /* Cross-browser reset + font enforcement (verbatim from login.html) */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    html {
+      -webkit-text-size-adjust: 100%;
+      -moz-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+    button, input, select, textarea, optgroup {
+      font-family: inherit;
+      font-size: inherit;
+      line-height: inherit;
+      color: inherit;
+      margin: 0;
+    }
+    button, [type="button"], [type="reset"], [type="submit"] {
+      -webkit-appearance: button;
+      appearance: button;
+    }
+    img, svg, video, canvas {
+      display: block;
+      max-width: 100%;
+    }
+    a { color: inherit; }
+
+    /* Theme tokens (verbatim from login.html; --secondary/--accent/--warning values copied from index.html) */
+    :root, [data-theme="light"] {
+      --primary: rgb(0, 104, 184);
+      --primary-light: rgb(25, 140, 220);
+      --primary-dark: rgb(0, 88, 160);
+      --secondary: rgb(0, 130, 190);
+      --accent: rgb(50, 150, 200);
+      --text-primary: rgb(26, 26, 38);
+      --text-secondary: rgb(77, 77, 89);
+      --text-tertiary: rgb(100, 112, 128);
+      --bg-top: rgb(250, 252, 255);
+      --bg-mid: rgb(242, 247, 252);
+      --bg-bottom: rgb(237, 245, 250);
+      --glass: rgba(255,255,255,0.85);
+      --glass-border: rgba(0,0,0,0.08);
+      --glass-strong: rgba(255, 255, 255, 0.95);
+      --shadow-light: rgba(255, 255, 255, 0.3);
+      --shadow-dark: rgba(0, 0, 0, 0.08);
+      --white: #ffffff;
+      --primary-shadow: rgba(0, 104, 184, 0.3);
+      --success: rgb(52, 199, 89);
+      --warning: rgb(255, 159, 10);
+      --error: rgb(255, 59, 48);
+    }
+    [data-theme="dark"] {
+      --primary: rgb(0, 160, 210);
+      --primary-light: rgb(40, 180, 220);
+      --primary-dark: rgb(0, 140, 190);
+      --secondary: rgb(0, 160, 210);
+      --accent: rgb(50, 160, 210);
+      --text-primary: rgb(255, 255, 255);
+      --text-secondary: rgba(255, 255, 255, 0.7);
+      --text-tertiary: rgba(255, 255, 255, 0.55);
+      --bg-top: rgb(31, 46, 56);
+      --bg-mid: rgb(26, 41, 51);
+      --bg-bottom: rgb(20, 36, 46);
+      --glass: rgba(255,255,255,0.08);
+      --glass-border: rgba(255,255,255,0.15);
+      --glass-strong: rgba(255, 255, 255, 0.12);
+      --shadow-light: rgba(255, 255, 255, 0.05);
+      --shadow-dark: rgba(5, 10, 15, 0.3);
+      --primary-shadow: rgba(0, 160, 210, 0.35);
+      --success: rgb(52, 199, 89);
+      --warning: rgb(255, 159, 10);
+      --error: rgb(255, 59, 48);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html { background: var(--bg-bottom); }
+    body {
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      background: linear-gradient(135deg, var(--bg-top), var(--bg-bottom));
+      color: var(--text-primary);
+      line-height: 1.8;
+      min-height: 100vh;
+    }
+    .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+    body.has-site-header { padding-top: 52px; }
+    .header {
+      text-align: center;
+      padding: 3rem 2rem;
+      background: var(--glass);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      margin-bottom: 2rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+    [data-theme="dark"] .header { box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .content {
+      background: var(--glass);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      padding: 3rem;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+    [data-theme="dark"] .content { box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+    h2 {
+      font-size: 1.8rem;
+      margin: 2rem 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--primary);
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    h2:first-of-type { margin-top: 0; }
+    p { margin-bottom: 1rem; color: var(--text-secondary); }
+    .content a { color: var(--primary); text-decoration: none; }
+    .content a:hover { text-decoration: underline; }
+    .highlight { font-weight: 600; color: var(--primary); }
+
+    /* Form controls (verbatim from index.html / login.html) */
+    .waitlist-form {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+    .waitlist-input {
+      flex: 1;
+      min-width: 140px;
+      padding: 0.7rem 0.85rem;
+      border-radius: 10px;
+      border: 1px solid var(--glass-border);
+      background: var(--glass);
+      color: var(--text-primary);
+      font-size: 0.9rem;
+    }
+    .waitlist-input::placeholder { color: var(--text-tertiary); }
+    .waitlist-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(0, 160, 210, 0.2);
+    }
+    .waitlist-btn {
+      padding: 0.7rem 1.2rem;
+      border-radius: 10px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .waitlist-btn:hover { background: var(--primary-light); transform: translateY(-1px); }
+    .waitlist-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+    .waitlist-msg { margin-top: 0.5rem; font-size: 0.85rem; }
+    .waitlist-msg.success { color: var(--success); }
+    .waitlist-msg.error { color: var(--error); }
+    .login-note { text-align: center; font-size: 0.85rem; margin-top: 1.5rem; margin-bottom: 0; }
+
+    /* Pill buttons (verbatim from index.html .chat-options / .chat-option-btn) */
+    .chat-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .chat-option-btn {
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      border: 1.5px solid var(--primary);
+      background: transparent;
+      color: var(--primary);
+      font-family: inherit;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .chat-option-btn:hover {
+      background: var(--primary);
+      color: var(--white);
+      transform: translateY(-1px);
+    }
+    /* Active tab = the hover state of .chat-option-btn */
+    .chat-option-btn.is-active {
+      background: var(--primary);
+      color: var(--white);
+    }
+    .chat-option-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+    .chat-option-btn:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 3px;
+    }
+    a.chat-option-btn { text-decoration: none; display: inline-flex; align-items: center; }
+    .chat-option-btn.is-danger { border-color: var(--error); color: var(--error); }
+    .chat-option-btn.is-danger:hover { background: var(--error); color: var(--white); }
+
+    /* Top bar (layout only) */
+    .topbar { margin-top: 1rem; text-align: start; }
+    .topbar-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    .topbar-label { color: var(--text-secondary); font-size: 0.9rem; }
+    .topbar-org-name { font-size: 1.15rem; font-weight: 700; color: var(--text-primary); }
+    .topbar-row .waitlist-input { flex: 0 1 260px; }
+    .topbar .waitlist-form { justify-content: flex-start; margin-bottom: 0.75rem; }
+    .topbar .chat-options { margin-top: 0; }
+
+    /* Stats tiles (verbatim from index.html .platform-stats-list / .platform-stat-card family) */
+    .platform-stats-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: start;
+      gap: 1.25rem;
+      max-width: 820px;
+      margin: 0 auto;
+    }
+    @media (max-width: 560px) {
+      .platform-stats-list {
+        grid-template-columns: 1fr;
+        max-width: 420px;
+      }
+    }
+    .stats-section { margin-bottom: 2rem; }
+    .platform-stat-card {
+      background: var(--glass);
+      backdrop-filter: blur(30px) saturate(180%);
+      -webkit-backdrop-filter: blur(30px) saturate(180%);
+      border-radius: 24px;
+      border: 1px solid var(--glass-border);
+      box-shadow:
+        0 8px 32px var(--shadow-dark),
+        0 0 0 1px var(--glass-border),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+      padding: 1.65rem 1.2rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-style: preserve-3d;
+    }
+    .platform-stat-card > * {
+      position: relative;
+      z-index: 1;
+    }
+    .platform-stat-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 24px;
+      padding: 2px;
+      background: linear-gradient(
+        135deg,
+        var(--primary),
+        var(--primary-light),
+        var(--secondary),
+        var(--accent)
+      );
+      -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      z-index: -1;
+      pointer-events: none;
+    }
+    .platform-stat-card::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.1) 50%,
+        transparent 70%
+      );
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .platform-stat-card:hover {
+      transform: translateY(-8px) scale(1.02) rotateX(2deg);
+      box-shadow:
+        0 20px 60px rgba(0, 104, 184, 0.25),
+        0 0 40px rgba(0, 104, 184, 0.15),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+      border-color: var(--primary);
+    }
+    .platform-stat-card:hover::before {
+      opacity: 1;
+    }
+    .platform-stat-card:hover::after {
+      transform: translateX(100%);
+    }
+    [data-theme="dark"] .platform-stat-card:hover {
+      box-shadow:
+        0 20px 60px rgba(0, 160, 210, 0.3),
+        0 0 50px rgba(0, 160, 210, 0.2),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+    }
+    [data-theme="dark"] .platform-stat-card {
+      box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.6),
+        0 0 0 1px var(--glass-border),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    }
+    [data-theme="light"] .platform-stat-card {
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(248, 252, 255, 0.92));
+      box-shadow:
+        0 8px 32px rgba(0, 100, 160, 0.08),
+        0 0 0 1px rgba(0, 130, 190, 0.1);
+    }
+    .platform-stat-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin: 0 auto 0.35rem;
+      background: linear-gradient(
+        135deg,
+        var(--glass),
+        var(--glass-strong)
+      );
+      border: 1px solid var(--glass-border);
+      box-shadow:
+        0 8px 24px var(--shadow-dark),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+      transition: all 0.5s ease;
+    }
+    .platform-stat-card:hover .platform-stat-icon {
+      transform: translateY(-10px) scale(1.1);
+      color: var(--white);
+      box-shadow:
+        0 20px 60px rgba(0, 104, 184, 0.3),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+      background: linear-gradient(
+        135deg,
+        var(--primary),
+        var(--primary-light)
+      );
+    }
+    [data-theme="dark"] .platform-stat-card:hover .platform-stat-icon {
+      box-shadow:
+        0 20px 60px rgba(0, 160, 210, 0.4),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+    }
+    [data-theme="light"] .platform-stat-card:hover .platform-stat-icon {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    }
+    [data-theme="light"] .platform-stat-icon {
+      background: linear-gradient(135deg, rgba(0, 130, 190, 0.08), rgba(35, 155, 210, 0.05));
+      box-shadow: 0 6px 20px rgba(0, 80, 140, 0.07), inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+    }
+    .platform-stat-icon svg {
+      width: 34px;
+      height: 34px;
+      flex-shrink: 0;
+      display: block;
+      overflow: visible;
+      transition: transform 0.5s ease;
+    }
+    .platform-stat-card:hover .platform-stat-icon svg {
+      transform: scale(1.1);
+    }
+    .platform-stat-icon svg path {
+      fill: currentColor;
+    }
+    [data-accent="users"] .platform-stat-icon { color: rgb(51, 128, 230); }
+    [data-accent="spots"] .platform-stat-icon { color: rgb(242, 140, 26); }
+    [data-accent="cars"] .platform-stat-icon { color: rgb(52, 199, 89); }
+    [data-accent="overdue"] .platform-stat-icon { color: var(--error); }
+    .platform-stat-label {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.35;
+      margin: 0;
+      max-width: 16rem;
+      transition: color 0.3s ease, transform 0.3s ease;
+    }
+    .platform-stat-card:hover .platform-stat-label {
+      color: var(--primary);
+      transform: translateY(-2px);
+    }
+    [data-theme="dark"] .platform-stat-card:hover .platform-stat-label {
+      color: var(--primary-light);
+    }
+    .platform-stat-value {
+      font-size: clamp(1.85rem, 4.5vw, 2.5rem);
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      display: block;
+      margin-top: 0.35rem;
+      transform-origin: center center;
+    }
+    [data-accent="users"] .platform-stat-value { color: rgb(51, 128, 230); }
+    [data-accent="spots"] .platform-stat-value { color: rgb(242, 140, 26); }
+    [data-accent="cars"] .platform-stat-value { color: rgb(52, 199, 89); }
+    [data-accent="overdue"] .platform-stat-value { color: var(--error); }
+
+    /* Tabs / filters / inline glass forms (layout only; panel look = header.css .menu-dropdown glass) */
+    .tabs-row { margin-top: 0; margin-bottom: 1.25rem; }
+    .filters-row { justify-content: flex-start; margin-bottom: 1rem; }
+    .inline-form {
+      background: var(--glass-strong);
+      backdrop-filter: blur(30px) saturate(180%);
+      -webkit-backdrop-filter: blur(30px) saturate(180%);
+      border: 1.5px solid var(--glass-border);
+      border-radius: 14px;
+      box-shadow: 0 8px 24px var(--shadow-dark), 0 3px 8px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(255,255,255,0.1);
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+    .inline-form h3 { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem; }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    .form-field { display: flex; flex-direction: column; gap: 0.25rem; }
+    .form-field > span { font-size: 0.85rem; color: var(--text-secondary); }
+    .form-field .waitlist-input { width: 100%; min-width: 0; }
+    .form-actions { justify-content: flex-start; }
+    .inline-form .waitlist-form { justify-content: flex-start; }
+    .inline-hint { font-size: 0.85rem; margin-bottom: 0.5rem; }
+
+    /* Items table (theme tokens only) */
+    .table-wrap { overflow-x: auto; }
+    .items-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .items-table th, .items-table td {
+      text-align: start;
+      padding: 0.6rem 0.5rem;
+      border-bottom: 1px solid var(--glass-border);
+      vertical-align: middle;
+    }
+    .items-table th { color: var(--text-secondary); font-size: 0.82rem; font-weight: 600; white-space: nowrap; }
+    .items-table td { color: var(--text-primary); }
+    .item-title { font-weight: 600; }
+    .item-cat { display: block; font-size: 0.78rem; color: var(--text-tertiary); }
+    .col-due { white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .row-actions { margin-top: 0; flex-wrap: nowrap; }
+    .row-actions .chat-option-btn { padding: 0.3rem 0.7rem; font-size: 0.8rem; white-space: nowrap; }
+    .status-open { color: var(--primary); font-weight: 600; }
+    .status-overdue { color: var(--error); font-weight: 600; }
+    .status-done { color: var(--success); font-weight: 600; }
+    .status-cancelled { color: var(--text-tertiary); font-weight: 600; }
+    .empty-note { text-align: center; margin: 1rem 0 0; }
+
+    /* Calendar (theme tokens only) */
+    .cal-nav { align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .cal-title { font-size: 1.15rem; font-weight: 700; color: var(--text-primary); }
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 0.4rem;
+    }
+    .cal-dow { text-align: center; font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); }
+    .cal-cell {
+      min-height: 96px;
+      padding: 0.35rem;
+      border-radius: 12px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      overflow: hidden;
+    }
+    .cal-cell.is-outside { opacity: 0.45; }
+    .cal-cell.is-today { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0, 160, 210, 0.2); }
+    .cal-day { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+    .cal-cell.is-today .cal-day { color: var(--primary); }
+    .cal-chip {
+      display: block;
+      width: 100%;
+      text-align: start;
+      margin-top: 0.25rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 10px;
+      border: 1px solid var(--primary);
+      background: var(--glass);
+      color: var(--primary);
+      font-family: inherit;
+      font-size: 0.75rem;
+      line-height: 1.5;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .cal-chip:hover { background: var(--primary); color: var(--white); }
+    .cal-chip.status-overdue { border-color: var(--error); color: var(--error); }
+    .cal-chip.status-overdue:hover { background: var(--error); color: var(--white); }
+    .cal-chip.status-done { border-color: var(--success); color: var(--success); }
+    .cal-chip.status-done:hover { background: var(--success); color: var(--white); }
+    .cal-chip.status-cancelled { border-color: var(--text-tertiary); color: var(--text-tertiary); text-decoration: line-through; }
+    .cal-chip.status-cancelled:hover { background: var(--text-tertiary); color: var(--white); }
+    .cal-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+    .cal-more { font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem; font-variant-numeric: tabular-nums; }
+
+    /* ICS card */
+    .ics-form .waitlist-input { direction: ltr; text-align: left; font-variant-numeric: tabular-nums; }
+
+    @media (max-width: 768px) {
+      .container { padding: 1rem; margin: 0 auto; }
+      .content { padding: 2rem 1.5rem; }
+      .header, .content h1, .content h2 { text-align: center; }
+      h1 { font-size: 2rem; }
+      h2 { font-size: 1.5rem; }
+      .cal-cell { min-height: 72px; padding: 0.25rem; }
+      .cal-chip { font-size: 0.65rem; padding: 0.1rem 0.3rem; }
+      .cal-grid { gap: 0.25rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .platform-stat-card, .platform-stat-card::after, .platform-stat-icon, .chat-option-btn, .waitlist-btn, .cal-chip { transition: none; }
+    }
+  </style>
+</head>
+<body class="has-site-header">
+  <header class="site-header">
+    <div class="menu-btn" id="langMenuBtn">
+      <div class="icon-circle"><span class="icon">🌐</span></div>
+      <div class="menu-text">
+        <div class="menu-label" data-i18n="language">اللغة</div>
+        <div class="menu-value" id="currentLangDisplay">العربية</div>
+      </div>
+      <span class="menu-icon">⋯</span>
+      <div class="menu-dropdown" id="langDropdown">
+        <div class="menu-dropdown-item" data-lang="ar"><span class="checkmark" id="check-ar">✓</span><span>العربية</span></div>
+        <div class="menu-dropdown-item" data-lang="en"><span class="checkmark" id="check-en" style="display:none">✓</span><span>English</span></div>
+        <div class="menu-dropdown-item" data-lang="fr"><span class="checkmark" id="check-fr" style="display:none">✓</span><span>Français</span></div>
+        <div class="menu-dropdown-item" data-lang="ur"><span class="checkmark" id="check-ur" style="display:none">✓</span><span>اردو</span></div>
+      </div>
+    </div>
+    <div class="menu-btn" id="themeMenuBtn">
+      <div class="icon-circle"><span class="icon" id="themeIcon">🌙</span></div>
+      <div class="menu-text">
+        <div class="menu-label" data-i18n="appearance">المظهر</div>
+        <div class="menu-value" id="currentThemeDisplay">داكن</div>
+      </div>
+      <span class="menu-icon">⋯</span>
+      <div class="menu-dropdown" id="themeDropdown">
+        <div class="menu-dropdown-item" data-theme="light"><span class="checkmark" id="check-light" style="display:none">✓</span><span data-i18n="light">فاتح</span></div>
+        <div class="menu-dropdown-item" data-theme="dark"><span class="checkmark" id="check-dark">✓</span><span data-i18n="dark">داكن</span></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="header">
+      <h1 data-i18n="title">لوحة التحكم</h1>
+      <div class="topbar" id="topBar" hidden>
+        <div class="topbar-row" id="orgRow">
+          <span class="topbar-label" data-i18n="companyLabel">الشركة:</span>
+          <strong class="topbar-org-name" id="orgName"></strong>
+          <select class="waitlist-input" id="orgSwitcher" hidden></select>
+          <button type="button" class="chat-option-btn" id="newOrgBtn" data-i18n="newOrgBtn">+ شركة جديدة</button>
+        </div>
+        <form class="waitlist-form" id="newOrgForm" hidden novalidate>
+          <input type="text" class="waitlist-input" id="newOrgName" placeholder="اسم الشركة" maxlength="120" autocomplete="organization">
+          <button type="submit" class="waitlist-btn" data-i18n="newOrgSubmit">إنشاء</button>
+          <button type="button" class="chat-option-btn" id="newOrgCancel" data-i18n="cancel">إلغاء</button>
+        </form>
+        <p class="waitlist-msg" id="newOrgMsg" hidden role="status" aria-live="polite"></p>
+        <nav class="chat-options" id="quickLinks">
+          <a class="chat-option-btn" href="/app/import.html" data-i18n="linkImport">استيراد ملف</a>
+          <a class="chat-option-btn" href="/app/team.html" data-i18n="linkTeam">الفريق</a>
+          <a class="chat-option-btn" href="/app/settings.html" data-i18n="linkSettings">الإعدادات</a>
+          <a class="chat-option-btn" href="/app/admin.html" id="linkAdmin" data-i18n="linkAdmin" hidden>إدارة المنصة</a>
+          <button type="button" class="chat-option-btn" id="signOutBtn" data-i18n="signOut">تسجيل الخروج</button>
+        </nav>
+      </div>
+    </div>
+
+    <div class="content" id="loadingCard">
+      <p class="empty-note" data-i18n="loading">جارٍ التحميل...</p>
+    </div>
+
+    <div class="content" id="unavailableCard" hidden>
+      <h2 data-i18n="serviceUnavailableTitle">الخدمة قيد التجهيز</h2>
+      <p data-i18n="serviceUnavailableText">نعمل حالياً على تجهيز الخدمة، حاول مرة أخرى لاحقاً.</p>
+    </div>
+
+    <div class="content" id="createOrgCard" hidden>
+      <h2 data-i18n="createOrgTitle">أنشئ شركتك</h2>
+      <p data-i18n="createOrgIntro">ابدأ بإنشاء شركتك لتتمكن من إضافة المتتبعات والعناصر ودعوة فريقك.</p>
+      <form class="waitlist-form" id="createOrgForm" novalidate>
+        <input type="text" class="waitlist-input" id="createOrgName" placeholder="اسم الشركة" maxlength="120" autocomplete="organization">
+        <button type="submit" class="waitlist-btn" data-i18n="newOrgSubmit">إنشاء</button>
+      </form>
+      <p class="waitlist-msg" id="createOrgMsg" hidden role="status" aria-live="polite"></p>
+    </div>
+
+    <div id="dashboard" hidden>
+      <section class="stats-section" aria-live="polite">
+        <div class="platform-stats-list">
+          <div class="platform-stat-card" data-accent="users">
+            <div class="platform-stat-icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3 4h18v3H3V4zm0 6.5h18v3H3v-3zM3 17h18v3H3v-3z"/></svg>
+            </div>
+            <h3 class="platform-stat-label" data-i18n="statOpen">عناصر مفتوحة</h3>
+            <span class="platform-stat-value" id="statOpenVal">0</span>
+          </div>
+          <div class="platform-stat-card" data-accent="spots">
+            <div class="platform-stat-icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM7 11h5v5H7z"/></svg>
+            </div>
+            <h3 class="platform-stat-label" data-i18n="statDue7">مستحقة خلال 7 أيام</h3>
+            <span class="platform-stat-value" id="statDue7Val">0</span>
+          </div>
+          <div class="platform-stat-card" data-accent="overdue">
+            <div class="platform-stat-icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+            </div>
+            <h3 class="platform-stat-label" data-i18n="statOverdue">متأخرة</h3>
+            <span class="platform-stat-value" id="statOverdueVal">0</span>
+          </div>
+          <div class="platform-stat-card" data-accent="cars">
+            <div class="platform-stat-icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+            </div>
+            <h3 class="platform-stat-label" data-i18n="statDone">مكتملة</h3>
+            <span class="platform-stat-value" id="statDoneVal">0</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="content">
+        <div class="chat-options tabs-row" role="tablist">
+          <button type="button" class="chat-option-btn is-active" id="tabListBtn" data-tab="list" role="tab" aria-selected="true" data-i18n="tabList">القائمة</button>
+          <button type="button" class="chat-option-btn" id="tabCalendarBtn" data-tab="calendar" role="tab" aria-selected="false" data-i18n="tabCalendar">التقويم</button>
+        </div>
+
+        <div class="inline-form" id="editPanel" hidden>
+          <h3 data-i18n="editTitle">تعديل العنصر</h3>
+          <form id="editForm" novalidate>
+            <div class="form-grid">
+              <label class="form-field"><span data-i18n="fieldTitle">العنوان</span><input type="text" class="waitlist-input" id="editTitle" placeholder="عنوان العنصر" maxlength="300"></label>
+              <label class="form-field"><span data-i18n="fieldTracker">المتتبع</span><select class="waitlist-input" id="editTracker"></select></label>
+              <label class="form-field"><span data-i18n="fieldDue">موعد الاستحقاق</span><input type="datetime-local" class="waitlist-input" id="editDue" dir="ltr"></label>
+              <label class="form-field"><span data-i18n="fieldCategory">التصنيف</span><input type="text" class="waitlist-input" id="editCategory" placeholder="التصنيف (اختياري)" maxlength="120"></label>
+              <label class="form-field"><span data-i18n="fieldAssignee">المسؤول</span><select class="waitlist-input" id="editAssignee"></select></label>
+              <label class="form-field"><span data-i18n="fieldStatus">الحالة</span><select class="waitlist-input" id="editStatus"></select></label>
+            </div>
+            <div class="waitlist-form form-actions">
+              <button type="submit" class="waitlist-btn" id="editSaveBtn" data-i18n="save">حفظ</button>
+              <button type="button" class="chat-option-btn" id="editCancelBtn" data-i18n="cancel">إلغاء</button>
+            </div>
+            <p class="waitlist-msg" id="editMsg" hidden role="status" aria-live="polite"></p>
+          </form>
+        </div>
+
+        <div id="listPanel" role="tabpanel">
+          <form class="waitlist-form filters-row" id="filterForm" novalidate>
+            <select class="waitlist-input" id="filterTracker"></select>
+            <select class="waitlist-input" id="filterStatus"></select>
+            <input type="search" class="waitlist-input" id="filterSearch" placeholder="بحث في العناوين" maxlength="120">
+            <button type="button" class="waitlist-btn" id="addItemBtn" data-i18n="addItemBtn">+ عنصر</button>
+          </form>
+
+          <div class="inline-form" id="addItemPanel" hidden>
+            <h3 data-i18n="addItemTitle">عنصر جديد</h3>
+            <p class="inline-hint" id="noTrackersHint" data-i18n="noTrackersHint" hidden>لا توجد متتبعات بعد، أنشئ متتبعاً أولاً لتتمكن من إضافة العناصر.</p>
+            <form id="addItemForm" novalidate>
+              <div class="form-grid">
+                <label class="form-field"><span data-i18n="fieldTitle">العنوان</span><input type="text" class="waitlist-input" id="addTitle" placeholder="عنوان العنصر" maxlength="300"></label>
+                <label class="form-field"><span data-i18n="fieldTracker">المتتبع</span><select class="waitlist-input" id="addTracker"></select></label>
+                <label class="form-field"><span data-i18n="fieldDue">موعد الاستحقاق</span><input type="datetime-local" class="waitlist-input" id="addDue" dir="ltr"></label>
+                <label class="form-field"><span data-i18n="fieldCategory">التصنيف</span><input type="text" class="waitlist-input" id="addCategory" placeholder="التصنيف (اختياري)" maxlength="120"></label>
+                <label class="form-field"><span data-i18n="fieldAssignee">المسؤول</span><select class="waitlist-input" id="addAssignee"></select></label>
+              </div>
+              <div class="waitlist-form form-actions">
+                <button type="submit" class="waitlist-btn" id="addSaveBtn" data-i18n="add">إضافة</button>
+                <button type="button" class="chat-option-btn" id="newTrackerBtn" data-i18n="newTrackerBtn">+ متتبع جديد</button>
+                <button type="button" class="chat-option-btn" id="addCancelBtn" data-i18n="cancel">إلغاء</button>
+              </div>
+              <p class="waitlist-msg" id="addMsg" hidden role="status" aria-live="polite"></p>
+            </form>
+            <form class="waitlist-form" id="newTrackerForm" hidden novalidate>
+              <input type="text" class="waitlist-input" id="newTrackerName" placeholder="اسم المتتبع" maxlength="120">
+              <button type="submit" class="waitlist-btn" data-i18n="newOrgSubmit">إنشاء</button>
+              <button type="button" class="chat-option-btn" id="newTrackerCancel" data-i18n="cancel">إلغاء</button>
+            </form>
+            <p class="waitlist-msg" id="newTrackerMsg" hidden role="status" aria-live="polite"></p>
+          </div>
+
+          <p class="waitlist-msg" id="listMsg" hidden role="status" aria-live="polite"></p>
+          <div class="table-wrap" id="tableWrap" hidden>
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th data-i18n="colTitle">العنوان</th>
+                  <th data-i18n="colTracker">المتتبع</th>
+                  <th data-i18n="colDue">موعد الاستحقاق</th>
+                  <th data-i18n="colAssignee">المسؤول</th>
+                  <th data-i18n="colStatus">الحالة</th>
+                  <th data-i18n="colActions">الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="itemsBody"></tbody>
+            </table>
+          </div>
+          <p class="empty-note" id="emptyList" data-i18n="noItems" hidden>لا توجد عناصر مطابقة.</p>
+        </div>
+
+        <div id="calendarPanel" role="tabpanel" hidden>
+          <div class="chat-options cal-nav">
+            <button type="button" class="chat-option-btn" id="calPrevBtn" data-i18n="calPrev">الشهر السابق</button>
+            <strong class="cal-title" id="calTitle" aria-live="polite"></strong>
+            <div class="chat-options" style="margin-top:0">
+              <button type="button" class="chat-option-btn" id="calTodayBtn" data-i18n="calToday">اليوم</button>
+              <button type="button" class="chat-option-btn" id="calNextBtn" data-i18n="calNext">الشهر التالي</button>
+            </div>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+        </div>
+      </div>
+
+      <div class="content" id="icsCard">
+        <h2 data-i18n="icsTitle">رابط التقويم (ICS)</h2>
+        <p data-i18n="icsHint">أضف هذا الرابط إلى تقويم Apple أو Google أو Outlook بوصفه اشتراكاً في تقويم عبر الرابط، لتظهر مواعيد عناصرك تلقائياً وتتحدث دورياً.</p>
+        <form class="waitlist-form ics-form" id="icsForm" novalidate>
+          <input type="text" class="waitlist-input" id="icsUrl" readonly aria-label="ICS">
+          <button type="button" class="waitlist-btn" id="icsCopyBtn" data-i18n="copy">نسخ الرابط</button>
+          <button type="button" class="chat-option-btn" id="icsRegenBtn" data-i18n="regenerate">إعادة توليد الرابط</button>
+        </form>
+        <p class="waitlist-msg" id="icsMsg" hidden role="status" aria-live="polite"></p>
+        <p class="login-note" data-i18n="icsSecret">هذا الرابط خاص بك، لا تشاركه مع الآخرين.</p>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p class="footer-links">
+      <a href="/about.html" data-i18n="aboutLink">من نحن</a>
+      <a href="/terms.html" data-i18n="termsLink">شروط الاستخدام</a>
+      <a href="/pricing.html" data-i18n="pricingLink">الباقات والأسعار</a>
+      <a href="/privacy.html" data-i18n="privacyLink">سياسة الخصوصية</a>
+      <a href="/login.html" data-i18n="loginLink">تسجيل الدخول</a>
+      <a href="/index.html#contact" data-i18n="contactLink">تواصل معنا</a>
+      <a href="mailto:support@appmails.net" class="footer-social-icon" aria-label="support@appmails.net"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></a>
+    </p>
+    <p class="footer-copyright">
+      <span data-i18n="copyrightLine2">جميع الحقوق محفوظة</span>
+      <span> · <img src="/tracker-logo-full-dark.png" alt="TRACKER" id="footerLogo" class="brand-logo-inline brand-logo-inline--xs" data-brand-logo-footer style="height:1.3em;width:auto;display:inline-block;vertical-align:-0.35em;max-width:none;"> <span class="footer-year">© 2026</span></span>
+    </p>
+  </footer>
+
+  <script>
+    const translations = {
+      ar: {
+        title: "لوحة التحكم",
+        loading: "جارٍ التحميل...",
+        serviceUnavailableTitle: "الخدمة قيد التجهيز",
+        serviceUnavailableText: "نعمل حالياً على تجهيز الخدمة، حاول مرة أخرى لاحقاً.",
+        noOrg: "لا توجد شركة محددة، أنشئ شركتك أولاً.",
+        planLimitItems: "وصلت إلى الحد الأقصى لعدد العناصر في باقتك الحالية، رقِّ باقتك لإضافة المزيد.",
+        planLimitMembers: "وصلت إلى الحد الأقصى لعدد الأعضاء في باقتك الحالية، رقِّ باقتك لإضافة المزيد.",
+        planLimitLink: "عرض الباقات والأسعار",
+        genericError: "حدث خطأ، حاول مرة أخرى.",
+        errorLoad: "تعذّر تحميل البيانات، حاول مرة أخرى.",
+        saved: "تم الحفظ.",
+        deleted: "تم الحذف.",
+        companyLabel: "الشركة:",
+        switchOrg: "التبديل بين الشركات",
+        newOrgBtn: "+ شركة جديدة",
+        newOrgPlaceholder: "اسم الشركة",
+        newOrgSubmit: "إنشاء",
+        cancel: "إلغاء",
+        createOrgTitle: "أنشئ شركتك",
+        createOrgIntro: "ابدأ بإنشاء شركتك لتتمكن من إضافة المتتبعات والعناصر ودعوة فريقك.",
+        orgCreated: "تم إنشاء الشركة.",
+        orgNameRequired: "أدخل اسم الشركة.",
+        linkImport: "استيراد ملف",
+        linkTeam: "الفريق",
+        linkSettings: "الإعدادات",
+        linkAdmin: "إدارة المنصة",
+        signOut: "تسجيل الخروج",
+        statOpen: "عناصر مفتوحة",
+        statDue7: "مستحقة خلال 7 أيام",
+        statOverdue: "متأخرة",
+        statDone: "مكتملة",
+        tabList: "القائمة",
+        tabCalendar: "التقويم",
+        filterAllTrackers: "كل المتتبعات",
+        filterAllStatuses: "كل الحالات",
+        searchPlaceholder: "بحث في العناوين",
+        statusOpen: "مفتوح",
+        statusDone: "مكتمل",
+        statusCancelled: "ملغى",
+        statusOverdue: "متأخر",
+        colTitle: "العنوان",
+        colTracker: "المتتبع",
+        colDue: "موعد الاستحقاق",
+        colAssignee: "المسؤول",
+        colStatus: "الحالة",
+        colActions: "الإجراءات",
+        noItems: "لا توجد عناصر مطابقة.",
+        noDue: "بدون موعد",
+        noAssignee: "غير محدد",
+        actionDone: "إنجاز",
+        actionReopen: "إعادة فتح",
+        actionEdit: "تعديل",
+        actionDelete: "حذف",
+        confirmDelete: "هل تريد حذف هذا العنصر؟ لا يمكن التراجع عن الحذف.",
+        editTitle: "تعديل العنصر",
+        addItemBtn: "+ عنصر",
+        addItemTitle: "عنصر جديد",
+        fieldTitle: "العنوان",
+        fieldTracker: "المتتبع",
+        fieldDue: "موعد الاستحقاق",
+        fieldCategory: "التصنيف",
+        fieldAssignee: "المسؤول",
+        fieldStatus: "الحالة",
+        titlePlaceholder: "عنوان العنصر",
+        categoryPlaceholder: "التصنيف (اختياري)",
+        chooseTracker: "اختر المتتبع",
+        save: "حفظ",
+        add: "إضافة",
+        titleRequired: "أدخل عنوان العنصر.",
+        trackerRequired: "اختر متتبعاً أولاً.",
+        newTrackerBtn: "+ متتبع جديد",
+        newTrackerPlaceholder: "اسم المتتبع",
+        trackerCreated: "تم إنشاء المتتبع.",
+        trackerNameRequired: "أدخل اسم المتتبع.",
+        noTrackersHint: "لا توجد متتبعات بعد، أنشئ متتبعاً أولاً لتتمكن من إضافة العناصر.",
+        calPrev: "الشهر السابق",
+        calNext: "الشهر التالي",
+        calToday: "اليوم",
+        daySun: "الأحد",
+        dayMon: "الاثنين",
+        dayTue: "الثلاثاء",
+        dayWed: "الأربعاء",
+        dayThu: "الخميس",
+        dayFri: "الجمعة",
+        daySat: "السبت",
+        month1: "يناير",
+        month2: "فبراير",
+        month3: "مارس",
+        month4: "أبريل",
+        month5: "مايو",
+        month6: "يونيو",
+        month7: "يوليو",
+        month8: "أغسطس",
+        month9: "سبتمبر",
+        month10: "أكتوبر",
+        month11: "نوفمبر",
+        month12: "ديسمبر",
+        moreItems: "{n} عناصر أخرى",
+        icsTitle: "رابط التقويم (ICS)",
+        icsHint: "أضف هذا الرابط إلى تقويم Apple أو Google أو Outlook بوصفه اشتراكاً في تقويم عبر الرابط، لتظهر مواعيد عناصرك تلقائياً وتتحدث دورياً.",
+        copy: "نسخ الرابط",
+        copied: "تم نسخ الرابط.",
+        regenerate: "إعادة توليد الرابط",
+        confirmRegenerate: "سيتوقف الرابط الحالي عن العمل وسيلزمك إضافة الرابط الجديد إلى تقويمك. هل تريد المتابعة؟",
+        regenerated: "تم توليد رابط جديد.",
+        icsSecret: "هذا الرابط خاص بك، لا تشاركه مع الآخرين.",
+        itemDone: "تم إنجاز العنصر.",
+        itemReopened: "أعيد فتح العنصر.",
+        itemAdded: "تمت إضافة العنصر.",
+        copyrightLine2: "جميع الحقوق محفوظة",
+        aboutLink: "من نحن",
+        termsLink: "شروط الاستخدام",
+        pricingLink: "الباقات والأسعار",
+        privacyLink: "سياسة الخصوصية",
+        loginLink: "تسجيل الدخول",
+        dashboardLink: "لوحة التحكم",
+        contactLink: "تواصل معنا",
+        language: "اللغة",
+        appearance: "المظهر",
+        light: "فاتح",
+        dark: "داكن"
+      },
+      en: {
+        title: "Dashboard",
+        loading: "Loading...",
+        serviceUnavailableTitle: "Service is being prepared",
+        serviceUnavailableText: "We are setting up the service. Please try again later.",
+        noOrg: "No company selected. Create your company first.",
+        planLimitItems: "You have reached the item limit of your current plan. Upgrade to add more.",
+        planLimitMembers: "You have reached the member limit of your current plan. Upgrade to add more.",
+        planLimitLink: "View plans & pricing",
+        genericError: "Something went wrong. Please try again.",
+        errorLoad: "Could not load data. Please try again.",
+        saved: "Saved.",
+        deleted: "Deleted.",
+        companyLabel: "Company:",
+        switchOrg: "Switch company",
+        newOrgBtn: "+ New company",
+        newOrgPlaceholder: "Company name",
+        newOrgSubmit: "Create",
+        cancel: "Cancel",
+        createOrgTitle: "Create your company",
+        createOrgIntro: "Start by creating your company so you can add trackers and items and invite your team.",
+        orgCreated: "Company created.",
+        orgNameRequired: "Enter the company name.",
+        linkImport: "Import file",
+        linkTeam: "Team",
+        linkSettings: "Settings",
+        linkAdmin: "Platform admin",
+        signOut: "Sign out",
+        statOpen: "Open items",
+        statDue7: "Due within 7 days",
+        statOverdue: "Overdue",
+        statDone: "Done",
+        tabList: "List",
+        tabCalendar: "Calendar",
+        filterAllTrackers: "All trackers",
+        filterAllStatuses: "All statuses",
+        searchPlaceholder: "Search titles",
+        statusOpen: "Open",
+        statusDone: "Done",
+        statusCancelled: "Cancelled",
+        statusOverdue: "Overdue",
+        colTitle: "Title",
+        colTracker: "Tracker",
+        colDue: "Due date",
+        colAssignee: "Assignee",
+        colStatus: "Status",
+        colActions: "Actions",
+        noItems: "No matching items.",
+        noDue: "No due date",
+        noAssignee: "Unassigned",
+        actionDone: "Mark done",
+        actionReopen: "Reopen",
+        actionEdit: "Edit",
+        actionDelete: "Delete",
+        confirmDelete: "Delete this item? This cannot be undone.",
+        editTitle: "Edit item",
+        addItemBtn: "+ Item",
+        addItemTitle: "New item",
+        fieldTitle: "Title",
+        fieldTracker: "Tracker",
+        fieldDue: "Due date & time",
+        fieldCategory: "Category",
+        fieldAssignee: "Assignee",
+        fieldStatus: "Status",
+        titlePlaceholder: "Item title",
+        categoryPlaceholder: "Category (optional)",
+        chooseTracker: "Choose a tracker",
+        save: "Save",
+        add: "Add",
+        titleRequired: "Enter the item title.",
+        trackerRequired: "Choose a tracker first.",
+        newTrackerBtn: "+ New tracker",
+        newTrackerPlaceholder: "Tracker name",
+        trackerCreated: "Tracker created.",
+        trackerNameRequired: "Enter the tracker name.",
+        noTrackersHint: "No trackers yet. Create a tracker first to add items.",
+        calPrev: "Previous month",
+        calNext: "Next month",
+        calToday: "Today",
+        daySun: "Sun",
+        dayMon: "Mon",
+        dayTue: "Tue",
+        dayWed: "Wed",
+        dayThu: "Thu",
+        dayFri: "Fri",
+        daySat: "Sat",
+        month1: "January",
+        month2: "February",
+        month3: "March",
+        month4: "April",
+        month5: "May",
+        month6: "June",
+        month7: "July",
+        month8: "August",
+        month9: "September",
+        month10: "October",
+        month11: "November",
+        month12: "December",
+        moreItems: "{n} more items",
+        icsTitle: "Calendar link (ICS)",
+        icsHint: "Add this link to Apple Calendar, Google Calendar or Outlook as a calendar subscription (by URL) so your item due dates appear automatically and stay up to date.",
+        copy: "Copy link",
+        copied: "Link copied.",
+        regenerate: "Regenerate link",
+        confirmRegenerate: "The current link will stop working and you will need to add the new link to your calendar. Continue?",
+        regenerated: "A new link was generated.",
+        icsSecret: "This link is personal. Do not share it with others.",
+        itemDone: "Item marked as done.",
+        itemReopened: "Item reopened.",
+        itemAdded: "Item added.",
+        copyrightLine2: "All rights reserved",
+        aboutLink: "About Us",
+        termsLink: "Terms of Use",
+        pricingLink: "Plans & Pricing",
+        privacyLink: "Privacy Policy",
+        loginLink: "Sign in",
+        dashboardLink: "Dashboard",
+        contactLink: "Contact Us",
+        language: "Language",
+        appearance: "Appearance",
+        light: "Light",
+        dark: "Dark"
+      },
+      fr: {
+        title: "Tableau de bord",
+        loading: "Chargement...",
+        serviceUnavailableTitle: "Service en cours de préparation",
+        serviceUnavailableText: "Nous préparons le service. Veuillez réessayer plus tard.",
+        noOrg: "Aucune entreprise sélectionnée. Créez d'abord votre entreprise.",
+        planLimitItems: "Vous avez atteint la limite d'éléments de votre forfait actuel. Passez à un forfait supérieur pour en ajouter.",
+        planLimitMembers: "Vous avez atteint la limite de membres de votre forfait actuel. Passez à un forfait supérieur pour en ajouter.",
+        planLimitLink: "Voir les forfaits et tarifs",
+        genericError: "Une erreur est survenue. Veuillez réessayer.",
+        errorLoad: "Impossible de charger les données. Veuillez réessayer.",
+        saved: "Enregistré.",
+        deleted: "Supprimé.",
+        companyLabel: "Entreprise :",
+        switchOrg: "Changer d'entreprise",
+        newOrgBtn: "+ Nouvelle entreprise",
+        newOrgPlaceholder: "Nom de l'entreprise",
+        newOrgSubmit: "Créer",
+        cancel: "Annuler",
+        createOrgTitle: "Créez votre entreprise",
+        createOrgIntro: "Commencez par créer votre entreprise pour ajouter des suivis et des éléments et inviter votre équipe.",
+        orgCreated: "Entreprise créée.",
+        orgNameRequired: "Saisissez le nom de l'entreprise.",
+        linkImport: "Importer un fichier",
+        linkTeam: "Équipe",
+        linkSettings: "Paramètres",
+        linkAdmin: "Administration",
+        signOut: "Se déconnecter",
+        statOpen: "Éléments ouverts",
+        statDue7: "À échéance sous 7 jours",
+        statOverdue: "En retard",
+        statDone: "Terminés",
+        tabList: "Liste",
+        tabCalendar: "Calendrier",
+        filterAllTrackers: "Tous les suivis",
+        filterAllStatuses: "Tous les statuts",
+        searchPlaceholder: "Rechercher dans les titres",
+        statusOpen: "Ouvert",
+        statusDone: "Terminé",
+        statusCancelled: "Annulé",
+        statusOverdue: "En retard",
+        colTitle: "Titre",
+        colTracker: "Suivi",
+        colDue: "Échéance",
+        colAssignee: "Responsable",
+        colStatus: "Statut",
+        colActions: "Actions",
+        noItems: "Aucun élément correspondant.",
+        noDue: "Sans échéance",
+        noAssignee: "Non attribué",
+        actionDone: "Terminer",
+        actionReopen: "Rouvrir",
+        actionEdit: "Modifier",
+        actionDelete: "Supprimer",
+        confirmDelete: "Supprimer cet élément ? Cette action est irréversible.",
+        editTitle: "Modifier l'élément",
+        addItemBtn: "+ Élément",
+        addItemTitle: "Nouvel élément",
+        fieldTitle: "Titre",
+        fieldTracker: "Suivi",
+        fieldDue: "Date et heure d'échéance",
+        fieldCategory: "Catégorie",
+        fieldAssignee: "Responsable",
+        fieldStatus: "Statut",
+        titlePlaceholder: "Titre de l'élément",
+        categoryPlaceholder: "Catégorie (facultatif)",
+        chooseTracker: "Choisir un suivi",
+        save: "Enregistrer",
+        add: "Ajouter",
+        titleRequired: "Saisissez le titre de l'élément.",
+        trackerRequired: "Choisissez d'abord un suivi.",
+        newTrackerBtn: "+ Nouveau suivi",
+        newTrackerPlaceholder: "Nom du suivi",
+        trackerCreated: "Suivi créé.",
+        trackerNameRequired: "Saisissez le nom du suivi.",
+        noTrackersHint: "Aucun suivi pour le moment. Créez d'abord un suivi pour ajouter des éléments.",
+        calPrev: "Mois précédent",
+        calNext: "Mois suivant",
+        calToday: "Aujourd'hui",
+        daySun: "Dim",
+        dayMon: "Lun",
+        dayTue: "Mar",
+        dayWed: "Mer",
+        dayThu: "Jeu",
+        dayFri: "Ven",
+        daySat: "Sam",
+        month1: "Janvier",
+        month2: "Février",
+        month3: "Mars",
+        month4: "Avril",
+        month5: "Mai",
+        month6: "Juin",
+        month7: "Juillet",
+        month8: "Août",
+        month9: "Septembre",
+        month10: "Octobre",
+        month11: "Novembre",
+        month12: "Décembre",
+        moreItems: "{n} autres éléments",
+        icsTitle: "Lien du calendrier (ICS)",
+        icsHint: "Ajoutez ce lien à Apple Calendar, Google Agenda ou Outlook comme abonnement à un calendrier (par URL) pour que les échéances de vos éléments apparaissent automatiquement et restent à jour.",
+        copy: "Copier le lien",
+        copied: "Lien copié.",
+        regenerate: "Régénérer le lien",
+        confirmRegenerate: "Le lien actuel cessera de fonctionner et vous devrez ajouter le nouveau lien à votre calendrier. Continuer ?",
+        regenerated: "Un nouveau lien a été généré.",
+        icsSecret: "Ce lien est personnel. Ne le partagez pas.",
+        itemDone: "Élément marqué comme terminé.",
+        itemReopened: "Élément rouvert.",
+        itemAdded: "Élément ajouté.",
+        copyrightLine2: "Tous droits réservés",
+        aboutLink: "À propos",
+        termsLink: "Conditions d'utilisation",
+        pricingLink: "Forfaits et tarifs",
+        privacyLink: "Politique de confidentialité",
+        loginLink: "Connexion",
+        dashboardLink: "Tableau de bord",
+        contactLink: "Contactez-nous",
+        language: "Langue",
+        appearance: "Apparence",
+        light: "Clair",
+        dark: "Sombre"
+      },
+      ur: {
+        title: "ڈیش بورڈ",
+        loading: "لوڈ ہو رہا ہے...",
+        serviceUnavailableTitle: "سروس تیار کی جا رہی ہے",
+        serviceUnavailableText: "ہم سروس تیار کر رہے ہیں، براہ کرم بعد میں دوبارہ کوشش کریں۔",
+        noOrg: "کوئی کمپنی منتخب نہیں، پہلے اپنی کمپنی بنائیں۔",
+        planLimitItems: "آپ اپنے موجودہ پلان میں آئٹمز کی حد تک پہنچ چکے ہیں، مزید شامل کرنے کے لیے پلان اپ گریڈ کریں۔",
+        planLimitMembers: "آپ اپنے موجودہ پلان میں اراکین کی حد تک پہنچ چکے ہیں، مزید شامل کرنے کے لیے پلان اپ گریڈ کریں۔",
+        planLimitLink: "پلانز اور قیمتیں دیکھیں",
+        genericError: "کچھ غلط ہو گیا، براہ کرم دوبارہ کوشش کریں۔",
+        errorLoad: "ڈیٹا لوڈ نہیں ہو سکا، براہ کرم دوبارہ کوشش کریں۔",
+        saved: "محفوظ ہو گیا۔",
+        deleted: "حذف ہو گیا۔",
+        companyLabel: "کمپنی:",
+        switchOrg: "کمپنی تبدیل کریں",
+        newOrgBtn: "+ نئی کمپنی",
+        newOrgPlaceholder: "کمپنی کا نام",
+        newOrgSubmit: "بنائیں",
+        cancel: "منسوخ کریں",
+        createOrgTitle: "اپنی کمپنی بنائیں",
+        createOrgIntro: "ٹریکرز اور آئٹمز شامل کرنے اور اپنی ٹیم کو مدعو کرنے کے لیے پہلے اپنی کمپنی بنائیں۔",
+        orgCreated: "کمپنی بن گئی۔",
+        orgNameRequired: "کمپنی کا نام درج کریں۔",
+        linkImport: "فائل امپورٹ کریں",
+        linkTeam: "ٹیم",
+        linkSettings: "ترتیبات",
+        linkAdmin: "پلیٹ فارم انتظامیہ",
+        signOut: "سائن آؤٹ",
+        statOpen: "کھلے آئٹمز",
+        statDue7: "7 دنوں میں واجب",
+        statOverdue: "تاخیر شدہ",
+        statDone: "مکمل",
+        tabList: "فہرست",
+        tabCalendar: "کیلنڈر",
+        filterAllTrackers: "تمام ٹریکرز",
+        filterAllStatuses: "تمام حالتیں",
+        searchPlaceholder: "عنوانات میں تلاش کریں",
+        statusOpen: "کھلا",
+        statusDone: "مکمل",
+        statusCancelled: "منسوخ",
+        statusOverdue: "تاخیر شدہ",
+        colTitle: "عنوان",
+        colTracker: "ٹریکر",
+        colDue: "آخری تاریخ",
+        colAssignee: "ذمہ دار",
+        colStatus: "حالت",
+        colActions: "کارروائیاں",
+        noItems: "کوئی مطابقت رکھنے والا آئٹم نہیں۔",
+        noDue: "بغیر تاریخ",
+        noAssignee: "غیر متعین",
+        actionDone: "مکمل کریں",
+        actionReopen: "دوبارہ کھولیں",
+        actionEdit: "ترمیم",
+        actionDelete: "حذف کریں",
+        confirmDelete: "کیا آپ یہ آئٹم حذف کرنا چاہتے ہیں؟ اسے واپس نہیں کیا جا سکتا۔",
+        editTitle: "آئٹم میں ترمیم",
+        addItemBtn: "+ آئٹم",
+        addItemTitle: "نیا آئٹم",
+        fieldTitle: "عنوان",
+        fieldTracker: "ٹریکر",
+        fieldDue: "آخری تاریخ اور وقت",
+        fieldCategory: "زمرہ",
+        fieldAssignee: "ذمہ دار",
+        fieldStatus: "حالت",
+        titlePlaceholder: "آئٹم کا عنوان",
+        categoryPlaceholder: "زمرہ (اختیاری)",
+        chooseTracker: "ٹریکر منتخب کریں",
+        save: "محفوظ کریں",
+        add: "شامل کریں",
+        titleRequired: "آئٹم کا عنوان درج کریں۔",
+        trackerRequired: "پہلے ٹریکر منتخب کریں۔",
+        newTrackerBtn: "+ نیا ٹریکر",
+        newTrackerPlaceholder: "ٹریکر کا نام",
+        trackerCreated: "ٹریکر بن گیا۔",
+        trackerNameRequired: "ٹریکر کا نام درج کریں۔",
+        noTrackersHint: "ابھی کوئی ٹریکر نہیں، آئٹمز شامل کرنے کے لیے پہلے ٹریکر بنائیں۔",
+        calPrev: "پچھلا مہینہ",
+        calNext: "اگلا مہینہ",
+        calToday: "آج",
+        daySun: "اتوار",
+        dayMon: "پیر",
+        dayTue: "منگل",
+        dayWed: "بدھ",
+        dayThu: "جمعرات",
+        dayFri: "جمعہ",
+        daySat: "ہفتہ",
+        month1: "جنوری",
+        month2: "فروری",
+        month3: "مارچ",
+        month4: "اپریل",
+        month5: "مئی",
+        month6: "جون",
+        month7: "جولائی",
+        month8: "اگست",
+        month9: "ستمبر",
+        month10: "اکتوبر",
+        month11: "نومبر",
+        month12: "دسمبر",
+        moreItems: "{n} مزید آئٹمز",
+        icsTitle: "کیلنڈر لنک (ICS)",
+        icsHint: "اس لنک کو Apple، Google یا Outlook کیلنڈر میں سبسکرپشن (URL کے ذریعے) کے طور پر شامل کریں تاکہ آپ کے آئٹمز کی تاریخیں خود بخود ظاہر ہوں اور اپ ڈیٹ رہیں۔",
+        copy: "لنک کاپی کریں",
+        copied: "لنک کاپی ہو گیا۔",
+        regenerate: "نیا لنک بنائیں",
+        confirmRegenerate: "موجودہ لنک کام کرنا بند کر دے گا اور آپ کو نیا لنک اپنے کیلنڈر میں شامل کرنا ہوگا۔ جاری رکھیں؟",
+        regenerated: "نیا لنک بن گیا۔",
+        icsSecret: "یہ لنک ذاتی ہے، اسے دوسروں کے ساتھ شیئر نہ کریں۔",
+        itemDone: "آئٹم مکمل کر دیا گیا۔",
+        itemReopened: "آئٹم دوبارہ کھول دیا گیا۔",
+        itemAdded: "آئٹم شامل کر دیا گیا۔",
+        copyrightLine2: "جملہ حقوق محفوظ ہیں",
+        aboutLink: "ہمارے بارے میں",
+        termsLink: "استعمال کی شرائط",
+        pricingLink: "پلانز اور قیمتیں",
+        privacyLink: "رازداری کی پالیسی",
+        loginLink: "سائن ان",
+        dashboardLink: "ڈیش بورڈ",
+        contactLink: "ہم سے رابطہ کریں",
+        language: "زبان",
+        appearance: "ظہور",
+        light: "روشن",
+        dark: "اندھیرا"
+      }
+    };
+
+    const lang = () => localStorage.getItem("tracker_lang") || "ar";
+    const theme = () => localStorage.getItem("tracker_theme") || "dark";
+    const langNames = { ar: "العربية", en: "English", fr: "Français", ur: "اردو" };
+    let l = lang();
+    document.documentElement.lang = l;
+    document.documentElement.dir = (l === "ar" || l === "ur") ? "rtl" : "ltr";
+
+    const placeholderKeys = {
+      newOrgName: "newOrgPlaceholder",
+      createOrgName: "newOrgPlaceholder",
+      filterSearch: "searchPlaceholder",
+      addTitle: "titlePlaceholder",
+      addCategory: "categoryPlaceholder",
+      editTitle: "titlePlaceholder",
+      editCategory: "categoryPlaceholder",
+      newTrackerName: "newTrackerPlaceholder"
+    };
+    function applyPlaceholders(code) {
+      const dict = translations[code] || translations.ar;
+      Object.keys(placeholderKeys).forEach(id => {
+        const el = document.getElementById(id);
+        if (el && dict[placeholderKeys[id]]) el.placeholder = dict[placeholderKeys[id]];
+      });
+    }
+
+    function setLang(code) {
+      localStorage.setItem("tracker_lang", code);
+      l = code;
+      document.documentElement.lang = code;
+      document.documentElement.dir = (code === "ar" || code === "ur") ? "rtl" : "ltr";
+      document.getElementById("currentLangDisplay").textContent = langNames[code] || code;
+      ["ar","en","fr","ur"].forEach(c => {
+        const el = document.getElementById("check-" + c);
+        if (el) el.style.display = c === code ? "inline" : "none";
+      });
+      const th = theme();
+      document.getElementById("currentThemeDisplay").textContent = translations[code][th === "dark" ? "dark" : "light"];
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const k = el.dataset.i18n;
+        if (translations[code] && translations[code][k]) el.textContent = translations[code][k];
+      });
+      applyPlaceholders(code);
+      document.title = (translations[code] && translations[code].title ? translations[code].title : "Dashboard") + " | TRACKER";
+      if (typeof window.__trackerAuthRefresh === "function") window.__trackerAuthRefresh();
+      if (typeof window.__dashboardRerender === "function") window.__dashboardRerender();
+    }
+
+    function setTheme(th) {
+      localStorage.setItem("tracker_theme", th);
+      document.documentElement.dataset.theme = th;
+      const meta = document.getElementById("themeColorMeta");
+      if (meta) meta.content = th === "dark" ? "#1a2933" : "#0068b8";
+      const logo = document.getElementById("footerLogo");
+      if (logo) logo.src = th === "dark" ? "/tracker-logo-full-dark.png" : "/tracker-logo-full-light.png";
+      document.getElementById("themeIcon").textContent = th === "dark" ? "🌙" : "☀️";
+      document.getElementById("currentThemeDisplay").textContent = translations[l][th === "dark" ? "dark" : "light"];
+      document.getElementById("check-light").style.display = th === "light" ? "inline" : "none";
+      document.getElementById("check-dark").style.display = th === "dark" ? "inline" : "none";
+    }
+
+    document.getElementById("langMenuBtn").addEventListener("click", e => {
+      e.stopPropagation();
+      document.getElementById("langDropdown").classList.toggle("show");
+      document.getElementById("themeDropdown").classList.remove("show");
+    });
+    document.getElementById("themeMenuBtn").addEventListener("click", e => {
+      e.stopPropagation();
+      document.getElementById("themeDropdown").classList.toggle("show");
+      document.getElementById("langDropdown").classList.remove("show");
+    });
+    document.addEventListener("click", () => {
+      document.getElementById("langDropdown").classList.remove("show");
+      document.getElementById("themeDropdown").classList.remove("show");
+    });
+
+    document.querySelectorAll("#langDropdown .menu-dropdown-item").forEach(item => {
+      item.addEventListener("click", () => setLang(item.dataset.lang));
+    });
+    document.querySelectorAll("#themeDropdown .menu-dropdown-item").forEach(item => {
+      item.addEventListener("click", () => {
+        setTheme(item.dataset.theme);
+        document.getElementById("themeDropdown").classList.remove("show");
+      });
+    });
+
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+      const k = el.dataset.i18n;
+      if (translations[l] && translations[l][k]) el.textContent = translations[l][k];
+    });
+    applyPlaceholders(l);
+    document.getElementById("currentLangDisplay").textContent = langNames[l] || l;
+    ["ar","en","fr","ur"].forEach(c => {
+      const el = document.getElementById("check-" + c);
+      if (el) el.style.display = l === c ? "inline" : "none";
+    });
+    document.title = (translations[l] && translations[l].title ? translations[l].title : "Dashboard") + " | TRACKER";
+
+    (function() {
+      const th = theme();
+      document.documentElement.dataset.theme = th;
+      const meta = document.getElementById("themeColorMeta");
+      if (meta) meta.content = th === "dark" ? "#1a2933" : "#0068b8";
+      const logo = document.getElementById("footerLogo");
+      if (logo) logo.src = th === "dark" ? "/tracker-logo-full-dark.png" : "/tracker-logo-full-light.png";
+      document.getElementById("themeIcon").textContent = th === "dark" ? "🌙" : "☀️";
+      document.getElementById("currentThemeDisplay").textContent = translations[l][th === "dark" ? "dark" : "light"];
+      document.getElementById("check-light").style.display = th === "light" ? "inline" : "none";
+      document.getElementById("check-dark").style.display = th === "dark" ? "inline" : "none";
+    })();
+  </script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {});
+      });
+    }
+  </script>
+  <script>
+    /* Dashboard logic — uses window.trackerApp (app/common.js) for all data access. */
+    (function () {
+      "use strict";
+
+      var DAY_KEYS = ["daySun", "dayMon", "dayTue", "dayWed", "dayThu", "dayFri", "daySat"];
+      var STATUS_KEYS = { open: "statusOpen", overdue: "statusOverdue", done: "statusDone", cancelled: "statusCancelled" };
+      var MAX_CHIPS = 3;
+      var TAB_KEY = "tracker_dash_tab";
+      var SEARCH_DELAY = 300;
+
+      var app = null;
+      var state = {
+        org: null,
+        trackers: [],
+        members: [],
+        names: {},
+        items: [],
+        calItems: [],
+        filters: { tracker: "", status: "", search: "" },
+        tab: "list",
+        month: null,
+        editing: null,
+        busy: false
+      };
+      var searchTimer = null;
+
+      /* ---------- helpers ---------- */
+
+      function $(id) { return document.getElementById(id); }
+
+      function T(key) {
+        var d = translations[lang()] || translations.ar;
+        return (d && d[key]) || translations.ar[key] || key;
+      }
+
+      function fmt(key, vars) {
+        var s = T(key);
+        Object.keys(vars || {}).forEach(function (k) { s = s.replace("{" + k + "}", String(vars[k])); });
+        return s;
+      }
+
+      function esc(s) {
+        return String(s === null || s === undefined ? "" : s)
+          .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      }
+
+      function show(id) { var el = $(id); if (el) el.hidden = false; }
+      function hide(id) { var el = $(id); if (el) el.hidden = true; }
+
+      function setMsg(id, text, kind, html) {
+        var el = $(id);
+        if (!el) return;
+        if (html) el.innerHTML = html; else el.textContent = text || "";
+        el.className = "waitlist-msg" + (kind ? " " + kind : "");
+        el.hidden = false;
+      }
+      function clearMsg(id) { var el = $(id); if (el) { el.textContent = ""; el.hidden = true; } }
+
+      function toast(key, kind) { if (app && app.toast) app.toast(T(key), kind || "success"); }
+
+      function pad(n) { return (n < 10 ? "0" : "") + n; }
+      function toLocalInput(iso) {
+        if (!iso) return "";
+        var d = new Date(iso);
+        if (isNaN(d.getTime())) return "";
+        return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) + "T" + pad(d.getHours()) + ":" + pad(d.getMinutes());
+      }
+      function fromLocalInput(v) {
+        if (!v) return null;
+        var d = new Date(v);
+        return isNaN(d.getTime()) ? null : d.toISOString();
+      }
+      function dateKey(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+
+      function isOverdue(item) {
+        return item.status === "open" && !!item.due_at && new Date(item.due_at).getTime() < Date.now();
+      }
+      function statusKeyOf(item) { return isOverdue(item) ? "overdue" : (STATUS_KEYS[item.status] ? item.status : "open"); }
+
+      function trackerName(item) {
+        if (item.trackers && item.trackers.name) return item.trackers.name;
+        for (var i = 0; i < state.trackers.length; i++) if (state.trackers[i].id === item.tracker_id) return state.trackers[i].name;
+        return "";
+      }
+      function assigneeName(id) { return (id && state.names[id]) ? state.names[id] : T("noAssignee"); }
+
+      function findItem(id) {
+        var lists = [state.items, state.calItems];
+        for (var l = 0; l < lists.length; l++) for (var i = 0; i < lists[l].length; i++) if (lists[l][i].id === id) return lists[l][i];
+        return null;
+      }
+
+      function planLimitHtml(limit) {
+        return esc(T(limit === "members" ? "planLimitMembers" : "planLimitItems")) +
+          ' <a href="/pricing.html">' + esc(T("planLimitLink")) + "</a>";
+      }
+
+      /* Shows a friendly message for a failed call; msgId = inline message element (optional). */
+      function fail(err, msgId) {
+        if (window.console) console.warn("dashboard:", err && err.message ? err.message : err);
+        if (err && err.code === "PLAN_LIMIT") {
+          if (msgId) setMsg(msgId, "", "error", planLimitHtml(err.limit));
+          else if (app && app.toast) app.toast(T(err.limit === "members" ? "planLimitMembers" : "planLimitItems"), "error");
+          return;
+        }
+        var key = (err && err.code === "NO_ORG") ? "noOrg" : (msgId ? "genericError" : "errorLoad");
+        if (msgId) setMsg(msgId, T(key), "error");
+        else if (app && app.toast) app.toast(T(key), "error");
+      }
+
+      /* Serialises user actions: ignores clicks while a previous action is in flight. */
+      function guard(fn) {
+        if (state.busy) return Promise.resolve();
+        state.busy = true;
+        var p;
+        try { p = Promise.resolve(fn()); } catch (e) { p = Promise.reject(e); }
+        return p.then(function (v) { state.busy = false; return v; }, function (e) { state.busy = false; throw e; });
+      }
+
+      function fillSelect(sel, options, value) {
+        if (!sel) return;
+        sel.innerHTML = "";
+        options.forEach(function (o) {
+          var op = document.createElement("option");
+          op.value = o.value;
+          op.textContent = o.label;
+          sel.appendChild(op);
+        });
+        sel.value = value || "";
+        if (sel.value !== (value || "") && sel.options.length) sel.selectedIndex = 0;
+      }
+
+      function trackerOptions(firstKey) {
+        return [{ value: "", label: T(firstKey) }].concat(state.trackers.map(function (t) { return { value: t.id, label: t.name }; }));
+      }
+      function memberOptions() {
+        return [{ value: "", label: T("noAssignee") }].concat(state.members.map(function (m) {
+          return { value: m.user_id, label: state.names[m.user_id] || m.user_id };
+        }));
+      }
+      function statusOptions(withAll) {
+        var list = withAll ? [{ value: "", label: T("filterAllStatuses") }] : [];
+        list.push({ value: "open", label: T("statusOpen") });
+        if (withAll) list.push({ value: "overdue", label: T("statusOverdue") });
+        list.push({ value: "done", label: T("statusDone") });
+        list.push({ value: "cancelled", label: T("statusCancelled") });
+        return list;
+      }
+
+      /* ---------- boot ---------- */
+
+      function showUnavailable() {
+        hide("loadingCard");
+        hide("createOrgCard");
+        hide("dashboard");
+        show("unavailableCard");
+      }
+
+      function boot() {
+        app = window.trackerApp;
+        if (!app || !app.ready) { showUnavailable(); return; }
+        app.ready.then(function (res) {
+          if (!res || res.unavailable || app.unavailable || !app.client) { showUnavailable(); return; }
+          hide("loadingCard");
+          renderTopBar();
+          if (!app.org) { show("createOrgCard"); return; }
+          state.org = app.org;
+          state.month = startOfMonth(new Date());
+          renderSelects();
+          restoreTab();
+          show("dashboard");
+          return loadAll();
+        }).catch(function (err) {
+          hide("loadingCard");
+          fail(err);
+        });
+      }
+
+      function loadAll() {
+        return Promise.all([app.listTrackers(), app.listMembers()]).then(function (res) {
+          state.trackers = res[0] || [];
+          state.members = res[1] || [];
+          state.names = {};
+          state.members.forEach(function (m) {
+            var p = m.profiles || {};
+            state.names[m.user_id] = p.full_name || p.email || "";
+          });
+          renderSelects();
+        }).catch(function (err) { fail(err); }).then(function () {
+          return Promise.all([loadStats(), loadItems(), loadCalendar(), loadIcs()]);
+        });
+      }
+
+      function refresh() {
+        return Promise.all([loadStats(), loadItems(), loadCalendar()]);
+      }
+
+      /* ---------- top bar / organizations ---------- */
+
+      function renderTopBar() {
+        var orgs = app.orgs || [];
+        var sw = $("orgSwitcher");
+        $("orgRow").hidden = !app.org;
+        if (app.org) {
+          $("orgName").textContent = app.org.name || "";
+          if (orgs.length > 1) {
+            fillSelect(sw, orgs.map(function (o) { return { value: o.id, label: o.name }; }), app.org.id);
+            sw.hidden = false;
+            $("orgName").hidden = true;
+          } else {
+            sw.hidden = true;
+            $("orgName").hidden = false;
+          }
+        }
+        sw.setAttribute("aria-label", T("switchOrg"));
+        $("linkAdmin").hidden = !app.isPlatformAdmin();
+        show("topBar");
+      }
+
+      function createOrgFlow(name, msgId) {
+        var clean = String(name || "").trim();
+        if (!clean) { setMsg(msgId, T("orgNameRequired"), "error"); return; }
+        clearMsg(msgId);
+        guard(function () {
+          return app.createOrg(clean).then(function () {
+            toast("orgCreated");
+            window.location.reload();
+          });
+        }).catch(function (err) { fail(err, msgId); });
+      }
+
+      $("orgSwitcher").addEventListener("change", function () {
+        if (this.value && app && app.org && this.value !== app.org.id) app.setCurrentOrg(this.value);
+      });
+      $("newOrgBtn").addEventListener("click", function () {
+        var f = $("newOrgForm");
+        f.hidden = !f.hidden;
+        clearMsg("newOrgMsg");
+        if (!f.hidden) $("newOrgName").focus();
+      });
+      $("newOrgCancel").addEventListener("click", function () { hide("newOrgForm"); clearMsg("newOrgMsg"); });
+      $("newOrgForm").addEventListener("submit", function (ev) {
+        ev.preventDefault();
+        createOrgFlow($("newOrgName").value, "newOrgMsg");
+      });
+      $("createOrgForm").addEventListener("submit", function (ev) {
+        ev.preventDefault();
+        createOrgFlow($("createOrgName").value, "createOrgMsg");
+      });
+      $("signOutBtn").addEventListener("click", function () {
+        var go = function () { window.location.href = "/login.html"; };
+        if (window.trackerAuth && window.trackerAuth.signOut) window.trackerAuth.signOut().then(go, go);
+        else go();
+      });
+
+      /* ---------- stats ---------- */
+
+      function countWhere(build) {
+        var q = app.client.from("items").select("id", { count: "exact", head: true }).eq("org_id", state.org.id);
+        q = build(q);
+        return q.then(function (r) {
+          if (r && r.error) throw new Error(r.error.message);
+          return (r && typeof r.count === "number") ? r.count : 0;
+        });
+      }
+
+      function loadStats() {
+        var now = new Date();
+        var nowIso = now.toISOString();
+        var in7 = new Date(now.getTime() + 7 * 86400000).toISOString();
+        return Promise.all([
+          app.countItems({ status: "open" }),
+          countWhere(function (q) { return q.eq("status", "open").gte("due_at", nowIso).lte("due_at", in7); }),
+          countWhere(function (q) { return q.eq("status", "open").lt("due_at", nowIso); }),
+          app.countItems({ status: "done" })
+        ]).then(function (n) {
+          $("statOpenVal").textContent = String(n[0]);
+          $("statDue7Val").textContent = String(n[1]);
+          $("statOverdueVal").textContent = String(n[2]);
+          $("statDoneVal").textContent = String(n[3]);
+        }).catch(function (err) { fail(err); });
+      }
+
+      /* ---------- tabs ---------- */
+
+      function setTab(tab) {
+        state.tab = tab === "calendar" ? "calendar" : "list";
+        $("listPanel").hidden = state.tab !== "list";
+        $("calendarPanel").hidden = state.tab !== "calendar";
+        [$("tabListBtn"), $("tabCalendarBtn")].forEach(function (b) {
+          var active = b.dataset.tab === state.tab;
+          b.classList.toggle("is-active", active);
+          b.setAttribute("aria-selected", active ? "true" : "false");
+        });
+        try { localStorage.setItem(TAB_KEY, state.tab); } catch (e) { /* storage blocked */ }
+      }
+      function restoreTab() {
+        var saved = "list";
+        try { saved = localStorage.getItem(TAB_KEY) || "list"; } catch (e) { /* ignore */ }
+        setTab(saved);
+      }
+      $("tabListBtn").addEventListener("click", function () { setTab("list"); });
+      $("tabCalendarBtn").addEventListener("click", function () { setTab("calendar"); });
+
+      /* ---------- selects / filters ---------- */
+
+      function renderSelects() {
+        fillSelect($("filterTracker"), trackerOptions("filterAllTrackers"), state.filters.tracker);
+        fillSelect($("filterStatus"), statusOptions(true), state.filters.status);
+        fillSelect($("addTracker"), trackerOptions("chooseTracker"), $("addTracker").value);
+        fillSelect($("addAssignee"), memberOptions(), $("addAssignee").value);
+        fillSelect($("editTracker"), trackerOptions("chooseTracker"), $("editTracker").value);
+        fillSelect($("editAssignee"), memberOptions(), $("editAssignee").value);
+        fillSelect($("editStatus"), statusOptions(false), $("editStatus").value);
+        $("noTrackersHint").hidden = state.trackers.length > 0;
+      }
+
+      $("filterTracker").addEventListener("change", function () { state.filters.tracker = this.value; loadItems(); });
+      $("filterStatus").addEventListener("change", function () { state.filters.status = this.value; loadItems(); });
+      $("filterSearch").addEventListener("input", function () {
+        var v = this.value;
+        if (searchTimer) clearTimeout(searchTimer);
+        searchTimer = setTimeout(function () { state.filters.search = v.trim(); loadItems(); }, SEARCH_DELAY);
+      });
+      $("filterForm").addEventListener("submit", function (ev) {
+        ev.preventDefault();
+        if (searchTimer) clearTimeout(searchTimer);
+        state.filters.search = $("filterSearch").value.trim();
+        loadItems();
+      });
+
+      /* ---------- list ---------- */
+
+      function loadItems() {
+        var f = state.filters;
+        var q = { trackerId: f.tracker || undefined, search: f.search || undefined };
+        if (f.status === "overdue") { q.status = "open"; q.to = new Date().toISOString(); }
+        else if (f.status) q.status = f.status;
+        return app.listItems(q).then(function (items) {
+          state.items = items || [];
+          if (f.status === "overdue") state.items = state.items.filter(function (it) { return !!it.due_at; });
+          clearMsg("listMsg");
+          renderList();
+        }).catch(function (err) {
+          state.items = [];
+          renderList();
+          fail(err, "listMsg");
+        });
+      }
+
+      function actionBtn(item, action, key, extra) {
+        return '<button type="button" class="chat-option-btn' + (extra ? " " + extra : "") + '" data-action="' + action +
+          '" data-id="' + esc(item.id) + '">' + esc(T(key)) + "</button>";
+      }
+
+      function renderList() {
+        var body = $("itemsBody");
+        body.innerHTML = "";
+        var items = state.items;
+        $("emptyList").hidden = items.length > 0;
+        $("tableWrap").hidden = items.length === 0;
+        items.forEach(function (item) {
+          var sk = statusKeyOf(item);
+          var tr = document.createElement("tr");
+          tr.innerHTML =
+            '<td><span class="item-title">' + esc(item.title) + "</span>" +
+              (item.category ? '<span class="item-cat">' + esc(item.category) + "</span>" : "") + "</td>" +
+            "<td>" + esc(trackerName(item)) + "</td>" +
+            '<td class="col-due">' + (item.due_at ? esc(app.fmtDate(item.due_at, { withTime: true })) : esc(T("noDue"))) + "</td>" +
+            "<td>" + esc(assigneeName(item.assignee_id)) + "</td>" +
+            '<td><span class="status-' + sk + '">' + esc(T(STATUS_KEYS[sk])) + "</span></td>" +
+            '<td><div class="chat-options row-actions">' +
+              (item.status === "done" ? actionBtn(item, "reopen", "actionReopen") : actionBtn(item, "done", "actionDone")) +
+              actionBtn(item, "edit", "actionEdit") +
+              actionBtn(item, "delete", "actionDelete", "is-danger") +
+            "</div></td>";
+          body.appendChild(tr);
+        });
+      }
+
+      $("itemsBody").addEventListener("click", function (ev) {
+        var b = ev.target.closest("button[data-action]");
+        if (!b) return;
+        var item = findItem(b.dataset.id);
+        if (!item) return;
+        var action = b.dataset.action;
+        if (action === "done") setItemStatus(item, "done", "itemDone");
+        else if (action === "reopen") setItemStatus(item, "open", "itemReopened");
+        else if (action === "edit") openEdit(item);
+        else if (action === "delete") deleteItem(item);
+      });
+
+      function setItemStatus(item, status, key) {
+        guard(function () {
+          return app.updateItem(item.id, { status: status }).then(function () {
+            toast(key);
+            return refresh();
+          });
+        }).catch(function (err) { fail(err, "listMsg"); });
+      }
+
+      function deleteItem(item) {
+        if (!window.confirm(T("confirmDelete"))) return;
+        guard(function () {
+          return app.deleteItem(item.id).then(function () {
+            if (state.editing && state.editing.id === item.id) closeEdit();
+            toast("deleted");
+            return refresh();
+          });
+        }).catch(function (err) { fail(err, "listMsg"); });
+      }
+
+      /* ---------- add item / new tracker ---------- */
+
+      $("addItemBtn").addEventListener("click", function () {
+        var p = $("addItemPanel");
+        p.hidden = !p.hidden;
+        clearMsg("addMsg");
+        if (!p.hidden) { closeEdit(); $("addTitle").focus(); }
+      });
+      $("addCancelBtn").addEventListener("click", function () { hide("addItemPanel"); clearMsg("addMsg"); });
+
+      $("addItemForm").addEventListener("submit", function (ev) {
+        ev.preventDefault();
+        var title = $("addTitle").value.trim();
+        if (!title) { setMsg("addMsg", T("titleRequired"), "error"); $("addTitle").focus(); return; }
+        var trackerId = $("addTracker").value;
+        if (!trackerId) { setMsg("addMsg", T("trackerRequired"), "error"); $("addTracker").focus(); return; }
+        clearMsg("addMsg");
+        var row = {
+          tracker_id: trackerId,
+          title: title,
+          due_at: fromLocalInput($("addDue").value),
+          category: $("addCategory").value.trim() || null,
+          assignee_id: $("addAssignee").value || null,
+          status: "open"
+        };
+        guard(function () {
+          $("addSaveBtn").disabled = true;
+          return app.insertItems([row]).then(function () {
+            toast("itemAdded");
+            $("addTitle").value = "";
+            $("addDue").value = "";
+            $("addCategory").value = "";
+            return refresh();
+          });
+        }).then(function () { $("addSaveBtn").disabled = false; }, function (err) {
+          $("addSaveBtn").disabled = false;
+          fail(err, "addMsg");
+        });
+      });
+
+      $("newTrackerBtn").addEventListener("click", function () {
+        var f = $("newTrackerForm");
+        f.hidden = !f.hidden;
+        clearMsg("newTrackerMsg");
+        if (!f.hidden) $("newTrackerName").focus();
+      });
+      $("newTrackerCancel").addEventListener("click", function () { hide("newTrackerForm"); clearMsg("newTrackerMsg"); });
+      $("newTrackerForm").addEventListener("submit", function (ev) {
+        ev.preventDefault();
+        var name = $("newTrackerName").value.trim();
+        if (!name) { setMsg("newTrackerMsg", T("trackerNameRequired"), "error"); return; }
+        clearMsg("newTrackerMsg");
+        guard(function () {
+          return app.createTracker({ name: name }).then(function (t) {
+            state.trackers.push(t);
+            renderSelects();
+            $("addTracker").value = t.id;
+            $("newTrackerName").value = "";
+            hide("newTrackerForm");
+            toast("trackerCreated");
+          });
+        }).catch(function (err) { fail(err, "newTrackerMsg"); });
+      });
+
+      /* ---------- inline edit ---------- */
+
+      function openEdit(item) {
+        state.editing = item;
+        hide("addItemPanel");
+        $("editTitle").value = item.title || "";
+        $("editTracker").value = item.tracker_id || "";
+        $("editDue").value = toLocalInput(item.due_at);
+        $("editCategory").value = item.category || "";
+        $("editAssignee").value = item.assignee_id || "";
+        $("editStatus").value = STATUS_KEYS[item.status] && item.status !== "overdue" ? item.status : "open";
+        clearMsg("editMsg");
+        show("editPanel");
+        try { $("editPanel").scrollIntoView({ behavior: "smooth", block: "nearest" }); } catch (e) { /* ignore */ }
+        $("editTitle").focus();
+      }
+
+      function closeEdit() {
+        state.editing = null;
+        hide("editPanel");
+        clearMsg("editMsg");
+      }
+
+      $("editCancelBtn").addEventListener("click", closeEdit);
+      $("editForm").addEventListener("submit", function (ev) {
+        ev.preventDefault();
+        if (!state.editing) return;
+        var title = $("editTitle").value.trim();
+        if (!title) { setMsg("editMsg", T("titleRequired"), "error"); $("editTitle").focus(); return; }
+        var trackerId = $("editTracker").value;
+        if (!trackerId) { setMsg("editMsg", T("trackerRequired"), "error"); $("editTracker").focus(); return; }
+        clearMsg("editMsg");
+        var patch = {
+          title: title,
+          tracker_id: trackerId,
+          due_at: fromLocalInput($("editDue").value),
+          category: $("editCategory").value.trim() || null,
+          assignee_id: $("editAssignee").value || null,
+          status: $("editStatus").value || "open"
+        };
+        var id = state.editing.id;
+        guard(function () {
+          $("editSaveBtn").disabled = true;
+          return app.updateItem(id, patch).then(function () {
+            toast("saved");
+            closeEdit();
+            return refresh();
+          });
+        }).then(function () { $("editSaveBtn").disabled = false; }, function (err) {
+          $("editSaveBtn").disabled = false;
+          fail(err, "editMsg");
+        });
+      });
+
+      document.addEventListener("keydown", function (ev) {
+        if (ev.key !== "Escape") return;
+        if (!$("editPanel").hidden) closeEdit();
+        else if (!$("addItemPanel").hidden) { hide("addItemPanel"); clearMsg("addMsg"); }
+      });
+
+      /* ---------- calendar ---------- */
+
+      function startOfMonth(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
+
+      /* Grid always starts on Sunday; rows = as many full weeks as the month needs. */
+      function calRange() {
+        var first = state.month;
+        var daysInMonth = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+        var rows = Math.ceil((first.getDay() + daysInMonth) / 7);
+        var start = new Date(first.getFullYear(), first.getMonth(), 1 - first.getDay());
+        var end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + rows * 7);
+        return { start: start, end: end, cells: rows * 7 };
+      }
+
+      function loadCalendar() {
+        var r = calRange();
+        return app.listItems({ from: r.start.toISOString(), to: r.end.toISOString(), limit: 1000 }).then(function (items) {
+          state.calItems = items || [];
+          renderCalendar();
+        }).catch(function (err) {
+          state.calItems = [];
+          renderCalendar();
+          fail(err);
+        });
+      }
+
+      function renderCalendar() {
+        if (!state.month) return;
+        var grid = $("calGrid");
+        grid.innerHTML = "";
+        $("calTitle").textContent = T("month" + (state.month.getMonth() + 1)) + " " + state.month.getFullYear();
+
+        DAY_KEYS.forEach(function (k) {
+          var h = document.createElement("div");
+          h.className = "cal-dow";
+          h.textContent = T(k);
+          grid.appendChild(h);
+        });
+
+        var byDay = {};
+        state.calItems.forEach(function (it) {
+          if (!it.due_at) return;
+          var d = new Date(it.due_at);
+          if (isNaN(d.getTime())) return;
+          var k = dateKey(d);
+          (byDay[k] = byDay[k] || []).push(it);
+        });
+
+        var r = calRange();
+        var todayKey = dateKey(new Date());
+        for (var i = 0; i < r.cells; i++) {
+          var d = new Date(r.start.getFullYear(), r.start.getMonth(), r.start.getDate() + i);
+          var key = dateKey(d);
+          var cell = document.createElement("div");
+          cell.className = "cal-cell" +
+            (d.getMonth() !== state.month.getMonth() ? " is-outside" : "") +
+            (key === todayKey ? " is-today" : "");
+          var num = document.createElement("div");
+          num.className = "cal-day";
+          num.textContent = String(d.getDate());
+          cell.appendChild(num);
+
+          var list = byDay[key] || [];
+          list.slice(0, MAX_CHIPS).forEach(function (it) {
+            var chip = document.createElement("button");
+            chip.type = "button";
+            chip.className = "cal-chip status-" + statusKeyOf(it);
+            chip.textContent = it.title || "";
+            chip.title = it.title || "";
+            chip.dataset.id = it.id;
+            cell.appendChild(chip);
+          });
+          if (list.length > MAX_CHIPS) {
+            var more = document.createElement("div");
+            more.className = "cal-more";
+            more.textContent = "+" + (list.length - MAX_CHIPS);
+            more.title = fmt("moreItems", { n: list.length - MAX_CHIPS });
+            cell.appendChild(more);
+          }
+          grid.appendChild(cell);
+        }
+      }
+
+      $("calGrid").addEventListener("click", function (ev) {
+        var c = ev.target.closest(".cal-chip");
+        if (!c) return;
+        var it = findItem(c.dataset.id);
+        if (it) openEdit(it);
+      });
+      $("calPrevBtn").addEventListener("click", function () {
+        state.month = new Date(state.month.getFullYear(), state.month.getMonth() - 1, 1);
+        loadCalendar();
+      });
+      $("calNextBtn").addEventListener("click", function () {
+        state.month = new Date(state.month.getFullYear(), state.month.getMonth() + 1, 1);
+        loadCalendar();
+      });
+      $("calTodayBtn").addEventListener("click", function () {
+        state.month = startOfMonth(new Date());
+        loadCalendar();
+      });
+
+      /* ---------- ICS link ---------- */
+
+      function loadIcs() {
+        return app.calendarUrl().then(function (url) {
+          $("icsUrl").value = url || "";
+        }).catch(function (err) { fail(err, "icsMsg"); });
+      }
+
+      $("icsCopyBtn").addEventListener("click", function () {
+        var input = $("icsUrl");
+        if (!input.value) return;
+        var done = function () { setMsg("icsMsg", T("copied"), "success"); };
+        var fallback = function () {
+          try {
+            input.focus();
+            input.select();
+            document.execCommand("copy");
+            done();
+          } catch (e) { setMsg("icsMsg", T("genericError"), "error"); }
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(input.value).then(done, fallback);
+        else fallback();
+      });
+
+      $("icsRegenBtn").addEventListener("click", function () {
+        if (!window.confirm(T("confirmRegenerate"))) return;
+        guard(function () {
+          return app.regenerateCalendarToken().then(function () { return app.calendarUrl(); }).then(function (url) {
+            $("icsUrl").value = url || "";
+            setMsg("icsMsg", T("regenerated"), "success");
+          });
+        }).catch(function (err) { fail(err, "icsMsg"); });
+      });
+
+      /* ---------- language change hook (called from setLang) ---------- */
+
+      window.__dashboardRerender = function () {
+        if (!app || !state.org) return;
+        renderTopBar();
+        renderSelects();
+        renderList();
+        renderCalendar();
+      };
+
+      /* Deferred scripts (supabase-js, app.js, common.js) run before DOMContentLoaded. */
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+      else boot();
+    })();
+  </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+<script src="/app.js?v=1" defer></script>
+<script src="/app/common.js?v=1" defer></script>
+<script src="/brand-logo.js?v=3" defer></script>
+</body>
+</html>
