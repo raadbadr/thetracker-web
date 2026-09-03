@@ -37,8 +37,9 @@ function supaHeaders(env) {
 
 // --- حقائق ثابتة عن المنصة (تُعدَّل هنا فقط) ------------------------------
 const PLANS = [
-  { code: "free", name_ar: "مجاني", name_en: "Free", price_monthly_sar: 0, price_yearly_sar: 0,
-    members: 1, items: 100, channels: ["email"], excel_imports_per_month: 1, calendar: ["ics"] },
+  { code: "trial", name_ar: "التجريبية", name_en: "Trial", price_monthly_sar: 0, price_yearly_sar: 0, trial_days: 14,
+    members: 5, items: 2000, channels: ["email", "telegram", "whatsapp", "sms"], excel_imports_per_month: null, calendar: ["ics", "google"],
+    note_ar: "14 يوماً بكل المزايا وبلا بطاقة بنكية، ولا تتجدد تلقائياً" },
   { code: "monthly", name_ar: "شهري", name_en: "Monthly", price_monthly_sar: 49, price_yearly_sar: null,
     members: 5, items: 2000, channels: ["email", "telegram", "whatsapp", "sms"], excel_imports_per_month: null, calendar: ["ics", "google"] },
   { code: "yearly", name_ar: "سنوي", name_en: "Yearly", price_monthly_sar: null, price_yearly_sar: 490,
@@ -59,7 +60,7 @@ function toolAppInfo() {
       "ادعُ زملاءك وأسند العناصر لهم",
       "اربط قنواتك (بريد، تيليغرام، واتساب، SMS) لتصلك التنبيهات قبل الاستحقاق",
     ],
-    payment: "الباقات المدفوعة تُفعَّل حالياً بالتواصل مع الدعم؛ بوابة الدفع الإلكتروني قادمة.",
+    payment: "لا توجد باقة مجانية دائمة: تبدأ كل شركة بفترة تجريبية 14 يوماً بكل المزايا، ثم تشترك شهرياً أو سنوياً. الاشتراكات تُفعَّل حالياً بالتواصل مع الدعم؛ بوابة الدفع الإلكتروني قادمة.",
   };
 }
 

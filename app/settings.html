@@ -1248,7 +1248,7 @@
         trackers: [],
         rules: [],
         limits: null,
-        planCode: "free",
+        planCode: "trial",
         plans: [],
         sub: null,
         calendarUrl: ""
@@ -1734,7 +1734,7 @@
       function loadSubscription() {
         if (!app.org) { renderSubscription(); return Promise.resolve(); }
         return Promise.all([app.effectivePlan(), app.plans(), app.subscription()]).then(function (res) {
-          state.planCode = res[0] || "free";
+          state.planCode = res[0] || "trial";
           state.plans = res[1] || [];
           state.sub = res[2] || null;
           var plan = currentPlan();

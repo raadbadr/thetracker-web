@@ -478,7 +478,7 @@
   function effectivePlan() {
     return run(function (client) {
       var orgId = requireOrg();
-      return client.rpc("effective_plan", { o: orgId }).then(unwrap).then(function (code) { return code || "free"; });
+      return client.rpc("effective_plan", { o: orgId }).then(unwrap).then(function (code) { return code || "trial"; });
     });
   }
 
