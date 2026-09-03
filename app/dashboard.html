@@ -510,7 +510,7 @@
 
     /* مؤشر المخالفات — أعمدة بسيطة بلا مكتبات خارجية */
     .chart-card { margin-top: 0; }
-    .chart-bars { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem; align-items: end; min-height: 190px; padding-top: 0.5rem; }
+    .chart-bars { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.25rem; align-items: end; min-height: 210px; padding-top: 0.75rem; max-width: 900px; margin: 0 auto; }
     .chart-col { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; height: 100%; justify-content: flex-end; }
     .chart-val { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; }
     .chart-bar { width: 100%; border-radius: 10px 10px 4px 4px; background: var(--primary); min-height: 6px; transition: height .4s cubic-bezier(.4,0,.2,1); }
@@ -2015,13 +2015,14 @@
         calCard.innerHTML = "<h2>" + esc(T("calendarCardTitle")) + "</h2>";
 
         dash.insertBefore(grid, dash.firstChild);
-        mainCol.appendChild(services);
+        /* مؤشر المخالفات يتصدّر الصفحة بعرضها كاملاً */
         if (state.viewType === "violations") {
           var chart = document.createElement("div");
           chart.className = "content chart-card";
           chart.id = "violationsChart";
-          mainCol.appendChild(chart);
+          dash.insertBefore(chart, dash.firstChild);
         }
+        mainCol.appendChild(services);
         mainCol.appendChild(main);
         calCard.appendChild(calendar);
         sideCol.appendChild(calCard);
