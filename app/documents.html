@@ -644,13 +644,15 @@
     /* أنماط صفحة المستندات (منقولة من صفحتي الاستيراد ولوحة التحكم) */
     /* منطقة الرفع بطاقة زجاجية كبقية الموقع: حافة واحدة رفيعة، بلا خط منقط */
     .drop-zone { text-align: center; cursor: pointer; padding: 1.75rem 1rem;
-      background: var(--glass); border: 1px solid var(--glass-border); border-radius: 18px;
+      background: var(--glass); border: 1px solid var(--glass-border); border-radius: 24px;
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       transition: border-color .2s ease, background .2s ease, box-shadow .2s ease; }
+    /* حافة واحدة فقط: لا إطار متدرج ولا لمعة موروثة من البطاقة، ولا حلقة ولا ميل عند التحويم */
+    .drop-zone::before, .drop-zone::after { content: none; }
     .drop-zone:hover, .drop-zone:focus-visible, .drop-zone.is-dragover, .drop-zone.is-over {
-      border-color: var(--primary); background: var(--glass-strong);
-      box-shadow: 0 0 0 3px var(--primary-shadow, rgba(0, 160, 210, .18)); }
+      transform: none; border-color: var(--primary); background: var(--glass-strong);
+      box-shadow: 0 8px 32px var(--shadow-dark); }
     .drop-icon { width: 34px; height: 34px; fill: var(--primary); opacity: .9; margin-bottom: .4rem; }
     .drop-actions { display: flex; flex-wrap: wrap; gap: .6rem; justify-content: center; align-items: center; }
     .drop-zone p { margin-bottom: 0.75rem; }
