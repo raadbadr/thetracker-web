@@ -39,6 +39,32 @@ const NO_CACHE = { cacheTtl: 0, cacheEverything: false };
 // --- Route handlers ---
 
 /** إعدادات العميل العامة — مفتاح anon عام بطبيعته (RLS هي الحماية)، لكنه لا يُكتب في الملفات. */
+/* قالب الاستيراد: تنزيل حقيقي عبر رابط عادي (Content-Disposition)، لا Blob ولا
+   نقرة مبرمجة — تلك هشة في Safari. رؤوس الأعمدة بلغة الصفحة، عبر ?lang=. */
+const IMPORT_TEMPLATE_HEADERS = {
+  ar: ["العنوان", "تاريخ الاستحقاق", "التصنيف", "بريد المسؤول", "مبلغ المخالفة", "الشركة (العميل)", "رقم الدعوى", "رقم المخالفة", "الموقع", "الحالة"],
+  en: ["Title", "Due date", "Category", "Assignee email", "Fine amount", "Client company", "Case number", "Violation number", "Location", "Status"],
+  fr: ["Titre", "Date d'échéance", "Catégorie", "E-mail du responsable", "Montant de l'amende", "Entreprise cliente", "Numéro de dossier", "Numéro d'infraction", "Lieu", "Statut"],
+  ur: ["عنوان", "مقررہ تاریخ", "زمرہ", "ذمہ دار کا ای میل", "جرمانے کی رقم", "کلائنٹ کمپنی", "مقدمہ نمبر", "خلاف ورزی نمبر", "مقام", "حالت"],
+};
+const IMPORT_TEMPLATE_SAMPLE = { ar: "مثال: جلسة محكمة", en: "Example: court hearing", fr: "Exemple : audience", ur: "مثال: عدالتی سماعت" };
+
+function handleImportTemplate(url) {
+  const lang = IMPORT_TEMPLATE_HEADERS[url.searchParams.get("lang")] ? url.searchParams.get("lang") : "ar";
+  const headers = IMPORT_TEMPLATE_HEADERS[lang];
+  const due = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
+  const sample = [IMPORT_TEMPLATE_SAMPLE[lang], due, "", "", "0", "", "", "", "", "open"];
+  const q = (v) => '"' + String(v).replace(/"/g, '""') + '"';
+  const csv = "﻿" + headers.map(q).join(",") + "\r\n" + sample.map(q).join(",") + "\r\n";
+  return new Response(csv, {
+    headers: {
+      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Disposition": 'attachment; filename="thetracker-template.csv"',
+      "Cache-Control": "no-store",
+    },
+  });
+}
+
 function handleConfig(env) {
   if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) return json({ error: "not configured" }, 503);
   return json({
@@ -699,6 +725,9 @@ export default {
       if (path === "/api/config" && request.method === "GET") return handleConfig(env);
       if (path === "/api/stats" && request.method === "GET") return await handleStats(env);
       if (path === "/api/assistant" && request.method === "POST") return await handleAssistantRequest(request, env);
+      if (path === "/api/documents/template" && request.method === "GET") {
+        return handleImportTemplate(url);
+      }
       if (path === "/api/documents/analyze" && request.method === "POST") {
         /* قراءة المستندات تستهلك حصة الذكاء، فتلزمها جلسة مستخدم وحدّ معدل كالنيّة */
         const docUser = await authedUser(request, env);

@@ -753,7 +753,7 @@
           <button type="button" class="waitlist-btn" id="docChooseBtn" data-i18n="docChoose">اختيار ملف</button>
           <input type="file" id="docFile" accept=".pdf,.png,.jpg,.jpeg,.webp,.xlsx,.xlsm,.xls,.csv,.tsv,.txt,.json,application/pdf,image/*,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" hidden>
           <button type="button" class="chat-option-btn" id="docDriveBtn" data-i18n="docDrive" hidden>اختيار من Google Drive</button>
-          <button type="button" class="chat-option-btn" id="docTemplateBtn" data-i18n="templateBtn">تنزيل القالب</button>
+          <a class="chat-option-btn" id="docTemplateBtn" data-i18n="templateBtn" href="/api/documents/template?lang=ar" download="thetracker-template.csv">تنزيل القالب</a>
           </div>
         </div>
         <p class="waitlist-msg" id="docStatus" role="status" aria-live="polite" hidden></p>
@@ -2129,6 +2129,8 @@
       });
       applyPlaceholders(code);
       document.title = (translations[code] && translations[code].title ? translations[code].title : "Team") + " | TheTracker";
+      const templateLink = document.getElementById("docTemplateBtn");
+      if (templateLink) templateLink.href = "/api/documents/template?lang=" + code;
       if (typeof window.__trackerAuthRefresh === "function") window.__trackerAuthRefresh();
       if (typeof window.__docsRefresh === "function") window.__docsRefresh();
     }
@@ -2177,6 +2179,7 @@
       if (translations[l] && translations[l][k]) el.innerHTML = translations[l][k];
     });
     applyPlaceholders(l);
+    (function () { const templateLink = document.getElementById("docTemplateBtn"); if (templateLink) templateLink.href = "/api/documents/template?lang=" + l; })();
     document.getElementById("currentLangDisplay").textContent = langNames[l] || l;
     ["ar","en","fr","ur"].forEach(c => {
       const el = document.getElementById("check-" + c);
@@ -2556,10 +2559,6 @@
                       String((err && err.message) || "") === "cancelled" ? "" : "error");
           }).finally(function () { btn.disabled = false; });
         });
-        $("docTemplateBtn").addEventListener("click", function (e) {
-          e.stopPropagation();
-          if (window.trackerImport && window.trackerImport.template) window.trackerImport.template();
-        });
         $("docFile").addEventListener("change", function () { state.driveDoc = null; handleFile(this.files && this.files[0]); });
         var dz = $("docDrop");
         dz.addEventListener("dragover", function (e) { e.preventDefault(); dz.classList.add("is-over"); });
@@ -2742,19 +2741,6 @@
         if (v === null || v === undefined || v === "") return null;
         const n = Number(v);
         return isNaN(n) ? null : n;
-      }
-
-      /* القالب: رأس بأسماء الحقول بلغة الصفحة وصف مثال */
-      function downloadTemplate() {
-        const heads = FIELDS.map((f) => t(f.labelKey));
-        const sample = ["مثال: جلسة محكمة", new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10), "قضية", "", "0", "", "", "", "", "open"];
-        const q = (v) => '"' + String(v).replace(/"/g, '""') + '"';
-        const csv = "\ufeff" + heads.map(q).join(",") + "\r\n" + sample.map(q).join(",") + "\r\n";
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-        a.download = "thetracker-template.csv";
-        document.body.appendChild(a); a.click();
-        setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
       }
 
       function fileExt(name) {
@@ -3426,8 +3412,7 @@
           var flow = document.getElementById("importFlow");
           if (flow) flow.hidden = false;
           readFile(file);
-        },
-        template: function () { downloadTemplate(); }
+        }
       };
 
       function boot() {
