@@ -44,6 +44,26 @@ ${ctx && ctx.attachment ? `The message came with a ${ctx.attachment.kind} whose 
 Never invent numbers; leave fields absent if unknown.`;
 }
 
+/* تصنيف احتياطي بالقواعد: موعد/جلسة/مخالفة مع تاريخ ← تسجيل، حتى لو تعثّر النموذج */
+const DATE_RX = /(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4})|(\d{4}-\d{2}-\d{2})|(الأحد|الاثنين|الإثنين|الثلاثاء|الأربعاء|الخميس|الجمعة|السبت|غد|بكرة|بعد غد|الأسبوع|الشهر|صباح|مساء|الساعة|\d{1,2}\s*(ص|م|صباحاً|مساءً|AM|PM))/i;
+const ADD_RX = /(سجل|سجّل|أضف|اضف|ضيف|موعد|جلسة|جلسه|نظر الدعوى|مخالفة|مخالفه|غرامة|مهمة|مهمه|deadline|hearing|session|fine|violation|appointment|add|schedule)/i;
+const DONE_RX = /(خلصت|خلّصت|أنجزت|انجزت|تم سداد|سددت|أغلقت|اغلقت|انتهت|منجز|done|completed|paid|closed)/i;
+const ASSIGN_RX = /(أسند|اسند|حوّل|حول|كلّف|كلف|assign|hand)/i;
+const SEARCH_RX = /^(وين|أين|اين|فين|ابحث|دور|ما هي|ماهي|what|where|find|show)/i;
+export function heuristicIntent(text) {
+  const t = String(text || "").trim();
+  if (!t) return null;
+  if (DONE_RX.test(t)) return { action: "done", query: t.replace(DONE_RX, "").replace(/[^\p{L}\p{N}\s\-\/]/gu, " ").trim().slice(0, 80) };
+  if (ASSIGN_RX.test(t)) return null; // يحتاج فهم الاسم من النموذج
+  if (SEARCH_RX.test(t)) return { action: "search", query: t.replace(SEARCH_RX, "").replace(/[؟?]/g, "").trim().slice(0, 80) };
+  if (ADD_RX.test(t) && DATE_RX.test(t)) {
+    const kind = /(مخالفة|مخالفه|غرامة|fine|violation)/i.test(t) ? "violation" : /(جلسة|جلسه|نظر الدعوى|hearing|session|قضية|دعوى)/i.test(t) ? "session" : "task";
+    const caseNo = (t.match(/(?:دعوى|قضية|القضية|الدعوى|case)\s*(?:رقم|no\.?|#)?\s*([0-9]{2,})/i) || [])[1] || null;
+    return { action: "add", item: { kind, title: t.slice(0, 160), case_number: caseNo } };
+  }
+  return null;
+}
+
 function firstJson(text) {
   const s = String(text || "");
   const i = s.indexOf("{"); const j = s.lastIndexOf("}");
@@ -64,7 +84,11 @@ export async function extractIntent(env, text, ctx) {
   }
   const raw = out && (typeof out.response === "string" ? out.response : (out.response ? JSON.stringify(out.response) : ""));
   const parsed = (out && typeof out.response === "object" && out.response) || firstJson(raw);
-  if (!parsed || !parsed.action) return { action: "question" };
+  const guess = heuristicIntent(text);
+  if (!parsed || !parsed.action) return guess || { action: "question" };
+  // النموذج قال "سؤال/لا شيء" بينما القواعد ترى موعداً أو إنجازاً واضحاً: القواعد أولى
+  if ((parsed.action === "question" || parsed.action === "none") && guess && guess.action !== "search") return guess;
+  if (parsed.action === "add" && parsed.item && !parsed.item.due_at && guess && guess.action === "add" && !parsed.item.title) parsed.item.title = guess.item.title;
   return parsed;
 }
 
