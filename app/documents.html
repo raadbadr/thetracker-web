@@ -756,7 +756,7 @@
             <label class="form-field"><span data-i18n="docParty">الشركة / صاحب المستند</span><input type="text" class="waitlist-input" id="fParty" maxlength="200"></label>
             <label class="form-field"><span data-i18n="docIssueDate">تاريخ الإصدار</span><input type="date" class="waitlist-input" id="fIssue" dir="ltr"></label>
             <label class="form-field"><span data-i18n="docExpiry">تاريخ الانتهاء / الاستحقاق</span><input type="date" class="waitlist-input" id="fExpiry" dir="ltr"></label>
-            <label class="form-field"><span data-i18n="docAmount">المبلغ (ر.س)</span><input type="number" class="waitlist-input" id="fAmount" step="0.01" dir="ltr"></label>
+            <label class="form-field"><span data-i18n="docAmount">المبلغ (<span class="sar-symbol" aria-label="ريال سعودي"></span>)</span><input type="number" class="waitlist-input" id="fAmount" step="0.01" dir="ltr"></label>
             <label class="form-field"><span data-i18n="docCase">رقم الدعوى</span><input type="text" class="waitlist-input" id="fCase" maxlength="120" dir="ltr"></label>
             <label class="form-field"><span data-i18n="docCourt">المحكمة</span><input type="text" class="waitlist-input" id="fCourt" maxlength="200"></label>
           </div>
@@ -826,7 +826,7 @@
         docParty: "الشركة / صاحب المستند",
         docIssueDate: "تاريخ الإصدار",
         docExpiry: "تاريخ الانتهاء / الاستحقاق",
-        docAmount: "المبلغ (ر.س)",
+        docAmount: "المبلغ (<span class=\"sar-symbol\" aria-label=\"ريال سعودي\"></span>)",
         docCase: "رقم الدعوى",
         docCourt: "المحكمة",
         docSave: "حفظ وإضافة للمتابعة",
@@ -1003,7 +1003,7 @@
         docParty: "Company / holder",
         docIssueDate: "Issue date",
         docExpiry: "Expiry / due date",
-        docAmount: "Amount (SAR)",
+        docAmount: "Amount (<span class=\"sar-symbol\" aria-label=\"ريال سعودي\"></span>)",
         docCase: "Case number",
         docCourt: "Court",
         docSave: "Save and track",
@@ -1180,7 +1180,7 @@
         docParty: "Entreprise / titulaire",
         docIssueDate: "Date d'émission",
         docExpiry: "Expiration / échéance",
-        docAmount: "Montant (SAR)",
+        docAmount: "Montant (<span class=\"sar-symbol\" aria-label=\"ريال سعودي\"></span>)",
         docCase: "Numéro de dossier",
         docCourt: "Tribunal",
         docSave: "Enregistrer et suivre",
@@ -1357,7 +1357,7 @@
         docParty: "کمپنی / مالک",
         docIssueDate: "اجرا کی تاریخ",
         docExpiry: "میعاد / مقررہ تاریخ",
-        docAmount: "رقم (ریال)",
+        docAmount: "رقم (<span class=\"sar-symbol\" aria-label=\"ريال سعودي\"></span>)",
         docCase: "مقدمہ نمبر",
         docCourt: "عدالت",
         docSave: "محفوظ کریں اور ٹریک کریں",
@@ -1607,7 +1607,7 @@
 
     document.querySelectorAll("[data-i18n]").forEach(el => {
       const k = el.dataset.i18n;
-      if (translations[l] && translations[l][k]) el.textContent = translations[l][k];
+      if (translations[l] && translations[l][k]) el.innerHTML = translations[l][k];
     });
     applyPlaceholders(l);
     document.getElementById("currentLangDisplay").textContent = langNames[l] || l;

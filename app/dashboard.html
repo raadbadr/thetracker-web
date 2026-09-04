@@ -1163,7 +1163,6 @@
         totalAmount: "إجمالي المبالغ",
         totalUnpaid: "غير المسددة",
         totalOverdue: "تجاوزت موعد السداد",
-        sar: "ر.س",
         attachTitle: "المرفقات",
         attachDrive: "اختيار من Google Drive",
         attachUpload: "رفع ملف (PDF أو Word)",
@@ -1375,7 +1374,6 @@
         totalAmount: "Total amount",
         totalUnpaid: "Unpaid",
         totalOverdue: "Past due",
-        sar: "SAR",
         attachTitle: "Attachments",
         attachDrive: "Pick from Google Drive",
         attachUpload: "Upload a file (PDF or Word)",
@@ -1587,7 +1585,6 @@
         totalAmount: "Montant total",
         totalUnpaid: "Impayées",
         totalOverdue: "En retard",
-        sar: "SAR",
         attachTitle: "Pièces jointes",
         attachDrive: "Choisir dans Google Drive",
         attachUpload: "Téléverser un fichier (PDF ou Word)",
@@ -1799,7 +1796,6 @@
         totalAmount: "کل رقم",
         totalUnpaid: "غیر ادا شدہ",
         totalOverdue: "مدت گزر گئی",
-        sar: "ریال",
         attachTitle: "منسلکات",
         attachDrive: "گوگل ڈرائیو سے چنیں",
         attachUpload: "فائل اپ لوڈ کریں (PDF یا Word)",
@@ -3057,7 +3053,7 @@
       function money(n) {
         var v = Number(n);
         if (!isFinite(v) || !v) return "-";
-        return v.toLocaleString("en-US", { maximumFractionDigits: 2 }) + " " + T("sar");
+        return v.toLocaleString("en-US", { maximumFractionDigits: 2 }) + ' <span class="sar-symbol" aria-label="ريال سعودي"></span>';
       }
 
       function shortDate(v) {
@@ -3092,8 +3088,8 @@
         });
         box.innerHTML =
           '<div class="total-card"><span class="total-label">' + esc(T("totalCount")) + '</span><span class="total-value">' + esc(String(total)) + "</span></div>" +
-          '<div class="total-card"><span class="total-label">' + esc(T("totalAmount")) + '</span><span class="total-value">' + esc(money(sum)) + "</span></div>" +
-          '<div class="total-card"><span class="total-label">' + esc(T("totalUnpaid")) + '</span><span class="total-value">' + esc(money(unpaidSum)) + "</span></div>" +
+          '<div class="total-card"><span class="total-label">' + esc(T("totalAmount")) + '</span><span class="total-value">' + money(sum) + "</span></div>" +
+          '<div class="total-card"><span class="total-label">' + esc(T("totalUnpaid")) + '</span><span class="total-value">' + money(unpaidSum) + "</span></div>" +
           '<div class="total-card"><span class="total-label">' + esc(T("totalOverdue")) + '</span><span class="total-value">' + esc(String(overdue)) + "</span></div>";
       }
 
@@ -3116,7 +3112,7 @@
             '<td class="cell-num">' + esc(shortDate(f.date)) + "</td>" +
             "<td>" + esc(f.client || "-") + "</td>" +
             "<td>" + esc(f.issuer || "-") + "</td>" +
-            '<td class="cell-num">' + esc(money(item.amount)) + "</td>" +
+            '<td class="cell-num">' + money(item.amount) + "</td>" +
             "<td>" + esc(f.vtype || "-") + "</td>" +
             "<td>" + esc(f.objection || "-") + "</td>" +
             '<td class="cell-num">' + (f.caseNumber
@@ -3154,7 +3150,7 @@
             html += "<tr><td>" + esc(r.title || "-") + "</td>" +
                     "<td>" + esc(r.category || "-") + "</td>" +
                     '<td class="cell-num">' + (r.due_at ? esc(app.fmtDate(r.due_at)) : "-") + "</td>" +
-                    '<td class="cell-num">' + esc(money(r.amount)) + "</td>" +
+                    '<td class="cell-num">' + money(r.amount) + "</td>" +
                     '<td class="cell-num">' + esc(String(r.attachments || 0)) + "</td>" +
                     '<td><button type="button" class="chat-option-btn" data-bundle-open="' + esc(r.item_id) + '">' + esc(T("actionEdit")) + "</button></td></tr>";
           });
