@@ -1039,6 +1039,33 @@
             </table>
           </div>
 
+          <!-- شريط المصاريف: البند والسنة والمجاميع -->
+          <div id="expensesBar" hidden>
+            <div class="waitlist-form violations-toolbar">
+              <select class="waitlist-input" id="expenseCatFilter"></select>
+              <select class="waitlist-input" id="expenseYearFilter"></select>
+            </div>
+            <div class="totals-row" id="expenseTotals"></div>
+          </div>
+
+          <div class="table-wrap" id="expensesWrap" hidden>
+            <table class="items-table" id="expensesTable">
+              <thead>
+                <tr>
+                  <th data-i18n="colExpDate">التاريخ</th>
+                  <th data-i18n="colExpCat">البند</th>
+                  <th data-i18n="colExpDesc">البيان</th>
+                  <th data-i18n="colExpVendor">الجهة</th>
+                  <th data-i18n="colAmount">المبلغ</th>
+                  <th data-i18n="colExpMethod">طريقة الدفع</th>
+                  <th data-i18n="colStatus">الحالة</th>
+                  <th data-i18n="colActions">الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="expensesBody"></tbody>
+            </table>
+          </div>
+
           <div class="content case-bundle" id="caseBundle" hidden></div>
 
           <div class="table-wrap" id="tableWrap" hidden>
@@ -1208,6 +1235,26 @@
         caseDoneAmount: "مبالغ القضايا المنتهية",
         viewCases: "لوحة القضايا",
         viewExpenses: "مصاريف التشغيل",
+        colExpDate: "التاريخ",
+        colExpCat: "البند",
+        colExpDesc: "البيان",
+        colExpVendor: "الجهة",
+        colExpMethod: "طريقة الدفع",
+        allCats: "كل البنود",
+        allYears: "كل السنوات",
+        expCount: "عدد المصاريف",
+        expTotal: "إجمالي المصروف",
+        expPaid: "المدفوع",
+        expDue: "المستحق",
+        expOverdue: "متأخر السداد",
+        expAvgMonth: "متوسط الشهر",
+        expIndicatorsTitle: "مؤشرات المصاريف",
+        expMonthlyTitle: "المصروف شهريا ({y})",
+        expByCatTitle: "حسب البند ({n})",
+        noExpenseData: "لا توجد مبالغ مسجلة بعد",
+        expNoCat: "بلا بند",
+        expStatusPaid: "مدفوع",
+        expActionPay: "تعليم كمدفوع",
         fieldAmount: "المبلغ",
         fieldClient: "الجهة أو العميل",
         fieldCaseNumber: "رقم الملف",
@@ -1426,6 +1473,26 @@
         caseDoneAmount: "Closed case amounts",
         viewCases: "Cases dashboard",
         viewExpenses: "Operating expenses",
+        colExpDate: "Date",
+        colExpCat: "Category",
+        colExpDesc: "Description",
+        colExpVendor: "Payee",
+        colExpMethod: "Payment method",
+        allCats: "All categories",
+        allYears: "All years",
+        expCount: "Expenses",
+        expTotal: "Total spent",
+        expPaid: "Paid",
+        expDue: "Outstanding",
+        expOverdue: "Overdue",
+        expAvgMonth: "Monthly average",
+        expIndicatorsTitle: "Expense indicators",
+        expMonthlyTitle: "Monthly spend ({y})",
+        expByCatTitle: "By category ({n})",
+        noExpenseData: "No amounts recorded yet",
+        expNoCat: "Uncategorised",
+        expStatusPaid: "Paid",
+        expActionPay: "Mark as paid",
         fieldAmount: "Amount",
         fieldClient: "Party or client",
         fieldCaseNumber: "File number",
@@ -1644,6 +1711,26 @@
         caseDoneAmount: "Montant des affaires clôturées",
         viewCases: "Tableau des affaires",
         viewExpenses: "Charges d'exploitation",
+        colExpDate: "Date",
+        colExpCat: "Poste",
+        colExpDesc: "Libellé",
+        colExpVendor: "Bénéficiaire",
+        colExpMethod: "Mode de paiement",
+        allCats: "Tous les postes",
+        allYears: "Toutes les années",
+        expCount: "Dépenses",
+        expTotal: "Total dépensé",
+        expPaid: "Payé",
+        expDue: "Restant dû",
+        expOverdue: "En retard",
+        expAvgMonth: "Moyenne mensuelle",
+        expIndicatorsTitle: "Indicateurs des charges",
+        expMonthlyTitle: "Dépenses mensuelles ({y})",
+        expByCatTitle: "Par poste ({n})",
+        noExpenseData: "Aucun montant enregistré",
+        expNoCat: "Sans poste",
+        expStatusPaid: "Payé",
+        expActionPay: "Marquer payé",
         fieldAmount: "Montant",
         fieldClient: "Partie ou client",
         fieldCaseNumber: "Numéro de dossier",
@@ -1862,6 +1949,26 @@
         caseDoneAmount: "مکمل مقدمات کی رقم",
         viewCases: "مقدمات ڈیش بورڈ",
         viewExpenses: "آپریٹنگ اخراجات",
+        colExpDate: "تاریخ",
+        colExpCat: "مد",
+        colExpDesc: "تفصیل",
+        colExpVendor: "وصول کنندہ",
+        colExpMethod: "ادائیگی کا طریقہ",
+        allCats: "تمام مدات",
+        allYears: "تمام سال",
+        expCount: "اخراجات",
+        expTotal: "کل خرچ",
+        expPaid: "ادا شدہ",
+        expDue: "واجب الادا",
+        expOverdue: "تاخیر شدہ",
+        expAvgMonth: "ماہانہ اوسط",
+        expIndicatorsTitle: "اخراجات کے اشاریے",
+        expMonthlyTitle: "ماہانہ خرچ ({y})",
+        expByCatTitle: "مد کے حساب سے ({n})",
+        noExpenseData: "ابھی کوئی رقم درج نہیں",
+        expNoCat: "بغیر مد",
+        expStatusPaid: "ادا شدہ",
+        expActionPay: "ادا شدہ نشان زد کریں",
         fieldAmount: "رقم",
         fieldClient: "فریق یا کلائنٹ",
         fieldCaseNumber: "فائل نمبر",
@@ -2712,6 +2819,7 @@
         }
         if (state.viewType === "violations") addChart("violationsChart");
         else if (state.viewType === "cases") addChart("casesChart");
+        else if (state.viewType === "expenses") addChart("expensesChart");
         else { addChart("violationsChart"); addChart("casesChart"); }
 
         calCard.appendChild(calendar);
@@ -3066,9 +3174,10 @@
         searchTimer = setTimeout(function () { state.filters.search = v.trim(); loadItems(); }, SEARCH_DELAY);
       });
       document.addEventListener("change", function (ev) {
-        if (!ev.target || ev.target.id !== "clientFilter") return;
-        state.clientFilter = ev.target.value || "";
-        renderList();
+        if (!ev.target) return;
+        if (ev.target.id === "clientFilter") { state.clientFilter = ev.target.value || ""; renderList(); return; }
+        if (ev.target.id === "expenseCatFilter") { state.expenseCat = ev.target.value || ""; renderList(); return; }
+        if (ev.target.id === "expenseYearFilter") { state.expenseYear = ev.target.value || ""; renderList(); }
       });
 
       $("filterForm").addEventListener("submit", function (ev) {
@@ -3184,6 +3293,159 @@
           '<div class="total-card"><span class="total-label">' + esc(T("totalOverdue")) + '</span><span class="total-value">' + esc(String(overdue)) + "</span></div>";
       }
 
+      /* ---------- مصاريف التشغيل: شاشتها لا تشبه القضايا ---------- */
+      var EXP_MONTHS = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
+
+      function expenseFields(item) {
+        var d = item.due_at || dataOf(item, ["تاريخ الصرف", "التاريخ", "date"]);
+        return {
+          date: d,
+          year: d ? String(new Date(d).getFullYear()) : "",
+          month: d ? new Date(d).getMonth() : null,
+          cat: item.category || dataOf(item, ["البند", "بند المصروف", "category"]) || T("expNoCat"),
+          desc: item.title || "",
+          vendor: item.client_name || dataOf(item, ["الجهة", "المورد", "vendor", "supplier"]),
+          method: dataOf(item, ["طريقة الدفع", "payment_method", "وسيلة الدفع"]),
+          invoice: dataOf(item, ["رقم الفاتورة", "invoice_number"])
+        };
+      }
+
+      function expenseRows() {
+        return (state.items || []).map(function (it) { return { item: it, f: expenseFields(it), amount: Number(it.amount) || 0 }; });
+      }
+
+      function expenseFiltered(rows) {
+        return rows.filter(function (r) {
+          if (state.expenseCat && r.f.cat !== state.expenseCat) return false;
+          if (state.expenseYear && r.f.year !== state.expenseYear) return false;
+          return true;
+        });
+      }
+
+      function renderExpenseFilters(rows) {
+        var cats = {}, years = {};
+        rows.forEach(function (r) { if (r.f.cat) cats[r.f.cat] = true; if (r.f.year) years[r.f.year] = true; });
+        var catSel = $("expenseCatFilter"), yearSel = $("expenseYearFilter");
+        if (catSel) {
+          catSel.innerHTML = '<option value="">' + esc(T("allCats")) + "</option>" +
+            Object.keys(cats).sort().map(function (c) {
+              return '<option value="' + esc(c) + '"' + (c === state.expenseCat ? " selected" : "") + ">" + esc(c) + "</option>";
+            }).join("");
+        }
+        if (yearSel) {
+          yearSel.innerHTML = '<option value="">' + esc(T("allYears")) + "</option>" +
+            Object.keys(years).sort().reverse().map(function (y) {
+              return '<option value="' + esc(y) + '"' + (y === state.expenseYear ? " selected" : "") + ">" + esc(y) + "</option>";
+            }).join("");
+        }
+      }
+
+      function expenseSums(rows) {
+        var now = Date.now(), sum = 0, paid = 0, due = 0, overdue = 0;
+        rows.forEach(function (r) {
+          sum += r.amount;
+          if (r.item.status === "done") paid += r.amount;
+          else if (r.item.status !== "cancelled") {
+            due += r.amount;
+            if (r.f.date && new Date(r.f.date).getTime() < now) overdue += r.amount;
+          }
+        });
+        return { count: rows.length, sum: sum, paid: paid, due: due, overdue: overdue };
+      }
+
+      function renderExpenseTotals(rows) {
+        var box = $("expenseTotals");
+        if (!box) return;
+        var t = expenseSums(rows);
+        box.innerHTML =
+          '<div class="total-card"><span class="total-label">' + esc(T("expCount")) + '</span><span class="total-value">' + esc(String(t.count)) + "</span></div>" +
+          '<div class="total-card"><span class="total-label">' + esc(T("expTotal")) + '</span><span class="total-value">' + money(t.sum) + "</span></div>" +
+          '<div class="total-card"><span class="total-label">' + esc(T("expPaid")) + '</span><span class="total-value">' + money(t.paid) + "</span></div>" +
+          '<div class="total-card"><span class="total-label">' + esc(T("expDue")) + '</span><span class="total-value">' + money(t.due) + "</span></div>";
+      }
+
+      /* أعمدة الأشهر بالمبالغ لا بالعدد: المصروف يُقرأ بالريال */
+      function monthBarsHtml(values) {
+        var max = Math.max.apply(null, values.concat([1]));
+        var bars = '<div class="chart-bars">';
+        values.forEach(function (v, i) {
+          var h = Math.max(4, Math.round((v / max) * 150));
+          bars += '<div class="chart-col"><span class="chart-val">' + (v ? shortMoney(v) : "") + "</span>" +
+                  '<span class="chart-bar" style="height:' + h + 'px"></span>' +
+                  '<span class="chart-label">' + EXP_MONTHS[i] + "</span></div>";
+        });
+        return bars + "</div>";
+      }
+
+      function categoryBreakdown(rows) {
+        var sums = {};
+        rows.forEach(function (r) { if (r.amount) sums[r.f.cat] = (sums[r.f.cat] || 0) + r.amount; });
+        return Object.keys(sums).map(function (k) { return { label: k, value: Math.round(sums[k]) }; })
+          .sort(function (a, b) { return b.value - a.value; }).slice(0, 6);
+      }
+
+      function renderExpensesChart() {
+        var card = document.getElementById("expensesChart");
+        if (!card) return;
+        var rows = expenseFiltered(expenseRows());
+        var year = state.expenseYear || String(new Date().getFullYear());
+        var months = EXP_MONTHS.map(function () { return 0; });
+        rows.forEach(function (r) {
+          if (r.f.month === null || r.f.year !== year) return;
+          months[r.f.month] += r.amount;
+        });
+        var byCat = categoryBreakdown(rows);
+        var donut = donutHtml(byCat, "noExpenseData");
+        var t = expenseSums(rows);
+        var monthsWith = months.filter(function (v) { return v > 0; }).length;
+
+        card.innerHTML =
+          "<h2>" + esc(T("expIndicatorsTitle")) + "</h2>" +
+          '<div class="ind-grid">' +
+            '<div class="ind-card"><h3>' + esc(T("expMonthlyTitle").replace("{y}", year)) + "</h3>" + monthBarsHtml(months) + "</div>" +
+            '<div class="ind-card"><h3>' + esc(T("expByCatTitle").replace("{n}", String(byCat.length))) + "</h3>" + donut.html + "</div>" +
+          "</div>" +
+          '<div class="ind-totals">' +
+            '<div class="ind-total"><b>' + shortMoney(t.sum) + "</b><span>" + esc(T("expTotal")) + "</span></div>" +
+            '<div class="ind-total"><b>' + shortMoney(t.due) + "</b><span>" + esc(T("expDue")) + "</span></div>" +
+            '<div class="ind-total"><b>' + shortMoney(t.overdue) + "</b><span>" + esc(T("expOverdue")) + "</span></div>" +
+            '<div class="ind-total"><b>' + shortMoney(monthsWith ? t.sum / monthsWith : 0) + "</b><span>" + esc(T("expAvgMonth")) + "</span></div>" +
+          "</div>";
+      }
+
+      function renderExpenses() {
+        var all = expenseRows();
+        renderExpenseFilters(all);
+        var rows = expenseFiltered(all).sort(function (a, b) {
+          return new Date(b.f.date || 0).getTime() - new Date(a.f.date || 0).getTime();
+        });
+        renderExpenseTotals(rows);
+        var body = $("expensesBody");
+        if (!body) return;
+        body.innerHTML = "";
+        $("expensesWrap").hidden = rows.length === 0;
+        $("emptyList").hidden = rows.length > 0;
+        rows.forEach(function (r) {
+          var item = r.item, f = r.f, sk = statusKeyOf(item);
+          var tr = document.createElement("tr");
+          tr.innerHTML =
+            '<td class="cell-num">' + esc(shortDate(f.date)) + "</td>" +
+            "<td>" + esc(f.cat || "-") + "</td>" +
+            '<td><span class="item-title">' + esc(f.desc || "-") + "</span>" +
+              (f.invoice ? '<span class="item-cat">' + esc(f.invoice) + "</span>" : "") + "</td>" +
+            "<td>" + esc(f.vendor || "-") + "</td>" +
+            '<td class="cell-num">' + money(item.amount) + "</td>" +
+            "<td>" + esc(f.method || "-") + "</td>" +
+            '<td><span class="status-' + sk + '">' + esc(T(sk === "done" ? "expStatusPaid" : STATUS_KEYS[sk])) + "</span></td>" +
+            '<td><div class="chat-options row-actions">' +
+              (item.status === "done" ? actionBtn(item, "reopen", "actionReopen") : actionBtn(item, "done", "expActionPay")) +
+              actionBtn(item, "edit", "actionEdit") +
+              actionBtn(item, "delete", "actionDelete", "is-danger") +
+            "</div></td>";
+          body.appendChild(tr);
+        });
+      }
+
       function renderViolations() {
         var items = state.items.filter(function (it) {
           return !state.clientFilter || it.client_name === state.clientFilter;
@@ -3270,12 +3532,25 @@
       function renderList() {
         renderChart();
         renderCasesChart();
+        renderExpensesChart();
         if (state.viewType === "violations") {
           $("violationsBar").hidden = false;
           $("tableWrap").hidden = true;
+          $("expensesBar").hidden = true;
+          $("expensesWrap").hidden = true;
           renderViolations();
           return;
         }
+        if (state.viewType === "expenses") {
+          $("expensesBar").hidden = false;
+          $("tableWrap").hidden = true;
+          $("violationsBar").hidden = true;
+          $("violationsWrap").hidden = true;
+          renderExpenses();
+          return;
+        }
+        $("expensesBar").hidden = true;
+        $("expensesWrap").hidden = true;
         $("violationsBar").hidden = true;
         $("violationsWrap").hidden = true;
         var body = $("itemsBody");
@@ -3779,7 +4054,7 @@
   </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 <script src="/app.js?v=4" defer></script>
-<script src="/app/common.js?v=11" defer></script>
+<script src="/app/common.js?v=12" defer></script>
 <script src="/brand-logo.js?v=4" defer></script>
 </body>
 </html>

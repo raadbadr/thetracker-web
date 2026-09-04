@@ -1718,8 +1718,7 @@
     { href: "/app/dashboard.html?type=violations", path: "type=violations",
       icon: '<path d="M12 2L1 21h22L12 2zm1 15h-2v-2h2v2zm0-4h-2V9h2v4z"/>',
       labels: { ar: "المخالفات", en: "Violations", fr: "Infractions", ur: "خلاف ورزیاں" } },
-    { href: "/app/dashboard.html?type=expenses", path: "type=expenses",
-      icon: '<path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+    { href: "/app/dashboard.html?type=expenses", path: "type=expenses", iconMask: true,
       labels: { ar: "مصاريف التشغيل", en: "Expenses", fr: "Charges", ur: "اخراجات" } },
     { href: "/app/documents.html", path: "documents",
       icon: '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2z"/>',
@@ -1790,6 +1789,8 @@
     "body .item-cat{display:block;margin-top:.2rem;font-size:.78rem;color:var(--text-secondary);opacity:.85}",
     "body .cell-stack{display:flex;flex-direction:column;gap:.2rem}",
     /* رمز الريال السعودي (الطريقة نفسها في باركينزي: قناع من rial-symbol.png بلون النص) */
+    ".app-sidebar-sar{display:inline-block;width:20px;height:20px;flex:0 0 20px;background-color:currentColor;",
+    "-webkit-mask:url(/rial-symbol.png) center/contain no-repeat;mask:url(/rial-symbol.png) center/contain no-repeat}",
     ".sar-symbol{display:inline-block;width:.95em;height:.95em;vertical-align:-.1em;background-color:currentColor;-webkit-mask:url(/rial-symbol.png) center/contain no-repeat;mask:url(/rial-symbol.png) center/contain no-repeat;margin:0 .12em}",
     "body .content{margin-bottom:var(--gap)}",
     "body .content:last-child{margin-bottom:0}",
@@ -1856,9 +1857,11 @@
       } else {
         active = here.indexOf("/" + item.path) !== -1 ? " is-active" : "";
       }
+      var glyph = item.iconMask
+        ? '<span class="app-sidebar-sar" aria-hidden="true"></span>'
+        : '<svg viewBox="0 0 24 24" aria-hidden="true">' + item.icon + "</svg>";
       html += '<a class="app-sidebar-link' + active + '" href="' + item.href + '">' +
-              '<svg viewBox="0 0 24 24" aria-hidden="true">' + item.icon + "</svg>" +
-              "<span>" + escapeHtml(sidebarLabel(item.labels)) + "</span></a>";
+              glyph + "<span>" + escapeHtml(sidebarLabel(item.labels)) + "</span></a>";
     });
     nav.innerHTML = html;
   }
