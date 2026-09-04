@@ -194,14 +194,14 @@ export function urlButton(label, url) {
 }
 
 /* قائمة مواعيد بنص مقروء */
-export function formatItems(lang, rows, title, emptyText) {
+export function formatItems(lang, rows, title, emptyText, userTimeZone) {
   const list = Array.isArray(rows) ? rows : [];
   if (!list.length) return emptyText;
   const lines = list.map((r, i) => {
     const who = r.client_name ? ` — ${r.client_name}` : "";
     const num = r.case_number ? ` (${r.case_number})` : "";
     const tr = r.tracker_name ? ` · ${r.tracker_name}` : "";
-    return `${i + 1}. ${r.title || ""}${who}${num}\n   ${r.due_at ? fmtDue(r.due_at) : "-"}${tr}`;
+    return `${i + 1}. ${r.title || ""}${who}${num}\n   ${r.due_at ? fmtDue(r.due_at, userTimeZone) : "-"}${tr}`;
   });
   return `${title}\n\n${lines.join("\n")}`;
 }
@@ -225,11 +225,12 @@ export async function linkChannelDirect(env, userId, channel, externalId) {
 
 /* الصيغة القياسية نفسها في كل قناة: dd-MM-yyyy HH:mm، ميلادي، 24 ساعة، أرقام
    غربية، بلا اختلاف بين اللغات — مطابقة app.fmtDate في الموقع ومعيار تطبيق
-   باركينزي. توقيت الرياض ثابت هنا بقصد: التذكير يصل بتوقيت عمل الشركة. */
-function fmtDue(iso) {
+   باركينزي. المنطقة الزمنية باختيار المستلم من إعداداته (profiles.tz)،
+   وتوقيت الرياض هو الافتراضي فقط حين لا يختار المستخدم غيره. */
+function fmtDue(iso, userTimeZone) {
   try {
     const parts = new Intl.DateTimeFormat("en-GB", {
-      timeZone: "Asia/Riyadh", numberingSystem: "latn",
+      timeZone: userTimeZone || "Asia/Riyadh", numberingSystem: "latn",
       year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false,
     }).formatToParts(new Date(iso));
     const by = {};
@@ -239,12 +240,12 @@ function fmtDue(iso) {
 }
 
 // ---------- القنوات ----------
-export async function sendEmail(env, { to, lang, title, due_at, tracker_name, org_name }) {
+export async function sendEmail(env, { to, lang, title, due_at, tracker_name, org_name, tz: userTimeZone }) {
   if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY || !env.WORKER_SECRET) throw new Error("email not configured");
   const res = await fetch(`${env.SUPABASE_URL}/functions/v1/send-zoho-email`, {
     method: "POST",
     headers: { ...anonHeaders(env), "x-tracker-secret": env.WORKER_SECRET },
-    body: JSON.stringify({ action: "send-reminder", to, lang, title, due_at, tracker_name, org_name }),
+    body: JSON.stringify({ action: "send-reminder", to, lang, title, due_at, tracker_name, org_name, tz: userTimeZone }),
     cf: NO_CACHE,
   });
   if (!res.ok) throw new Error(`email ${res.status}: ${(await res.text()).slice(0, 200)}`);
@@ -388,12 +389,13 @@ export async function runNotificationCron(env) {
 
   for (const n of pending) {
     const lang = n.lang || "ar";
-    const text = t(lang).reminder(n.title || "", n.due_at ? fmtDue(n.due_at) : "-", n.tracker_name);
+    const userTimeZone = n.tz || "Asia/Riyadh";
+    const text = t(lang).reminder(n.title || "", n.due_at ? fmtDue(n.due_at, userTimeZone) : "-", n.tracker_name);
     let status = "sent", error = null;
     try {
       if (n.channel === "email") {
         if (!n.email) throw new Error("no email");
-        await sendEmail(env, { to: n.email, lang, title: n.title, due_at: n.due_at, tracker_name: n.tracker_name, org_name: n.org_name });
+        await sendEmail(env, { to: n.email, lang, title: n.title, due_at: n.due_at, tracker_name: n.tracker_name, org_name: n.org_name, tz: userTimeZone });
       } else if (!n.external_id) {
         status = "skipped"; error = "channel not linked";
       } else if (n.channel === "telegram") await sendTelegram(env, n.external_id, text);

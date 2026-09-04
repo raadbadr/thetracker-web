@@ -163,18 +163,20 @@
 
   /* الصيغة القياسية الواحدة لكل عرض تاريخ في المنصة، مطابقة لمعيار تطبيق
      باركينزي بالضبط (dd-MM-yyyy / HH:mm / dd-MM-yyyy HH:mm): ميلادي، 24 ساعة،
-     أرقام غربية دائماً، بلا اختلاف بين اللغات. توقيت الرياض ثابت هنا (خلاف
-     الجهاز في التطبيق) لأن هذا موقع لفريق موزّع، لا تطبيق شخصي على جهاز واحد. */
+     أرقام غربية دائماً، بلا اختلاف بين اللغات. المنطقة الزمنية قابلة للاختيار
+     من كل مستخدم عبر الإعدادات (profile.tz)، وتوقيت الرياض هو الافتراضي فقط
+     حين لا يختار المستخدم غيره. */
   function fmtDate(iso, opts) {
     if (!iso) return "";
     var d = iso instanceof Date ? iso : new Date(iso);
     if (isNaN(d.getTime())) return "";
     var withTime = !!(opts && opts.withTime);
     var timeOnly = !!(opts && opts.timeOnly);
+    var userTimeZone = (app.profile && app.profile.tz) || TIME_ZONE;
     var parts;
     try {
       parts = new Intl.DateTimeFormat("en-GB", {
-        timeZone: TIME_ZONE, numberingSystem: "latn",
+        timeZone: userTimeZone, numberingSystem: "latn",
         year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false
       }).formatToParts(d);
     } catch (e) {
@@ -1927,9 +1929,14 @@
     if (current && !serviceAllowed(current)) window.location.replace("/app/dashboard.html");
   }
 
+  var sidebarReady = false;
+  var sidebarHtml = "";
+
   function renderSidebar() {
     var nav = document.getElementById("appSidebar");
     if (!nav) return;
+    /* القائمة بيانات: لا تُرسم قبل أن تُعرف خدمات الاشتراك، فلا تتغير أمام المستخدم */
+    if (!sidebarReady) return;
     enforceServiceAccess();
     var here = String(window.location.pathname || "");
     var html = '<div class="app-sidebar-title">' + escapeHtml(sidebarLabel({ ar: "الخدمات", en: "Services", fr: "Services", ur: "خدمات" })) + "</div>";
@@ -1951,6 +1958,8 @@
       html += '<a class="app-sidebar-link' + active + '" href="' + item.href + '">' +
               glyph + "<span>" + escapeHtml(sidebarLabel(item.labels)) + "</span></a>";
     });
+    if (html === sidebarHtml) return;
+    sidebarHtml = html;
     nav.innerHTML = html;
   }
 
@@ -1972,14 +1981,14 @@
     var quick = document.getElementById("quickLinks");
     if (quick) quick.hidden = true;
 
-    renderSidebar();
-
     var ready = app && app.ready && typeof app.ready.then === "function" ? app.ready : null;
-    if (ready) ready.then(function () {
-      if (!isPlatformAdmin()) return;
-      nav.dataset.admin = "1";
+    var paint = function () {
+      if (isPlatformAdmin()) nav.dataset.admin = "1";
+      sidebarReady = true;
       renderSidebar();
-    }).catch(function () { /* الصفحة تتكفل بعرض الخطأ */ });
+    };
+    if (ready) ready.then(paint, paint);
+    else paint();
 
     /* إعادة الرسم عند تغيير اللغة (setLang يغير lang/dir على <html>). */
     if (typeof MutationObserver !== "undefined") {
@@ -2433,6 +2442,8 @@
            "</div>";
   }
 
+  var topbarHtml = "";
+
   function renderTopbar() {
     var bar = document.getElementById("appTopbar");
     if (!bar) return;
@@ -2447,7 +2458,7 @@
       nav += '<a class="' + active + '" href="' + item.href + '"' + target + ">" + label + "</a>";
     });
 
-    bar.innerHTML =
+    var html =
       '<button type="button" class="app-iconbtn app-sidebar-toggle" id="topSidebarToggle" aria-controls="appSidebar" ' +
         'aria-label="' + escapeHtml(sidebarLabel(SIDEBAR_TOGGLE_LABELS)) + '" title="' + escapeHtml(sidebarLabel(SIDEBAR_TOGGLE_LABELS)) + '">' +
         '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/></svg></button>' +
@@ -2462,6 +2473,10 @@
           '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg></button>' +
         '<div class="app-bell-panel" id="topBellPanel"><div class="app-bell-empty">' + escapeHtml(sidebarLabel(BELL_EMPTY)) + "</div></div>" +
       "</div>";
+
+    if (html === topbarHtml) return;   /* نفس المحتوى: لا إعادة رسم ولا مستمعون جدد */
+    topbarHtml = html;
+    bar.innerHTML = html;
 
     var bell = document.getElementById("topBellBtn");
     var bellPanel = document.getElementById("topBellPanel");

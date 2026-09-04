@@ -232,11 +232,12 @@ async function handleNotifyTest(request, env) {
   let target;
   try { target = await notifyTarget(env, user.id, channel); } catch { target = null; }
   const lang = (target && target.lang) || "ar";
+  const userTimeZone = (target && target.tz) || "Asia/Riyadh";
   try {
     if (channel === "email") {
       const to = (target && target.email) || user.email;
       if (!to) return json({ error: "no_email" }, 400);
-      await sendEmail(env, { to, lang, title: channelText(lang).test, due_at: new Date().toISOString() });
+      await sendEmail(env, { to, lang, title: channelText(lang).test, due_at: new Date().toISOString(), tz: userTimeZone });
     } else {
       const ext = target && target.external_id;
       if (!ext) return json({ error: "channel_not_linked" }, 400);
@@ -305,11 +306,12 @@ async function runMenu(env, chatId, userId, action) {
   let target = null;
   try { target = await notifyTarget(env, userId, "telegram"); } catch {}
   const lang = (target && target.lang) || "ar";
+  const userTimeZone = (target && target.tz) || "Asia/Riyadh";
   const b = botText(lang);
   if (action === "upcoming" || action === "overdue") {
     let rows = [];
     try { rows = await telegramItems(env, userId, action, 8); } catch {}
-    const text = formatItems(lang, rows, action === "overdue" ? b.overdueTitle : b.upcomingTitle, action === "overdue" ? b.noOverdue : b.noUpcoming);
+    const text = formatItems(lang, rows, action === "overdue" ? b.overdueTitle : b.upcomingTitle, action === "overdue" ? b.noOverdue : b.noUpcoming, userTimeZone);
     try { await sendTelegram(env, chatId, text, menuKeyboard(lang)); } catch {}
   } else if (action === "dashboard") {
     try { await sendTelegram(env, chatId, b.openDash, urlButton(b.openDash, "https://appmails.net/app/dashboard.html")); } catch {}
@@ -387,7 +389,7 @@ async function readTelegramDocument(env, media, name, mime) {
 }
 
 /** الرسالة (نص/صوت/ملف) ← نيّة ← بحث فوري، أو عرض فعل بزرّي تأكيد، أو جواب المساعد */
-async function smartReply(env, chatId, userId, text, lang, tgName, attachment, prefix) {
+async function smartReply(env, chatId, userId, text, lang, tgName, attachment, prefix, userTimeZone) {
   const b = botText(lang);
   let intent = { action: "question" };
   try { intent = await extractIntent(env, text, attachment ? { attachment } : null); } catch {}
@@ -399,14 +401,14 @@ async function smartReply(env, chatId, userId, text, lang, tgName, attachment, p
       catch { intent.action = "question"; }
     }
     if (intent.action !== "question") {
-      try { await sendTelegram(env, chatId, pre + describeAction(lang, intent), actionButtons(lang)); } catch {}
+      try { await sendTelegram(env, chatId, pre + describeAction(lang, intent, userTimeZone), actionButtons(lang)); } catch {}
       return;
     }
   }
   if (intent.action === "search" && intent.query) {
     let rows = [];
     try { rows = await rpc(env, "telegram_search", { p_secret: env.WORKER_SECRET, p_user_id: userId, p_query: intent.query, p_limit: 8 }); } catch {}
-    try { await sendTelegram(env, chatId, pre + formatSearch(lang, intent.query, rows), menuKeyboard(lang)); } catch {}
+    try { await sendTelegram(env, chatId, pre + formatSearch(lang, intent.query, rows, userTimeZone), menuKeyboard(lang)); } catch {}
     return;
   }
   let reply = null;
@@ -492,6 +494,7 @@ async function handleTelegramWebhook(request, env) {
     let target = null;
     try { target = await notifyTarget(env, owner, "telegram"); } catch {}
     const lang = (target && target.lang) || tgLang;
+    const userTimeZone = (target && target.tz) || "Asia/Riyadh";
     const b = botText(lang);
     await sendChatAction(env, chatId, "typing");
     const size = Number((voice && voice.file_size) || (doc && doc.file_size) || (photo && photo.file_size) || 0);
@@ -502,7 +505,7 @@ async function handleTelegramWebhook(request, env) {
       if (!transcript) { try { await sendTelegram(env, chatId, b.fileUnreadable, menuKeyboard(lang)); } catch {} return json({ ok: true }); }
       const spokenMenu = menuAction(transcript);
       if (spokenMenu) { await runMenu(env, chatId, owner, spokenMenu); return json({ ok: true }); }
-      await smartReply(env, chatId, owner, transcript, lang, (target && target.full_name) || tgName, null, b.voiceHeard + "«" + transcript + "»\n\n");
+      await smartReply(env, chatId, owner, transcript, lang, (target && target.full_name) || tgName, null, b.voiceHeard + "«" + transcript + "»\n\n", userTimeZone);
       return json({ ok: true });
     }
     // 3-ب) إكسل أو CSV: يُقرأ بمنطق صفحة الاستيراد، ويُعرض ملخصه بزرّي حفظ/إلغاء
@@ -525,7 +528,7 @@ async function handleTelegramWebhook(request, env) {
     let content = null;
     try { content = await readTelegramDocument(env, media, name, mime); } catch (e) { console.error("[telegram] read file failed:", String((e && e.message) || e).slice(0, 200)); }
     if (!content) { try { await sendTelegram(env, chatId, b.fileUnreadable, menuKeyboard(lang)); } catch {} return json({ ok: true }); }
-    await smartReply(env, chatId, owner, caption || b.fileQuestion, lang, (target && target.full_name) || tgName, { name, kind: photo ? "image" : "file", content }, "");
+    await smartReply(env, chatId, owner, caption || b.fileQuestion, lang, (target && target.full_name) || tgName, { name, kind: photo ? "image" : "file", content }, "", userTimeZone);
     return json({ ok: true });
   }
   if (menu) { await runMenu(env, chatId, owner, menu); return json({ ok: true }); }
@@ -534,8 +537,9 @@ async function handleTelegramWebhook(request, env) {
   let target = null;
   try { target = await notifyTarget(env, owner, "telegram"); } catch {}
   const lang = (target && target.lang) || tgLang;
+  const userTimeZone = (target && target.tz) || "Asia/Riyadh";
   await sendChatAction(env, chatId, "typing");
-  await smartReply(env, chatId, owner, text, lang, (target && target.full_name) || tgName, null, "");
+  await smartReply(env, chatId, owner, text, lang, (target && target.full_name) || tgName, null, "", userTimeZone);
   return json({ ok: true });
 }
 
