@@ -213,7 +213,7 @@
     .wl-card:active { cursor: grabbing; }
     .wl-card.is-dragging { opacity: .45; }
     .wl-card.is-late { border-color: var(--error); }
-    .wl-card b { font-size: .88rem; color: var(--text-primary); font-weight: 600; overflow-wrap: anywhere; }
+    .wl-card b { font-size: .88rem; color: var(--text-primary); font-weight: 600; overflow-wrap: break-word; word-break: break-word; }
     .wl-card span { font-size: .72rem; color: var(--text-secondary); }
     .wl-card select { margin-top: .25rem; padding: .35rem .5rem; font-size: .78rem; border-radius: 8px; }
     .wl-empty { padding: 1rem .7rem; font-size: .8rem; color: var(--text-tertiary); text-align: center; }
@@ -615,7 +615,7 @@
     .chat-msg-author { font-size: 0.72rem; color: var(--text-secondary); padding: 0 .4rem; }
     .chat-bubble {
       padding: 0.6rem 0.9rem; border-radius: 18px; line-height: 1.6; font-size: 0.95rem;
-      white-space: pre-wrap; overflow-wrap: anywhere; color: var(--text-primary);
+      white-space: pre-wrap; overflow-wrap: break-word; word-break: break-word; color: var(--text-primary);
       background: var(--glass-strong); border: 1px solid var(--glass-border);
     }
     .chat-msg.is-mine .chat-bubble { background: var(--primary); color: var(--btn-ink); border-color: transparent; }
@@ -1773,6 +1773,13 @@
         return key ? t(key) : "-";
       }
 
+      /* البريد الطويل ينكسر عند @ وعند النقاط لا في منتصف الكلمة */
+      function emailHtml(value) {
+        var text = String(value == null ? "" : value);
+        if (!text) return "-";
+        return esc(text).replace(/@/g, "<wbr>@").replace(/\./g, "<wbr>.");
+      }
+
       function renderMembers() {
         var grid = $("membersGrid");
         if (!grid) return;
@@ -1792,7 +1799,7 @@
 
           var rows =
             '<div class="platform-stat-detail-row"><span>' + esc(t("emailLabel")) + "</span>" +
-              '<span class="platform-stat-detail-val" dir="ltr" style="overflow-wrap:anywhere">' + esc(email || "-") + "</span></div>" +
+              '<span class="platform-stat-detail-val" dir="ltr" style="overflow-wrap:break-word;word-break:break-word">' + emailHtml(email) + "</span></div>" +
             '<div class="platform-stat-detail-row"><span>' + esc(t("personKindLabel")) + "</span>" +
               '<span class="platform-stat-detail-val">' + esc(personKindName(m.person_kind)) + "</span></div>" +
             '<div class="platform-stat-detail-row"><span>' + esc(t("departmentLabel")) + "</span>" +
@@ -1941,7 +1948,7 @@
         list.innerHTML = state.invitations.map(function (inv) {
           var email = String(inv.email || "");
           return '<div class="platform-stat-detail-row">' +
-                   '<span><span dir="ltr" style="overflow-wrap:anywhere">' + esc(email) + "</span> · " + esc(roleName(inv.role)) + " · " + esc(tf("invitedOn", { date: fmtDate(inv.created_at) || "-" })) + "</span>" +
+                   '<span><span dir="ltr" style="overflow-wrap:break-word;word-break:break-word">' + emailHtml(email) + "</span> · " + esc(roleName(inv.role)) + " · " + esc(tf("invitedOn", { date: fmtDate(inv.created_at) || "-" })) + "</span>" +
                    '<span class="platform-stat-detail-val"><button type="button" class="chat-option-btn" data-cancel-invite="' + esc(inv.id) + '" data-email="' + esc(email) + '">' + esc(t("cancelInviteBtn")) + "</button></span>" +
                  "</div>";
         }).join("");
