@@ -765,15 +765,19 @@
     .sgrid .waitlist-input, .raci-grid .waitlist-input, .quick-add .waitlist-input,
     .form-grid .waitlist-input, .heat-tools .waitlist-input { width: 100%; min-width: 0; max-width: 100%; }
 
-    /* توزيع الأدوار بالسحب: يُسحب اسم العضو ويُسقط على خانة الدور في الخطوة */
-    .member-strip { display: flex; flex-wrap: wrap; gap: .4rem; margin: .6rem 0 .2rem; align-items: center; }
-    .member-strip .ms-hint { font-size: .72rem; color: var(--text-secondary); margin-inline-end: .3rem; }
-    .m-chip { display: inline-flex; align-items: center; gap: .35rem; padding: .35rem .7rem; border-radius: 999px;
-      border: 1px solid var(--glass-border); background: var(--glass); color: var(--text-primary);
-      font-size: .8rem; font-weight: 600; cursor: grab; user-select: none; min-height: 34px; }
-    .m-chip:active { cursor: grabbing; }
-    .m-chip.is-dragging { opacity: .5; }
-    .raci-grid label.drop-on { outline: 2px dashed var(--primary); outline-offset: 3px; border-radius: 10px; }
+
+    /* إسناد الأدوار بنقرة واحدة: صور الأعضاء بأحرفهم الأولى تحت كل دور،
+       نقرة تُسند ونقرة على المسند تلغيه — بلا قوائم ولا سحب. */
+    .role-pick { min-width: 0; }
+    .role-pick .avatars { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.3rem; }
+    .avatar-btn { width: 36px; height: 36px; min-height: 36px; padding: 0; border-radius: 50%;
+      border: 2px solid var(--glass-border); background: var(--glass); color: var(--text-primary);
+      font: inherit; font-size: 0.78rem; font-weight: 800; cursor: pointer; display: grid; place-items: center;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease; }
+    .avatar-btn:hover { transform: translateY(-1px); border-color: var(--primary); }
+    .avatar-btn.is-on { border-color: var(--primary); background: var(--primary); color: var(--btn-ink, #fff); box-shadow: 0 4px 12px var(--primary-shadow); }
+    .avatar-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+    .role-empty { font-size: 0.72rem; color: var(--text-secondary); }
 </style>
 </head>
 <body class="has-site-header">
@@ -845,7 +849,6 @@
           <label class="form-field" style="display:block;margin-top:.75rem"><span data-i18n="fDescription">الوصف</span><textarea class="waitlist-input" id="fDescription" rows="2" maxlength="1000"></textarea></label>
 
           <h3 style="margin:1.25rem 0 .5rem" data-i18n="stepsTitle">الخطوات</h3>
-          <div class="member-strip" id="memberStrip" hidden></div>
           <div class="steps-list" id="steps"></div>
           <button type="button" class="add-step" id="addStep" data-i18n="addStep">＋ خطوة</button>
 
@@ -916,7 +919,7 @@
         fDescription: "الوصف",
         stepsTitle: "الخطوات",
         addStep: "＋ خطوة",
-        dragHint: "اسحب اسم العضو إلى دوره في الخطوة",
+        noMembersYet: "ادع فريقك أولا من صفحة الفريق",
         stepType: "النوع",
         typeTask: "مهمة",
         typeDecision: "قرار (نعم/لا)",
@@ -1153,7 +1156,7 @@
         fDescription: "Description",
         stepsTitle: "Steps",
         addStep: "＋ Step",
-        dragHint: "Drag a member onto their role in the step",
+        noMembersYet: "Invite your team first from the Team page",
         stepType: "Type",
         typeTask: "Task",
         typeDecision: "Decision (yes/no)",
@@ -1390,7 +1393,7 @@
         fDescription: "Description",
         stepsTitle: "Étapes",
         addStep: "＋ Étape",
-        dragHint: "Glissez un membre sur son rôle dans l’étape",
+        noMembersYet: "Invitez d’abord votre équipe depuis la page Équipe",
         stepType: "Type",
         typeTask: "Tâche",
         typeDecision: "Décision (oui/non)",
@@ -1627,7 +1630,7 @@
         fDescription: "تفصیل",
         stepsTitle: "مراحل",
         addStep: "＋ مرحلہ",
-        dragHint: "رکن کو مرحلے میں اس کے کردار پر کھینچیں",
+        noMembersYet: "پہلے ٹیم کے صفحے سے اپنی ٹیم کو مدعو کریں",
         stepType: "قسم",
         typeTask: "کام",
         typeDecision: "فیصلہ (ہاں/نہیں)",
@@ -1971,6 +1974,28 @@
         state.members.forEach(function (m) { html += '<option value="' + esc(m.user_id) + '"' + (sel === m.user_id ? " selected" : "") + ">" + esc(state.names[m.user_id] || "") + "</option>"; });
         return html;
       }
+      /* حرفان من الاسم يكفيان للتعرف على الشخص في دائرة صغيرة */
+      function initialsOf(text) {
+        var parts = String(text || "").trim().split(/\s+/).filter(Boolean)
+          .map(function (w) { return w.replace(/^ال(?=.)/, ""); }); /* «الشمري» تُقرأ شينا لا ألفا */
+        if (!parts.length) return "؟";
+        if (parts.length === 1) return parts[0].slice(0, 2);
+        return parts[0].slice(0, 1) + parts[1].slice(0, 1);
+      }
+
+      function rolePicker(stepIndex, role, current) {
+        var list = state.members || [];
+        if (!list.length) return '<span class="role-empty">' + esc(t("noMembersYet")) + "</span>";
+        return list.map(function (m) {
+          var full = state.names[m.user_id] || "";
+          var on = current === m.user_id;
+          return '<button type="button" class="avatar-btn' + (on ? " is-on" : "") + '" data-avatar="1"' +
+                 ' data-i="' + stepIndex + '" data-role="' + role + '" data-member="' + esc(m.user_id) + '"' +
+                 ' aria-pressed="' + (on ? "true" : "false") + '" title="' + esc(full) + '">' +
+                 esc(initialsOf(full)) + "</button>";
+        }).join("");
+      }
+
       function newStep() { return { id: "s_" + Math.random().toString(36).slice(2, 7), type: "task", title: "", role: "", R: "", A: "", C: "", I: "", note: "", yesTarget: "", noTarget: "" }; }
 
       /* ---------- القائمة ---------- */
@@ -1997,51 +2022,6 @@
         if (app && app.translateNodes) app.translateNodes(body);
       }
 
-      /* السحب والإفلات: اسم العضو من الشريط إلى خانة الدور، والقائمة تبقى بديلاً */
-      (function wireRoleDnd() {
-        var dragged = null;
-        document.addEventListener("dragstart", function (ev) {
-          var chip = ev.target.closest && ev.target.closest(".m-chip");
-          if (!chip) return;
-          dragged = chip.dataset.member || "";
-          chip.classList.add("is-dragging");
-          try { ev.dataTransfer.setData("text/plain", dragged); ev.dataTransfer.effectAllowed = "copy"; } catch (e) { /* بعض المتصفحات */ }
-        });
-        document.addEventListener("dragend", function (ev) {
-          var chip = ev.target.closest && ev.target.closest(".m-chip");
-          if (chip) chip.classList.remove("is-dragging");
-          dragged = null;
-          document.querySelectorAll(".drop-on").forEach(function (el) { el.classList.remove("drop-on"); });
-        });
-        function slotOf(target) {
-          var label = target.closest && target.closest(".raci-grid label");
-          if (!label) return null;
-          var sel = label.querySelector("select[data-f]");
-          return sel && ["R", "A", "C", "I"].indexOf(sel.dataset.f) !== -1 ? { label: label, sel: sel } : null;
-        }
-        document.addEventListener("dragover", function (ev) {
-          var slot = slotOf(ev.target);
-          if (!slot) return;
-          ev.preventDefault();
-          try { ev.dataTransfer.dropEffect = "copy"; } catch (e) { /* تجاهل */ }
-          slot.label.classList.add("drop-on");
-        });
-        document.addEventListener("dragleave", function (ev) {
-          var slot = slotOf(ev.target);
-          if (slot) slot.label.classList.remove("drop-on");
-        });
-        document.addEventListener("drop", function (ev) {
-          var slot = slotOf(ev.target);
-          if (!slot) return;
-          ev.preventDefault();
-          var id = dragged || (ev.dataTransfer && ev.dataTransfer.getData("text/plain")) || "";
-          slot.label.classList.remove("drop-on");
-          if (!id) return;
-          slot.sel.value = id;
-          slot.sel.dispatchEvent(new Event("change", { bubbles: true }));
-        });
-      })();
-
       /* ---------- المحرر ---------- */
       function openEditor(p) {
         state.draft = p ? JSON.parse(JSON.stringify(p)) : { name: "", area: "lawsuits", steps: [newStep()], status: "draft" };
@@ -2058,20 +2038,7 @@
         show("listCard", false); show("detailCard", false); show("editorCard", true);
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
-      function renderMemberStrip() {
-        var strip = $("memberStrip");
-        if (!strip) return;
-        var list = state.members || [];
-        strip.hidden = list.length === 0;
-        if (!list.length) { strip.innerHTML = ""; return; }
-        strip.innerHTML = '<span class="ms-hint">' + esc(t("dragHint")) + "</span>" +
-          list.map(function (m) {
-            return '<span class="m-chip" draggable="true" data-member="' + esc(m.user_id) + '">' + esc(state.names[m.user_id] || "") + "</span>";
-          }).join("");
-      }
-
       function renderSteps() {
-        renderMemberStrip();
         var box = $("steps"); box.innerHTML = "";
         state.draft.steps.forEach(function (st, i) {
           var row = document.createElement("div"); row.className = "step-row";
@@ -2089,7 +2056,10 @@
               '<label><span class="mini-label">' + esc(t("stepTitle")) + '</span><input type="text" class="waitlist-input" data-f="title" data-i="' + i + '" value="' + esc(st.title) + '" maxlength="200" dir="auto"></label>' +
             "</div>" +
             '<div class="raci-grid">' +
-              ["R","A","C","I"].map(function (k) { return '<label><span class="mini-label">' + k + " — " + esc(t("raci_" + k)) + '</span><select class="waitlist-input" data-f="' + k + '" data-i="' + i + '">' + memberOptions(st[k], true) + "</select></label>"; }).join("") +
+              ["R","A","C","I"].map(function (k) {
+                return '<div class="role-pick"><span class="mini-label">' + k + " — " + esc(t("raci_" + k)) + "</span>" +
+                       '<div class="avatars">' + rolePicker(i, k, st[k] || "") + "</div></div>";
+              }).join("") +
             "</div>" +
             (st.type === "decision"
               ? '<div class="raci-grid" style="grid-template-columns:repeat(2,minmax(0,1fr))"><label><span class="mini-label">' + esc(t("yesTo")) + '</span><select class="waitlist-input" data-f="yesTarget" data-i="' + i + '"><option value="">-</option>' + targets + '</select></label>' +
@@ -2163,6 +2133,18 @@
         });
         $("steps").addEventListener("input", function (e) { var el = e.target; if (el.dataset.f) state.draft.steps[Number(el.dataset.i)][el.dataset.f] = el.value; });
         $("steps").addEventListener("click", function (e) {
+          var av = e.target.closest("[data-avatar]");
+          if (av) {
+            var ai = Number(av.dataset.i), role = av.dataset.role, id = av.dataset.member;
+            var step = state.draft.steps[ai];
+            step[role] = step[role] === id ? "" : id;
+            av.parentElement.querySelectorAll("[data-avatar]").forEach(function (b) {
+              var on = b.dataset.member === step[role];
+              b.classList.toggle("is-on", on);
+              b.setAttribute("aria-pressed", on ? "true" : "false");
+            });
+            return;
+          }
           var up = e.target.closest("[data-up]"), dn = e.target.closest("[data-down]"), del = e.target.closest("[data-del]");
           var st = state.draft.steps;
           if (up) { var i = Number(up.dataset.up); if (i > 0) { var x = st[i]; st[i] = st[i - 1]; st[i - 1] = x; renderSteps(); } }
