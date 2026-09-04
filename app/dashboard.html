@@ -2469,9 +2469,9 @@
         }).filter(Boolean).sort(function (a, b) { return a.ms - b.ms; });
 
         var todayMs = Date.now();
-        var minMs = events.length ? Math.min(events[0].ms, todayMs - 30 * 86400000) : todayMs - 180 * 86400000;
-        minMs = Math.min(minMs, todayMs - 30 * 86400000);
-        var spanMs = Math.max(1, todayMs - minMs);
+        /* بداية الخط الزمني ثابتة: 1 سبتمبر 2026 (انطلاق المنصة) */
+        var minMs = new Date(2026, 8, 1).getTime();
+        var spanMs = Math.max(86400000, todayMs - minMs);
         var ratioOf = function (ms) { return Math.max(0, Math.min(1, (ms - minMs) / spanMs)); };
 
         var ms = "";
