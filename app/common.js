@@ -750,6 +750,296 @@
     return storeAttachment(file, { item_id: itemId || null }, path);
   }
 
+  function addAttachmentLink(itemId, name, url) {
+    return run(function (client) {
+      var orgId = requireOrg();
+      var clean = String(url || "").trim();
+      if (!/^https?:\/\//i.test(clean)) throw new Error("invalid url");
+      return client.from("attachments").insert({
+        org_id: orgId,
+        item_id: itemId || null,
+        name: String(name || clean).slice(0, 200),
+        external_url: clean,
+        uploaded_by: app.user.id
+      }).select("*").single().then(unwrap);
+    });
+  }
+
+  /* ---------- Google Drive: اختيار ملف من درايف المستخدم وربطه بالعنصر ----------
+     يعمل عبر Google Picker بصلاحية drive.file (غير حساسة): المستخدم يختار الملف
+     بنفسه، ونخزن رابطه واسمه فقط؛ الملف يبقى في درايفه. */
+  var DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
+  var driveConfig = { clientId: null, apiKey: null };
+  var driveToken = null;
+
+  function driveAvailable() { return !!(driveConfig.clientId && driveConfig.apiKey); }
+
+  function driveAppId() { return String(driveConfig.clientId || "").split("-")[0] || ""; }
+
+  function loadScriptOnce(src, test) {
+    return new Promise(function (resolve, reject) {
+      if (test()) { resolve(); return; }
+      var el = document.createElement("script");
+      el.src = src; el.async = true;
+      el.onload = function () { resolve(); };
+      el.onerror = function () { reject(new Error("load_failed")); };
+      document.head.appendChild(el);
+    });
+  }
+
+  function driveAccessToken() {
+    if (driveToken && driveToken.expires > Date.now()) return Promise.resolve(driveToken.token);
+    return loadScriptOnce("https://accounts.google.com/gsi/client", function () { return !!(window.google && window.google.accounts && window.google.accounts.oauth2); })
+      .then(function () {
+        return new Promise(function (resolve, reject) {
+          var tc = window.google.accounts.oauth2.initTokenClient({
+            client_id: driveConfig.clientId,
+            scope: DRIVE_SCOPE,
+            callback: function (resp) {
+              if (!resp || !resp.access_token) { reject(new Error("no_token")); return; }
+              driveToken = { token: resp.access_token, expires: Date.now() + (Number(resp.expires_in) || 3000) * 1000 - 60000 };
+              resolve(resp.access_token);
+            },
+            error_callback: function () { reject(new Error("denied")); }
+          });
+          tc.requestAccessToken({ prompt: driveToken ? "" : "consent" });
+        });
+      });
+  }
+
+  function pickFromDrive(opts) {
+    var multi = !opts || opts.multi !== false;
+    if (!driveAvailable()) return Promise.reject(new Error("drive_unavailable"));
+    return driveAccessToken().then(function (token) {
+      return loadScriptOnce("https://apis.google.com/js/api.js", function () { return !!window.gapi; })
+        .then(function () { return new Promise(function (resolve) { window.gapi.load("picker", { callback: resolve }); }); })
+        .then(function () {
+          return new Promise(function (resolve, reject) {
+            var view = new window.google.picker.DocsView(window.google.picker.ViewId.DOCS).setIncludeFolders(true).setSelectFolderEnabled(false);
+            var builder = new window.google.picker.PickerBuilder()
+              .setOAuthToken(token)
+              .setDeveloperKey(driveConfig.apiKey)
+              .setAppId(driveAppId())
+              .setLocale(lang() === "ar" || lang() === "ur" ? "ar" : lang())
+              .addView(view);
+            if (multi) builder.enableFeature(window.google.picker.Feature.MULTISELECT_ENABLED);
+            var picker = builder
+              .setCallback(function (data) {
+                if (data.action === window.google.picker.Action.PICKED) resolve(data.docs || []);
+                else if (data.action === window.google.picker.Action.CANCEL) reject(new Error("cancelled"));
+              })
+              .build();
+            picker.setVisible(true);
+          });
+        });
+    });
+  }
+
+  /* ملف درايف المختار يُنزَّل مؤقتا في المتصفح ليقرأه المحلل، ولا يُرفع لتخزيننا.
+     ملفات جوجل (مستند/جدول) تُصدَّر PDF أو XLSX لأنها لا تنزل كما هي. */
+  var GOOGLE_EXPORT = {
+    "application/vnd.google-apps.document": ["application/pdf", ".pdf"],
+    "application/vnd.google-apps.presentation": ["application/pdf", ".pdf"],
+    "application/vnd.google-apps.drawing": ["application/pdf", ".pdf"],
+    "application/vnd.google-apps.spreadsheet": ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", ".xlsx"]
+  };
+
+  function driveDownload(doc) {
+    if (!doc || !doc.id) return Promise.reject(new Error("no_file"));
+    return driveAccessToken().then(function (token) {
+      var exp = GOOGLE_EXPORT[doc.mimeType];
+      var url = exp
+        ? "https://www.googleapis.com/drive/v3/files/" + encodeURIComponent(doc.id) + "/export?mimeType=" + encodeURIComponent(exp[0])
+        : "https://www.googleapis.com/drive/v3/files/" + encodeURIComponent(doc.id) + "?alt=media";
+      return fetch(url, { headers: { Authorization: "Bearer " + token } }).then(function (r) {
+        if (!r.ok) throw new Error("drive_download_" + r.status);
+        return r.blob();
+      }).then(function (blob) {
+        var name = String(doc.name || "drive-file");
+        if (exp && name.slice(-exp[1].length).toLowerCase() !== exp[1]) name += exp[1];
+        try { return new File([blob], name, { type: blob.type || (exp ? exp[0] : doc.mimeType) || "application/octet-stream" }); }
+        catch (e) { blob.name = name; return blob; }
+      });
+    });
+  }
+
+  /* يربط ملفات درايف المختارة بعنصر: صف مرفق لكل ملف برابطه (بلا رفع) */
+  /* ------------------------------------------------------------
+   * التخزين في Google Drive الخاص بالمستخدم (خيار؛ الافتراضي تخزين المنصة)
+   * الرفع يحتاج رمز OAuth فقط (drive.file) ولا يحتاج مفتاح Picker.
+   * ------------------------------------------------------------ */
+  var DRIVE_API = "https://www.googleapis.com/drive/v3";
+  var DRIVE_UPLOAD = "https://www.googleapis.com/upload/drive/v3/files";
+  var DRIVE_FOLDER_MIME = "application/vnd.google-apps.folder";
+  var DRIVE_ROOT_NAME = "TheTracker";
+  var DRIVE_FALLBACK_TEXT = {
+    ar: "لم يتم الحفظ في Google Drive، فحُفظ الملف في تخزين المنصة.",
+    en: "Google Drive was unavailable, so the file was saved to platform storage.",
+    fr: "Google Drive indisponible : le fichier a été enregistré sur la plateforme.",
+    ur: "Google Drive دستیاب نہیں تھا، فائل پلیٹ فارم اسٹوریج میں محفوظ ہو گئی۔"
+  };
+
+  function driveOAuthAvailable() { return !!driveConfig.clientId; }
+
+  /* وضع التخزين الفعّال: درايف فقط إن اختاره المستخدم في ملفه وكان عميل جوجل مضبوطاً */
+  function storageMode() {
+    var mode = app.profile && app.profile.storage_mode;
+    return mode === "drive" && driveOAuthAvailable() ? "drive" : "platform";
+  }
+
+  function driveFetch(token, url, opts) {
+    var o = opts || {};
+    var headers = Object.assign({ Authorization: "Bearer " + token }, o.headers || {});
+    return fetch(url, { method: o.method || "GET", headers: headers, body: o.body }).then(function (res) {
+      if (res.status === 204) return null;
+      return res.json().catch(function () { return null; }).then(function (data) {
+        if (!res.ok) {
+          var err = new Error("drive_" + res.status);
+          err.status = res.status; err.data = data;
+          throw err;
+        }
+        return data;
+      });
+    });
+  }
+
+  function driveEscape(v) { return String(v || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'"); }
+
+  function driveFindOrCreateFolder(token, name, parentId, props) {
+    var q = "mimeType='" + DRIVE_FOLDER_MIME + "' and trashed=false and '" + (parentId || "root") + "' in parents";
+    if (props && props.tracker_org) q += " and appProperties has { key='tracker_org' and value='" + driveEscape(props.tracker_org) + "' }";
+    else q += " and name='" + driveEscape(name) + "'";
+    return driveFetch(token, DRIVE_API + "/files?q=" + encodeURIComponent(q) + "&fields=files(id,name)&pageSize=1&spaces=drive")
+      .then(function (data) {
+        var found = data && data.files && data.files[0];
+        if (found) return found.id;
+        var meta = { name: name, mimeType: DRIVE_FOLDER_MIME, parents: [parentId || "root"] };
+        if (props) meta.appProperties = props;
+        return driveFetch(token, DRIVE_API + "/files?fields=id", {
+          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(meta)
+        }).then(function (f) { return f.id; });
+      });
+  }
+
+  /* مجلد «TheTracker/اسم الشركة» في درايف المستخدم، مع تخزين معرّفه محلياً */
+  function driveFolderFor(token, orgId, orgName, fresh) {
+    var key = "tracker_drive_folder:" + orgId;
+    var cached = !fresh && localStorage.getItem(key);
+    if (cached) return Promise.resolve(cached);
+    return driveFindOrCreateFolder(token, DRIVE_ROOT_NAME, "root", null)
+      .then(function (rootId) { return driveFindOrCreateFolder(token, orgName || "Company", rootId, { tracker_org: orgId }); })
+      .then(function (id) { localStorage.setItem(key, id); return id; });
+  }
+
+  function driveUploadFile(token, file, folderId) {
+    var boundary = "tracker" + randomCode(12);
+    var meta = { name: file.name || "file", parents: [folderId] };
+    var body = new Blob([
+      "--" + boundary + "\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n" + JSON.stringify(meta) + "\r\n",
+      "--" + boundary + "\r\nContent-Type: " + (file.type || "application/octet-stream") + "\r\n\r\n",
+      file,
+      "\r\n--" + boundary + "--"
+    ]);
+    return driveFetch(token, DRIVE_UPLOAD + "?uploadType=multipart&fields=id,name,mimeType,size,webViewLink", {
+      method: "POST", headers: { "Content-Type": "multipart/related; boundary=" + boundary }, body: body
+    });
+  }
+
+  /* مشاركة الملف (قراءة) مع أعضاء الشركة الفعّالين — بلا رسائل بريد، وبلا إيقاف الرفع عند الفشل */
+  function driveShareWithTeam(token, fileId) {
+    return listMembers().then(function (members) {
+      var emails = [];
+      (members || []).forEach(function (m) {
+        var email = m.profiles && m.profiles.email;
+        if (m.status === "active" && m.user_id !== app.user.id && email && emails.indexOf(email) === -1) emails.push(email);
+      });
+      return emails.reduce(function (p, email) {
+        return p.then(function () {
+          return driveFetch(token, DRIVE_API + "/files/" + fileId + "/permissions?sendNotificationEmail=false&fields=id", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type: "user", role: "reader", emailAddress: email })
+          }).catch(function () { return null; });
+        });
+      }, Promise.resolve());
+    }).catch(function () { return null; });
+  }
+
+  function storeInDrive(file) {
+    var orgId = requireOrg();
+    var orgName = (app.org && app.org.name) || "";
+    return driveAccessToken().then(function (token) {
+      return driveFolderFor(token, orgId, orgName).then(function (folderId) {
+        return driveUploadFile(token, file, folderId).catch(function (err) {
+          if (err && err.status !== 404) throw err;
+          /* المجلد المخزَّن محلياً حُذف من درايف: أعد إيجاده مرة واحدة */
+          return driveFolderFor(token, orgId, orgName, true).then(function (fid) { return driveUploadFile(token, file, fid); });
+        });
+      }).then(function (f) {
+        return driveShareWithTeam(token, f.id).then(function () {
+          return { id: f.id, name: f.name || file.name, mime: f.mimeType || file.type || null,
+                   size: Number(f.size) || file.size || 0, url: f.webViewLink || ("https://drive.google.com/file/d/" + f.id + "/view") };
+        });
+      });
+    });
+  }
+
+  /* الطريق الواحد لحفظ ملف وتسجيله في attachments: درايف إن اختاره المستخدم (مع سقوط آمن إلى المنصة)، وإلا تخزين المنصة */
+  function storeAttachment(file, meta, path) {
+    if (!file) return Promise.reject(new Error("file required"));
+    var orgId = requireOrg();
+    var base = Object.assign({ org_id: orgId, uploaded_by: app.user.id }, meta || {});
+    function viaPlatform() {
+      return run(function (client) {
+        return client.storage.from(ATTACH_BUCKET).upload(path, file, { upsert: false, contentType: file.type || undefined })
+          .then(function (res) {
+            if (res && res.error) throw res.error;
+            return client.from("attachments").insert(Object.assign({}, base, {
+              name: file.name || "file", mime: file.type || null, size_bytes: file.size || 0, storage_path: path
+            })).select("*").single().then(unwrap)
+              .catch(function (err) {
+                /* لا نترك ملفا يتيما في التخزين إذا رفضت القاعدة الصف */
+                client.storage.from(ATTACH_BUCKET).remove([path]);
+                throw err;
+              });
+          });
+      });
+    }
+    if (storageMode() !== "drive") return viaPlatform();
+    return storeInDrive(file).then(function (d) {
+      return run(function (client) {
+        return client.from("attachments").insert(Object.assign({}, base, {
+          name: String(d.name || "file").slice(0, 200), mime: d.mime, size_bytes: d.size,
+          external_url: d.url, drive_file_id: d.id
+        })).select("*").single().then(unwrap);
+      });
+    }).catch(function (err) {
+      if (err && /^drive_|^no_token$|^denied$|^load_failed$/.test(String(err.message || ""))) {
+        toast(DRIVE_FALLBACK_TEXT[lang()] || DRIVE_FALLBACK_TEXT.ar, "error");
+        return viaPlatform();
+      }
+      throw err;
+    });
+  }
+
+  function attachDriveFiles(itemId, docs) {
+    var list = (docs || []).filter(function (d) { return d && d.url; });
+    return list.reduce(function (p, d) {
+      return p.then(function () {
+        return run(function (client) {
+          var orgId = requireOrg();
+          return client.from("attachments").insert({
+            org_id: orgId, item_id: itemId || null,
+            name: String(d.name || "Google Drive").slice(0, 200),
+            mime: d.mimeType || null,
+            size_bytes: Number(d.sizeBytes) || 0,
+            external_url: d.url,
+            uploaded_by: app.user.id
+          }).then(unwrap);
+        });
+      });
+    }, Promise.resolve()).then(function () { return list.length; });
+  }
+
   function attachmentUrl(att) {
     if (!att) return Promise.resolve(null);
     if (att.external_url) return Promise.resolve(att.external_url);
