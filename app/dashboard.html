@@ -502,7 +502,7 @@
     .case-bundle th, .case-bundle td { padding: 0.6rem 0.75rem; text-align: start; font-size: 0.85rem; border-bottom: 1px solid var(--glass-border); }
 
     /* الخط الزمني للإنجازات — نسخة شريط باركينزي (Liquid Glass) */
-    .tlx { --timeline-fill-pct: 100%; position: relative; isolation: isolate; margin-top: 0.75rem; padding: 3.4rem 1.2rem 2.2rem; border-radius: 16px;
+    .tlx { --timeline-fill-pct: 100%; position: relative; isolation: isolate; margin-top: 0.75rem; padding: 3.4rem 1.2rem 1.2rem; border-radius: 16px;
       backdrop-filter: blur(22px) saturate(1.65); -webkit-backdrop-filter: blur(22px) saturate(1.65);
       background: linear-gradient(165deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.07) 42%, rgba(255,255,255,0.04) 100%);
       border: 1px solid rgba(255,255,255,0.28);
@@ -510,6 +510,13 @@
     [data-theme="light"] .tlx { background: linear-gradient(165deg, rgba(255,255,255,0.78) 0%, rgba(255,255,255,0.48) 45%, rgba(255,255,255,0.38) 100%);
       border: 1px solid rgba(255,255,255,0.72); box-shadow: 0 12px 40px rgba(0,80,140,0.1), inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(0,60,100,0.06); }
     .tlx-nav-row { display: flex; align-items: center; gap: 0.6rem; }
+    .tlx-title { display: flex; align-items: center; justify-content: center; gap: .6rem; margin: -2.4rem 0 1.4rem; font-weight: 700; color: var(--text-primary); font-size: 1rem; }
+    .tlx-scroll { flex: 1 1 auto; min-width: 0; overflow-x: auto; overflow-y: visible; padding: 2.6rem 0 1.6rem; scrollbar-width: thin; }
+    .tlx-scroll .tlx-range-wrap { min-width: max(100%, calc(var(--tlx-days, 30) * 56px)); }
+    .tlx-day-tick { position: absolute; top: calc(50% - 5px); width: 1px; height: 10px; background: rgba(255,255,255,0.18); transform: translateX(-50%); pointer-events: none; z-index: 1; }
+    [data-theme="light"] .tlx-day-tick { background: rgba(0,60,100,0.15); }
+    .tlx-day-label { position: absolute; top: calc(50% + 12px); transform: translateX(-50%); font-size: 0.6rem; font-weight: 600; color: var(--text-secondary); opacity: .8; pointer-events: none; z-index: 1; font-variant-numeric: tabular-nums; }
+    .tlx-day-label.is-today { color: #4fc3f7; opacity: 1; font-weight: 800; }
     .tlx-nav-btn { flex: 0 0 auto; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; padding: 0; border-radius: 50%;
       background: transparent; border: 1px solid rgba(255,255,255,0.35); color: var(--text-secondary); cursor: pointer;
       -webkit-appearance: none; appearance: none; transition: color .15s ease, border-color .15s ease, transform .12s ease, opacity .15s ease; }
@@ -2450,9 +2457,13 @@
         return new Date(ms).toLocaleDateString(loc, { month: "short", day: "numeric", numberingSystem: "latn" });
       }
 
+      var tlState = { rows: [], stats: null, month: null };
+
       function renderTimeline(rows, stats) {
         var card = document.getElementById("timelineCard");
         if (!card) return;
+        tlState.rows = rows || []; tlState.stats = stats || null;
+        if (!tlState.month) { var n0 = new Date(); tlState.month = new Date(n0.getFullYear(), n0.getMonth(), 1); }
         var isRtl = (document.documentElement.getAttribute("dir") || "rtl") === "rtl";
         var html = "<h2>" + esc(T("timelineTitle")) + "</h2>";
         if (stats) {
@@ -2468,11 +2479,18 @@
           return isNaN(ms) ? null : { ms: ms, kind: r.kind, title: r.title || "", meta: r.meta || {} };
         }).filter(Boolean).sort(function (a, b) { return a.ms - b.ms; });
 
-        var todayMs = Date.now();
-        /* بداية الخط الزمني ثابتة: 1 سبتمبر 2026 (انطلاق المنصة) */
-        var minMs = new Date(2026, 8, 1).getTime();
-        var spanMs = Math.max(86400000, todayMs - minMs);
+        /* شريط الشهر المعروض: من أول يوم فيه إلى آخر يوم */
+        var monthStart = tlState.month;
+        var monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 1);
+        var minMs = monthStart.getTime(), maxMs = monthEnd.getTime() - 1;
+        var nowMs = Date.now();
+        var isCurrent = nowMs >= minMs && nowMs <= maxMs;
+        var todayMs = isCurrent ? nowMs : (nowMs > maxMs ? maxMs : minMs);
+        var spanMs = maxMs - minMs;
+        var daysInMonth = Math.round(spanMs / 86400000);
         var ratioOf = function (ms) { return Math.max(0, Math.min(1, (ms - minMs) / spanMs)); };
+        events = events.filter(function (ev) { return ev.ms >= minMs && ev.ms <= maxMs; });
+        var fillPct = Math.round(ratioOf(todayMs) * 100);
 
         var ms = "";
         events.forEach(function (ev, i) {
@@ -2483,32 +2501,31 @@
                 '<span class="tlx-ms-tick" aria-hidden="true"></span></div>';
         });
 
-        /* فواصل الأشهر وأسماؤها */
+        /* أيام الشهر */
         var months = "";
-        var d = new Date(minMs); d = new Date(d.getFullYear(), d.getMonth() + 1, 1);
         var lo = app.lang(); var loc = lo === "ur" ? "ur-PK" : lo;
-        while (d.getTime() < todayMs) {
-          var r0 = ratioOf(d.getTime());
-          var next = new Date(d.getFullYear(), d.getMonth() + 1, 1);
-          var r1 = ratioOf(Math.min(next.getTime(), todayMs));
-          months += '<span class="tlx-month-tick" style="left:' + tlxLeft(r0, isRtl) + '"></span>';
-          if (r1 - r0 >= 0.09) {
-            months += '<span class="tlx-month-label" style="left:' + tlxLeft((r0 + r1) / 2, isRtl) + '">' +
-                      esc(d.toLocaleDateString(loc, { month: "short", numberingSystem: "latn" })) + "</span>";
-          }
-          d = next;
+        var todayKeyD = new Date(nowMs); var todayDay = isCurrent ? todayKeyD.getDate() : -1;
+        for (var day = 1; day <= daysInMonth; day++) {
+          var dms = new Date(monthStart.getFullYear(), monthStart.getMonth(), day).getTime();
+          var rr = ratioOf(dms);
+          months += '<span class="tlx-day-tick" style="left:' + tlxLeft(rr, isRtl) + '"></span>' +
+                    '<span class="tlx-day-label' + (day === todayDay ? " is-today" : "") + '" style="left:' + tlxLeft(rr, isRtl) + '">' + day + "</span>";
         }
+        var monthTitle = monthStart.toLocaleDateString(loc, { month: "long", year: "numeric", numberingSystem: "latn" });
+        var nextMonthStart = monthEnd.getTime();
 
-        html += '<div class="tlx" id="tlx" dir="' + (isRtl ? "rtl" : "ltr") + '" style="--timeline-fill-pct:100%">' +
+        var todayStep = Math.round(ratioOf(todayMs) * TLX_STEPS);
+        html += '<div class="tlx" id="tlx" dir="' + (isRtl ? "rtl" : "ltr") + '" style="--timeline-fill-pct:' + fillPct + '%;--tlx-days:' + daysInMonth + '" data-today-step="' + todayStep + '">' +
+          '<div class="tlx-title">' + esc(monthTitle) + "</div>" +
           '<div class="tlx-nav-row">' +
             '<button type="button" class="tlx-nav-btn" id="tlxPrev" aria-label="' + esc(T("tlPrev")) + '"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M14.5 5.5 8 12l6.5 6.5"/></svg></button>' +
-            '<div class="tlx-range-wrap">' + ms + months +
-              '<input type="range" id="tlxSlider" min="0" max="' + TLX_STEPS + '" value="' + TLX_STEPS + '" step="1" aria-label="' + esc(T("timelineTitle")) + '">' +
-              '<div class="tlx-today is-at-today" id="tlxToday" style="left:' + tlxLeft(1, isRtl) + '"><span class="tlx-today-label">' + esc(T("tlNow")) + "</span></div>" +
-            "</div>" +
-            '<button type="button" class="tlx-nav-btn" id="tlxNext" aria-label="' + esc(T("tlNext")) + '" disabled><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M9.5 5.5 16 12l-6.5 6.5"/></svg></button>' +
+            '<div class="tlx-scroll" id="tlxScroll"><div class="tlx-range-wrap">' + ms + months +
+              '<input type="range" id="tlxSlider" min="0" max="' + TLX_STEPS + '" value="' + todayStep + '" step="1" aria-label="' + esc(T("timelineTitle")) + '">' +
+              (isCurrent ? '<div class="tlx-today is-at-today" id="tlxToday" style="left:' + tlxLeft(ratioOf(todayMs), isRtl) + '"><span class="tlx-today-label">' + esc(T("tlNow")) + "</span></div>" : "") +
+            "</div></div>" +
+            '<button type="button" class="tlx-nav-btn" id="tlxNext" aria-label="' + esc(T("tlNext")) + '"' + (nextMonthStart > nowMs ? " disabled" : "") + '><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M9.5 5.5 16 12l-6.5 6.5"/></svg></button>' +
           "</div>" +
-          '<div class="tlx-ends"><span>' + esc(tlxFmtDate(minMs)) + "</span><span>" + esc(tlxFmtDate(todayMs)) + "</span></div>" +
+          '<div class="tlx-ends"><span>' + esc(tlxFmtDate(minMs)) + "</span><span>" + esc(tlxFmtDate(maxMs)) + "</span></div>" +
         "</div>";
         if (!events.length) html += '<p class="empty-note">' + esc(T("timelineEmpty")) + "</p>";
         card.innerHTML = html;
@@ -2523,37 +2540,43 @@
         stops = stops.filter(function (v, i, a) { return a.indexOf(v) === i; }).sort(function (a, b) { return a - b; });
         var today = document.getElementById("tlxToday"), prev = document.getElementById("tlxPrev"), next = document.getElementById("tlxNext");
         var SNAP = Math.round(TLX_STEPS * 0.015);
+        var todayStep = Number(bar.dataset.todayStep) || TLX_STEPS;
 
         function apply(pos) {
           var p = Number(pos);
           bar.style.setProperty("--timeline-fill-pct", Math.max(0, Math.min(100, (p / TLX_STEPS) * 100)) + "%");
-          if (today) today.classList.toggle("is-at-today", p === TLX_STEPS);
+          if (today) today.classList.toggle("is-at-today", Math.abs(p - todayStep) <= SNAP);
           var best = -1, active = null;
           marks.forEach(function (m) { var st = Number(m.dataset.step); if (st <= p && st > best) { best = st; active = m; } });
           marks.forEach(function (m) { m.classList.toggle("is-active", m === active); });
-          if (prev) prev.disabled = !stops.some(function (st) { return st < p; });
-          if (next) next.disabled = !stops.some(function (st) { return st > p; });
         }
         slider.addEventListener("input", function () {
           var v = Number(this.value);
           for (var i = 0; i < stops.length; i++) if (Math.abs(v - stops[i]) <= SNAP) { v = stops[i]; this.value = String(v); break; }
           apply(v);
         });
-        if (prev) prev.addEventListener("click", function () {
-          var p = Number(slider.value);
-          for (var i = stops.length - 1; i >= 0; i--) if (stops[i] < p) { slider.value = String(stops[i]); apply(stops[i]); return; }
-        });
-        if (next) next.addEventListener("click", function () {
-          var p = Number(slider.value);
-          for (var i = 0; i < stops.length; i++) if (stops[i] > p) { slider.value = String(stops[i]); apply(stops[i]); return; }
-        });
-        apply(TLX_STEPS);
+        function shiftMonth(dir) {
+          var m = tlState.month;
+          tlState.month = new Date(m.getFullYear(), m.getMonth() + dir, 1);
+          renderTimeline(tlState.rows, tlState.stats);
+        }
+        if (prev) prev.addEventListener("click", function () { shiftMonth(-1); });
+        if (next) next.addEventListener("click", function () { shiftMonth(1); });
+        apply(todayStep);
+        /* التمرير يقف عند "الآن" */
+        var sc = document.getElementById("tlxScroll");
+        if (sc) {
+          var isRtl = bar.getAttribute("dir") === "rtl";
+          var ratio = todayStep / TLX_STEPS;
+          var target = (isRtl ? (1 - ratio) : ratio) * sc.scrollWidth - sc.clientWidth / 2;
+          try { sc.scrollLeft = isRtl ? -(sc.scrollWidth - sc.clientWidth - Math.max(0, target)) : Math.max(0, target); } catch (e) { /* ignore */ }
+        }
       }
 
       function loadTimeline() {
         var card = document.getElementById("timelineCard");
         if (!card) return Promise.resolve();
-        return Promise.all([app.activityFeed(30), app.achievements()])
+        return Promise.all([app.activityFeed(1000), app.achievements()])
           .then(function (res) { renderTimeline(res[0] || [], res[1]); })
           .catch(function () { renderTimeline([], null); });
       }
