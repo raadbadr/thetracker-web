@@ -1191,6 +1191,14 @@
     });
   }
 
+  /* سجل رسائل بوت تلغرام (RLS: مدير المنصة فقط) مع صاحب المحادثة إن كانت مربوطة */
+  function adminTelegramMessages(limit) {
+    return run(function (client) {
+      return client.from("telegram_messages").select("*, profiles(email, full_name)")
+        .order("created_at", { ascending: false }).limit(Number(limit) || 200).then(unwrap);
+    });
+  }
+
   /* ============================================================
    * Public API
    * ============================================================ */
@@ -1402,6 +1410,7 @@
   app.adminListOrgs = adminListOrgs;
   app.adminActivate = adminActivate;
   app.adminContactMessages = adminContactMessages;
+  app.adminTelegramMessages = adminTelegramMessages;
   app.lang = lang;
   app.t = t;
   app.fmtDate = fmtDate;

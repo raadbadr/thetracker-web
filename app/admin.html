@@ -578,6 +578,17 @@
         <p id="msgsCount"></p>
         <div class="features-grid" id="msgsGrid"></div>
       </div>
+
+      <div class="content" id="telegramLogCard">
+        <h2 data-i18n="tgMsgsTitle">رسائل تلغرام</h2>
+        <p data-i18n="tgMsgsIntro">كل ما يصل بوت تلغرام من المستخدمين، الأحدث أولاً.</p>
+        <div class="waitlist-form">
+          <button type="button" class="waitlist-btn" id="tgRefresh" data-i18n="refreshBtn">تحديث</button>
+        </div>
+        <p class="waitlist-msg" id="tgStatus" role="status" aria-live="polite" style="display:none"></p>
+        <p id="tgCount"></p>
+        <div class="features-grid" id="tgGrid"></div>
+      </div>
     </div>
 
     <div style="text-align: center; padding: 2rem;">
@@ -640,6 +651,17 @@
         messagesTitle: "رسائل التواصل",
         messagesIntro: "الرسائل الواردة من نموذج التواصل في الموقع، الأحدث أولاً.",
         messagesEmpty: "لا توجد رسائل بعد.",
+        tgMsgsTitle: "رسائل تلغرام",
+        tgMsgsIntro: "كل ما يصل بوت تلغرام من المستخدمين، الأحدث أولاً.",
+        tgMsgsEmpty: "لا رسائل بعد.",
+        colChat: "المحادثة",
+        colUser: "المستخدم",
+        colText: "النص",
+        colAction: "الإجراء",
+        tgAction_none: "—",
+        tgAction_linked: "تم الربط",
+        tgAction_bad_code: "رمز خاطئ",
+        tgMsgsCountLabel: "عدد الرسائل:",
         messagesCountLabel: "عدد الرسائل:",
         colDate: "التاريخ",
         colName: "الاسم",
@@ -716,6 +738,17 @@
         messagesTitle: "Contact messages",
         messagesIntro: "Messages received through the website contact form, newest first.",
         messagesEmpty: "No messages yet.",
+        tgMsgsTitle: "Telegram messages",
+        tgMsgsIntro: "Everything users send to the Telegram bot, newest first.",
+        tgMsgsEmpty: "No messages yet.",
+        colChat: "Chat",
+        colUser: "User",
+        colText: "Text",
+        colAction: "Action",
+        tgAction_none: "—",
+        tgAction_linked: "Linked",
+        tgAction_bad_code: "Wrong code",
+        tgMsgsCountLabel: "Messages:",
         messagesCountLabel: "Messages:",
         colDate: "Date",
         colName: "Name",
@@ -792,6 +825,17 @@
         messagesTitle: "Messages de contact",
         messagesIntro: "Messages reçus via le formulaire de contact du site, les plus récents en premier.",
         messagesEmpty: "Aucun message pour le moment.",
+        tgMsgsTitle: "Messages Telegram",
+        tgMsgsIntro: "Tout ce que les utilisateurs envoient au bot Telegram, du plus récent au plus ancien.",
+        tgMsgsEmpty: "Aucun message pour le moment.",
+        colChat: "Conversation",
+        colUser: "Utilisateur",
+        colText: "Texte",
+        colAction: "Action",
+        tgAction_none: "—",
+        tgAction_linked: "Lié",
+        tgAction_bad_code: "Code erroné",
+        tgMsgsCountLabel: "Messages :",
         messagesCountLabel: "Nombre de messages :",
         colDate: "Date",
         colName: "Nom",
@@ -868,6 +912,17 @@
         messagesTitle: "رابطہ پیغامات",
         messagesIntro: "ویب سائٹ کے رابطہ فارم سے موصول پیغامات، تازہ ترین پہلے۔",
         messagesEmpty: "ابھی کوئی پیغام نہیں۔",
+        tgMsgsTitle: "ٹیلیگرام پیغامات",
+        tgMsgsIntro: "صارفین ٹیلیگرام بوٹ کو جو کچھ بھیجتے ہیں، تازہ ترین پہلے۔",
+        tgMsgsEmpty: "ابھی کوئی پیغام نہیں۔",
+        colChat: "چیٹ",
+        colUser: "صارف",
+        colText: "متن",
+        colAction: "کارروائی",
+        tgAction_none: "—",
+        tgAction_linked: "منسلک",
+        tgAction_bad_code: "غلط کوڈ",
+        tgMsgsCountLabel: "پیغامات:",
         messagesCountLabel: "پیغامات کی تعداد:",
         colDate: "تاریخ",
         colName: "نام",
@@ -1325,6 +1380,44 @@
           .then(() => { $("msgsRefresh").disabled = false; });
       }
 
+      /* ---------- رسائل تلغرام ---------- */
+
+      let tgMessages = [];
+
+      function tgCard(m) {
+        const who = (m.profiles && (m.profiles.full_name || m.profiles.email)) || "";
+        const chat = (m.username ? "@" + esc(m.username) + " · " : "") + esc(m.first_name || "") +
+                     ' <span dir="ltr">(' + esc(String(m.chat_id)) + ")</span>";
+        return '<div class="feature-card">' +
+          row("colChat", chat) +
+          (who ? row("colUser", esc(who)) : "") +
+          row("colText", '<span dir="auto">' + esc(m.body || "") + "</span>") +
+          row("colAction", '<span class="highlight">' + esc(T("tgAction_" + (m.action || "none"))) + "</span>") +
+          row("colDate", esc(fmtDate(m.created_at, { withTime: true }))) + "</div>";
+      }
+
+      function renderTgMessages() {
+        const grid = $("tgGrid"), countEl = $("tgCount");
+        if (!grid) return;
+        if (!tgMessages.length) {
+          grid.innerHTML = ""; countEl.textContent = "";
+          setStatus($("tgStatus"), T("tgMsgsEmpty"));
+          return;
+        }
+        grid.innerHTML = tgMessages.map(tgCard).join("");
+        countEl.textContent = T("tgMsgsCountLabel") + " " + tgMessages.length;
+        setStatus($("tgStatus"), "");
+      }
+
+      function loadTgMessages() {
+        setStatus($("tgStatus"), T("loading"));
+        $("tgRefresh").disabled = true;
+        return app.adminTelegramMessages(200)
+          .then(rows => { tgMessages = rows || []; renderTgMessages(); })
+          .catch(err => { setStatus($("tgStatus"), T("loadError") + " " + (err && err.message ? err.message : ""), "error"); })
+          .then(() => { $("tgRefresh").disabled = false; });
+      }
+
       /* ---------- طلبات الترقية ---------- */
 
       let requests = [];
@@ -1396,6 +1489,7 @@
         });
         $("orgsRefresh").addEventListener("click", () => { loadOrgs(); });
         $("msgsRefresh").addEventListener("click", () => { loadMessages(); });
+        $("tgRefresh").addEventListener("click", () => { loadTgMessages(); });
         $("reqRefresh").addEventListener("click", () => { loadRequests(); });
         $("reqGrid").addEventListener("click", onRequestAction);
         $("actPlan").addEventListener("change", () => { $("actMonths").value = defaultMonthsFor($("actPlan").value); });
@@ -1419,6 +1513,7 @@
           bind();
           loadOrgs();
           loadMessages();
+          loadTgMessages();
           loadRequests();
         }).catch(() => { show("unavailableCard"); });
       }

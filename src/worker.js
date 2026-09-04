@@ -6,7 +6,7 @@
 
 import { handleAssistantRequest } from "./assistant.js";
 import { handleCalendar } from "./calendar.js";
-import { runNotificationCron, linkChannelByCode, notifyTarget, sendTelegram, sendWhatsapp, sendSms, sendEmail, t as channelText } from "./notify.js";
+import { runNotificationCron, linkChannelByCode, notifyTarget, sendTelegram, sendWhatsapp, sendSms, sendEmail, rpc, t as channelText } from "./notify.js";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -123,7 +123,13 @@ async function handleNotifyTest(request, env) {
   }
 }
 
-/** POST /api/telegram/webhook — /start CODE يربط الحساب */
+/** لغة الرد على من لم يُربط بعد: لغة تطبيق تلغرام عنده إن كانت من لغاتنا */
+function telegramLang(code) {
+  const c = String(code || "").slice(0, 2).toLowerCase();
+  return ["ar", "en", "fr", "ur"].includes(c) ? c : "ar";
+}
+
+/** POST /api/telegram/webhook — /start CODE يربط الحساب ويرحّب بصاحبه باسمه وشركته، وكل رسالة تُسجَّل لمدير المنصة */
 async function handleTelegramWebhook(request, env) {
   if (env.TELEGRAM_WEBHOOK_SECRET) {
     const got = request.headers.get("x-telegram-bot-api-secret-token") || "";
@@ -134,12 +140,48 @@ async function handleTelegramWebhook(request, env) {
   const msg = update && (update.message || update.edited_message);
   const chatId = msg && msg.chat && msg.chat.id;
   const text = String((msg && msg.text) || "").trim();
-  if (!chatId || !text) return json({ ok: true });
+  if (!chatId) return json({ ok: true });
+  const from = (msg && msg.from) || {};
+  const tgLang = telegramLang(from.language_code);
+  let userId = null, action = "none";
   const m = text.match(/^\/start\s+([A-Za-z0-9]{4,12})$/) || text.match(/^([A-Za-z0-9]{6,12})$/);
+  const logMessage = async () => {
+    if (!env.WORKER_SECRET) return null;
+    try {
+      return await rpc(env, "log_telegram_message", {
+        p_secret: env.WORKER_SECRET, p_chat_id: String(chatId), p_username: from.username || null,
+        p_first_name: [from.first_name, from.last_name].filter(Boolean).join(" ") || null,
+        p_body: text || null, p_user_id: userId, p_action: action,
+      });
+    } catch { return null; }
+  };
   if (m) {
-    const userId = await linkChannelByCode(env, "telegram", m[1], chatId);
-    const lang = "ar";
-    try { await sendTelegram(env, chatId, userId ? channelText(lang).linked : channelText(lang).badCode); } catch {}
+    // أمر ربط: /start الرمز (أو الرمز وحده)
+    userId = await linkChannelByCode(env, "telegram", m[1], chatId);
+    action = userId ? "linked" : "bad_code";
+    if (userId) {
+      let target = null;
+      try { target = await notifyTarget(env, userId, "telegram"); } catch {}
+      const lang = (target && target.lang) || tgLang;
+      const name = (target && target.full_name) || from.first_name || "";
+      try { await sendTelegram(env, chatId, channelText(lang).linked(name, target && target.org_name)); } catch {}
+    } else {
+      try { await sendTelegram(env, chatId, channelText(tgLang).badCode); } catch {}
+    }
+    await logMessage();
+  } else {
+    // أي رسالة أخرى: تُسجَّل، ثم يرد البوت بحسب حال المحادثة (مربوطة أم لا)
+    const owner = await logMessage();
+    if (!text || text === "/start") {
+      try { await sendTelegram(env, chatId, channelText(tgLang).needCode); } catch {}
+    } else if (owner) {
+      let target = null;
+      try { target = await notifyTarget(env, owner, "telegram"); } catch {}
+      const lang = (target && target.lang) || tgLang;
+      try { await sendTelegram(env, chatId, channelText(lang).alreadyLinked((target && target.full_name) || from.first_name || "")); } catch {}
+    } else {
+      try { await sendTelegram(env, chatId, channelText(tgLang).needCode); } catch {}
+    }
   }
   return json({ ok: true });
 }

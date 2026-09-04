@@ -431,6 +431,15 @@
     .channel-status.success { color: var(--success); }
     .channel-status.warning { color: var(--warning); }
     .channel-status.error { color: var(--error); }
+    /* القناة المرتبطة: بطاقة صغيرة (أيقونة + الاسم + الحالة) تنفتح بالضغط عليها وتنطوي بضغطة أخرى */
+    .feature-card.is-linked { cursor: pointer; }
+    .feature-card.is-linked.is-collapsed { justify-self: start; display: flex; align-items: center; gap: 0.8rem; padding: 0.85rem 1.1rem; text-align: start; }
+    .feature-card.is-linked.is-collapsed:hover { transform: translateY(-2px); }
+    .feature-card.is-linked.is-collapsed .feature-icon-wrapper { width: 44px; height: 44px; margin: 0; border-radius: 12px; flex: 0 0 auto; }
+    .feature-card.is-linked.is-collapsed .feature-icon-svg { width: 22px; height: 22px; }
+    .feature-card.is-linked.is-collapsed h3 { margin: 0; font-size: 0.95rem; }
+    .feature-card.is-linked.is-collapsed .channel-status { margin: 0; }
+    .feature-card.is-linked.is-collapsed .channel-body { display: none; }
     /* رمز QR لرابط الربط: أسود على أبيض دائماً حتى تقرأه كاميرا الجوال في الثيمين */
     .channel-qr { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; margin: 0.75rem 0 0.5rem; }
     .channel-qr-img { width: 168px; height: 168px; padding: 10px; border-radius: 14px; background: #fff; box-shadow: 0 4px 16px var(--shadow-dark); }
@@ -627,7 +636,7 @@
             </div>
             <h3 data-i18n="chEmail">البريد الإلكتروني</h3>
             <p class="channel-status" id="emailStatus"></p>
-            <div id="emailBody"></div>
+            <div id="emailBody" class="channel-body"></div>
           </div>
 
           <div class="feature-card" id="telegramCard">
@@ -636,7 +645,7 @@
             </div>
             <h3 data-i18n="chTelegram">تيليجرام</h3>
             <p class="channel-status" id="telegramStatus"></p>
-            <div id="telegramBody"></div>
+            <div id="telegramBody" class="channel-body"></div>
           </div>
 
           <div class="feature-card" id="whatsappCard">
@@ -645,7 +654,7 @@
             </div>
             <h3 data-i18n="chWhatsapp">واتساب</h3>
             <p class="channel-status" id="whatsappStatus"></p>
-            <div id="whatsappBody"></div>
+            <div id="whatsappBody" class="channel-body"></div>
           </div>
 
           <div class="feature-card" id="smsCard">
@@ -654,7 +663,7 @@
             </div>
             <h3 data-i18n="chSms">الرسائل النصية</h3>
             <p class="channel-status" id="smsStatus"></p>
-            <div id="smsBody"></div>
+            <div id="smsBody" class="channel-body"></div>
           </div>
 
         </div>
@@ -789,6 +798,7 @@
         invalidPhone: "أدخل رقم الجوال بالصيغة الدولية، مثل +9665xxxxxxx",
         phoneLinked: "تم ربط الرقم.",
         codeGenerated: "تم توليد الرمز، أكمل خطوات الربط.",
+        refreshed: "تم تحديث الحالة.",
         rulesTitle: "قواعد التذكير",
         rulesIntro: "حدّد لكل سجل موعد التذكير والقنوات والمستلمين.",
         colTracker: "السجل",
@@ -914,6 +924,7 @@
         invalidPhone: "Enter your phone number in international format, e.g. +9665xxxxxxx",
         phoneLinked: "Number linked.",
         codeGenerated: "Code generated. Complete the linking steps.",
+        refreshed: "Status refreshed.",
         rulesTitle: "Reminder rules",
         rulesIntro: "Set the reminder time, channels and recipients for each tracker.",
         colTracker: "Tracker",
@@ -1039,6 +1050,7 @@
         invalidPhone: "Saisissez votre numéro au format international, par exemple +9665xxxxxxx",
         phoneLinked: "Numéro lié.",
         codeGenerated: "Code généré. Terminez les étapes de liaison.",
+        refreshed: "Statut actualisé.",
         rulesTitle: "Règles de rappel",
         rulesIntro: "Définissez pour chaque suivi le moment du rappel, les canaux et les destinataires.",
         colTracker: "Suivi",
@@ -1164,6 +1176,7 @@
         invalidPhone: "بین الاقوامی فارمیٹ میں موبائل نمبر درج کریں، مثلاً +9665xxxxxxx",
         phoneLinked: "نمبر منسلک ہو گیا۔",
         codeGenerated: "کوڈ بن گیا، لنکنگ کے مراحل مکمل کریں۔",
+        refreshed: "حالت تازہ ہو گئی۔",
         rulesTitle: "یاد دہانی کے اصول",
         rulesIntro: "ہر ٹریکر کے لیے یاد دہانی کا وقت، چینلز اور وصول کنندگان مقرر کریں۔",
         colTracker: "ٹریکر",
@@ -1360,6 +1373,8 @@
 
       var app = null;
       var config = { telegramBot: null, whatsappNumber: null, smsEnabled: false };
+      /* القنوات المرتبطة تظهر مطوية حتى يضغط عليها المستخدم */
+      var expanded = {};
       var state = {
         loaded: false,
         links: [],
@@ -1519,6 +1534,23 @@
         node.className = "channel-status" + (kind ? " " + kind : "");
       }
 
+      /* البطاقة المرتبطة تنكمش إلى صندوق صغير؛ الضغط على رأسها يفتح بيانات الربط */
+      function setCollapsed(channel, linked) {
+        var card = el(channel + "Card");
+        if (!card) return;
+        card.classList.toggle("is-linked", !!linked);
+        card.classList.toggle("is-collapsed", !!linked && !expanded[channel]);
+      }
+
+      function onChannelToggle(ev) {
+        if (ev.target.closest(".channel-body") || ev.target.closest("[data-action]")) return;
+        var card = ev.target.closest(".feature-card.is-linked");
+        if (!card) return;
+        var channel = card.id.replace(/Card$/, "");
+        expanded[channel] = !expanded[channel];
+        setCollapsed(channel, true);
+      }
+
       function actionBtn(action, channel, key, cls) {
         return '<button type="button" class="' + (cls || "chat-option-btn") + '" data-action="' + action +
                '" data-channel="' + channel + '">' + esc(t(key)) + "</button>";
@@ -1548,6 +1580,7 @@
         if (linked) setStatus(channel, "statusLinked", "success");
         else if (code) setStatus(channel, "statusPending", "warning");
         else setStatus(channel, "statusNotLinked", "error");
+        setCollapsed(channel, linked);
 
         if (!planAllows(channel)) html += '<p class="settings-note">' + esc(t("planChannelLocked")) + "</p>";
 
@@ -1559,11 +1592,10 @@
               bot: '<span dir="ltr">@' + esc(config.telegramBot) + "</span>",
               command: '<span dir="ltr">/start ' + esc(code) + "</span>"
             }) + "</p>";
-            html += '<div class="chat-options"><a class="chat-option-btn" target="_blank" rel="noopener" href="https://t.me/' +
+            /* رابط الربط رمز QR: يمسحه بكاميرا الجوال فيفتح تيليجرام على /start بالرمز مباشرة */
+            html += '<div class="channel-qr" id="telegramQr" data-href="https://t.me/' +
                     encodeURIComponent(config.telegramBot) + "?start=" + encodeURIComponent(code) + '">' +
-                    esc(t("openTelegram")) + "</a></div>";
-            /* الرابط نفسه رمز QR: يمسحه بكاميرا الجوال فيفتح تيليجرام على /start بالرمز مباشرة */
-            html += '<div class="channel-qr" id="telegramQr"><div class="channel-qr-img" id="telegramQrImg" aria-hidden="true"></div>' +
+                    '<div class="channel-qr-img" id="telegramQrImg" aria-hidden="true"></div>' +
                     '<p class="settings-note">' + esc(t("tgQrHint")) + "</p></div>";
           } else {
             html += "<p>" + fill("waInstruction", {
@@ -1590,11 +1622,11 @@
       function renderTelegramQr(body) {
         var box = el("telegramQr"), img = el("telegramQrImg");
         if (!box || !img) return;
-        var link = body.querySelector('a[href^="https://t.me/"]');
-        if (!link || typeof qrcode !== "function") { box.remove(); return; }
+        var href = box.getAttribute("data-href");
+        if (!href || typeof qrcode !== "function") { box.remove(); return; }
         try {
           var q = qrcode(0, "M");
-          q.addData(link.href);
+          q.addData(href);
           q.make();
           img.innerHTML = q.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
         } catch (err) { box.remove(); }
@@ -1661,7 +1693,7 @@
             return reloadLinks();
           }).catch(function (err) { btn.disabled = false; toast(errorMessage(err), "error"); });
         } else if (action === "refresh") {
-          reloadLinks().then(function () { btn.disabled = false; });
+          reloadLinks().then(function () { btn.disabled = false; toast(t("refreshed"), "success"); });
         } else if (action === "test") {
           toast(t("testSending"));
           app.testChannel(channel).then(function (res) {
@@ -2035,6 +2067,7 @@
 
           el("profileForm").addEventListener("submit", saveProfile);
           el("channelsGrid").addEventListener("click", onChannelAction);
+          el("channelsGrid").addEventListener("click", onChannelToggle);
           el("channelsGrid").addEventListener("submit", onSmsSubmit);
           el("rulesWrap").addEventListener("click", onRuleAction);
           el("copyUrlBtn").addEventListener("click", copyCalendarUrl);
