@@ -123,6 +123,8 @@ function clean(out) {
     case_number: str(source.case_number),
     court: str(source.court),
     summary: str(source.summary),
+    /* أي جهة يفتحها هذا المستند: شركة أو عمل حر أو شخص — يملأ نوع الحساب عند التسجيل */
+    entity_hint: ["company", "establishment", "freelance", "individual", "nonprofit", "government"].includes(source.entity_hint) ? source.entity_hint : null,
     confidence: Math.max(0, Math.min(1, Number(source.confidence) || 0)),
   };
 }
@@ -146,7 +148,7 @@ function findAfter(text, labels, pattern) {
 /* جدول الأوراق الرسمية المعروفة: كل نوع بكلماته ومسمّيات رقمه وجهته. يُفحص بالترتيب. */
 const wordBoundaryAr = (pattern) => "(?<![\\u0600-\\u06FF])(?:" + pattern + ")(?![\\u0600-\\u06FF])";
 const KIND_RULES = [
-  { kind: "commercial_register", test: /السجل\s*التجاري|سجل\s*تجاري|رقم\s*السجل|شهادة\s*(?:ال)?سجل|commercial\s*regist/i, issuer: "وزارة التجارة",
+  { kind: "commercial_register", entity: "company", test: /السجل\s*التجاري|سجل\s*تجاري|رقم\s*السجل|شهادة\s*(?:ال)?سجل|commercial\s*regist/i, issuer: "وزارة التجارة",
     number: ["رقم\\s*السجل\\s*التجاري", "رقم\\s*السجل", "C\\.?R\\.?\\s*(?:No\\.?)?"], numPat: "[1247]\\d{9}", party: ["اسم\\s*المنشأة", "الاسم\\s*التجاري", "اسم\\s*الشركة", "اسم\\s*التاجر"] },
   { kind: "articles_of_association", test: /عقد\s*(?:ال)?تأسيس|عقد\s*شركة|articles\s*of\s*(?:association|incorporation)|memorandum\s*of\s*association/i,
     number: ["رقم\\s*العقد", "رقم\\s*التوثيق", "رقم\\s*الوثيقة"], numPat: "\\d{4,20}", party: ["اسم\\s*الشركة", "تحت\\s*اسم", "باسم"], issuerTest: [[/وزارة\s*التجارة/, "وزارة التجارة"], [/كاتب\s*(?:ال)?عدل|العدل/, "وزارة العدل"]] },
@@ -178,10 +180,14 @@ const KIND_RULES = [
   { kind: "invoice", test: /فاتورة|invoice|tax\s*invoice/i,
     number: ["رقم\\s*الفاتورة", "invoice\\s*(?:No\\.?|#)?"], numPat: "[0-9A-Za-z\\-\\/]{3,25}", party: ["العميل", "اسم\\s*العميل", "المشتري", "bill\\s*to"],
     amount: /(?:الإجمالي|المجموع|الإجمالي\s*شامل|total\s*(?:amount)?|grand\s*total)[^0-9]{0,25}([0-9][0-9,\.]{1,})/i },
-  { kind: "passport", test: /جواز\s*(?:ال)?سفر|passport/i, issuer: "المديرية العامة للجوازات",
+  { kind: "passport", entity: "individual", test: /جواز\s*(?:ال)?سفر|passport/i, issuer: "المديرية العامة للجوازات",
     number: ["رقم\\s*(?:ال)?جواز", "passport\\s*(?:No\\.?)?"], numPat: "[A-Z]\\d{6,9}|\\d{7,9}", party: ["الاسم", "اسم\\s*صاحب\\s*الجواز"] },
-  { kind: "id_document", test: /الهوية\s*الوطنية|بطاقة\s*(?:ال)?هوية|إقامة|رخصة\s*إقامة|جواز\s*سفر|passport|national\s*id|iqama/i, issuer: "وزارة الداخلية",
+  { kind: "id_document", entity: "individual", test: /الهوية\s*الوطنية|بطاقة\s*(?:ال)?هوية|إقامة|رخصة\s*إقامة|جواز\s*سفر|passport|national\s*id|iqama/i, issuer: "وزارة الداخلية",
     number: ["رقم\\s*الهوية", "رقم\\s*الإقامة", "رقم\\s*الجواز", "ID\\s*(?:No\\.?)?"], numPat: "[12]\\d{9}|[A-Z]\\d{7,9}", party: ["الاسم", "اسم\\s*صاحب\\s*الهوية"] },
+  { kind: "license", entity: "freelance", test: /وثيقة\s*(?:ال)?عمل\s*(?:ال)?حر|العمل\s*الحر|freelanc/i,
+    issuer: "وزارة الموارد البشرية والتنمية الاجتماعية",
+    number: ["رقم\\s*(?:ال)?وثيقة", "رقم\\s*(?:ال)?تسجيل", "رقم\\s*(?:ال)?رخصة"], numPat: "[0-9A-Za-z\\-]{4,25}",
+    party: ["اسم\\s*صاحب\\s*(?:ال)?وثيقة", "اسم\\s*(?:ال)?مستفيد", "الاسم"] },
   { kind: "driving_license", test: /رخصة\s*(?:ال)?قيادة|driv(?:ing|er'?s)\s*licen[cs]e/i, issuer: "الإدارة العامة للمرور",
     number: ["رقم\\s*(?:ال)?رخصة", "رقم\\s*الهوية"], numPat: "[12]\\d{9}|\\d{6,12}", party: ["الاسم", "اسم\\s*صاحب\\s*الرخصة"] },
   { kind: "vehicle_registration", test: /استمارة\s*(?:ال)?(?:سيارة|مركبة)|رخصة\s*سير|vehicle\s*registration/i, issuer: "الإدارة العامة للمرور",
@@ -235,6 +241,7 @@ function rulesExtract(rawText) {
     if (rule.party) out.party = findAfter(text, rule.party, "[^\\n:،,]{3,80}") || null;
     if (rule.issuerTest) for (const [re, name] of rule.issuerTest) if (re.test(text)) { out.issuer = name; break; }
     if (!out.issuer && rule.issuer) out.issuer = rule.issuer;
+    if (rule.entity) out.entity_hint = rule.entity;
     if (rule.amount) { const amountMatch = text.match(rule.amount); if (amountMatch) out.amount = Number(amountMatch[1].replace(/,/g, "")) || null; }
   }
   /* أوراق المحاكم: رقم الدعوى واسم المحكمة والدائرة تُقرأ مباشرة */
