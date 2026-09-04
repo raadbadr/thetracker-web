@@ -730,7 +730,35 @@
     .toolbar { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; margin: 0.75rem 0 1rem; }
     .toolbar .waitlist-input { flex: 1 1 200px; }
 
-  </style>
+  
+    /* ===== الجوال (أمر المهندس رعد): لا تمرير أفقي للصفحة، ولا حقل يصغر عن 16px ===== */
+    @media (max-width: 900px) {
+      .content { padding: 1.25rem 1rem; }
+      .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .table-wrap table { min-width: 620px; }
+      input, select, textarea, .waitlist-input { font-size: 16px; }
+      .waitlist-form { flex-wrap: wrap; }
+      img, canvas, svg, table { max-width: 100%; }
+    }
+    @media (max-width: 600px) {
+      .content { padding: 1rem 0.85rem; border-radius: 16px; }
+      .waitlist-form > input, .waitlist-form > select, .waitlist-form > button, .waitlist-form > .waitlist-btn { width: 100%; }
+      .waitlist-btn, .chat-option-btn, button { min-height: 44px; }
+      .row-actions { flex-wrap: wrap; }
+      .row-actions button { min-height: 36px; }
+    }
+
+    @media (max-width: 900px) {
+      .risk-top { grid-template-columns: minmax(0, 1fr); }
+      .heat-wrap { grid-template-columns: 18px minmax(0, 1fr); }
+      .heat-cell { aspect-ratio: 1.3; font-size: 0.78rem; }
+      .rasi-wrap, .wl-board { -webkit-overflow-scrolling: touch; }
+    }
+    @media (max-width: 600px) {
+      .heat-cell { aspect-ratio: 1.1; font-size: 0.72rem; }
+      .wl-board { grid-auto-columns: minmax(78vw, 1fr); }
+    }
+</style>
 </head>
 <body class="has-site-header">
   <header class="site-header">

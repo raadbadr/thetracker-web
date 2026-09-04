@@ -729,7 +729,34 @@
     .status-pill.published { background: rgba(47,191,113,0.2); color: #2fbf71; }
     .status-pill.review { background: rgba(242,163,60,0.2); color: #f2a33c; }
 
-  </style>
+  
+    /* ===== الجوال (أمر المهندس رعد): لا تمرير أفقي للصفحة، ولا حقل يصغر عن 16px ===== */
+    @media (max-width: 900px) {
+      .content { padding: 1.25rem 1rem; }
+      .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .table-wrap table { min-width: 620px; }
+      input, select, textarea, .waitlist-input { font-size: 16px; }
+      .waitlist-form { flex-wrap: wrap; }
+      img, canvas, svg, table { max-width: 100%; }
+    }
+    @media (max-width: 600px) {
+      .content { padding: 1rem 0.85rem; border-radius: 16px; }
+      .waitlist-form > input, .waitlist-form > select, .waitlist-form > button, .waitlist-form > .waitlist-btn { width: 100%; }
+      .waitlist-btn, .chat-option-btn, button { min-height: 44px; }
+      .row-actions { flex-wrap: wrap; }
+      .row-actions button { min-height: 36px; }
+    }
+
+    @media (max-width: 900px) {
+      .rasi-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .raci-table { min-width: 520px; }
+      .wl-board { grid-auto-columns: minmax(78vw, 1fr); }
+    }
+    @media (max-width: 600px) {
+      .step-row .raci-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .flow { max-width: 100%; }
+    }
+</style>
 </head>
 <body class="has-site-header">
   <header class="site-header">

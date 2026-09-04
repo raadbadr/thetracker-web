@@ -807,7 +807,40 @@
       background: var(--primary-light);
       color: var(--btn-ink);
     }
-  </style>
+  
+    /* ===== الجوال (أمر المهندس رعد): لا تمرير أفقي للصفحة، ولا حقل يصغر عن 16px ===== */
+    @media (max-width: 900px) {
+      .content { padding: 1.25rem 1rem; }
+      .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .table-wrap table { min-width: 620px; }
+      input, select, textarea, .waitlist-input { font-size: 16px; }
+      .waitlist-form { flex-wrap: wrap; }
+      img, canvas, svg, table { max-width: 100%; }
+    }
+    @media (max-width: 600px) {
+      .content { padding: 1rem 0.85rem; border-radius: 16px; }
+      .waitlist-form > input, .waitlist-form > select, .waitlist-form > button, .waitlist-form > .waitlist-btn { width: 100%; }
+      .waitlist-btn, .chat-option-btn, button { min-height: 44px; }
+      .row-actions { flex-wrap: wrap; }
+      .row-actions button { min-height: 36px; }
+    }
+
+    @media (max-width: 900px) {
+      .dash-grid, .dash-grid--single { grid-template-columns: minmax(0, 1fr); }
+      .totals-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .ind-totals { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .chart-bars { min-height: 165px; gap: 0.6rem; }
+      .tlx { padding: 1rem 0.9rem 0.9rem; overflow-x: hidden; }
+    }
+    @media (max-width: 600px) {
+      .chart-bars { grid-template-columns: repeat(3, minmax(0, 1fr)); min-height: 140px; gap: 0.45rem; }
+      .chart-label { font-size: 0.68rem; }
+      .chart-val { font-size: 0.75rem; }
+      .ind-totals, .totals-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; }
+      .platform-stats-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .donut-legend { font-size: 0.75rem; }
+    }
+</style>
 </head>
 <body class="has-site-header">
   <header class="site-header">
