@@ -161,25 +161,46 @@
     });
   }
 
+  /* الصيغة القياسية الواحدة لكل عرض تاريخ في المنصة، مطابقة لمعيار تطبيق
+     باركينزي بالضبط (dd-MM-yyyy / HH:mm / dd-MM-yyyy HH:mm): ميلادي، 24 ساعة،
+     أرقام غربية دائماً، بلا اختلاف بين اللغات. توقيت الرياض ثابت هنا (خلاف
+     الجهاز في التطبيق) لأن هذا موقع لفريق موزّع، لا تطبيق شخصي على جهاز واحد. */
   function fmtDate(iso, opts) {
     if (!iso) return "";
     var d = iso instanceof Date ? iso : new Date(iso);
     if (isNaN(d.getTime())) return "";
     var withTime = !!(opts && opts.withTime);
-    var locales = { ar: "ar-SA-u-ca-gregory-nu-latn", ur: "ur-PK-u-ca-gregory-nu-latn", en: "en-GB", fr: "fr-FR" };
-    var options = { year: "numeric", month: "2-digit", day: "2-digit", timeZone: TIME_ZONE };
-    if (withTime) {
-      options.hour = "2-digit";
-      options.minute = "2-digit";
-      options.hour12 = false;
-    }
-    var text;
+    var timeOnly = !!(opts && opts.timeOnly);
+    var parts;
     try {
-      text = new Intl.DateTimeFormat(locales[lang()] || locales.en, options).format(d);
+      parts = new Intl.DateTimeFormat("en-GB", {
+        timeZone: TIME_ZONE, numberingSystem: "latn",
+        year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false
+      }).formatToParts(d);
     } catch (e) {
-      text = d.toISOString().slice(0, withTime ? 16 : 10).replace("T", " ");
+      var iso16 = d.toISOString().slice(0, 16).replace("T", " ");
+      return timeOnly ? iso16.slice(11) : (withTime ? iso16 : iso16.slice(0, 10));
     }
-    return toWesternDigits(text);
+    var byType = {};
+    parts.forEach(function (p) { byType[p.type] = p.value; });
+    var timePart = byType.hour + ":" + byType.minute;
+    if (timeOnly) return timePart;
+    var datePart = byType.day + "-" + byType.month + "-" + byType.year;
+    return withTime ? (datePart + " " + timePart) : datePart;
+  }
+
+  /* المبلغ القياسي: فاصلة آلاف وخانتان عشريتان ثابتتان دائماً، أرقام غربية —
+     نفس formatAmountWestern في تطبيق باركينزي (en_US_POSIX، خانتان لا أكثر
+     ولا أقل). لا يُستخدم للعروض المصغّرة (K/M) في لوحات المؤشرات؛ تلك عرض
+     مكثّف متعمّد لمساحة ضيقة، ليست الصيغة القياسية للمبلغ الدقيق. */
+  function fmtAmount(n) {
+    var v = Number(n);
+    if (!isFinite(v)) v = 0;
+    try {
+      return new Intl.NumberFormat("en-US", { numberingSystem: "latn", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
+    } catch (e) {
+      return v.toFixed(2);
+    }
   }
 
   /* Wall-clock components → Date in the browser's local time zone; returns ISO or null. */
@@ -2064,6 +2085,7 @@
   app.lang = lang;
   app.t = t;
   app.fmtDate = fmtDate;
+  app.fmtAmount = fmtAmount;
   app.parseExcelDate = parseExcelDate;
   app.toast = toast;
   app.escapeHtml = escapeHtml;
