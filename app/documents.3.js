@@ -313,8 +313,8 @@
                 }).join("")
               : "-") + "</td>" +
             '<td><div class="chat-options row-actions">' +
-              '<button type="button" class="chat-option-btn" data-attach="' + esc(it.id) + '">' + esc(t(files.length ? "docAddAnother" : "docAttachFile")) + "</button>" +
-              '<button type="button" class="chat-option-btn is-danger" data-del="' + esc(it.id) + '">' + esc(t("delete")) + "</button>" +
+              '<button type="button" class="chat-option-btn" data-attach="' + esc(it.id) + '">' + PLUS_ICON + esc(t(files.length ? "docAddAnother" : "docAttachFile")) + "</button>" +
+              '<button type="button" class="chat-option-btn is-danger" data-del="' + esc(it.id) + '">' + TRASH_ICON + esc(t("delete")) + "</button>" +
             "</div></td>";
           body.appendChild(tr);
         });
@@ -339,6 +339,10 @@
         });
         return found;
       }
+
+      /* رمز السلة: الحذف يُعرف بلونه ورمزه في كل مكان */
+      var PLUS_ICON = '<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z\"/></svg>';
+      var TRASH_ICON = '<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z\"/></svg>';
 
       function renderPapers() {
         var data = state.papers;
@@ -376,7 +380,7 @@
               (paperFile(p) ? '<button type="button" class="chat-option-btn" data-paper-open="' + esc(paperFile(p).id) + '">' + esc(t("pOpen")) + "</button>" +
                               '<button type="button" class="chat-option-btn" data-paper-get="' + esc(paperFile(p).id) + '">' + esc(t("pDownload")) + "</button>" : "") +
               (p.item_id && !paperFile(p)
-                ? '<button type="button" class="chat-option-btn" data-paper-attach="' + esc(p.item_id) + '">' + esc(t("docAttachFile")) + "</button>"
+                ? '<button type="button" class="chat-option-btn" data-paper-attach="' + esc(p.item_id) + '">' + PLUS_ICON + esc(t("docAttachFile")) + "</button>"
                 : '<button type="button" class="chat-option-btn" data-paper-add="' + esc(p.kind) + '">' +
                     esc(t(p.state === "missing" ? "pAdd" : "docReplace")) + "</button>") +
             "</div></td>";

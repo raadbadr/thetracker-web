@@ -713,19 +713,27 @@
     .content .items-table .row-actions .chat-option-btn { min-height: 32px; padding: .28rem .7rem;
       font-size: .8rem; white-space: nowrap; width: auto; flex: 0 0 auto; }
     .content .items-table td, .content .items-table th { white-space: nowrap; vertical-align: middle; }
-    .content .items-table td:nth-child(2), .content .items-table td:nth-child(4) { white-space: normal; }
+    #docsWrap .items-table td:nth-child(2), #docsWrap .items-table td:nth-child(4) { white-space: normal; }
     /* اسم الملف على سطر واحد: يُقصّ بثلاث نقاط والجدول يتمرر أفقيا */
     /* اسم الملف كامل بلا قصّ: سطر واحد بخط أصغر قليلا، والجدول يتمرر أفقيا */
     .content .items-table .file-row a { display: inline-block; white-space: nowrap; font-size: .82rem;
       vertical-align: middle; }
-    .content .items-table td:nth-child(2) { min-width: 14rem; }
-    .content .items-table td:nth-child(4) { min-width: 10rem; }
+    #docsWrap .items-table td:nth-child(2) { min-width: 14rem; }
+    #docsWrap .items-table td:nth-child(4) { min-width: 10rem; }
+    /* جدول الأوراق قصير المحتوى: يملأ البطاقة بلا فراغ ولا تمرير */
+    #papersCard .items-table { width: 100%; table-layout: auto; }
+    #papersCard .items-table td:first-child { width: 40%; white-space: normal; }
     .content .items-table .file-row { flex-wrap: nowrap; }
     .content .items-table .file-row .chat-option-btn { min-height: 30px; padding: .22rem .6rem; font-size: .78rem; }
     .status-open { color: var(--primary); font-weight: 600; }
     .status-overdue { color: var(--error); font-weight: 600; }
     .status-done { color: var(--success); font-weight: 600; }
     .status-cancelled { color: var(--text-tertiary); font-weight: 600; }
+    /* الحذف أحمر دائما ومعه رمز السلة، في كل الجداول والبطاقات */
+    .chat-option-btn.is-danger { color: var(--error); border-color: var(--error); }
+    .chat-option-btn.is-danger:hover, .chat-option-btn.is-danger:focus-visible { background: var(--error); color: #fff; }
+    .chat-option-btn svg { width: 15px; height: 15px; fill: currentColor; flex: 0 0 auto; }
+    .chat-option-btn { display: inline-flex; align-items: center; gap: .35rem; }
     .empty-note { text-align: center; margin: 1rem 0 0; }
     .doc-form { margin-top: 1.25rem; }
     /* اسم الملف وزر تنزيله على سطر واحد */
