@@ -874,6 +874,13 @@
         statusInvited: "بانتظار الانضمام",
         you: "أنت",
         emailLabel: "البريد الإلكتروني",
+        personKindLabel: "الصفة",
+        jobTitleLabel: "المسمى الوظيفي",
+        personUnset: "غير محددة",
+        personPartner: "شريك",
+        personManager: "مدير",
+        personEmployee: "موظف",
+        personContractor: "متعاقد",
         joinedLabel: "تاريخ الانضمام",
         changeRoleLabel: "تغيير الدور",
         removeBtn: "إزالة",
@@ -1006,6 +1013,13 @@
         statusInvited: "Awaiting sign-in",
         you: "You",
         emailLabel: "Email",
+        personKindLabel: "Relationship",
+        jobTitleLabel: "Job title",
+        personUnset: "Not set",
+        personPartner: "Partner",
+        personManager: "Manager",
+        personEmployee: "Employee",
+        personContractor: "Contractor",
         joinedLabel: "Joined on",
         changeRoleLabel: "Change role",
         removeBtn: "Remove",
@@ -1138,6 +1152,13 @@
         statusInvited: "En attente de connexion",
         you: "Vous",
         emailLabel: "E-mail",
+        personKindLabel: "Qualité",
+        jobTitleLabel: "Intitulé du poste",
+        personUnset: "Non défini",
+        personPartner: "Associé",
+        personManager: "Directeur",
+        personEmployee: "Employé",
+        personContractor: "Prestataire",
         joinedLabel: "Membre depuis le",
         changeRoleLabel: "Changer le rôle",
         removeBtn: "Retirer",
@@ -1270,6 +1291,13 @@
         statusInvited: "سائن ان کا انتظار",
         you: "آپ",
         emailLabel: "ای میل",
+        personKindLabel: "حیثیت",
+        jobTitleLabel: "عہدہ",
+        personUnset: "مقرر نہیں",
+        personPartner: "شریک",
+        personManager: "منتظم",
+        personEmployee: "ملازم",
+        personContractor: "ٹھیکیدار",
         joinedLabel: "شمولیت کی تاریخ",
         changeRoleLabel: "کردار تبدیل کریں",
         removeBtn: "ہٹائیں",
@@ -1623,6 +1651,12 @@
 
       /* ---------- members ---------- */
 
+      function personKindName(k) {
+        if (!k) return "-";
+        var key = { partner: "personPartner", manager: "personManager", employee: "personEmployee", contractor: "personContractor" }[k];
+        return key ? t(key) : "-";
+      }
+
       function renderMembers() {
         var grid = $("membersGrid");
         if (!grid) return;
@@ -1643,10 +1677,26 @@
           var rows =
             '<div class="platform-stat-detail-row"><span>' + esc(t("emailLabel")) + "</span>" +
               '<span class="platform-stat-detail-val" dir="ltr" style="overflow-wrap:anywhere">' + esc(email || "-") + "</span></div>" +
+            '<div class="platform-stat-detail-row"><span>' + esc(t("personKindLabel")) + "</span>" +
+              '<span class="platform-stat-detail-val">' + esc(personKindName(m.person_kind)) + "</span></div>" +
+            '<div class="platform-stat-detail-row"><span>' + esc(t("jobTitleLabel")) + "</span>" +
+              '<span class="platform-stat-detail-val">' + esc(m.job_title || "-") + "</span></div>" +
             '<div class="platform-stat-detail-row"><span>' + esc(t("joinedLabel")) + "</span>" +
               '<span class="platform-stat-detail-val">' + esc(fmtDate(m.created_at) || "-") + "</span></div>";
 
           var controls = "";
+          if (state.canManage) {
+            controls +=
+              '<div class="waitlist-form">' +
+                '<select class="waitlist-input" data-person-user="' + esc(m.user_id) + '" aria-label="' + esc(t("personKindLabel")) + '">' +
+                  '<option value=""' + (!m.person_kind ? " selected" : "") + ">" + esc(t("personUnset")) + "</option>" +
+                  ["partner", "manager", "employee", "contractor"].map(function (k) {
+                    return '<option value="' + k + '"' + (m.person_kind === k ? " selected" : "") + ">" + esc(personKindName(k)) + "</option>";
+                  }).join("") +
+                "</select>" +
+                '<input type="text" class="waitlist-input" data-title-user="' + esc(m.user_id) + '" maxlength="80" value="' + esc(m.job_title || "") + '" placeholder="' + esc(t("jobTitleLabel")) + '">' +
+              "</div>";
+          }
           if (state.canManage && !isOwner && !isSelf) {
             controls =
               '<div class="waitlist-form">' +
@@ -1681,6 +1731,22 @@
           btn.disabled = false;
           toast(errorMessage(err), "error");
         });
+      }
+
+      function onPersonChange(ev) {
+        var kindSel = ev.target.closest("[data-person-user]");
+        var titleIn = ev.target.closest("[data-title-user]");
+        var node = kindSel || titleIn;
+        if (!node) return;
+        var userId = node.getAttribute(kindSel ? "data-person-user" : "data-title-user");
+        var fields = kindSel ? { person_kind: node.value } : { job_title: node.value };
+        node.disabled = true;
+        app.setMemberPerson(userId, fields).then(function () {
+          var m = state.members.filter(function (x) { return x.user_id === userId; })[0];
+          if (m) { if (kindSel) m.person_kind = node.value || null; else m.job_title = node.value || null; }
+          toast(t("saved"));
+        }).catch(function () { toast(t("genericError")); })
+          .finally(function () { node.disabled = false; });
       }
 
       function onMembersChange(ev) {
@@ -2178,6 +2244,7 @@
 
         $("membersGrid").addEventListener("click", onMembersClick);
         $("membersGrid").addEventListener("change", onMembersChange);
+        $("membersGrid").addEventListener("change", onPersonChange);
         $("invitationsList").addEventListener("click", onInvitationsClick);
         $("exportMembersBtn").addEventListener("click", function () {
           app.exportCsv("team-" + new Date().toISOString().slice(0, 10) + ".csv", state.members, [

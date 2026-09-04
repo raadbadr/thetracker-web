@@ -1008,7 +1008,7 @@
   function listMembers() {
     return run(function (client) {
       var orgId = requireOrg();
-      return client.from("org_members").select("org_id,user_id,role,status,invited_email,created_at")
+      return client.from("org_members").select("org_id,user_id,role,status,invited_email,created_at,job_title,person_kind")
         .eq("org_id", orgId).order("created_at", { ascending: true })
         .then(unwrap)
         .then(function (members) {
@@ -1169,6 +1169,22 @@
       var r = memberRole === "admin" ? "admin" : (memberRole === "owner" ? "owner" : "member");
       return client.from("org_members").update({ role: r }).eq("org_id", orgId).eq("user_id", userId)
         .select("*").then(unwrap);
+    });
+  }
+
+  /* صفة الشخص ومسماه الوظيفي: شريك أو مدير أو موظف أو متعاقد — تخص كل منشأة */
+  function setMemberPerson(userId, fields) {
+    return run(function (client) {
+      var orgId = requireOrg();
+      var f = fields || {};
+      var row = {};
+      if (Object.prototype.hasOwnProperty.call(f, "job_title")) row.job_title = String(f.job_title || "").trim() || null;
+      if (Object.prototype.hasOwnProperty.call(f, "person_kind")) {
+        var k = String(f.person_kind || "");
+        row.person_kind = ["partner", "manager", "employee", "contractor"].indexOf(k) !== -1 ? k : null;
+      }
+      if (!Object.keys(row).length) return null;
+      return client.from("org_members").update(row).eq("org_id", orgId).eq("user_id", userId).select("*").then(unwrap);
     });
   }
 
@@ -1632,6 +1648,9 @@
     { href: "/app/dashboard.html?type=violations", path: "type=violations",
       icon: '<path d="M12 2L1 21h22L12 2zm1 15h-2v-2h2v2zm0-4h-2V9h2v4z"/>',
       labels: { ar: "المخالفات", en: "Violations", fr: "Infractions", ur: "خلاف ورزیاں" } },
+    { href: "/app/dashboard.html?type=expenses", path: "type=expenses",
+      icon: '<path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+      labels: { ar: "مصاريف التشغيل", en: "Expenses", fr: "Charges", ur: "اخراجات" } },
     { href: "/app/documents.html", path: "documents",
       icon: '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2z"/>',
       labels: { ar: "المستندات", en: "Documents", fr: "Documents", ur: "دستاویزات" } },
@@ -1676,6 +1695,10 @@
     ".app-sidebar a,.app-sidebar button{width:auto;white-space:nowrap;padding:.55rem .75rem;font-size:.85rem}",
     "body.has-app-sidebar .container{padding-inline-start:1rem}}",
     ":root{--gap:1.5rem}",
+    /* عنوان العنصر ووسمه: الوسم في سطر مستقل ولا يلتصق بالكلمة قبله */
+    "body .item-title{display:block}",
+    "body .item-cat{display:block;margin-top:.2rem;font-size:.78rem;color:var(--text-secondary);opacity:.85}",
+    "body .cell-stack{display:flex;flex-direction:column;gap:.2rem}",
     /* رمز الريال السعودي (الطريقة نفسها في باركينزي: قناع من rial-symbol.png بلون النص) */
     ".sar-symbol{display:inline-block;width:.95em;height:.95em;vertical-align:-.1em;background-color:currentColor;-webkit-mask:url(/rial-symbol.png) center/contain no-repeat;mask:url(/rial-symbol.png) center/contain no-repeat;margin:0 .12em}",
     "body .content{margin-bottom:var(--gap)}",
@@ -1834,6 +1857,7 @@
   app.isPlatformAdmin = isPlatformAdmin;
   app.activityFeed = activityFeed;
   app.achievements = achievements;
+  app.setMemberPerson = setMemberPerson;
   app.orgProfile = orgProfile;
   app.saveOrgProfile = saveOrgProfile;
   app.orgDocumentsStatus = orgDocumentsStatus;
