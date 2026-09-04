@@ -261,6 +261,9 @@
       }
     }
     .stats-section { margin-bottom: 2rem; }
+    .stats-section.stats-top { margin-bottom: 1.5rem; }
+    .stats-section.stats-top .platform-stats-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+    @media (max-width: 900px) { .stats-section.stats-top .platform-stats-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     .platform-stat-card {
       background: var(--glass);
       backdrop-filter: blur(30px) saturate(180%);
@@ -2665,7 +2668,11 @@
         mainCol.appendChild(main);
         calCard.appendChild(calendar);
         sideCol.appendChild(calCard);
-        if (stats) sideCol.appendChild(stats);
+        /* لوحة التحكم الرئيسية: المربعات الأربعة أول شيء فوق بعرض الصفحة */
+        if (stats) {
+          if (!state.viewType) { stats.classList.add("stats-top"); dash.insertBefore(stats, dash.firstChild); }
+          else sideCol.appendChild(stats);
+        }
 
         grid.appendChild(mainCol);
         grid.appendChild(sideCol);
