@@ -696,6 +696,7 @@
       <p id="capacityLine" hidden></p>
 
       <h2 data-i18n="membersTitle">أعضاء الفريق</h2>
+      <p><button type="button" class="chat-option-btn" id="exportMembersBtn" data-i18n="exportCsv">تصدير CSV</button></p>
       <p class="login-note" id="readOnlyNote" data-i18n="readOnlyNote" hidden>يمكن للمالك والمشرفين فقط إدارة الأعضاء والدعوات.</p>
       <div class="features-grid" id="membersGrid" role="list"></div>
       <p id="membersEmpty" data-i18n="membersEmpty" hidden>لا يوجد أعضاء بعد.</p>
@@ -788,6 +789,7 @@
     <!-- الدردشة داخل الفريق -->
     <div class="content chat-card" id="chatCard" hidden>
       <h2 data-i18n="chatTitle">تواصل الفريق</h2>
+      <p><button type="button" class="chat-option-btn" id="exportChatBtn" data-i18n="exportCsv">تصدير CSV</button></p>
       <div class="chat-shell">
         <aside class="chat-threads" aria-label="المحادثات">
           <div class="chat-threads-title" data-i18n="chatThreads">المحادثات</div>
@@ -846,6 +848,7 @@
   <script>
     const translations = {
       ar: {
+        exportCsv: "تصدير CSV",
         fCase: "القضية",
         title: "إدارة الفريق",
         intro: "أضف أعضاء فريقك وحدّد أدوارهم، وتابع الدعوات المعلقة.",
@@ -977,6 +980,7 @@
         dark: "داكن"
       },
       en: {
+        exportCsv: "Export CSV",
         fCase: "Case",
         title: "Team management",
         intro: "Add your team members, set their roles, and follow up on pending invitations.",
@@ -1108,6 +1112,7 @@
         dark: "Dark"
       },
       fr: {
+        exportCsv: "Exporter CSV",
         fCase: "Affaire",
         title: "Gestion de l'équipe",
         intro: "Ajoutez les membres de votre équipe, définissez leurs rôles et suivez les invitations en attente.",
@@ -1239,6 +1244,7 @@
         dark: "Sombre"
       },
       ur: {
+        exportCsv: "CSV برآمد",
         fCase: "مقدمہ",
         title: "ٹیم کا انتظام",
         intro: "اپنی ٹیم کے اراکین شامل کریں، ان کے کردار طے کریں اور زیرِ التوا دعوتوں پر نظر رکھیں۔",
@@ -2173,6 +2179,24 @@
         $("membersGrid").addEventListener("click", onMembersClick);
         $("membersGrid").addEventListener("change", onMembersChange);
         $("invitationsList").addEventListener("click", onInvitationsClick);
+        $("exportMembersBtn").addEventListener("click", function () {
+          app.exportCsv("team-" + new Date().toISOString().slice(0, 10) + ".csv", state.members, [
+            { label: t("membersTitle"), get: memberName },
+            { label: t("emailLabel"), get: memberEmail },
+            { label: t("roleLabel"), get: function (m) { return roleName(m.role); } },
+            { label: t("joinedLabel"), get: function (m) { return fmtDate(m.created_at); } }
+          ]);
+        });
+        $("exportChatBtn").addEventListener("click", function () {
+          app.listTeamMessages(5000).then(function (rows) {
+            app.exportCsv("chat-" + new Date().toISOString().slice(0, 10) + ".csv", rows || [], [
+              { label: "date", get: function (m) { return fmtDate(m.created_at, { withTime: true }); } },
+              { label: "from", get: function (m) { return nameOf(m.author_id); } },
+              { label: "to", get: function (m) { return m.to_user_id ? nameOf(m.to_user_id) : t("chatTeam"); } },
+              { label: "message", get: function (m) { return m.body; } }
+            ]);
+          }).catch(function (err) { toast(errorMessage(err), "error"); });
+        });
         $("wlBoard").addEventListener("change", onAssignChange);
         wireDrag($("wlBoard"));
         $("rasiTable").addEventListener("click", onRasiClick);

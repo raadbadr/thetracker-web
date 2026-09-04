@@ -970,6 +970,7 @@
             <select class="waitlist-input" id="filterStatus"></select>
             <input type="search" class="waitlist-input" id="filterSearch" placeholder="بحث في العناوين" maxlength="120">
             <button type="button" class="waitlist-btn" id="addItemBtn" data-i18n="addItemBtn">+ عنصر</button>
+            <button type="button" class="chat-option-btn" id="exportCsvBtn" data-i18n="exportCsv">تصدير CSV</button>
           </form>
 
           <div class="inline-form" id="addItemPanel" hidden>
@@ -1090,6 +1091,7 @@
   <script>
     const translations = {
       ar: {
+        exportCsv: "تصدير CSV",
         title: "لوحة التحكم",
         loading: "جارٍ التحميل...",
         serviceUnavailableTitle: "الخدمة قيد التجهيز",
@@ -1300,6 +1302,7 @@
         dark: "داكن"
       },
       en: {
+        exportCsv: "Export CSV",
         title: "Dashboard",
         loading: "Loading...",
         serviceUnavailableTitle: "Service is being prepared",
@@ -1510,6 +1513,7 @@
         dark: "Dark"
       },
       fr: {
+        exportCsv: "Exporter CSV",
         title: "Tableau de bord",
         loading: "Chargement...",
         serviceUnavailableTitle: "Service en cours de préparation",
@@ -1720,6 +1724,7 @@
         dark: "Sombre"
       },
       ur: {
+        exportCsv: "CSV برآمد",
         title: "ڈیش بورڈ",
         loading: "لوڈ ہو رہا ہے...",
         serviceUnavailableTitle: "سروس تیار کی جا رہی ہے",
@@ -2950,6 +2955,24 @@
         $("noTrackersHint").hidden = state.trackers.length > 0;
       }
 
+      $("exportCsvBtn").addEventListener("click", function () {
+        var items = state.items || [];
+        var extra = {};
+        items.forEach(function (it) { Object.keys(it.data || {}).forEach(function (k) { extra[k] = true; }); });
+        var cols = [
+          { label: "#", get: function (r) { return r.item_number || ""; } },
+          { label: T("fTitle") || "title", get: function (r) { return r.title; } },
+          { label: T("fCategory") || "category", get: function (r) { return r.category; } },
+          { label: T("fTracker") || "tracker", get: function (r) { return r.trackers && r.trackers.name || ""; } },
+          { label: T("fStatus") || "status", get: function (r) { return r.status; } },
+          { label: T("fDue") || "due", get: function (r) { return r.due_at ? fmtDate(r.due_at, { withTime: true }) : ""; } },
+          { label: T("fAssignee") || "assignee", get: function (r) { return r.assignee_id ? assigneeName(r.assignee_id) : ""; } },
+          { label: "amount", get: function (r) { return r.amount; } },
+          { label: "client", get: function (r) { return r.client_name; } },
+          { label: "case", get: function (r) { return r.case_number; } }
+        ].concat(Object.keys(extra).map(function (k) { return { label: k, get: function (r) { return (r.data || {})[k]; } }; }));
+        app.exportCsv((state.viewType || "items") + "-" + new Date().toISOString().slice(0, 10) + ".csv", items, cols);
+      });
       $("filterTracker").addEventListener("change", function () { state.filters.tracker = this.value; loadItems(); });
       $("filterStatus").addEventListener("change", function () { state.filters.status = this.value; loadItems(); });
       $("filterSearch").addEventListener("input", function () {

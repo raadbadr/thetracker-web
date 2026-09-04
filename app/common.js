@@ -1579,6 +1579,7 @@
   app.sendTeamMessage = sendTeamMessage;
   app.deleteTeamMessage = deleteTeamMessage;
   app.markChatRead = markChatRead;
+  app.exportCsv = exportCsv;
   app.removeMember = removeMember;
   app.setMemberRole = setMemberRole;
   app.listRules = listRules;
@@ -1762,6 +1763,26 @@
     return run(function (client) {
       return client.from("notifications").delete().eq("user_id", app.user.id).eq("channel", "inapp").then(unwrap);
     });
+  }
+
+  /* تصدير CSV: BOM ليفتحه إكسل بالعربية، وكل خلية محاطة بعلامتي اقتباس */
+  function exportCsv(filename, rows, columns) {
+    var cols = columns || Object.keys((rows && rows[0]) || {});
+    var q = function (v) {
+      if (v === null || v === undefined) v = "";
+      else if (typeof v === "object") v = JSON.stringify(v);
+      return '"' + String(v).replace(/"/g, '""') + '"';
+    };
+    var lines = [cols.map(function (c) { return q(c.label || c); }).join(",")];
+    (rows || []).forEach(function (r) {
+      lines.push(cols.map(function (c) { return q(typeof c === "object" ? (typeof c.get === "function" ? c.get(r) : r[c.key]) : r[c]); }).join(","));
+    });
+    var blob = new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename || "export.csv";
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
   }
 
   function markChatRead(peerId) {
