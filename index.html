@@ -768,6 +768,10 @@
       color: var(--text-primary);
       font-size: 0.9rem;
     }
+    /* 16px+ على الجوال يمنع تكبير Safari التلقائي عند التركيز على الحقل */
+    @media (max-width: 600px) {
+      .waitlist-input { font-size: 16px; }
+    }
     .waitlist-input::placeholder { color: var(--text-tertiary); }
     .waitlist-input:focus {
       outline: none;
