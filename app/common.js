@@ -1252,6 +1252,17 @@
     ".app-sidebar-title,.app-sidebar-spacer{display:none}",
     ".app-sidebar a,.app-sidebar button{width:auto;white-space:nowrap;padding:.55rem .75rem;font-size:.85rem}",
     "body.has-app-sidebar .container{padding-inline-start:1rem}}",
+    ":root{--gap:1.5rem}",
+    "body .content{margin-bottom:var(--gap)}",
+    "body .content:last-child{margin-bottom:0}",
+    "body .dash-grid,body .dash-main,body .dash-side,body .features-grid,body .ind-grid,body .svc-grid,body .ach-row,body .platform-stats-list,body .user-list,body .chat-shell{gap:var(--gap)}",
+    "body .dash-main,body .dash-side{display:grid;align-content:start}",
+    "body .dash-grid{margin-bottom:var(--gap)}",
+    "body .stats-section,body .chart-card,body #timelineCard{margin-bottom:var(--gap)}",
+    "body .dash-side .content,body .dash-main .content{margin-bottom:0}",
+    "body .invite-block,body .attach-block{margin-top:var(--gap)}",
+    "body h2{margin-top:var(--gap)}",
+    "body .content>h2:first-child,body .content>h2:first-of-type{margin-top:0}",
     "body.sidebar-off .app-sidebar{display:none}",
     "body.sidebar-off.has-app-sidebar .container{padding-inline-start:1rem}"
   ].join("");

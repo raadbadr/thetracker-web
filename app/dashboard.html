@@ -260,9 +260,8 @@
         max-width: 420px;
       }
     }
-    .stats-section { margin-bottom: 2rem; }
-    .stats-section.stats-top { margin-bottom: 1.5rem; }
-    .stats-section.stats-top .platform-stats-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+    .stats-section { margin-bottom: var(--gap); }
+    .stats-section.stats-top .platform-stats-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gap); }
     @media (max-width: 900px) { .stats-section.stats-top .platform-stats-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     .platform-stat-card {
       background: var(--glass);
@@ -458,10 +457,10 @@
     .tabs-row { margin-top: 0; margin-bottom: 1.25rem; }
 
     /* لوحة المعلومات: عمود رئيسي للخدمات والقائمة، وعمود جانبي للتقويم والأرقام */
-    .dash-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; align-items: start; margin-bottom: 1.5rem; }
+    .dash-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--gap); align-items: start; margin-bottom: var(--gap); }
     @media (min-width: 1150px) { .dash-grid { grid-template-columns: minmax(0, 1fr) minmax(320px, 400px); } }
     .dash-main, .dash-side { min-width: 0; }
-    .dash-side { display: grid; gap: 1.5rem; align-content: start; }
+    .dash-side { display: grid; gap: var(--gap); align-content: start; }
     /* التقويم داخل العمود الجانبي: خلايا مضغوطة وأزرار في سطر واحد */
     .dash-side .cal-nav { gap: 0.4rem; }
     .dash-side .cal-title { min-width: 7rem; }
@@ -634,7 +633,7 @@
       padding: 0.55rem 0.9rem; font-size: 0.85rem;
       color: var(--btn-ink);   /* روابط البطاقات ترث لون الروابط الأزرق فتختفي على الزر */
     }
-    .filters-row { justify-content: flex-start; margin-bottom: 1rem; }
+    .filters-row { justify-content: flex-start; margin-bottom: var(--gap); gap: 0.75rem; }
     .inline-form {
       background: var(--glass-strong);
       backdrop-filter: blur(30px) saturate(180%);
