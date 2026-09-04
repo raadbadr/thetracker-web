@@ -1553,6 +1553,8 @@
     "body .stats-section,body .chart-card,body #timelineCard{margin-bottom:var(--gap)}",
     "body .dash-side .content,body .dash-main .content{margin-bottom:0}",
     "body .invite-block,body .attach-block{margin-top:var(--gap)}",
+    "body .waitlist-form+.waitlist-form,body .waitlist-form+.chat-options,body .chat-options+.waitlist-form,body .waitlist-form+.platform-stat-detail,body .waitlist-form+details{margin-top:.75rem}",
+    "body [hidden]{display:none!important}",
     "body h2{margin-top:var(--gap)}",
     "body .content>h2:first-child,body .content>h2:first-of-type{margin-top:0}",
     "body.sidebar-off .app-sidebar{display:none}",

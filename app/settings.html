@@ -689,7 +689,7 @@
         </div>
         <div class="waitlist-form" id="apiKeyReveal" hidden>
           <input type="text" class="waitlist-input" id="apiKeyValue" readonly dir="ltr">
-          <button type="button" class="waitlist-btn" id="apiKeyCopyBtn" data-i18n="copyUrlBtn">نسخ الرابط</button>
+          <button type="button" class="waitlist-btn" id="apiKeyCopyBtn" data-i18n="apiCopy">نسخ</button>
         </div>
         <p class="waitlist-msg" id="apiMsg" hidden role="status" aria-live="polite"></p>
         <div class="platform-stat-detail" id="apiKeyList" hidden></div>
@@ -781,6 +781,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
   <script>
     const translations = {
       ar: {
+        apiCopy: "نسخ",
         apiTitle: "ربط المنصات (API)",
         apiIntro: "مفتاح لكل منصة. يظهر مرة واحدة عند إنشائه.",
         apiCreate: "إنشاء مفتاح",
@@ -918,6 +919,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         dark: "داكن"
       },
       en: {
+        apiCopy: "Copy",
         apiTitle: "Integrations (API)",
         apiIntro: "One key per platform. Shown once when created.",
         apiCreate: "Create key",
@@ -1055,6 +1057,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         dark: "Dark"
       },
       fr: {
+        apiCopy: "Copier",
         apiTitle: "Intégrations (API)",
         apiIntro: "Une clé par plateforme. Affichée une seule fois.",
         apiCreate: "Créer une clé",
@@ -1192,6 +1195,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         dark: "Sombre"
       },
       ur: {
+        apiCopy: "کاپی",
         apiTitle: "انضمام (API)",
         apiIntro: "ہر پلیٹ فارم کے لیے ایک کلید۔ صرف ایک بار دکھائی جاتی ہے۔",
         apiCreate: "کلید بنائیں",
