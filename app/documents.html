@@ -642,12 +642,15 @@
     @media (prefers-reduced-motion: reduce) { .chat-thread, .waitlist-btn, .chat-option-btn { transition: none; } }
 
     /* أنماط صفحة المستندات (منقولة من صفحتي الاستيراد ولوحة التحكم) */
-    .drop-zone { text-align: center; cursor: pointer; background: transparent;
-      border: 2px dashed var(--glass-border); padding: 1.5rem 1rem;
+    /* منطقة الرفع بطاقة زجاجية كبقية الموقع: حافة واحدة رفيعة، بلا خط منقط */
+    .drop-zone { text-align: center; cursor: pointer; padding: 1.75rem 1rem;
+      background: var(--glass); border: 1px solid var(--glass-border); border-radius: 18px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      transition: border-color .2s ease, background .2s ease; }
+      transition: border-color .2s ease, background .2s ease, box-shadow .2s ease; }
     .drop-zone:hover, .drop-zone:focus-visible, .drop-zone.is-dragover, .drop-zone.is-over {
-      border-color: var(--primary); background: var(--glass); }
+      border-color: var(--primary); background: var(--glass-strong);
+      box-shadow: 0 0 0 3px var(--primary-shadow, rgba(0, 160, 210, .18)); }
     .drop-icon { width: 34px; height: 34px; fill: var(--primary); opacity: .9; margin-bottom: .4rem; }
     .drop-actions { display: flex; flex-wrap: wrap; gap: .6rem; justify-content: center; align-items: center; }
     .drop-zone p { margin-bottom: 0.75rem; }
@@ -727,7 +730,6 @@
     .status-done { color: var(--success); font-weight: 600; }
     .status-cancelled { color: var(--text-tertiary); font-weight: 600; }
     .empty-note { text-align: center; margin: 1rem 0 0; }
-    .drop-zone.is-over { border-color: var(--primary); }
     .doc-form { margin-top: 1.25rem; }
   </style>
 </head>
