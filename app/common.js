@@ -4,7 +4,7 @@
  * Loads after supabase-js (window.supabase) and /app.js (window.trackerAuth) and exposes
  * window.trackerApp = {
  *   ready, client, user, profile, orgs, org, role(),
- *   setCurrentOrg(orgId), createOrg(name),
+ *   setCurrentOrg(orgId), createOrg(name, entityType),
  *   effectivePlan(), plans(), planLimits(), subscription(),
  *   listTrackers(), createTracker({name,color,columns}), deleteTracker(id),
  *   listItems({trackerId,status,from,to,search,limit}), countItems(), insertItems(rows),
@@ -471,10 +471,11 @@
     window.location.reload();
   }
 
-  function createOrg(name) {
+  function createOrg(name, entityType) {
     return run(function (client) {
       var clean = String(name || "").trim();
       if (!clean) throw new Error("name required");
+      var type = entityTypeValue(entityType);
       return client.from("organizations")
         .insert({ name: clean, owner_id: app.user.id })
         .select("id,name,plan_code,plan_expires_at")
@@ -485,7 +486,10 @@
           app.orgs.push(org);
           app.org = org;
           try { localStorage.setItem(ORG_KEY, org.id); } catch (e) { /* ignore */ }
-          return org;
+          /* نوع الحساب يحدد الأوراق المتوقعة، فيكتب مع الإنشاء لا بعده. */
+          return saveOrgProfile({ entity_type: type, legal_name: clean })
+            .catch(function () { return null; })
+            .then(function () { return org; });
         });
     });
   }
@@ -513,6 +517,31 @@
   }
 
   /* ---------- بطاقة المنشأة وأوراقها الرسمية (نواة مشتركة لكل قطاع) ---------- */
+
+  /* من يستعمل المنصة: منشأة تجارية أو شخص يرتب أوراقه. نفس القيم في القاعدة. */
+  var ENTITY_TYPES = [
+    { value: "company",       ar: "شركة",                     en: "Company",             fr: "Société",             ur: "کمپنی" },
+    { value: "establishment", ar: "مؤسسة",                    en: "Establishment",       fr: "Établissement",       ur: "ادارہ" },
+    { value: "freelance",     ar: "وثيقة عمل حر",             en: "Freelance permit",    fr: "Travail indépendant", ur: "فری لانس اجازت" },
+    { value: "individual",    ar: "شخص",                      en: "Individual",          fr: "Particulier",         ur: "انفرادی" },
+    { value: "nonprofit",     ar: "جمعية أو منظمة غير ربحية", en: "Nonprofit",           fr: "Association",         ur: "غیر منافع بخش" },
+    { value: "government",    ar: "جهة حكومية",               en: "Government body",     fr: "Entité publique",     ur: "سرکاری ادارہ" }
+  ];
+
+  function entityTypeValue(v) {
+    var wanted = String(v || "").trim();
+    for (var i = 0; i < ENTITY_TYPES.length; i++) if (ENTITY_TYPES[i].value === wanted) return wanted;
+    return "company";
+  }
+
+  function entityLabel(v) {
+    var row = null, wanted = entityTypeValue(v);
+    ENTITY_TYPES.forEach(function (t) { if (t.value === wanted) row = t; });
+    return row ? (row[lang()] || row.ar) : "";
+  }
+
+  /* الشخص يسجل باسمه، والمنشأة باسمها: نص واحد لا يصلح للاثنين. */
+  function isPersonType(v) { return entityTypeValue(v) === "individual"; }
 
   var ORG_PROFILE_FIELDS = ["entity_type", "legal_name", "cr_number", "vat_number", "unified_number",
     "license_number", "national_address", "phone", "email", "website", "iban", "bank_name", "account_name", "notes"];
@@ -1865,6 +1894,9 @@
   app.activityFeed = activityFeed;
   app.achievements = achievements;
   app.setMemberPerson = setMemberPerson;
+  app.entityTypes = function () { return ENTITY_TYPES.slice(); };
+  app.entityLabel = entityLabel;
+  app.isPersonType = isPersonType;
   app.orgProfile = orgProfile;
   app.saveOrgProfile = saveOrgProfile;
   app.orgDocumentsStatus = orgDocumentsStatus;
@@ -1917,8 +1949,8 @@
   ];
 
   var BELL_LABELS = { ar: "التنبيهات", en: "Notifications", fr: "Notifications", ur: "اطلاعات" };
-  var ORG_LABELS = { ar: "الشركة", en: "Company", fr: "Entreprise", ur: "کمپنی" };
-  var NEW_ORG_LABELS = { ar: "＋ شركة جديدة", en: "＋ New company", fr: "＋ Nouvelle entreprise", ur: "＋ نئی کمپنی" };
+  var ORG_LABELS = { ar: "الحساب", en: "Account", fr: "Compte", ur: "اکاؤنٹ" };
+  var NEW_ORG_LABELS = { ar: "＋ حساب جديد", en: "＋ New account", fr: "＋ Nouveau compte", ur: "＋ نیا اکاؤنٹ" };
   var BELL_DELETE = { ar: "حذف التنبيه", en: "Delete", fr: "Supprimer", ur: "حذف کریں" };
   var BELL_CLEAR = { ar: "حذف كل التنبيهات", en: "Clear all", fr: "Tout effacer", ur: "سب حذف کریں" };
   var BELL_EMPTY = { ar: "لا توجد تنبيهات بعد.", en: "No notifications yet.", fr: "Aucune notification pour le moment.", ur: "ابھی کوئی اطلاع نہیں۔" };
@@ -2082,10 +2114,10 @@
 
   /* أين أنا الآن؟ اسم الشركة الحالية ظاهر دائما ويبدل من مكانه. */
   var NEW_ORG_TEXT = {
-    ar: { title: "شركة جديدة", hint: "اكتب اسم الشركة التي تريد إضافتها.", save: "إنشاء", cancel: "إلغاء", error: "تعذر الإنشاء، حاول مرة أخرى." },
-    en: { title: "New company", hint: "Enter the name of the company to add.", save: "Create", cancel: "Cancel", error: "Could not create it, try again." },
-    fr: { title: "Nouvelle entreprise", hint: "Saisissez le nom de l'entreprise.", save: "Créer", cancel: "Annuler", error: "Création impossible, réessayez." },
-    ur: { title: "نئی کمپنی", hint: "کمپنی کا نام لکھیں۔", save: "بنائیں", cancel: "منسوخ", error: "نہیں بن سکی، دوبارہ کوشش کریں۔" }
+    ar: { title: "حساب جديد", hint: "اختر نوع الحساب ثم اكتب الاسم.", type: "نوع الحساب", name: "اسم الجهة", nameSelf: "اسمك الكامل", save: "إنشاء", cancel: "إلغاء", error: "تعذر الإنشاء، حاول مرة أخرى." },
+    en: { title: "New account", hint: "Choose the account type, then enter the name.", type: "Account type", name: "Entity name", nameSelf: "Your full name", save: "Create", cancel: "Cancel", error: "Could not create it, try again." },
+    fr: { title: "Nouveau compte", hint: "Choisissez le type de compte, puis saisissez le nom.", type: "Type de compte", name: "Nom de l'entité", nameSelf: "Votre nom complet", save: "Créer", cancel: "Annuler", error: "Création impossible, réessayez." },
+    ur: { title: "نیا اکاؤنٹ", hint: "اکاؤنٹ کی قسم منتخب کریں پھر نام لکھیں۔", type: "اکاؤنٹ کی قسم", name: "ادارے کا نام", nameSelf: "آپ کا پورا نام", save: "بنائیں", cancel: "منسوخ", error: "نہیں بن سکا، دوبارہ کوشش کریں۔" }
   };
 
   /* إضافة شركة من الشريط العلوي مباشرة */
@@ -2102,7 +2134,12 @@
     gate.innerHTML =
       '<div class="app-gate-card" role="dialog" aria-modal="true">' +
         "<h2>" + escapeHtml(t.title) + "</h2><p>" + escapeHtml(t.hint) + "</p>" +
-        '<label><input type="text" id="newOrgInput" maxlength="120" autocomplete="organization"></label>' +
+        "<label>" + escapeHtml(t.type) +
+          '<select id="newOrgType">' + ENTITY_TYPES.map(function (e) {
+            return '<option value="' + e.value + '">' + escapeHtml(e[lang()] || e.ar) + "</option>";
+          }).join("") + "</select></label>" +
+        '<label id="newOrgNameLabel">' + escapeHtml(t.name) +
+          '<input type="text" id="newOrgInput" maxlength="120" autocomplete="organization"></label>' +
         '<button type="button" id="newOrgSave">' + escapeHtml(t.save) + "</button>" +
         '<button type="button" id="newOrgCancelBtn" style="margin-top:.6rem;background:transparent;color:var(--text-secondary)">' + escapeHtml(t.cancel) + "</button>" +
         '<div class="app-gate-msg" id="newOrgErr"></div>' +
@@ -2112,12 +2149,20 @@
     if (input) input.focus();
 
     document.getElementById("newOrgCancelBtn").addEventListener("click", function () { gate.remove(); });
+    var typeSel = document.getElementById("newOrgType");
+    var nameLabel = document.getElementById("newOrgNameLabel");
+    if (typeSel && nameLabel) typeSel.addEventListener("change", function () {
+      nameLabel.childNodes[0].nodeValue = isPersonType(typeSel.value) ? t.nameSelf : t.name;
+      if (isPersonType(typeSel.value) && !String(input.value || "").trim() && app.profile && app.profile.full_name) {
+        input.value = app.profile.full_name;
+      }
+    });
     document.getElementById("newOrgSave").addEventListener("click", function () {
       var name = String(input.value || "").trim();
       if (!name) { input.focus(); return; }
       var btn = this;
       btn.disabled = true;
-      createOrg(name).then(function () {
+      createOrg(name, typeSel ? typeSel.value : "company").then(function () {
         window.location.href = "/app/dashboard.html";
       }).catch(function () {
         btn.disabled = false;
@@ -2407,8 +2452,9 @@
     ".app-gate-card h2{margin:0 0 .35rem;font-size:1.3rem;color:var(--text-primary)}",
     ".app-gate-card p{margin:0 0 1.1rem;font-size:.9rem;color:var(--text-secondary)}",
     ".app-gate-card label{display:block;margin-bottom:.9rem;font-size:.85rem;color:var(--text-secondary)}",
-    ".app-gate-card input{width:100%;margin-top:.35rem;padding:.7rem .9rem;border-radius:12px;",
+    ".app-gate-card input,.app-gate-card select{width:100%;margin-top:.35rem;padding:.7rem .9rem;border-radius:12px;",
     "border:1px solid var(--glass-border);background:var(--glass);color:var(--text-primary);font:inherit}",
+    ".app-gate-card select{appearance:none;-webkit-appearance:none}",
     ".app-gate-card button{width:100%;padding:.75rem 1rem;border:0;border-radius:12px;background:var(--primary);",
     "color:var(--btn-ink,#fff);font:inherit;font-weight:700;cursor:pointer}",
     ".app-gate-msg{margin-top:.8rem;font-size:.85rem;color:#ff8f8f;min-height:1.2em}"

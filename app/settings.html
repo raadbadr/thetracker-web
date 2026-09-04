@@ -750,7 +750,8 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
             <select class="waitlist-input" id="opEntityType">
               <option value="company" data-i18n="opTypeCompany">شركة</option>
               <option value="establishment" data-i18n="opTypeEstablishment">مؤسسة فردية</option>
-              <option value="freelance" data-i18n="opTypeFreelance">عمل حر</option>
+              <option value="freelance" data-i18n="opTypeFreelance">وثيقة عمل حر</option>
+              <option value="individual" data-i18n="opTypeIndividual">شخص</option>
               <option value="nonprofit" data-i18n="opTypeNonprofit">جمعية أو منظمة غير ربحية</option>
               <option value="government" data-i18n="opTypeGovernment">جهة حكومية</option>
             </select>
@@ -968,7 +969,9 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         opEntityType: "نوع المنشأة",
         opTypeCompany: "شركة",
         opTypeEstablishment: "مؤسسة فردية",
-        opTypeFreelance: "عمل حر",
+        opTypeFreelance: "وثيقة عمل حر",
+        opTypeIndividual: "شخص",
+        opFullName: "الاسم الكامل",
         opTypeNonprofit: "جمعية أو منظمة غير ربحية",
         opTypeGovernment: "جهة حكومية",
         opLegalName: "الاسم النظامي",
@@ -1131,7 +1134,9 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         opEntityType: "Entity type",
         opTypeCompany: "Company",
         opTypeEstablishment: "Sole establishment",
-        opTypeFreelance: "Freelance",
+        opTypeFreelance: "Freelance permit",
+        opTypeIndividual: "Individual",
+        opFullName: "Full name",
         opTypeNonprofit: "Non-profit",
         opTypeGovernment: "Government body",
         opLegalName: "Legal name",
@@ -1295,6 +1300,8 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         opTypeCompany: "Société",
         opTypeEstablishment: "Établissement individuel",
         opTypeFreelance: "Travail indépendant",
+        opTypeIndividual: "Particulier",
+        opFullName: "Nom complet",
         opTypeNonprofit: "Association",
         opTypeGovernment: "Organisme public",
         opLegalName: "Raison sociale",
@@ -1457,7 +1464,9 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         opEntityType: "ادارے کی قسم",
         opTypeCompany: "کمپنی",
         opTypeEstablishment: "انفرادی ادارہ",
-        opTypeFreelance: "فری لانس",
+        opTypeFreelance: "فری لانس اجازت",
+        opTypeIndividual: "انفرادی",
+        opFullName: "پورا نام",
         opTypeNonprofit: "غیر منافع بخش ادارہ",
         opTypeGovernment: "سرکاری ادارہ",
         opLegalName: "قانونی نام",
@@ -2368,6 +2377,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         renderSubscription();
         var so = el("signOutBtn");
         if (so && !so.disabled) so.textContent = t("signOutBtn");
+        applyEntityType();
       }
       window.__settingsRerender = rerender;
 
@@ -2382,6 +2392,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
           state.orgProfile = p || null;
           var addr = (p && p.national_address) || {};
           if (el("opEntityType")) el("opEntityType").value = (p && p.entity_type) || "company";
+          applyEntityType();
           Object.keys(OP_FIELDS).forEach(function (id) {
             var node = el(id); if (node) node.value = (p && p[OP_FIELDS[id]]) || "";
           });
@@ -2393,6 +2404,23 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         }).catch(function () { /* بطاقة اختيارية: لا تُعطل بقية الإعدادات */ });
       }
 
+      /* الحساب الفردي: شخص يرتب أوراقه، فلا تُعرض عليه حقول المنشآت التجارية. */
+      var COMMERCIAL_ONLY = ["opCr", "opVat", "opUnified", "opLicense"];
+      function applyEntityType() {
+        var sel = el("opEntityType");
+        if (!sel) return;
+        var person = app.isPersonType ? app.isPersonType(sel.value) : sel.value === "individual";
+        COMMERCIAL_ONLY.forEach(function (id) {
+          var node = el(id), box = node && node.closest(".settings-field");
+          if (box) box.hidden = person;
+        });
+        var label = document.querySelector('label[for="opLegalName"]');
+        if (label) {
+          label.dataset.i18n = person ? "opFullName" : "opLegalName";
+          label.textContent = t(person ? "opFullName" : "opLegalName");
+        }
+      }
+
       function saveOrgProfile(ev) {
         if (ev) ev.preventDefault();
         var iban = String(el("opIban").value || "").replace(/\s+/g, "").toUpperCase();
@@ -2402,6 +2430,9 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         var row = { entity_type: el("opEntityType").value,
           national_address: { city: String(el("opCity").value || "").trim(), street: String(el("opStreet").value || "").trim() } };
         Object.keys(OP_FIELDS).forEach(function (id) { row[OP_FIELDS[id]] = String(el(id).value || "").trim(); });
+        if (app.isPersonType && app.isPersonType(row.entity_type)) {
+          COMMERCIAL_ONLY.forEach(function (id) { row[OP_FIELDS[id]] = ""; });
+        }
         row.iban = iban; row.vat_number = vat;
         el("opSaveBtn").disabled = true;
         app.saveOrgProfile(row).then(function (saved) {
@@ -2426,6 +2457,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
 
           el("profileForm").addEventListener("submit", saveProfile);
           el("orgProfileForm").addEventListener("submit", saveOrgProfile);
+          el("opEntityType").addEventListener("change", applyEntityType);
           el("channelsGrid").addEventListener("click", onChannelAction);
           el("channelsGrid").addEventListener("click", onChannelToggle);
           el("channelsGrid").addEventListener("submit", onSmsSubmit);

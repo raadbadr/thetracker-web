@@ -882,10 +882,11 @@
     </div>
 
     <div class="content" id="createOrgCard" hidden>
-      <h2 data-i18n="createOrgTitle">أنشئ شركتك</h2>
-      <p data-i18n="createOrgIntro">ابدأ بإنشاء شركتك لتتمكن من إضافة السجلات والعناصر ودعوة فريقك.</p>
+      <h2 data-i18n="createOrgTitle">ابدأ حسابك</h2>
+      <p data-i18n="createOrgIntro">اختر نوع الحساب: شركة أو مؤسسة أو وثيقة عمل حر، أو شخصا يريد ترتيب أوراقه.</p>
       <form class="waitlist-form" id="createOrgForm" novalidate>
-        <input type="text" class="waitlist-input" id="createOrgName" placeholder="اسم الشركة" maxlength="120" autocomplete="organization">
+        <select class="waitlist-input" id="createOrgType" aria-label="نوع الحساب"></select>
+        <input type="text" class="waitlist-input" id="createOrgName" placeholder="اسم الجهة" maxlength="120" autocomplete="organization">
         <button type="submit" class="waitlist-btn" data-i18n="newOrgSubmit">إنشاء</button>
       </form>
       <p class="waitlist-msg" id="createOrgMsg" hidden role="status" aria-live="polite"></p>
@@ -1118,11 +1119,12 @@
         deleteOrgBtn: "حذف الشركة",
         orgRenamed: "تم تعديل اسم الشركة.",
         deleteOrgConfirm: "ستحذف الشركة «{name}» وكل عناصرها وسجلاتها نهائيا. هل تتابع؟",
-        newOrgPlaceholder: "اسم الشركة",
+        newOrgPlaceholder: "اسم الجهة",
+        selfNamePlaceholder: "اسمك الكامل",
         newOrgSubmit: "إنشاء",
         cancel: "إلغاء",
-        createOrgTitle: "أنشئ شركتك",
-        createOrgIntro: "ابدأ بإنشاء شركتك لتتمكن من إضافة السجلات والعناصر ودعوة فريقك.",
+        createOrgTitle: "ابدأ حسابك",
+        createOrgIntro: "اختر نوع الحساب: شركة أو مؤسسة أو وثيقة عمل حر، أو شخصا يريد ترتيب أوراقه.",
         orgCreated: "تم إنشاء الشركة.",
         orgNameRequired: "أدخل اسم الشركة.",
         linkImport: "استيراد ملف",
@@ -1333,11 +1335,12 @@
         deleteOrgBtn: "Delete company",
         orgRenamed: "Company name updated.",
         deleteOrgConfirm: "«{name}» and all of its items and trackers will be permanently deleted. Continue?",
-        newOrgPlaceholder: "Company name",
+        newOrgPlaceholder: "Entity name",
+        selfNamePlaceholder: "Your full name",
         newOrgSubmit: "Create",
         cancel: "Cancel",
-        createOrgTitle: "Create your company",
-        createOrgIntro: "Start by creating your company so you can add trackers and items and invite your team.",
+        createOrgTitle: "Start your account",
+        createOrgIntro: "Choose the account type: a company, an establishment, a freelance permit, or an individual organising their own papers.",
         orgCreated: "Company created.",
         orgNameRequired: "Enter the company name.",
         linkImport: "Import file",
@@ -1548,11 +1551,12 @@
         deleteOrgBtn: "Supprimer l'entreprise",
         orgRenamed: "Nom de l'entreprise mis à jour.",
         deleteOrgConfirm: "«{name}» et tous ses éléments seront supprimés définitivement. Continuer ?",
-        newOrgPlaceholder: "Nom de l'entreprise",
+        newOrgPlaceholder: "Nom de l'entité",
+        selfNamePlaceholder: "Votre nom complet",
         newOrgSubmit: "Créer",
         cancel: "Annuler",
-        createOrgTitle: "Créez votre entreprise",
-        createOrgIntro: "Commencez par créer votre entreprise pour ajouter des suivis et des éléments et inviter votre équipe.",
+        createOrgTitle: "Ouvrez votre compte",
+        createOrgIntro: "Choisissez le type de compte : société, établissement, travail indépendant ou particulier qui organise ses papiers.",
         orgCreated: "Entreprise créée.",
         orgNameRequired: "Saisissez le nom de l'entreprise.",
         linkImport: "Importer un fichier",
@@ -1763,11 +1767,12 @@
         deleteOrgBtn: "کمپنی حذف کریں",
         orgRenamed: "کمپنی کا نام تبدیل ہو گیا۔",
         deleteOrgConfirm: "«{name}» اور اس کے تمام آئٹمز مستقل طور پر حذف ہو جائیں گے۔ جاری رکھیں؟",
-        newOrgPlaceholder: "کمپنی کا نام",
+        newOrgPlaceholder: "ادارے کا نام",
+        selfNamePlaceholder: "آپ کا پورا نام",
         newOrgSubmit: "بنائیں",
         cancel: "منسوخ کریں",
-        createOrgTitle: "اپنی کمپنی بنائیں",
-        createOrgIntro: "ٹریکرز اور آئٹمز شامل کرنے اور اپنی ٹیم کو مدعو کرنے کے لیے پہلے اپنی کمپنی بنائیں۔",
+        createOrgTitle: "اپنا اکاؤنٹ شروع کریں",
+        createOrgIntro: "اکاؤنٹ کی قسم منتخب کریں: کمپنی، ادارہ، فری لانس اجازت، یا ذاتی کاغذات ترتیب دینے والا فرد۔",
         orgCreated: "کمپنی بن گئی۔",
         orgNameRequired: "کمپنی کا نام درج کریں۔",
         linkImport: "فائل امپورٹ کریں",
@@ -2001,6 +2006,7 @@
         if (translations[code] && translations[code][k]) el.textContent = translations[code][k];
       });
       applyPlaceholders(code);
+      if (typeof window.__fillOrgTypes === "function") window.__fillOrgTypes();
       document.title = (translations[code] && translations[code].title ? translations[code].title : "Dashboard") + " | TheTracker";
       if (typeof window.__trackerAuthRefresh === "function") window.__trackerAuthRefresh();
       if (typeof window.__dashboardRerender === "function") window.__dashboardRerender();
@@ -2755,7 +2761,11 @@
           if (!res || res.unavailable || app.unavailable || !app.client) { showUnavailable(); return; }
           hide("loadingCard");
           renderTopBar();
-          if (!app.org) { show("createOrgCard"); return; }
+          if (!app.org) {
+            show("createOrgCard");
+            if (typeof window.__fillOrgTypes === "function") window.__fillOrgTypes();
+            return;
+          }
           state.org = app.org;
           state.month = startOfMonth(new Date());
           state.viewType = currentViewType();
@@ -2825,12 +2835,12 @@
         hide("topBar");
       }
 
-      function createOrgFlow(name, msgId) {
+      function createOrgFlow(name, msgId, type) {
         var clean = String(name || "").trim();
         if (!clean) { setMsg(msgId, T("orgNameRequired"), "error"); return; }
         clearMsg(msgId);
         guard(function () {
-          return app.createOrg(clean).then(function () {
+          return app.createOrg(clean, type).then(function () {
             toast("orgCreated");
             window.location.reload();
           });
@@ -2881,8 +2891,31 @@
       });
       $("createOrgForm").addEventListener("submit", function (ev) {
         ev.preventDefault();
-        createOrgFlow($("createOrgName").value, "createOrgMsg");
+        var sel = $("createOrgType");
+        createOrgFlow($("createOrgName").value, "createOrgMsg", sel ? sel.value : "company");
       });
+
+      /* أنواع الحسابات تأتي من النواة المشتركة، والاسم يتبع النوع المختار. */
+      window.__fillOrgTypes = function () {
+        var sel = $("createOrgType");
+        if (!sel || !app.entityTypes) return;
+        var keep = sel.value;
+        sel.innerHTML = app.entityTypes().map(function (t) {
+          return '<option value="' + t.value + '">' + (t[l] || t.ar) + "</option>";
+        }).join("");
+        if (keep) sel.value = keep;
+        var input = $("createOrgName");
+        if (input) input.placeholder = T(app.isPersonType(sel.value) ? "selfNamePlaceholder" : "newOrgPlaceholder");
+      };
+      $("createOrgType").addEventListener("change", function () {
+        var input = $("createOrgName");
+        if (!input) return;
+        input.placeholder = T(app.isPersonType(this.value) ? "selfNamePlaceholder" : "newOrgPlaceholder");
+        if (app.isPersonType(this.value) && !String(input.value || "").trim() && app.profile && app.profile.full_name) {
+          input.value = app.profile.full_name;
+        }
+      });
+      window.__fillOrgTypes();
       $("signOutBtn").addEventListener("click", function () {
         var go = function () { window.location.href = "/login.html"; };
         if (window.trackerAuth && window.trackerAuth.signOut) window.trackerAuth.signOut().then(go, go);
