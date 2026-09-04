@@ -34,10 +34,61 @@
   <meta name="twitter:title" content="TheTracker | تتبع أعمالك في مكان واحد">
   <meta name="twitter:description" content="ارفع ملف إكسل، واحصل على تقويم وتنبيهات لعقودك وتراخيصك ومهامك، وشارك فريقك.">
   <meta name="twitter:image" content="https://appmails.net/logo.png">
-  <!-- JSON-LD Structured Data -->
-  <script src="/index.1.js?v=1" type="application/ld+json"></script>
-  <script src="/index.2.js?v=1" type="application/ld+json"></script>
-  <script src="/index.3.js?v=1" type="application/ld+json"></script>
+  <!-- JSON-LD Structured Data: يبقى داخلياً — المتصفحات لا تجلب src لعنصر script بنوع غير تنفيذي مثل ld+json، فيبقى فارغاً لو صار خارجياً (تحقق فعلي، ليس افتراضاً) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "TheTracker",
+    "alternateName": "TheTracker",
+    "description": "منصة لتتبع عقود الشركات وتراخيصها ومهامها من ملف إكسل، مع تقويم وتنبيهات على تيليغرام.",
+    "url": "https://appmails.net",
+    "image": "https://appmails.net/logo.png",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "SAR"
+    },
+    "inLanguage": ["ar", "en", "fr", "ur"],
+    "availableLanguage": ["ar", "en", "fr", "ur"],
+    "countryOfOrigin": {
+      "@type": "Country",
+      "name": "SA"
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "TheTracker",
+    "alternateName": "تراكر",
+    "url": "https://appmails.net",
+    "logo": "https://appmails.net/tracker-logo-full-dark.png",
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "contactType": "customer support",
+      "email": "support@appmails.net",
+      "availableLanguage": ["Arabic", "English", "French", "Urdu"]
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "TheTracker",
+    "url": "https://appmails.net",
+    "inLanguage": "ar-SA",
+    "publisher": {
+      "@type": "Organization",
+      "name": "TheTracker",
+      "logo": "https://appmails.net/tracker-logo-full-dark.png"
+    }
+  }
+  </script>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>TheTracker | تتبع أعمالك في مكان واحد</title>

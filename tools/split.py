@@ -118,11 +118,17 @@ def cmd_page(path):
             out = out.replace(m.group(0), tag, 1); first = False
         made.append("%s (%d parts, %d lines)" % (css_target, n, css.count("\n")))
     # السكربتات الداخلية: كل كتلة تبقى سكربتا مستقلا (نفس الدلالة تماما) بحزمة خاصة <page>.N.js
+    # نوع غير تنفيذي (ld+json، json، أي قالب نصي) لا يصح إخراجه: المتصفح لا يجلب src
+    # لعنصر script بنوع كهذا فيبقى فارغا — تحقق فعلي في متصفح حقيقي، ليس افتراضا.
+    JS_TYPE_RX = re.compile(r'type\s*=\s*["\']?\s*(text/javascript|application/javascript|module)\b', re.I)
     idx = 0
     for m in SCRIPT_RX.finditer(html):
         body = m.group(3)
+        attrs = m.group(2)
         if body.count("\n") < 6:            # سطر أو سطران: يبقى داخليا
             continue
+        if re.search(r'\btype\s*=', attrs, re.I) and not JS_TYPE_RX.search(attrs):
+            continue                        # نوع غير تنفيذي (مثل ld+json): يبقى داخليا دائما
         idx += 1
         code = body[1:] if body.startswith("\n") else body
         js_target = os.path.join(d, "%s.%d.js" % (page, idx))
