@@ -2116,8 +2116,7 @@
       applyPlaceholders(code);
       document.title = (translations[code] && translations[code].title ? translations[code].title : "Team") + " | TheTracker";
       if (typeof window.__trackerAuthRefresh === "function") window.__trackerAuthRefresh();
-      if (typeof window.__teamRender === "function") window.__teamRender();
-      if (typeof window.__chatRender === "function") window.__chatRender();
+      if (typeof window.__docsRefresh === "function") window.__docsRefresh();
     }
 
     function setTheme(th) {
@@ -2546,7 +2545,7 @@
         });
       }
 
-      window.__docsRefresh = function () { renderKindSelects(); render(); };
+      window.__docsRefresh = function () { renderKindSelects(); render(); renderPapers(); };
 
       function boot() {
         app = window.trackerApp;

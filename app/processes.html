@@ -1830,8 +1830,7 @@
       applyPlaceholders(code);
       document.title = (translations[code] && translations[code].title ? translations[code].title : "Team") + " | TheTracker";
       if (typeof window.__trackerAuthRefresh === "function") window.__trackerAuthRefresh();
-      if (typeof window.__teamRender === "function") window.__teamRender();
-      if (typeof window.__chatRender === "function") window.__chatRender();
+      if (typeof window.__processesRefresh === "function") window.__processesRefresh();
     }
 
     function setTheme(th) {
@@ -2073,6 +2072,8 @@
         $("editBtn").addEventListener("click", function () { openEditor(state.current); });
         $("backBtn").addEventListener("click", function () { show("detailCard", false); show("listCard", true); });
       }
+      window.__processesRefresh = function () { renderList(); };
+
       function boot() {
         app = window.trackerApp;
         if (!app || !app.ready) { show("loadingCard", false); show("unavailableCard", true); return; }
