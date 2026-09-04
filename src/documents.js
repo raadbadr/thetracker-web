@@ -146,7 +146,7 @@ function findAfter(text, labels, pattern) {
 /* جدول الأوراق الرسمية المعروفة: كل نوع بكلماته ومسمّيات رقمه وجهته. يُفحص بالترتيب. */
 const wordBoundaryAr = (pattern) => "(?<![\\u0600-\\u06FF])(?:" + pattern + ")(?![\\u0600-\\u06FF])";
 const KIND_RULES = [
-  { kind: "commercial_register", test: /السجل\s*التجاري|سجل\s*تجاري|commercial\s*regist/i, issuer: "وزارة التجارة",
+  { kind: "commercial_register", test: /السجل\s*التجاري|سجل\s*تجاري|رقم\s*السجل|شهادة\s*(?:ال)?سجل|commercial\s*regist/i, issuer: "وزارة التجارة",
     number: ["رقم\\s*السجل\\s*التجاري", "رقم\\s*السجل", "C\\.?R\\.?\\s*(?:No\\.?)?"], numPat: "[1247]\\d{9}", party: ["اسم\\s*المنشأة", "الاسم\\s*التجاري", "اسم\\s*الشركة", "اسم\\s*التاجر"] },
   { kind: "articles_of_association", test: /عقد\s*(?:ال)?تأسيس|عقد\s*شركة|articles\s*of\s*(?:association|incorporation)|memorandum\s*of\s*association/i,
     number: ["رقم\\s*العقد", "رقم\\s*التوثيق", "رقم\\s*الوثيقة"], numPat: "\\d{4,20}", party: ["اسم\\s*الشركة", "تحت\\s*اسم", "باسم"], issuerTest: [[/وزارة\s*التجارة/, "وزارة التجارة"], [/كاتب\s*(?:ال)?عدل|العدل/, "وزارة العدل"]] },
@@ -200,10 +200,34 @@ const KIND_RULES = [
     amount: /(?:قيمة\s*العقد|إجمالي\s*(?:قيمة\s*)?العقد|المبلغ\s*الإجمالي|contract\s*value)[^0-9]{0,25}([0-9][0-9,\.]{2,})/i },
 ];
 
+/* إشارات لا تحتمل اللبس: حين تتحقق، لا رأي للنموذج فيها.
+   الترتيب مهم: الأخص أولا. */
+const STRONG_KINDS = [
+  { kind: "commercial_register", when: (t) =>
+      (/وزارة\s*التجارة/.test(t) && /\b[1247]\d{9}\b/.test(t)) ||
+      /(?:رقم\s*)?السجل\s*التجاري/.test(t) },
+  { kind: "vat_certificate", when: (t) => /\b3\d{13}3\b/.test(t) && /(?:ضريب|VAT)/i.test(t) },
+  { kind: "zakat_certificate", when: (t) => /شهادة\s*(?:ال)?زكاة|الزكاة\s*والدخل/.test(t) },
+  { kind: "gosi_certificate", when: (t) => /التأمينات\s*الاجتماعية/.test(t) },
+  { kind: "chamber_certificate", when: (t) => /الغرفة\s*التجارية/.test(t) },
+  { kind: "saudization_certificate", when: (t) => /شهادة\s*(?:السعودة|التوطين)|نطاقات/.test(t) },
+  { kind: "power_of_attorney", when: (t) => /(?:رقم\s*)?(?:ال)?وكالة/.test(t) && /كاتب\s*(?:ال)?عدل|ناجز|الموكل/.test(t) },
+  { kind: "articles_of_association", when: (t) => /عقد\s*(?:ال)?تأسيس/.test(t) }
+];
+
+function strongKind(text) {
+  const hit = STRONG_KINDS.find((r) => r.when(text));
+  return hit ? hit.kind : null;
+}
+
 function rulesExtract(rawText) {
   const text = westernize(rawText).replace(/[\u200f\u200e]/g, "");
   const out = {};
-  const rule = KIND_RULES.find((r) => r.test.test(text));
+  const strong = strongKind(text);
+  const rule = strong
+    ? (KIND_RULES.find((r) => r.kind === strong) || KIND_RULES.find((r) => r.test.test(text)))
+    : KIND_RULES.find((r) => r.test.test(text));
+  if (strong) out.strong = true;
   if (rule) {
     out.kind = rule.kind;
     if (rule.number) out.number = findAfter(text, rule.number, rule.numPat || "[0-9A-Za-z\\-\\/]{3,25}") || null;
@@ -235,7 +259,9 @@ function mergeRules(model, rules) {
     const isMissing = merged[key] == null || merged[key] === "" || merged[key] === 0 || (key === "kind" && merged[key] === "other");
     if (isMissing) merged[key] = rules[key];
   }
-  if (rules.kind && merged.kind !== rules.kind && (merged.kind === "other" || merged.kind == null)) merged.kind = rules.kind;
+  /* النص صريح: عبارة المستند ورقمه أصدق من تخمين النموذج */
+  if (rules.kind && (rules.strong || merged.kind == null || merged.kind === "other")) merged.kind = rules.kind;
+  delete merged.strong;
   if (!merged.title && rules.kind) {
     const names = { commercial_register: "السجل التجاري", vat_certificate: "الشهادة الضريبية", license: "الرخصة",
       articles_of_association: "عقد التأسيس", bylaws: "النظام الأساسي", chamber_certificate: "شهادة الغرفة التجارية",
