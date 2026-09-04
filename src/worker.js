@@ -6,7 +6,8 @@
 
 import { handleAssistantRequest } from "./assistant.js";
 import { handleCalendar } from "./calendar.js";
-import { runNotificationCron, linkChannelByCode, notifyTarget, sendTelegram, sendWhatsapp, sendSms, sendEmail, rpc, t as channelText } from "./notify.js";
+import { runNotificationCron, linkChannelByCode, notifyTarget, sendTelegram, sendWhatsapp, sendSms, sendEmail, rpc, t as channelText,
+         bot as botText, menuKeyboard, menuAction, urlButton, formatItems, telegramItems, linkChannelDirect, linkChannelByPhone, contactKeyboard } from "./notify.js";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -129,7 +130,67 @@ function telegramLang(code) {
   return ["ar", "en", "fr", "ur"].includes(c) ? c : "ar";
 }
 
-/** POST /api/telegram/webhook — /start CODE يربط الحساب ويرحّب بصاحبه باسمه وشركته، وكل رسالة تُسجَّل لمدير المنصة */
+// --- رمز ربط موقّع (HMAC بسر الـ Worker): زر داخل البوت يفتح الإعدادات فتربط الجلسة المحادثة بلا أي كتابة ---
+async function hmacHex(secret, data) {
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(data));
+  return [...new Uint8Array(sig)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+async function makeLinkToken(env, chatId) {
+  const exp = Math.floor(Date.now() / 1000) + 60 * 60 * 24; // صالح يوماً
+  const body = `${chatId}.${exp}`;
+  return `${body}.${await hmacHex(env.WORKER_SECRET, body)}`;
+}
+async function readLinkToken(env, token) {
+  const m = String(token || "").match(/^(-?\d{1,20})\.(\d{1,12})\.([a-f0-9]{64})$/);
+  if (!m) return null;
+  if (Number(m[2]) < Math.floor(Date.now() / 1000)) return null;
+  const expect = await hmacHex(env.WORKER_SECRET, `${m[1]}.${m[2]}`);
+  return expect === m[3] ? m[1] : null;
+}
+
+/** الترحيب بعد الربط: باسم المستخدم وشركته وبلغة ملفه، مع لوحة الأزرار */
+async function greetLinked(env, chatId, userId, fallbackLang, fallbackName) {
+  let target = null;
+  try { target = await notifyTarget(env, userId, "telegram"); } catch {}
+  const lang = (target && target.lang) || fallbackLang || "ar";
+  const name = (target && target.full_name) || fallbackName || "";
+  try { await sendTelegram(env, chatId, channelText(lang).linked(name, target && target.org_name), menuKeyboard(lang)); } catch {}
+  return lang;
+}
+
+/** رسالة "اربط حسابك" لمن لم يُربط: زر يفتح الموقع (ربط تلقائي) */
+async function askToLink(env, chatId, lang) {
+  const b = botText(lang);
+  let extra = {};
+  if (env.WORKER_SECRET) {
+    const token = await makeLinkToken(env, chatId);
+    extra = urlButton(b.linkBtn, `https://appmails.net/app/settings?tglink=${encodeURIComponent(token)}`);
+  }
+  try { await sendTelegram(env, chatId, b.linkIntro, extra); } catch {}
+  // الطريق الثاني: مشاركة رقم الجوال المسجَّل في الملف الشخصي (زر واحد)
+  try { await sendTelegram(env, chatId, b.phoneHint, contactKeyboard(lang)); } catch {}
+}
+
+/** تنفيذ زر من القائمة لمستخدم مربوط */
+async function runMenu(env, chatId, userId, action) {
+  let target = null;
+  try { target = await notifyTarget(env, userId, "telegram"); } catch {}
+  const lang = (target && target.lang) || "ar";
+  const b = botText(lang);
+  if (action === "upcoming" || action === "overdue") {
+    let rows = [];
+    try { rows = await telegramItems(env, userId, action, 8); } catch {}
+    const text = formatItems(lang, rows, action === "overdue" ? b.overdueTitle : b.upcomingTitle, action === "overdue" ? b.noOverdue : b.noUpcoming);
+    try { await sendTelegram(env, chatId, text, menuKeyboard(lang)); } catch {}
+  } else if (action === "dashboard") {
+    try { await sendTelegram(env, chatId, b.openDash, urlButton(b.openDash, "https://appmails.net/app/dashboard.html")); } catch {}
+  } else {
+    try { await sendTelegram(env, chatId, b.help, menuKeyboard(lang)); } catch {}
+  }
+}
+
+/** POST /api/telegram/webhook — كل رسالة تُسجَّل ويُرَدّ عليها: ربط (/start الرمز)، قائمة أزرار، أو دعوة للربط */
 async function handleTelegramWebhook(request, env) {
   if (env.TELEGRAM_WEBHOOK_SECRET) {
     const got = request.headers.get("x-telegram-bot-api-secret-token") || "";
@@ -143,8 +204,8 @@ async function handleTelegramWebhook(request, env) {
   if (!chatId) return json({ ok: true });
   const from = (msg && msg.from) || {};
   const tgLang = telegramLang(from.language_code);
+  const tgName = from.first_name || "";
   let userId = null, action = "none";
-  const m = text.match(/^\/start\s+([A-Za-z0-9]{4,12})$/) || text.match(/^([A-Za-z0-9]{6,12})$/);
   const logMessage = async () => {
     if (!env.WORKER_SECRET) return null;
     try {
@@ -155,34 +216,56 @@ async function handleTelegramWebhook(request, env) {
       });
     } catch { return null; }
   };
+
+  // 1) الربط بالرمز — يصل تلقائياً من رمز QR/الرابط العميق (/start الرمز) أو مكتوباً
+  const m = text.match(/^\/start\s+([A-Za-z0-9]{4,12})$/) || text.match(/^([A-Za-z0-9]{6,12})$/);
   if (m) {
-    // أمر ربط: /start الرمز (أو الرمز وحده)
     userId = await linkChannelByCode(env, "telegram", m[1], chatId);
     action = userId ? "linked" : "bad_code";
-    if (userId) {
-      let target = null;
-      try { target = await notifyTarget(env, userId, "telegram"); } catch {}
-      const lang = (target && target.lang) || tgLang;
-      const name = (target && target.full_name) || from.first_name || "";
-      try { await sendTelegram(env, chatId, channelText(lang).linked(name, target && target.org_name)); } catch {}
-    } else {
-      try { await sendTelegram(env, chatId, channelText(tgLang).badCode); } catch {}
-    }
+    if (userId) await greetLinked(env, chatId, userId, tgLang, tgName);
+    else { try { await sendTelegram(env, chatId, channelText(tgLang).badCode); } catch {} }
     await logMessage();
-  } else {
-    // أي رسالة أخرى: تُسجَّل، ثم يرد البوت بحسب حال المحادثة (مربوطة أم لا)
-    const owner = await logMessage();
-    if (!text || text === "/start") {
-      try { await sendTelegram(env, chatId, channelText(tgLang).needCode); } catch {}
-    } else if (owner) {
-      let target = null;
-      try { target = await notifyTarget(env, owner, "telegram"); } catch {}
-      const lang = (target && target.lang) || tgLang;
-      try { await sendTelegram(env, chatId, channelText(lang).alreadyLinked((target && target.full_name) || from.first_name || "")); } catch {}
-    } else {
-      try { await sendTelegram(env, chatId, channelText(tgLang).needCode); } catch {}
-    }
+    return json({ ok: true });
   }
+
+  // 2) مشاركة جهة الاتصال (رقم صاحب المحادثة نفسه): الربط بالرقم المسجَّل في الملف الشخصي
+  const contact = msg && msg.contact;
+  if (contact && contact.phone_number && (!contact.user_id || String(contact.user_id) === String(from.id))) {
+    userId = null;
+    try { userId = await linkChannelByPhone(env, "telegram", contact.phone_number, chatId); } catch {}
+    action = userId ? "linked" : "bad_code";
+    if (userId) await greetLinked(env, chatId, userId, tgLang, tgName);
+    else { try { await sendTelegram(env, chatId, botText(tgLang).phoneNotFound, { reply_markup: { remove_keyboard: true } }); } catch {} }
+    await logMessage();
+    return json({ ok: true });
+  }
+
+  // 3) رسالة عادية أو زر: سجّلها واعرف صاحب المحادثة (إن كانت مربوطة)
+  const owner = await logMessage();
+  const menu = menuAction(text);
+  if (!owner) { await askToLink(env, chatId, tgLang); return json({ ok: true }); }
+  if (menu) { await runMenu(env, chatId, owner, menu); return json({ ok: true }); }
+  if (text === "/start") { await greetLinked(env, chatId, owner, tgLang, tgName); return json({ ok: true }); }
+  let target = null;
+  try { target = await notifyTarget(env, owner, "telegram"); } catch {}
+  const lang = (target && target.lang) || tgLang;
+  try { await sendTelegram(env, chatId, channelText(lang).alreadyLinked((target && target.full_name) || tgName), menuKeyboard(lang)); } catch {}
+  return json({ ok: true });
+}
+
+/** POST /api/telegram/link { token } — المستخدم المسجَّل يربط محادثة البوت بضغطة الزر الذي أرسله البوت */
+async function handleTelegramLink(request, env) {
+  const user = await authedUser(request, env);
+  if (!user) return json({ error: "unauthorized" }, 401);
+  if (!env.WORKER_SECRET) return json({ error: "not configured" }, 503);
+  let body;
+  try { body = await request.json(); } catch { body = {}; }
+  const chatId = await readLinkToken(env, body && body.token);
+  if (!chatId) return json({ error: "bad_token" }, 400);
+  try { await linkChannelDirect(env, user.id, "telegram", chatId); } catch (e) {
+    return json({ error: "link_failed", detail: String((e && e.message) || e).slice(0, 200) }, 502);
+  }
+  await greetLinked(env, chatId, user.id, "ar", "");
   return json({ ok: true });
 }
 
@@ -268,6 +351,7 @@ export default {
       if (path === "/api/contact" && request.method === "POST") return await handleContact(request, env);
       if (path === "/api/notify/test" && request.method === "POST") return await handleNotifyTest(request, env);
       if (path === "/api/telegram/webhook" && request.method === "POST") return await handleTelegramWebhook(request, env);
+      if (path === "/api/telegram/link" && request.method === "POST") return await handleTelegramLink(request, env);
       if (path === "/api/whatsapp/webhook") return await handleWhatsappWebhook(request, env, url);
       return json({ error: "not found" }, 404);
     } catch (err) {

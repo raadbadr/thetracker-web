@@ -55,6 +55,98 @@ const TEXT = {
 };
 export function t(lang) { return TEXT[lang] || TEXT.ar; }
 
+// ---------- بوت تلغرام: قائمة الأزرار ونصوصها ----------
+const BOT = {
+  ar: { upcoming: "📅 مواعيدي القادمة", overdue: "⏰ المتأخرات", dashboard: "🌐 لوحة التحكم", help: "❓ مساعدة",
+        linkBtn: "🔗 ربط حسابي", openDash: "فتح لوحة التحكم",
+        phoneBtn: "📱 ربط برقم جوالي", phoneHint: "أو شارك رقم جوالك المسجَّل في TheTracker بالزر بالأسفل فيتم الربط فوراً.",
+        phoneNotFound: "لم نجد حساباً بهذا الرقم. سجّل الدخول إلى الموقع واضغط زر الربط أعلاه.",
+        linkIntro: "أهلاً بك في TheTracker 👋\nاضغط الزر لربط هذا البوت بحسابك: تُفتح صفحة الإعدادات في الموقع ويتم الربط تلقائياً.",
+        menuHint: "اختر من الأزرار بالأسفل:",
+        upcomingTitle: "📅 مواعيدك القادمة:", overdueTitle: "⏰ المواعيد المتأخرة:",
+        noUpcoming: "لا مواعيد قادمة 👌", noOverdue: "لا مواعيد متأخرة 👌",
+        help: "ستصلك هنا تذكيرات مواعيدك تلقائياً حسب قواعد التذكير في الإعدادات.\nالأزرار: مواعيدك القادمة، المتأخرات، ولوحة التحكم." },
+  en: { upcoming: "📅 Upcoming", overdue: "⏰ Overdue", dashboard: "🌐 Dashboard", help: "❓ Help",
+        linkBtn: "🔗 Link my account", openDash: "Open dashboard",
+        phoneBtn: "📱 Link with my phone number", phoneHint: "Or share the phone number registered in TheTracker with the button below — the link completes instantly.",
+        phoneNotFound: "No account has this number. Sign in on the website and tap the link button above.",
+        linkIntro: "Welcome to TheTracker 👋\nTap the button to link this bot to your account: the settings page opens and the link completes automatically.",
+        menuHint: "Pick an option below:",
+        upcomingTitle: "📅 Your upcoming due dates:", overdueTitle: "⏰ Overdue items:",
+        noUpcoming: "Nothing upcoming 👌", noOverdue: "Nothing overdue 👌",
+        help: "Your reminders arrive here automatically, following the reminder rules in Settings.\nButtons: upcoming, overdue, dashboard." },
+  fr: { upcoming: "📅 À venir", overdue: "⏰ En retard", dashboard: "🌐 Tableau de bord", help: "❓ Aide",
+        linkBtn: "🔗 Lier mon compte", openDash: "Ouvrir le tableau de bord",
+        phoneBtn: "📱 Lier avec mon numéro", phoneHint: "Ou partagez le numéro enregistré dans TheTracker avec le bouton ci-dessous : la liaison est immédiate.",
+        phoneNotFound: "Aucun compte avec ce numéro. Connectez-vous sur le site et appuyez sur le bouton de liaison ci-dessus.",
+        linkIntro: "Bienvenue sur TheTracker 👋\nAppuyez sur le bouton pour lier ce bot à votre compte : la page Paramètres s’ouvre et la liaison se fait automatiquement.",
+        menuHint: "Choisissez une option ci-dessous :",
+        upcomingTitle: "📅 Vos échéances à venir :", overdueTitle: "⏰ Éléments en retard :",
+        noUpcoming: "Rien à venir 👌", noOverdue: "Rien en retard 👌",
+        help: "Vos rappels arrivent ici automatiquement selon les règles définies dans Paramètres.\nBoutons : à venir, en retard, tableau de bord." },
+  ur: { upcoming: "📅 آنے والی تاریخیں", overdue: "⏰ تاخیر شدہ", dashboard: "🌐 ڈیش بورڈ", help: "❓ مدد",
+        linkBtn: "🔗 میرا اکاؤنٹ منسلک کریں", openDash: "ڈیش بورڈ کھولیں",
+        phoneBtn: "📱 فون نمبر سے منسلک کریں", phoneHint: "یا نیچے دیے بٹن سے TheTracker میں رجسٹرڈ فون نمبر شیئر کریں — منسلکی فوراً مکمل ہو جائے گی۔",
+        phoneNotFound: "اس نمبر سے کوئی اکاؤنٹ نہیں ملا۔ ویب سائٹ پر سائن ان کر کے اوپر والا لنک بٹن دبائیں۔",
+        linkIntro: "TheTracker میں خوش آمدید 👋\nاس بوٹ کو اپنے اکاؤنٹ سے منسلک کرنے کے لیے بٹن دبائیں: ترتیبات کا صفحہ کھلے گا اور منسلکی خود بخود مکمل ہو جائے گی۔",
+        menuHint: "نیچے دیے گئے بٹنوں میں سے چنیں:",
+        upcomingTitle: "📅 آپ کی آنے والی تاریخیں:", overdueTitle: "⏰ تاخیر شدہ آئٹمز:",
+        noUpcoming: "کوئی آنے والی تاریخ نہیں 👌", noOverdue: "کوئی تاخیر نہیں 👌",
+        help: "آپ کی یاد دہانیاں ترتیبات کے اصولوں کے مطابق یہاں خود بخود آئیں گی۔\nبٹن: آنے والی، تاخیر شدہ، ڈیش بورڈ۔" },
+};
+export function bot(lang) { return BOT[lang] || BOT.ar; }
+
+/* لوحة الأزرار الدائمة أسفل المحادثة */
+export function menuKeyboard(lang) {
+  const b = bot(lang);
+  return { reply_markup: { keyboard: [[{ text: b.upcoming }, { text: b.overdue }], [{ text: b.dashboard }, { text: b.help }]], resize_keyboard: true, is_persistent: true } };
+}
+
+/* أي زر ضغطه المستخدم بأي لغة؟ يعيد upcoming/overdue/dashboard/help أو null */
+export function menuAction(text) {
+  const s = String(text || "").trim();
+  if (/^\/(upcoming|overdue|dashboard|help|menu)$/.test(s)) return s.slice(1);
+  for (const lang of Object.keys(BOT)) {
+    for (const key of ["upcoming", "overdue", "dashboard", "help"]) if (BOT[lang][key] === s) return key;
+  }
+  return null;
+}
+
+/* زر يفتح رابطاً (لوحة التحكم أو صفحة الربط) */
+export function urlButton(label, url) {
+  return { reply_markup: { inline_keyboard: [[{ text: label, url }]] } };
+}
+
+/* قائمة مواعيد بنص مقروء */
+export function formatItems(lang, rows, title, emptyText) {
+  const list = Array.isArray(rows) ? rows : [];
+  if (!list.length) return emptyText;
+  const lines = list.map((r, i) => {
+    const who = r.client_name ? ` — ${r.client_name}` : "";
+    const num = r.case_number ? ` (${r.case_number})` : "";
+    const tr = r.tracker_name ? ` · ${r.tracker_name}` : "";
+    return `${i + 1}. ${r.title || ""}${who}${num}\n   ${r.due_at ? fmtDue(r.due_at, lang) : "-"}${tr}`;
+  });
+  return `${title}\n\n${lines.join("\n")}`;
+}
+
+export async function telegramItems(env, userId, mode, limit) {
+  return rpc(env, "telegram_items", { p_secret: env.WORKER_SECRET, p_user_id: userId, p_mode: mode, p_limit: limit || 5 });
+}
+
+export async function linkChannelByPhone(env, channel, phone, externalId) {
+  return rpc(env, "link_channel_by_phone", { p_secret: env.WORKER_SECRET, p_channel: channel, p_phone: String(phone || ""), p_external_id: String(externalId) });
+}
+
+/* لوحة بزر واحد يطلب مشاركة رقم الجوال (تختفي بعد الاستخدام) */
+export function contactKeyboard(lang) {
+  return { reply_markup: { keyboard: [[{ text: bot(lang).phoneBtn, request_contact: true }]], resize_keyboard: true, one_time_keyboard: true } };
+}
+
+export async function linkChannelDirect(env, userId, channel, externalId) {
+  return rpc(env, "link_channel_direct", { p_secret: env.WORKER_SECRET, p_user_id: userId, p_channel: channel, p_external_id: String(externalId) });
+}
+
 function fmtDue(iso, lang) {
   try {
     return new Intl.DateTimeFormat(lang === "ar" ? "ar-SA-u-nu-latn" : lang === "ur" ? "ur-PK-u-nu-latn" : lang === "fr" ? "fr-FR" : "en-GB", {
@@ -76,12 +168,12 @@ export async function sendEmail(env, { to, lang, title, due_at, tracker_name, or
   return true;
 }
 
-export async function sendTelegram(env, chatId, text) {
+export async function sendTelegram(env, chatId, text, extra) {
   if (!env.TELEGRAM_BOT_TOKEN) throw new Error("telegram not configured");
   const res = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ chat_id: chatId, text, disable_web_page_preview: true }),
+    body: JSON.stringify({ chat_id: chatId, text, disable_web_page_preview: true, ...(extra || {}) }),
   });
   if (!res.ok) throw new Error(`telegram ${res.status}: ${(await res.text()).slice(0, 200)}`);
   return true;

@@ -799,6 +799,8 @@
         phoneLinked: "تم ربط الرقم.",
         codeGenerated: "تم توليد الرمز، أكمل خطوات الربط.",
         refreshed: "تم تحديث الحالة.",
+        tgLinked: "تم ربط تيليجرام بحسابك.",
+        tgLinkFailed: "تعذّر ربط تيليجرام، افتح البوت واضغط الزر مرة أخرى.",
         rulesTitle: "قواعد التذكير",
         rulesIntro: "حدّد لكل سجل موعد التذكير والقنوات والمستلمين.",
         colTracker: "السجل",
@@ -925,6 +927,8 @@
         phoneLinked: "Number linked.",
         codeGenerated: "Code generated. Complete the linking steps.",
         refreshed: "Status refreshed.",
+        tgLinked: "Telegram is now linked to your account.",
+        tgLinkFailed: "Telegram could not be linked — open the bot and tap the button again.",
         rulesTitle: "Reminder rules",
         rulesIntro: "Set the reminder time, channels and recipients for each tracker.",
         colTracker: "Tracker",
@@ -1051,6 +1055,8 @@
         phoneLinked: "Numéro lié.",
         codeGenerated: "Code généré. Terminez les étapes de liaison.",
         refreshed: "Statut actualisé.",
+        tgLinked: "Telegram est maintenant lié à votre compte.",
+        tgLinkFailed: "Impossible de lier Telegram — ouvrez le bot et appuyez de nouveau sur le bouton.",
         rulesTitle: "Règles de rappel",
         rulesIntro: "Définissez pour chaque suivi le moment du rappel, les canaux et les destinataires.",
         colTracker: "Suivi",
@@ -1177,6 +1183,8 @@
         phoneLinked: "نمبر منسلک ہو گیا۔",
         codeGenerated: "کوڈ بن گیا، لنکنگ کے مراحل مکمل کریں۔",
         refreshed: "حالت تازہ ہو گئی۔",
+        tgLinked: "ٹیلیگرام آپ کے اکاؤنٹ سے منسلک ہو گیا۔",
+        tgLinkFailed: "ٹیلیگرام منسلک نہیں ہو سکا — بوٹ کھول کر بٹن دوبارہ دبائیں۔",
         rulesTitle: "یاد دہانی کے اصول",
         rulesIntro: "ہر ٹریکر کے لیے یاد دہانی کا وقت، چینلز اور وصول کنندگان مقرر کریں۔",
         colTracker: "ٹریکر",
@@ -1516,6 +1524,21 @@
             config.smsEnabled = !!cfg.smsEnabled;
           })
           .catch(function () { /* channels stay unavailable */ });
+      }
+
+      /* وصل المستخدم من زر «ربط حسابي» داخل البوت: اربط المحادثة بحسابه فوراً ونظّف الرابط */
+      function linkFromBotToken() {
+        var params = new URLSearchParams(window.location.search);
+        var token = params.get("tglink");
+        if (!token) return Promise.resolve();
+        params.delete("tglink");
+        var clean = window.location.pathname + (params.toString() ? "?" + params.toString() : "");
+        try { window.history.replaceState(null, "", clean); } catch (e) { /* ignore */ }
+        return app.linkTelegramByToken(token).then(function (res) {
+          if (res && res.ok) { toast(t("tgLinked"), "success"); expanded.telegram = true; }
+          else toast(t("tgLinkFailed"), "error");
+          return reloadLinks();
+        }).catch(function () { toast(t("tgLinkFailed"), "error"); });
       }
 
       function reloadLinks() {
@@ -2098,7 +2121,7 @@
           /* Plan limits first: they decide which channels the rules and cards may offer. */
           return loadSubscription().then(function () {
             return Promise.all([
-              loadConfig().then(function () { return reloadLinks(); }),
+              loadConfig().then(function () { return reloadLinks(); }).then(linkFromBotToken),
               loadRules(),
               loadCalendar()
             ]);

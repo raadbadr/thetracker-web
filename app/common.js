@@ -1016,6 +1016,24 @@
     });
   }
 
+  /* ربط محادثة تلغرام من زر داخل البوت: الرمز الموقّع يأتي في رابط الإعدادات (?tglink=) */
+  function linkTelegramByToken(token) {
+    return app.ready.then(function () {
+      requireClient();
+      return window.trackerAuth.getSession();
+    }).then(function (session) {
+      var jwt = session && session.access_token;
+      if (!jwt) return redirectToLogin();
+      return fetch("/api/telegram/link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json", Authorization: "Bearer " + jwt },
+        body: JSON.stringify({ token: token })
+      }).then(function (res) {
+        return res.json().catch(function () { return { error: "HTTP " + res.status }; });
+      });
+    });
+  }
+
   function unlinkChannel(channel) {
     return run(function (client) {
       return client.from("channel_links").delete().eq("user_id", app.user.id).eq("channel", channel).then(unwrap);
@@ -1384,6 +1402,7 @@
   app.requestChannelCode = requestChannelCode;
   app.setSmsPhone = setSmsPhone;
   app.unlinkChannel = unlinkChannel;
+  app.linkTelegramByToken = linkTelegramByToken;
   app.testChannel = testChannel;
   app.calendarToken = calendarToken;
   app.calendarUrl = calendarUrl;
