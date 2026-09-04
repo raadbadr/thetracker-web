@@ -416,16 +416,32 @@
   }
 
   function loadOrgs(client, user) {
+    /* كل جهة هو عضو نشط فيها: التي يملكها والتي دُعي إليها سواء، ومعها نوعها */
     return client.from("org_members")
-      .select("org_id, role, status, organizations(id,name,plan_code,plan_expires_at)")
+      .select("org_id, role, status, organizations(id,name,plan_code,plan_expires_at,org_profiles(entity_type))")
       .eq("user_id", user.id)
       .eq("status", "active")
       .then(unwrap)
       .then(function (rows) {
         return (rows || []).filter(function (r) { return r.organizations; }).map(function (r) {
           var o = r.organizations;
-          return { id: o.id, name: o.name, plan_code: o.plan_code, plan_expires_at: o.plan_expires_at, role: r.role };
+          var prof = o.org_profiles;
+          if (Array.isArray(prof)) prof = prof[0];
+          return { id: o.id, name: o.name, plan_code: o.plan_code, plan_expires_at: o.plan_expires_at,
+                   role: r.role, entity_type: (prof && prof.entity_type) || null };
         });
+      })
+      .catch(function () {
+        /* لو تعذر ضم بطاقة الجهة لا نفقد قائمة الحسابات */
+        return client.from("org_members")
+          .select("org_id, role, status, organizations(id,name,plan_code,plan_expires_at)")
+          .eq("user_id", user.id).eq("status", "active").then(unwrap)
+          .then(function (rows) {
+            return (rows || []).filter(function (r) { return r.organizations; }).map(function (r) {
+              var o = r.organizations;
+              return { id: o.id, name: o.name, plan_code: o.plan_code, plan_expires_at: o.plan_expires_at, role: r.role, entity_type: null };
+            });
+          });
       });
   }
 
@@ -603,7 +619,9 @@
   function loadServices(client, org) {
     if (!org) return Promise.resolve(null);
     return client.rpc("my_services", { p_org: org.id }).then(unwrap)
-      .then(function (list) { return Array.isArray(list) ? list : null; })
+      /* مصفوفة فارغة تعني أن عضويته لم تُقرأ (شركة حُذفت، أو معرّف قديم في المتصفح):
+         لا نخفي القائمة كلها في هذه الحال، فالإخفاء الكامل يعطل المنصة على صاحبها. */
+      .then(function (list) { return (Array.isArray(list) && list.length) ? list : null; })
       .catch(function () { return null; });
   }
 
@@ -1911,7 +1929,7 @@
   }
 
   function serviceAllowed(key) {
-    if (!key) return true;
+    if (!key || key === "dashboard") return true; /* مقصد الحارس لا يُحجب */
     if (!app || !Array.isArray(app.services)) return true; /* غير معروف بعد: لا نخفي شيئاً */
     return app.services.indexOf(key) !== -1;
   }
@@ -2431,9 +2449,12 @@
     var orgs = (app && app.orgs) || [];
     var current = app && app.org ? app.org : null;
     if (!current && !orgs.length) return "";
+    /* الاسم ونوعه: الشخصي يُعرف من الشركة بنظرة، وكل ما هو عضو فيه معروض */
     var opts = orgs.map(function (o) {
+      var type = o.entity_type ? entityLabel(o.entity_type) : "";
+      var label = (o.name || "") + (type ? " — " + type : "");
       return '<option value="' + escapeHtml(o.id) + '"' + (current && o.id === current.id ? " selected" : "") + ">" +
-             escapeHtml(o.name || "") + "</option>";
+             escapeHtml(label) + "</option>";
     }).join("");
     opts += '<option value="__new">' + escapeHtml(sidebarLabel(NEW_ORG_LABELS)) + "</option>";
     return '<div class="app-orgbox" title="' + escapeHtml(sidebarLabel(ORG_LABELS)) + '">' +
