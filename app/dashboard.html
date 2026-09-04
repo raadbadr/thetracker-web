@@ -543,7 +543,9 @@
     .tlx input[type="range"]::-moz-range-track { height: 20px; border-radius: 999px; background: transparent; border: none; }
     .tlx input[type="range"]::-moz-range-thumb { width: 36px; height: 20px; border: none; border-radius: 10px;
       background: linear-gradient(180deg, #ffffff 0%, #f0f4f8 100%); box-shadow: 0 2px 12px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.4) inset; }
-    .tlx-ends { display: flex; justify-content: space-between; margin-top: 0.5rem; padding-inline: calc(34px + 0.6rem); font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.02em; }
+    .tlx-strip-nav { display: inline-flex; gap: .5rem; }
+    .tlx-title .tlx-nav-btn { width: 30px; height: 30px; }
+    .tlx-ends { display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem; padding-inline: calc(34px + 0.6rem); font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.02em; }
     .tlx-today { position: absolute; left: 0; top: 0; bottom: 0; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 10; opacity: 0; transition: opacity .18s ease; }
     .tlx-today.is-at-today { opacity: 1; }
     .tlx-today-label { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); white-space: nowrap; font-size: 0.46rem; font-weight: 800; line-height: 1; color: rgba(0,100,180,0.9); letter-spacing: 0.06em; text-transform: uppercase; }
@@ -2516,16 +2518,20 @@
 
         var todayStep = Math.round(ratioOf(todayMs) * TLX_STEPS);
         html += '<div class="tlx" id="tlx" dir="' + (isRtl ? "rtl" : "ltr") + '" style="--timeline-fill-pct:' + fillPct + '%;--tlx-days:' + daysInMonth + '" data-today-step="' + todayStep + '">' +
-          '<div class="tlx-title">' + esc(monthTitle) + "</div>" +
+          '<div class="tlx-title">' +
+            '<button type="button" class="tlx-nav-btn" id="tlxMonthPrev" aria-label="' + esc(T("tlPrev")) + '"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M14.5 5.5 8 12l6.5 6.5"/></svg></button>' +
+            "<span>" + esc(monthTitle) + "</span>" +
+            '<button type="button" class="tlx-nav-btn" id="tlxMonthNext"' + (nextMonthStart > nowMs ? " disabled" : "") + ' aria-label="' + esc(T("tlNext")) + '"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M9.5 5.5 16 12l-6.5 6.5"/></svg></button>' +
+          "</div>" +
           '<div class="tlx-nav-row">' +
-            '<button type="button" class="tlx-nav-btn" id="tlxPrev" aria-label="' + esc(T("tlPrev")) + '"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M14.5 5.5 8 12l6.5 6.5"/></svg></button>' +
             '<div class="tlx-scroll" id="tlxScroll"><div class="tlx-range-wrap">' + ms + months +
               '<input type="range" id="tlxSlider" min="0" max="' + TLX_STEPS + '" value="' + todayStep + '" step="1" aria-label="' + esc(T("timelineTitle")) + '">' +
               (isCurrent ? '<div class="tlx-today is-at-today" id="tlxToday" style="left:' + tlxLeft(ratioOf(todayMs), isRtl) + '"><span class="tlx-today-label">' + esc(T("tlNow")) + "</span></div>" : "") +
             "</div></div>" +
-            '<button type="button" class="tlx-nav-btn" id="tlxNext" aria-label="' + esc(T("tlNext")) + '"' + (nextMonthStart > nowMs ? " disabled" : "") + '><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M9.5 5.5 16 12l-6.5 6.5"/></svg></button>' +
           "</div>" +
-          '<div class="tlx-ends"><span>' + esc(tlxFmtDate(minMs)) + "</span><span>" + esc(tlxFmtDate(maxMs)) + "</span></div>" +
+          '<div class="tlx-ends"><span>' + esc(tlxFmtDate(minMs)) + "</span>" +
+            '<span class="tlx-strip-nav">'<button type="button" class="tlx-nav-btn" id="tlxPrev" aria-label="' + esc(T("tlPrev")) + '"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M14.5 5.5 8 12l6.5 6.5"/></svg></button><button type="button" class="tlx-nav-btn" id="tlxNext" aria-label="' + esc(T("tlNext")) + '"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M9.5 5.5 16 12l-6.5 6.5"/></svg></button>'</span>' +
+            "<span>" + esc(tlxFmtDate(maxMs)) + "</span></div>" +
         "</div>";
         if (!events.length) html += '<p class="empty-note">' + esc(T("timelineEmpty")) + "</p>";
         card.innerHTML = html;
@@ -2536,7 +2542,7 @@
         var bar = document.getElementById("tlx"), slider = document.getElementById("tlxSlider");
         if (!bar || !slider) return;
         var marks = [].slice.call(bar.querySelectorAll(".tlx-ms"));
-        var stops = marks.map(function (m) { return Number(m.dataset.step); }).concat([TLX_STEPS]);
+        var stops = marks.map(function (m) { return Number(m.dataset.step); });
         stops = stops.filter(function (v, i, a) { return a.indexOf(v) === i; }).sort(function (a, b) { return a - b; });
         var today = document.getElementById("tlxToday"), prev = document.getElementById("tlxPrev"), next = document.getElementById("tlxNext");
         var SNAP = Math.round(TLX_STEPS * 0.015);
@@ -2560,17 +2566,31 @@
           tlState.month = new Date(m.getFullYear(), m.getMonth() + dir, 1);
           renderTimeline(tlState.rows, tlState.stats);
         }
-        if (prev) prev.addEventListener("click", function () { shiftMonth(-1); });
-        if (next) next.addEventListener("click", function () { shiftMonth(1); });
-        apply(todayStep);
-        /* التمرير يقف عند "الآن" */
+        var mp = document.getElementById("tlxMonthPrev"), mn = document.getElementById("tlxMonthNext");
+        if (mp) mp.addEventListener("click", function () { shiftMonth(-1); });
+        if (mn) mn.addEventListener("click", function () { shiftMonth(1); });
+
         var sc = document.getElementById("tlxScroll");
-        if (sc) {
-          var isRtl = bar.getAttribute("dir") === "rtl";
-          var ratio = todayStep / TLX_STEPS;
-          var target = (isRtl ? (1 - ratio) : ratio) * sc.scrollWidth - sc.clientWidth / 2;
-          try { sc.scrollLeft = isRtl ? -(sc.scrollWidth - sc.clientWidth - Math.max(0, target)) : Math.max(0, target); } catch (e) { /* ignore */ }
+        var isRtl = bar.getAttribute("dir") === "rtl";
+        function scrollTo(step) {
+          if (!sc) return;
+          var ratio = step / TLX_STEPS;
+          var x = (isRtl ? (1 - ratio) : ratio) * sc.scrollWidth - sc.clientWidth / 2;
+          x = Math.max(0, Math.min(sc.scrollWidth - sc.clientWidth, x));
+          try { sc.scrollTo({ left: isRtl ? -(sc.scrollWidth - sc.clientWidth - x) : x, behavior: "smooth" }); } catch (e) { sc.scrollLeft = x; }
         }
+        var DAY = Math.round(TLX_STEPS / Math.max(1, Number(bar.style.getPropertyValue("--tlx-days")) || 30));
+        function jump(dir) {
+          var p = Number(slider.value), target = null;
+          if (dir < 0) { for (var i = stops.length - 1; i >= 0; i--) if (stops[i] < p - SNAP) { target = stops[i]; break; } }
+          else { for (var j = 0; j < stops.length; j++) if (stops[j] > p + SNAP) { target = stops[j]; break; } }
+          if (target === null) target = Math.max(0, Math.min(TLX_STEPS, p + dir * DAY));
+          slider.value = String(target); apply(target); scrollTo(target);
+        }
+        if (prev) prev.addEventListener("click", function () { jump(-1); });
+        if (next) next.addEventListener("click", function () { jump(1); });
+        apply(todayStep);
+        scrollTo(todayStep);
       }
 
       function loadTimeline() {
