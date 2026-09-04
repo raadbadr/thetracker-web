@@ -130,6 +130,36 @@ function clean(out) {
 }
 
 /* قواعد حتمية للمستندات السعودية الشائعة: تعمل قبل النموذج وبعده، ولا تخترع شيئا */
+/* بعض ملفات PDF العربية تُخرج نصها بأشكال العرض (Presentation Forms) وحروفاً
+   مفرّقة بمسافات، فلا يطابقها أي تعبير. نعيدها إلى حروفها الأساسية ونلصق
+   الحروف المفردة قبل أي مطابقة. الأرقام والتواريخ لا تتأثر بهذا الخلل. */
+function arabicPresentationToBase(text) {
+  return String(text || "").replace(/[\uFB50-\uFDFF\uFE70-\uFEFF]/g, function (ch) {
+    var decomposed = ch.normalize("NFKD");
+    var out = "";
+    for (var i = 0; i < decomposed.length; i++) {
+      var c = decomposed[i];
+      if (c >= "\u0600" && c <= "\u06FF") out += c;
+    }
+    return out || ch;
+  });
+}
+
+function joinSpacedArabic(text) {
+  /* «ا ل س ج ل» → «السجل»: تُلصق الحروف المفردة المتتابعة */
+  return String(text || "").replace(/(?:[\u0600-\u06FF]\s){2,}[\u0600-\u06FF]/g, function (run) {
+    return run.replace(/\s+/g, "");
+  });
+}
+
+export function looksMangledArabic(text) {
+  var value = String(text || "");
+  if (/[\uFB50-\uFDFF\uFE70-\uFEFF]/.test(value)) return true;
+  var singles = (value.match(/(?:^|\s)[\u0600-\u06FF](?=\s|$)/g) || []).length;
+  var words = (value.match(/\S+/g) || []).length;
+  return words > 10 && singles / words > 0.3;
+}
+
 const AR_DIGITS = { "٠":"0","١":"1","٢":"2","٣":"3","٤":"4","٥":"5","٦":"6","٧":"7","٨":"8","٩":"9","۰":"0","۱":"1","۲":"2","۳":"3","۴":"4","۵":"5","۶":"6","۷":"7","۸":"8","۹":"9" };
 function westernize(text) { return String(text || "").replace(/[٠-٩۰-۹]/g, (digit) => AR_DIGITS[digit] || digit); }
 function findDate(text, labels) {
@@ -149,7 +179,9 @@ function findAfter(text, labels, pattern) {
 const wordBoundaryAr = (pattern) => "(?<![\\u0600-\\u06FF])(?:" + pattern + ")(?![\\u0600-\\u06FF])";
 const KIND_RULES = [
   { kind: "commercial_register", entity: "company", test: /السجل\s*التجاري|سجل\s*تجاري|رقم\s*السجل|شهادة\s*(?:ال)?سجل|commercial\s*regist/i, issuer: "وزارة التجارة",
-    number: ["رقم\\s*السجل\\s*التجاري", "رقم\\s*السجل", "C\\.?R\\.?\\s*(?:No\\.?)?"], numPat: "[1247]\\d{9}", party: ["اسم\\s*المنشأة", "الاسم\\s*التجاري", "اسم\\s*الشركة", "اسم\\s*التاجر"] },
+    number: ["رقم\\s*السجل\\s*التجاري", "رقم\\s*السجل", "الرقم\\s*الوطني\\s*الموحد", "الرقم\\s*الموحد", "C\\.?R\\.?\\s*(?:No\\.?)?", "national\\s*number", "unified\\s*number", "registration\\s*number"],
+    numPat: "[1247]\\d{9}",
+    party: ["اسم\\s*المنشأة", "الاسم\\s*التجاري", "اسم\\s*الشركة", "اسم\\s*التاجر", "business\\s*name", "trade\\s*name", "company\\s*name", "entity\\s*name"] },
   { kind: "articles_of_association", test: /عقد\s*(?:ال)?تأسيس|عقد\s*شركة|articles\s*of\s*(?:association|incorporation)|memorandum\s*of\s*association/i,
     number: ["رقم\\s*العقد", "رقم\\s*التوثيق", "رقم\\s*الوثيقة"], numPat: "\\d{4,20}", party: ["اسم\\s*الشركة", "تحت\\s*اسم", "باسم"], issuerTest: [[/وزارة\s*التجارة/, "وزارة التجارة"], [/كاتب\s*(?:ال)?عدل|العدل/, "وزارة العدل"]] },
   { kind: "bylaws", test: /النظام\s*الأساس|النظام\s*الاساس|bylaws/i, issuer: "وزارة التجارة", party: ["اسم\\s*الشركة", "شركة"] },
@@ -227,7 +259,7 @@ function strongKind(text) {
 }
 
 function rulesExtract(rawText) {
-  const text = westernize(rawText).replace(/[\u200f\u200e]/g, "");
+  const text = joinSpacedArabic(arabicPresentationToBase(westernize(rawText))).replace(/[\u200f\u200e]/g, "");
   const out = {};
   const strong = strongKind(text);
   const rule = strong
@@ -244,6 +276,12 @@ function rulesExtract(rawText) {
     if (rule.entity) out.entity_hint = rule.entity;
     if (rule.amount) { const amountMatch = text.match(rule.amount); if (amountMatch) out.amount = Number(amountMatch[1].replace(/,/g, "")) || null; }
   }
+  /* شهادة السجل تكتب اسم المنشأة تحت عنوانها بلا تسمية: نأخذ ما بينه وأول حقل */
+  if (out.kind === "commercial_register" && !out.party) {
+    const afterTitle = text.match(/(?:شهادة\s*(?:ال)?سجل\s*(?:ال)?تجاري|commercial\s*registration\s*certificate)\s+(.{3,80}?)\s+(?:الرقم|رقم\s|national\s*number|unified|status|entity\s*type|release\s*date|تاريخ|حالة|نوع)/i);
+    if (afterTitle) out.party = afterTitle[1].replace(/[:\-–\s]+$/, "").trim();
+  }
+
   /* أوراق المحاكم: رقم الدعوى واسم المحكمة والدائرة تُقرأ مباشرة */
   if (["hearing_notice", "case_filing", "court_ruling"].includes(out.kind)) {
     out.case_number = findAfter(text, ["رقم\\s*(?:ال)?دعوى", "رقم\\s*القضية", "رقم\\s*القيد", "case\\s*(?:No\\.?|number)?"], "\\d{3,20}(?:\\/\\d{2,4})?") || (out.kind !== "court_ruling" ? out.number : null);
@@ -303,8 +341,11 @@ export async function handleDocumentAnalyze(request, env) {
   if (!body) return new Response(JSON.stringify({ error: "invalid_body" }), { status: 400, headers });
 
   let text = String(body.text || "").slice(0, MAX_TEXT);
+  /* نص PDF عربي مشوّه (أشكال عرض أو حروف مفرّقة) لا يُفهم: تُقرأ صورة الصفحة بدله */
+  const mangled = text.trim() ? looksMangledArabic(text) : false;
   try {
-    if (!text.trim() && body.image) text = (await readImage(env, body.image)).slice(0, MAX_TEXT);
+    if ((!text.trim() || mangled) && body.image) text = (await readImage(env, body.image)).slice(0, MAX_TEXT);
+    else if (mangled) return new Response(JSON.stringify({ error: "mangled_text" }), { status: 422, headers });
   } catch (e) {
     return new Response(JSON.stringify({ error: "image_read_failed" }), { status: 502, headers });
   }

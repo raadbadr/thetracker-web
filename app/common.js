@@ -173,11 +173,12 @@
     var withTime = !!(opts && opts.withTime);
     var timeOnly = !!(opts && opts.timeOnly);
     var userTimeZone = (app.profile && app.profile.tz) || TIME_ZONE;
+    var userHour12 = !!(app.profile && app.profile.time_format === "12");
     var parts;
     try {
       parts = new Intl.DateTimeFormat("en-GB", {
         timeZone: userTimeZone, numberingSystem: "latn",
-        year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false
+        year: "numeric", month: "2-digit", day: "2-digit", hour: userHour12 ? "numeric" : "2-digit", minute: "2-digit", hour12: userHour12
       }).formatToParts(d);
     } catch (e) {
       var iso16 = d.toISOString().slice(0, 16).replace("T", " ");
@@ -185,7 +186,8 @@
     }
     var byType = {};
     parts.forEach(function (p) { byType[p.type] = p.value; });
-    var timePart = byType.hour + ":" + byType.minute;
+    var dayPeriod = String(byType.dayPeriod || "").replace(/\s/g, "").toUpperCase();
+    var timePart = userHour12 ? (byType.hour + ":" + byType.minute + " " + dayPeriod) : (byType.hour + ":" + byType.minute);
     if (timeOnly) return timePart;
     var datePart = byType.day + "-" + byType.month + "-" + byType.year;
     return withTime ? (datePart + " " + timePart) : datePart;
@@ -409,8 +411,8 @@
           .catch(function (err) {
             /* RLS may forbid the insert (the auth trigger normally creates the row); keep going. */
             if (window.console) console.warn("trackerApp: profile upsert failed:", err.message);
-            return { id: user.id, full_name: fallbackName, email: user.email || null, phone: user.phone || null,
-                     lang: lang(), tz: TIME_ZONE, is_platform_admin: false };
+            return { id: user.id, full_name: fallbackName, full_name_en: null, email: user.email || null, phone: user.phone || null,
+                     lang: lang(), tz: TIME_ZONE, time_format: "24", is_platform_admin: false };
           });
       });
   }
@@ -842,13 +844,23 @@
     });
   }
 
+  /* ملفات PDF العربية كثيراً ما تُخرج نصاً مشوّهاً (أشكال عرض وحروف مفرّقة
+     بترتيب بصري) لا يُقرأ: نكتشفه ونرسل صورة الصفحة ليقرأها نموذج الرؤية. */
+  function textLooksMangled(text) {
+    var value = String(text || "");
+    if (/[\uFB50-\uFDFF\uFE70-\uFEFF]/.test(value)) return true;
+    var singles = (value.match(/(?:^|\s)[\u0600-\u06FF](?=\s|$)/g) || []).length;
+    var words = (value.match(/\S+/g) || []).length;
+    return words > 10 && singles / words > 0.3;
+  }
+
   /* يعيد حقول المستند: نوعه، الجهة التي يفتحها، الاسم، الرقم، تاريخ الانتهاء */
   function readDocumentFile(file) {
     if (!file) return Promise.reject(new Error("no_file"));
     var isPdf = /\.pdf$/i.test(file.name || "") || file.type === "application/pdf";
     if (!isPdf) return fileToImageData(file).then(function (img) { return analyzeDocument({ image: img }); });
     return pdfRead(file).then(function (r) {
-      if (r.text && r.text.length >= 40) return analyzeDocument({ text: r.text });
+      if (r.text && r.text.length >= 40 && !textLooksMangled(r.text)) return analyzeDocument({ text: r.text });
       /* PDF ممسوح ضوئياً: تُقرأ صورة صفحته الأولى */
       return pdfPageImage(r.pdf, 1).then(function (img) { return analyzeDocument({ image: img }); });
     });
@@ -1867,9 +1879,15 @@
       var p = patch || {};
       var clean = {};
       if (p.full_name !== undefined) clean.full_name = String(p.full_name || "").trim() || null;
-      if (p.phone !== undefined) clean.phone = String(p.phone || "").trim() || null;
+      if (p.full_name_en !== undefined) clean.full_name_en = String(p.full_name_en || "").trim() || null;
+      if (p.phone !== undefined) {
+        var cleanPhone = String(p.phone || "").trim();
+        if (!cleanPhone) throw new Error("phone required");
+        clean.phone = cleanPhone;
+      }
       if (p.lang !== undefined) clean.lang = p.lang;
       if (p.tz !== undefined) clean.tz = p.tz;
+      if (p.time_format !== undefined) clean.time_format = p.time_format === "12" ? "12" : "24";
       if (p.storage_mode !== undefined) clean.storage_mode = p.storage_mode === "drive" ? "drive" : "platform";
       return client.from("profiles").update(clean).eq("id", app.user.id).select("*").single()
         .then(unwrap)
@@ -2445,11 +2463,15 @@
     ".app-bell-panel,.app-menu-panel{inset-block-start:auto;inset-inline-end:auto;position:fixed;inset-inline:1rem;width:auto}}"
   ].join("");
 
+  /* الاسم بلغة الواجهة: الإنجليزي حين تكون اللغة en/fr وهو موجود، وإلا العربي —
+     كلاهما يكتبه المستخدم بنفسه في الإعدادات، لا اشتقاق آلي بينهما. */
   function userDisplayName() {
     var p = app.profile || {};
     var u = app.user || {};
     var meta = (u.user_metadata || {});
-    return p.full_name || meta.full_name || meta.name || u.email || "";
+    var preferEnglish = lang() === "en" || lang() === "fr";
+    if (preferEnglish && p.full_name_en) return p.full_name_en;
+    return p.full_name || p.full_name_en || meta.full_name || meta.name || u.email || "";
   }
 
   function bellSeenAt() {
@@ -2584,13 +2606,13 @@
 
   /* أين أنا الآن؟ اسم الشركة الحالية ظاهر دائما ويبدل من مكانه. */
   var REG_TEXT = {
-    ar: { fileFirst: "ارفع المستند الرسمي (سجل تجاري أو وثيقة عمل حر أو هوية) ليُقرأ منه كل شيء", reading: "جاري قراءة المستند…", readDone: "قُرئ المستند وعُبِّئ منه:", readNothing: "قُرئ المستند ولم تُستخرج بيانات، أكمل الحقول.", readFailed: "تعذرت قراءة المستند، أكمل الحقول يدوياً.", readName: "الاسم", readNumber: "الرقم", readExpiry: "تاريخ الانتهاء", commercial_register: "رقم السجل التجاري", id_document: "رقم الهوية الوطنية", license: "رقم الرخصة / الوثيقة", expiry: "تاريخ انتهاء المستند", file: "ملف المستند (PDF أو صورة، اختياري)",
+    ar: { fileFirst: "ارفع المستند الرسمي (سجل تجاري أو وثيقة عمل حر أو هوية) ليُقرأ منه كل شيء", reading: "جاري قراءة المستند…", readDone: "قُرئ المستند وعُبِّئ منه:", readNothing: "قُرئ المستند ولم تُستخرج بيانات، أكمل الحقول.", readFailed: "تعذرت قراءة المستند، أكمل الحقول يدوياً.", readName: "الاسم", readNumber: "الرقم", readExpiry: "تاريخ الانتهاء", commercial_register: "رقم السجل التجاري", id_document: "رقم الهوية الوطنية", license: "رقم الرخصة / الوثيقة", expiry: "تاريخ انتهاء المستند (إن وجد)", file: "ملف المستند (PDF أو صورة، اختياري)",
           gate: "لا تُنشأ الجهة بلا مستندها الرسمي: الرقم وتاريخ الانتهاء إلزاميان، ويُسجَّل أول مستند في ملفها.", invalid: "الرقم غير صحيح.", expiryRequired: "تاريخ الانتهاء إلزامي.", fileFailed: "أُنشئت الجهة لكن تعذّر رفع الملف؛ أضفه من صفحة المستندات." },
-    en: { fileFirst: "Upload the official document (commercial register, freelance permit or ID) and it fills the fields", reading: "Reading the document…", readDone: "Read and filled in:", readNothing: "The document was read but nothing was extracted; fill the fields.", readFailed: "Could not read the document; fill the fields manually.", readName: "name", readNumber: "number", readExpiry: "expiry date", commercial_register: "Commercial register number", id_document: "National ID number", license: "License / permit number", expiry: "Document expiry date", file: "Document file (PDF or image, optional)",
+    en: { fileFirst: "Upload the official document (commercial register, freelance permit or ID) and it fills the fields", reading: "Reading the document…", readDone: "Read and filled in:", readNothing: "The document was read but nothing was extracted; fill the fields.", readFailed: "Could not read the document; fill the fields manually.", readName: "name", readNumber: "number", readExpiry: "expiry date", commercial_register: "Commercial register number", id_document: "National ID number", license: "License / permit number", expiry: "Document expiry date (if any)", file: "Document file (PDF or image, optional)",
           gate: "No entity without its official document: number and expiry are required, and it becomes the first paper on file.", invalid: "Invalid number.", expiryRequired: "Expiry date is required.", fileFailed: "Created, but the file could not be uploaded; add it from Documents." },
-    fr: { fileFirst: "Téléversez le document officiel (registre de commerce, permis d’indépendant ou pièce d’identité) : il remplit les champs", reading: "Lecture du document…", readDone: "Lu et rempli :", readNothing: "Document lu, rien n’a été extrait ; complétez les champs.", readFailed: "Lecture impossible ; complétez les champs à la main.", readName: "nom", readNumber: "numéro", readExpiry: "date d’expiration", commercial_register: "Numéro du registre de commerce", id_document: "Numéro de carte d’identité", license: "Numéro de licence / permis", expiry: "Date d’expiration du document", file: "Fichier du document (PDF ou image, facultatif)",
+    fr: { fileFirst: "Téléversez le document officiel (registre de commerce, permis d’indépendant ou pièce d’identité) : il remplit les champs", reading: "Lecture du document…", readDone: "Lu et rempli :", readNothing: "Document lu, rien n’a été extrait ; complétez les champs.", readFailed: "Lecture impossible ; complétez les champs à la main.", readName: "nom", readNumber: "numéro", readExpiry: "date d’expiration", commercial_register: "Numéro du registre de commerce", id_document: "Numéro de carte d’identité", license: "Numéro de licence / permis", expiry: "Date d’expiration du document (le cas échéant)", file: "Fichier du document (PDF ou image, facultatif)",
           gate: "Aucune entité sans son document officiel : numéro et date d’expiration obligatoires ; il devient la première pièce du dossier.", invalid: "Numéro invalide.", expiryRequired: "Date d’expiration obligatoire.", fileFailed: "Créée, mais le fichier n’a pu être envoyé ; ajoutez-le depuis Documents." },
-    ur: { fileFirst: "سرکاری دستاویز اپ لوڈ کریں (کمرشل رجسٹر، فری لانس اجازت نامہ یا شناخت) — خانے خود بھر جائیں گے", reading: "دستاویز پڑھی جا رہی ہے…", readDone: "پڑھ کر بھر دیا:", readNothing: "دستاویز پڑھی گئی مگر کچھ نہ ملا؛ خانے بھریں۔", readFailed: "دستاویز نہیں پڑھی جا سکی؛ خانے خود بھریں۔", readName: "نام", readNumber: "نمبر", readExpiry: "میعاد", commercial_register: "کمرشل رجسٹر نمبر", id_document: "قومی شناختی نمبر", license: "لائسنس / اجازت نامہ نمبر", expiry: "دستاویز کی میعاد ختم", file: "دستاویز کی فائل (PDF یا تصویر، اختیاری)",
+    ur: { fileFirst: "سرکاری دستاویز اپ لوڈ کریں (کمرشل رجسٹر، فری لانس اجازت نامہ یا شناخت) — خانے خود بھر جائیں گے", reading: "دستاویز پڑھی جا رہی ہے…", readDone: "پڑھ کر بھر دیا:", readNothing: "دستاویز پڑھی گئی مگر کچھ نہ ملا؛ خانے بھریں۔", readFailed: "دستاویز نہیں پڑھی جا سکی؛ خانے خود بھریں۔", readName: "نام", readNumber: "نمبر", readExpiry: "میعاد", commercial_register: "کمرشل رجسٹر نمبر", id_document: "قومی شناختی نمبر", license: "لائسنس / اجازت نامہ نمبر", expiry: "دستاویز کی میعاد (اگر ہو)", file: "دستاویز کی فائل (PDF یا تصویر، اختیاری)",
           gate: "سرکاری دستاویز کے بغیر کوئی ادارہ نہیں: نمبر اور میعاد لازمی ہیں، اور یہ فائل کی پہلی دستاویز بنتی ہے۔", invalid: "نمبر غلط ہے۔", expiryRequired: "میعاد ختم ہونے کی تاریخ لازمی ہے۔", fileFailed: "بن گیا، مگر فائل اپ لوڈ نہ ہو سکی؛ دستاویزات سے شامل کریں۔" }
   };
 
@@ -2687,7 +2709,6 @@
       var fileEl = document.getElementById("newOrgFile");
       var file = fileEl && fileEl.files && fileEl.files[0];
       if (!registrationRule(type).pattern.test(reg)) { err.textContent = rt.invalid; document.getElementById("newOrgReg").focus(); return; }
-      if (!expiry) { err.textContent = rt.expiryRequired; document.getElementById("newOrgExpiry").focus(); return; }
       err.textContent = "";
       var btn = this;
       btn.disabled = true;

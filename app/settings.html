@@ -591,6 +591,14 @@
             <input type="text" class="waitlist-input" id="fullName" placeholder="اسمك الكامل" autocomplete="name" maxlength="120" dir="auto">
           </div>
           <div class="settings-field">
+            <label for="fullNameEn" data-i18n="fullNameEnLabel">الاسم بالإنجليزية</label>
+            <input type="text" class="waitlist-input" id="fullNameEn" placeholder="Full name in English" autocomplete="name" maxlength="120" dir="auto">
+          </div>
+          <div class="settings-field">
+            <label for="profilePhone" data-i18n="phoneLabel">رقم الجوال</label>
+            <input type="tel" class="waitlist-input" id="profilePhone" placeholder="+9665xxxxxxx" autocomplete="tel" dir="ltr" required>
+          </div>
+          <div class="settings-field">
             <label for="profileEmail" data-i18n="emailLabel">البريد الإلكتروني</label>
             <input type="email" class="waitlist-input" id="profileEmail" readonly dir="ltr">
           </div>
@@ -621,6 +629,13 @@
               <option value="Europe/London">Europe/London (UTC+0/+1)</option>
               <option value="America/New_York">America/New_York (UTC-5/-4)</option>
               <option value="UTC">UTC</option>
+            </select>
+          </div>
+          <div class="settings-field">
+            <label for="profileTimeFormat" data-i18n="timeFormatLabel">صيغة الوقت</label>
+            <select class="waitlist-input" id="profileTimeFormat" dir="ltr">
+              <option value="24" data-i18n="timeFormat24">24 ساعة</option>
+              <option value="12" data-i18n="timeFormat12">12 ساعة (ص/م)</option>
             </select>
           </div>
           <div class="settings-actions">
@@ -889,9 +904,17 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         profileTitle: "الملف الشخصي",
         fullNameLabel: "الاسم الكامل",
         fullNamePlaceholder: "اسمك الكامل",
+        fullNameEnLabel: "الاسم بالإنجليزية",
+        fullNameEnPlaceholder: "Full name in English",
+        phoneLabel: "رقم الجوال",
+        phonePlaceholder: "+9665xxxxxxx",
+        phoneInvalid: "أدخل رقم جوال صحيحاً، مثل ‎+9665xxxxxxx‎.",
         emailLabel: "البريد الإلكتروني",
         langLabel: "لغة الواجهة",
         tzLabel: "المنطقة الزمنية",
+        timeFormatLabel: "صيغة الوقت",
+        timeFormat24: "24 ساعة",
+        timeFormat12: "12 ساعة (ص/م)",
         saveBtn: "حفظ",
         saving: "جاري الحفظ...",
         profileSaved: "تم حفظ الملف الشخصي.",
@@ -1063,9 +1086,17 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         profileTitle: "Profile",
         fullNameLabel: "Full name",
         fullNamePlaceholder: "Your full name",
+        fullNameEnLabel: "Name in English",
+        fullNameEnPlaceholder: "Full name in English",
+        phoneLabel: "Phone number",
+        phonePlaceholder: "+9665xxxxxxx",
+        phoneInvalid: "Enter a valid phone number, e.g. +9665xxxxxxx.",
         emailLabel: "Email address",
         langLabel: "Interface language",
         tzLabel: "Time zone",
+        timeFormatLabel: "Time format",
+        timeFormat24: "24-hour",
+        timeFormat12: "12-hour (AM/PM)",
         saveBtn: "Save",
         saving: "Saving...",
         profileSaved: "Profile saved.",
@@ -1237,9 +1268,17 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         profileTitle: "Profil",
         fullNameLabel: "Nom complet",
         fullNamePlaceholder: "Votre nom complet",
+        fullNameEnLabel: "Nom en anglais",
+        fullNameEnPlaceholder: "Nom complet en anglais",
+        phoneLabel: "Numéro de téléphone",
+        phonePlaceholder: "+9665xxxxxxx",
+        phoneInvalid: "Entrez un numéro de téléphone valide, ex. +9665xxxxxxx.",
         emailLabel: "Adresse e-mail",
         langLabel: "Langue de l'interface",
         tzLabel: "Fuseau horaire",
+        timeFormatLabel: "Format de l'heure",
+        timeFormat24: "24 heures",
+        timeFormat12: "12 heures (AM/PM)",
         saveBtn: "Enregistrer",
         saving: "Enregistrement...",
         profileSaved: "Profil enregistré.",
@@ -1411,9 +1450,17 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         profileTitle: "پروفائل",
         fullNameLabel: "پورا نام",
         fullNamePlaceholder: "آپ کا پورا نام",
+        fullNameEnLabel: "انگریزی میں نام",
+        fullNameEnPlaceholder: "انگریزی میں پورا نام",
+        phoneLabel: "موبائل نمبر",
+        phonePlaceholder: "+9665xxxxxxx",
+        phoneInvalid: "درست موبائل نمبر درج کریں، مثلاً +9665xxxxxxx۔",
         emailLabel: "ای میل ایڈریس",
         langLabel: "انٹرفیس کی زبان",
         tzLabel: "ٹائم زون",
+        timeFormatLabel: "وقت کی صورت",
+        timeFormat24: "24 گھنٹے",
+        timeFormat12: "12 گھنٹے (AM/PM)",
         saveBtn: "محفوظ کریں",
         saving: "محفوظ کیا جا رہا ہے...",
         profileSaved: "پروفائل محفوظ ہو گئی۔",
@@ -1569,7 +1616,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
     document.documentElement.lang = l;
     document.documentElement.dir = (l === "ar" || l === "ur") ? "rtl" : "ltr";
 
-    const placeholderKeys = { fullName: "fullNamePlaceholder", smsPhone: "smsPhonePlaceholder" };
+    const placeholderKeys = { fullName: "fullNamePlaceholder", fullNameEn: "fullNameEnPlaceholder", profilePhone: "phonePlaceholder", smsPhone: "smsPhonePlaceholder" };
     function applyPlaceholders(code) {
       const dict = translations[code] || translations.ar;
       Object.keys(placeholderKeys).forEach(id => {
@@ -1779,6 +1826,8 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         var p = app.profile || {};
         var user = app.user || {};
         el("fullName").value = p.full_name || "";
+        el("fullNameEn").value = p.full_name_en || "";
+        el("profilePhone").value = p.phone || "";
         el("profileEmail").value = p.email || user.email || "";
         var langSel = el("profileLang");
         langSel.value = p.lang || lang();
@@ -1794,21 +1843,35 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
           tzSel.appendChild(opt);
         }
         tzSel.value = tz;
+        el("profileTimeFormat").value = p.time_format === "12" ? "12" : "24";
       }
+
+      /* نفس نمط رقم الجوال في بوابة إكمال الملف الشخصي (app.js) — إلزامي دائماً. */
+      var PHONE_RX = /^\+[1-9]\d{7,14}$/;
 
       function saveProfile(ev) {
         ev.preventDefault();
         var btn = el("profileSaveBtn");
+        var phone = String(el("profilePhone").value || "").trim().replace(/[\s-]/g, "");
+        if (!PHONE_RX.test(phone)) {
+          setMsg("profileMsg", t("phoneInvalid"), "error");
+          el("profilePhone").focus();
+          return;
+        }
         var patch = {
           full_name: el("fullName").value,
+          full_name_en: el("fullNameEn").value,
+          phone: phone,
           lang: el("profileLang").value,
-          tz: el("profileTz").value
+          tz: el("profileTz").value,
+          time_format: el("profileTimeFormat").value
         };
         btn.disabled = true;
         setMsg("profileMsg", t("saving"));
         app.updateProfile(patch).then(function () {
           if (patch.lang !== lang()) setLang(patch.lang);
           btn.disabled = false;
+          el("profilePhone").value = phone;
           setMsg("profileMsg", t("profileSaved"), "success");
           toast(t("profileSaved"), "success");
         }).catch(function (err) {
@@ -2614,7 +2677,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
 <!-- رمز QR لربط تيليجرام من الجوال (qrcode-generator من cdnjs — مسموح في CSP) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="/app.js?v=4" defer></script>
-<script src="/app/common.js?v=18" defer></script>
+<script src="/app/common.js?v=19" defer></script>
 <script src="/brand-logo.js?v=4" defer></script>
 </body>
 </html>
