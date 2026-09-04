@@ -308,7 +308,7 @@
             '<td><span class="' + cls + '">' + esc(leftText) + "</span></td>" +
             "<td>" + (files.length
               ? files.map(function (a) {
-                  return '<span class="file-row"><a href="#" data-open="' + esc(a.id) + '">' + esc(a.name) + "</a>" +
+                  return '<span class="file-row"><a href="#" data-open="' + esc(a.id) + '" title="' + esc(a.name) + '">' + esc(a.name) + "</a>" +
                          '<button type="button" class="chat-option-btn file-get" data-get="' + esc(a.id) + '" title="' + esc(t("pDownload")) + '">' + esc(t("pDownload")) + "</button></span>";
                 }).join("")
               : "-") + "</td>" +

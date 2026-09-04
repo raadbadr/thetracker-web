@@ -713,8 +713,10 @@
     .content .items-table .row-actions .chat-option-btn { min-height: 32px; padding: .28rem .7rem;
       font-size: .8rem; white-space: nowrap; width: auto; flex: 0 0 auto; }
     .content .items-table td, .content .items-table th { white-space: nowrap; vertical-align: middle; }
-    .content .items-table td:nth-child(2), .content .items-table td:nth-child(4),
-    .content .items-table td:nth-child(7) { white-space: normal; }
+    .content .items-table td:nth-child(2), .content .items-table td:nth-child(4) { white-space: normal; }
+    /* اسم الملف على سطر واحد: يُقصّ بثلاث نقاط والجدول يتمرر أفقيا */
+    .content .items-table .file-row a { display: inline-block; max-width: 15rem; overflow: hidden;
+      text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; }
     .content .items-table td:nth-child(2) { min-width: 14rem; }
     .content .items-table td:nth-child(4) { min-width: 10rem; }
     .content .items-table .file-row { flex-wrap: nowrap; }
