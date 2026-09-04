@@ -885,6 +885,18 @@
       .row-actions { gap: .4rem; }
       .row-actions .chat-option-btn { flex: 1 1 auto; }
     }
+
+    /* ===== شريط الحقوق: سطر واحد متوسط، والشعار على خط الكلمات ===== */
+    .footer { padding: 1.75rem 1.25rem; }
+    .footer .footer-copyright {
+      margin: 0; display: flex; flex-wrap: wrap; align-items: center;
+      justify-content: center; gap: .45rem; line-height: 1.4;
+    }
+    .footer .footer-copyright > span { display: inline-flex; align-items: center; gap: .45rem; }
+    .footer #footerLogo { height: 1.15em; width: auto; vertical-align: middle; }
+    .footer .footer-year { font-variant-numeric: tabular-nums; }
+    /* حين تُخفى روابط الفوتر للمستخدم المسجل لا يبقى فراغ فوق السطر */
+    .footer .footer-links[hidden] + .footer-copyright { margin-top: 0; }
 </style>
 </head>
 <body class="has-site-header">
@@ -1200,7 +1212,7 @@
     </p>
     <p class="footer-copyright">
       <span data-i18n="copyrightLine2">جميع الحقوق محفوظة</span>
-      <span> · <img src="/tracker-logo-full-dark.png?v=2" alt="TheTracker" id="footerLogo" class="brand-logo-inline brand-logo-inline--xs" data-brand-logo-footer style="height:1.3em;width:auto;display:inline-block;vertical-align:-0.35em;max-width:none;"> <span class="footer-year">© 2026</span></span>
+      <span> · <img src="/tracker-logo-full-dark.png?v=2" alt="TheTracker" id="footerLogo" class="brand-logo-inline brand-logo-inline--xs" data-brand-logo-footer> <span class="footer-year">© 2026</span></span>
     </p>
   </footer>
 
