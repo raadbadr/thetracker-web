@@ -739,9 +739,9 @@
       <!-- (1) رفع مستند وفهمه -->
       <div class="content" id="uploadCard">
         <h2 data-i18n="docAddTitle">إضافة مستند أو جدول</h2>
-        <p data-i18n="docAddIntro">ارفع أي ملف: مستند مثل السجل التجاري أو الشهادة الضريبية أو الرخصة أو صحيفة الدعوى فيقرأه النظام ويستخرج نوعه ورقمه وتاريخ انتهائه، أو جدول إكسل فتُستورد صفوفه عناصر لها مواعيد وتذكيرات.</p>
+        <p data-i18n="docAddIntro">مستند يُقرأ، أو جدول تُستورد صفوفه.</p>
         <div class="feature-card drop-zone" id="docDrop" tabindex="0" role="button">
-          <p data-i18n="docDropHint">اسحب الملف هنا أو اختره: مستند أو جدول</p>
+          <p data-i18n="docDropHint">اسحب الملف أو اختره</p>
           <button type="button" class="waitlist-btn" id="docChooseBtn" data-i18n="docChoose">اختيار ملف</button>
           <input type="file" id="docFile" accept=".pdf,.png,.jpg,.jpeg,.webp,.xlsx,.xlsm,.xls,.csv,.tsv,.txt,.json,application/pdf,image/*,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" hidden>
           <button type="button" class="chat-option-btn" id="docDriveBtn" data-i18n="docDrive" hidden>اختيار من Google Drive</button>
@@ -773,7 +773,7 @@
       <!-- (2) الأوراق الرسمية المتوقعة من كل منشأة -->
       <div class="content" id="papersCard" hidden>
         <h2 data-i18n="papersTitle">الأوراق الرسمية</h2>
-        <p class="waitlist-note" id="papersNote" data-i18n="papersNote">الأوراق التي تحتاجها كل منشأة. الناقص يظهر هنا، والمنتهي قريبا يصلك تذكيره على تيليغرام.</p>
+        <p class="waitlist-note" id="papersNote" data-i18n="papersNote">الناقص والمنتهي يظهران هنا، والتذكير على تيليغرام.</p>
         <div class="platform-stats-list" id="papersStats"></div>
         <div class="table-wrap">
           <table class="items-table">
@@ -1013,8 +1013,8 @@
         fCase: "القضية",
         title: "المستندات",
         docAddTitle: "إضافة مستند أو جدول",
-        docAddIntro: "ارفع أي ملف: مستند مثل السجل التجاري أو الشهادة الضريبية أو الرخصة أو صحيفة الدعوى فيقرأه النظام ويستخرج نوعه ورقمه وتاريخ انتهائه، أو جدول إكسل فتُستورد صفوفه عناصر لها مواعيد وتذكيرات.",
-        docDropHint: "اسحب الملف هنا أو اختره: مستند أو جدول",
+        docAddIntro: "مستند يُقرأ، أو جدول تُستورد صفوفه.",
+        docDropHint: "اسحب الملف أو اختره",
         docChoose: "اختيار ملف",
         docDrive: "اختيار من Google Drive",
         docDriveFailed: "تعذر جلب الملف من Google Drive.",
@@ -1042,7 +1042,7 @@
         docFileFailed: "حفظت البيانات لكن تعذر رفع الملف.",
         docStorageLimit: "حفظت البيانات لكن مساحة التخزين في باقتك ممتلئة.",
         papersTitle: "الأوراق الرسمية",
-        papersNote: "الأوراق التي تحتاجها كل منشأة. الناقص يظهر هنا، والمنتهي قريبا يصلك تذكيره على تيليغرام.",
+        papersNote: "الناقص والمنتهي يظهران هنا، والتذكير على تيليغرام.",
         papersState: "الحالة",
         pMissing: "ناقص",
         pValid: "سارٍ",
@@ -1304,8 +1304,8 @@
         fCase: "Case",
         title: "Documents",
         docAddTitle: "Add a document or spreadsheet",
-        docAddIntro: "Upload any file: a document such as a commercial register, VAT certificate, licence or statement of claim is read and its type, number and expiry extracted; a spreadsheet has its rows imported as items with dates and reminders.",
-        docDropHint: "Drop a file here or choose one: document or spreadsheet",
+        docAddIntro: "A document is read, a spreadsheet is imported.",
+        docDropHint: "Drop a file or choose one",
         docChoose: "Choose file",
         docDrive: "Pick from Google Drive",
         docDriveFailed: "Could not fetch the file from Google Drive.",
@@ -1333,7 +1333,7 @@
         docFileFailed: "Data saved, but the file could not be uploaded.",
         docStorageLimit: "Data saved, but your plan storage is full.",
         papersTitle: "Official papers",
-        papersNote: "The papers every organization needs. Missing ones show here, and expiring ones reach you on Telegram.",
+        papersNote: "Missing and expired show here; reminders go to Telegram.",
         papersState: "State",
         pMissing: "Missing",
         pValid: "Valid",
@@ -1595,8 +1595,8 @@
         fCase: "Affaire",
         title: "Documents",
         docAddTitle: "Ajouter un document ou un tableur",
-        docAddIntro: "Importez n'importe quel fichier : un document comme un registre de commerce, un certificat de TVA, une licence ou une requête est lu et son type, son numéro et son échéance extraits ; un tableur voit ses lignes importées comme éléments avec dates et rappels.",
-        docDropHint: "Déposez un fichier ici ou choisissez-en un : document ou tableur",
+        docAddIntro: "Un document est lu, un tableur est importé.",
+        docDropHint: "Déposez un fichier ou choisissez-en un",
         docChoose: "Choisir un fichier",
         docDrive: "Choisir depuis Google Drive",
         docDriveFailed: "Impossible de récupérer le fichier depuis Google Drive.",
@@ -1624,7 +1624,7 @@
         docFileFailed: "Données enregistrées, mais le fichier n’a pas pu être téléversé.",
         docStorageLimit: "Données enregistrées, mais le stockage de votre forfait est plein.",
         papersTitle: "Documents officiels",
-        papersNote: "Les documents dont chaque entité a besoin. Les manquants apparaissent ici, et les échéances vous parviennent sur Telegram.",
+        papersNote: "Manquants et expirés apparaissent ici ; rappels sur Telegram.",
         papersState: "État",
         pMissing: "Manquant",
         pValid: "Valide",
@@ -1886,8 +1886,8 @@
         fCase: "مقدمہ",
         title: "دستاویزات",
         docAddTitle: "دستاویز یا اسپریڈ شیٹ شامل کریں",
-        docAddIntro: "کوئی بھی فائل اپ لوڈ کریں: تجارتی رجسٹر، ٹیکس سرٹیفکیٹ، لائسنس یا دعویٰ جیسی دستاویز پڑھی جاتی ہے اور اس کی قسم، نمبر اور تاریخ نکالی جاتی ہے؛ اسپریڈ شیٹ کی سطریں تاریخوں اور یاد دہانیوں کے ساتھ آئٹمز بن جاتی ہیں۔",
-        docDropHint: "فائل یہاں چھوڑیں یا منتخب کریں: دستاویز یا اسپریڈ شیٹ",
+        docAddIntro: "دستاویز پڑھی جاتی ہے، اسپریڈ شیٹ درآمد ہوتی ہے۔",
+        docDropHint: "فائل چھوڑیں یا منتخب کریں",
         docChoose: "فائل چنیں",
         docDrive: "گوگل ڈرائیو سے منتخب کریں",
         docDriveFailed: "گوگل ڈرائیو سے فائل نہیں مل سکی۔",
@@ -1915,7 +1915,7 @@
         docFileFailed: "ڈیٹا محفوظ ہوا مگر فائل اپ لوڈ نہیں ہو سکی۔",
         docStorageLimit: "ڈیٹا محفوظ ہوا مگر پیکج کی اسٹوریج بھر گئی۔",
         papersTitle: "سرکاری کاغذات",
-        papersNote: "ہر ادارے کو درکار کاغذات۔ غائب یہاں دکھتے ہیں، اور ختم ہونے والوں کی یاد دہانی ٹیلیگرام پر آتی ہے۔",
+        papersNote: "غائب اور ختم شدہ یہاں؛ یاد دہانی ٹیلیگرام پر۔",
         papersState: "حالت",
         pMissing: "غائب",
         pValid: "مؤثر",
