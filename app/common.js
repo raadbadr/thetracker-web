@@ -474,27 +474,31 @@
     window.location.reload();
   }
 
-  function createOrg(name, entityType) {
+  /* لا جهة بلا مستندها الرسمي: الدالة create_org_registered في القاعدة هي الطريق الوحيد،
+     تتحقق من الرقم (سجل تجاري / رخصة / هوية بحسب النوع) وتاريخ الانتهاء وتسجّله مستنداً أولاً. */
+  function createOrg(name, entityType, regNumber, regExpiry) {
     return run(function (client) {
       var clean = String(name || "").trim();
       if (!clean) throw new Error("name required");
       var type = entityTypeValue(entityType);
-      return client.from("organizations")
-        .insert({ name: clean, owner_id: app.user.id })
-        .select("id,name,plan_code,plan_expires_at")
-        .single()
+      return client.rpc("create_org_registered", { p_name: clean, p_entity_type: type, p_reg_number: String(regNumber || "").trim(), p_reg_expiry: regExpiry || null })
         .then(unwrap)
         .then(function (org) {
           org.role = "owner";
           app.orgs.push(org);
           app.org = org;
           try { localStorage.setItem(ORG_KEY, org.id); } catch (e) { /* ignore */ }
-          /* نوع الحساب يحدد الأوراق المتوقعة، فيكتب مع الإنشاء لا بعده. */
-          return saveOrgProfile({ entity_type: type, legal_name: clean })
-            .catch(function () { return null; })
-            .then(function () { return org; });
+          return org;
         });
     });
+  }
+
+  /* رقم المستند الرسمي بحسب نوع الجهة (نفس قواعد القاعدة) */
+  function registrationRule(entityType) {
+    var type = entityTypeValue(entityType);
+    if (type === "company" || type === "establishment") return { kind: "commercial_register", pattern: /^[1247][0-9]{9}$/ };
+    if (type === "individual") return { kind: "id_document", pattern: /^[12][0-9]{9}$/ };
+    return { kind: "license", pattern: /^[A-Za-z0-9\-\/]{4,30}$/ };
   }
 
   /* ---------- المرفقات (PDF / Word / صور) وروابط جوجل درايف ---------- */
@@ -2010,6 +2014,8 @@
   app.exportXlsx = exportXlsx;
   app.setMemberPerson = setMemberPerson;
   app.departments = departments;
+  app.openNewOrgDialog = openNewOrgDialog;
+  app.registrationRule = registrationRule;
   app.departmentLabel = departmentLabel;
   app.serviceAllowed = serviceAllowed;
   app.entityTypes = function () { return ENTITY_TYPES.slice(); };
@@ -2285,6 +2291,17 @@
   }
 
   /* أين أنا الآن؟ اسم الشركة الحالية ظاهر دائما ويبدل من مكانه. */
+  var REG_TEXT = {
+    ar: { commercial_register: "رقم السجل التجاري", id_document: "رقم الهوية الوطنية", license: "رقم الرخصة / الوثيقة", expiry: "تاريخ انتهاء المستند", file: "ملف المستند (PDF أو صورة، اختياري)",
+          gate: "لا تُنشأ الجهة بلا مستندها الرسمي: الرقم وتاريخ الانتهاء إلزاميان، ويُسجَّل أول مستند في ملفها.", invalid: "الرقم غير صحيح.", expiryRequired: "تاريخ الانتهاء إلزامي.", fileFailed: "أُنشئت الجهة لكن تعذّر رفع الملف؛ أضفه من صفحة المستندات." },
+    en: { commercial_register: "Commercial register number", id_document: "National ID number", license: "License / permit number", expiry: "Document expiry date", file: "Document file (PDF or image, optional)",
+          gate: "No entity without its official document: number and expiry are required, and it becomes the first paper on file.", invalid: "Invalid number.", expiryRequired: "Expiry date is required.", fileFailed: "Created, but the file could not be uploaded; add it from Documents." },
+    fr: { commercial_register: "Numéro du registre de commerce", id_document: "Numéro de carte d’identité", license: "Numéro de licence / permis", expiry: "Date d’expiration du document", file: "Fichier du document (PDF ou image, facultatif)",
+          gate: "Aucune entité sans son document officiel : numéro et date d’expiration obligatoires ; il devient la première pièce du dossier.", invalid: "Numéro invalide.", expiryRequired: "Date d’expiration obligatoire.", fileFailed: "Créée, mais le fichier n’a pu être envoyé ; ajoutez-le depuis Documents." },
+    ur: { commercial_register: "کمرشل رجسٹر نمبر", id_document: "قومی شناختی نمبر", license: "لائسنس / اجازت نامہ نمبر", expiry: "دستاویز کی میعاد ختم", file: "دستاویز کی فائل (PDF یا تصویر، اختیاری)",
+          gate: "سرکاری دستاویز کے بغیر کوئی ادارہ نہیں: نمبر اور میعاد لازمی ہیں، اور یہ فائل کی پہلی دستاویز بنتی ہے۔", invalid: "نمبر غلط ہے۔", expiryRequired: "میعاد ختم ہونے کی تاریخ لازمی ہے۔", fileFailed: "بن گیا، مگر فائل اپ لوڈ نہ ہو سکی؛ دستاویزات سے شامل کریں۔" }
+  };
+
   var NEW_ORG_TEXT = {
     ar: { title: "حساب جديد", hint: "اختر نوع الحساب ثم اكتب الاسم.", type: "نوع الحساب", name: "اسم الجهة", nameSelf: "اسمك الكامل", save: "إنشاء", cancel: "إلغاء", error: "تعذر الإنشاء، حاول مرة أخرى." },
     en: { title: "New account", hint: "Choose the account type, then enter the name.", type: "Account type", name: "Entity name", nameSelf: "Your full name", save: "Create", cancel: "Cancel", error: "Could not create it, try again." },
@@ -2296,6 +2313,7 @@
   function openNewOrgDialog() {
     if (document.getElementById("appNewOrg")) return;
     var t = NEW_ORG_TEXT[lang()] || NEW_ORG_TEXT.ar;
+    var rt = REG_TEXT[lang()] || REG_TEXT.ar;
     var style = document.createElement("style");
     style.textContent = PROFILE_CSS;
     document.head.appendChild(style);
@@ -2312,6 +2330,13 @@
           }).join("") + "</select></label>" +
         '<label id="newOrgNameLabel">' + escapeHtml(t.name) +
           '<input type="text" id="newOrgInput" maxlength="120" autocomplete="organization"></label>' +
+        '<p class="app-gate-hint" style="font-size:.85rem;color:var(--text-secondary);margin:.25rem 0 .5rem">' + escapeHtml(rt.gate) + "</p>" +
+        '<label id="newOrgRegLabel">' + escapeHtml(rt.commercial_register) +
+          '<input type="text" id="newOrgReg" maxlength="40" dir="ltr" inputmode="numeric" autocomplete="off"></label>' +
+        "<label>" + escapeHtml(rt.expiry) +
+          '<input type="date" id="newOrgExpiry" dir="ltr"></label>' +
+        "<label>" + escapeHtml(rt.file) +
+          '<input type="file" id="newOrgFile" accept=".pdf,image/*"></label>' +
         '<button type="button" id="newOrgSave">' + escapeHtml(t.save) + "</button>" +
         '<button type="button" id="newOrgCancelBtn" style="margin-top:.6rem;background:transparent;color:var(--text-secondary)">' + escapeHtml(t.cancel) + "</button>" +
         '<div class="app-gate-msg" id="newOrgErr"></div>' +
@@ -2323,7 +2348,11 @@
     document.getElementById("newOrgCancelBtn").addEventListener("click", function () { gate.remove(); });
     var typeSel = document.getElementById("newOrgType");
     var nameLabel = document.getElementById("newOrgNameLabel");
+    var regLabel = document.getElementById("newOrgRegLabel");
+    var syncRegLabel = function () { if (regLabel) regLabel.childNodes[0].nodeValue = rt[registrationRule(typeSel ? typeSel.value : "company").kind]; };
+    syncRegLabel();
     if (typeSel && nameLabel) typeSel.addEventListener("change", function () {
+      syncRegLabel();
       nameLabel.childNodes[0].nodeValue = isPersonType(typeSel.value) ? t.nameSelf : t.name;
       if (isPersonType(typeSel.value) && !String(input.value || "").trim() && app.profile && app.profile.full_name) {
         input.value = app.profile.full_name;
@@ -2331,14 +2360,30 @@
     });
     document.getElementById("newOrgSave").addEventListener("click", function () {
       var name = String(input.value || "").trim();
+      var err = document.getElementById("newOrgErr");
       if (!name) { input.focus(); return; }
+      var type = typeSel ? typeSel.value : "company";
+      var reg = String((document.getElementById("newOrgReg") || {}).value || "").replace(/\s/g, "");
+      var expiry = String((document.getElementById("newOrgExpiry") || {}).value || "");
+      var fileEl = document.getElementById("newOrgFile");
+      var file = fileEl && fileEl.files && fileEl.files[0];
+      if (!registrationRule(type).pattern.test(reg)) { err.textContent = rt.invalid; document.getElementById("newOrgReg").focus(); return; }
+      if (!expiry) { err.textContent = rt.expiryRequired; document.getElementById("newOrgExpiry").focus(); return; }
+      err.textContent = "";
       var btn = this;
       btn.disabled = true;
-      createOrg(name, typeSel ? typeSel.value : "company").then(function () {
+      createOrg(name, type, reg, expiry).then(function (org) {
+        /* الملف نفسه يُرفع مرفقاً على مستند التسجيل الذي أنشأته القاعدة */
+        if (file && org && org.item_id) {
+          return uploadAttachment(org.item_id, file).catch(function () { err.textContent = rt.fileFailed; return null; });
+        }
+        return null;
+      }).then(function () {
         window.location.href = "/app/dashboard.html";
-      }).catch(function () {
+      }).catch(function (e) {
         btn.disabled = false;
-        document.getElementById("newOrgErr").textContent = t.error;
+        var code = String((e && e.message) || "");
+        err.textContent = /REG_NUMBER_INVALID/.test(code) ? rt.invalid : /REG_EXPIRY_REQUIRED/.test(code) ? rt.expiryRequired : t.error;
       });
     });
   }

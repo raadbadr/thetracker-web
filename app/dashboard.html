@@ -2956,6 +2956,14 @@
         var clean = String(name || "").trim();
         if (!clean) { setMsg(msgId, T("orgNameRequired"), "error"); return; }
         clearMsg(msgId);
+        /* لا جهة بلا مستندها الرسمي: الحوار المشترك يطلب رقم السجل/الرخصة/الهوية وتاريخ انتهائه ثم ينشئ */
+        if (app.openNewOrgDialog) {
+          app.openNewOrgDialog();
+          var typeSel = document.getElementById("newOrgType"), nameInp = document.getElementById("newOrgInput");
+          if (typeSel && type) { typeSel.value = type; typeSel.dispatchEvent(new Event("change")); }
+          if (nameInp) { nameInp.value = clean; var reg = document.getElementById("newOrgReg"); if (reg) reg.focus(); }
+          return;
+        }
         guard(function () {
           return app.createOrg(clean, type).then(function () {
             toast("orgCreated");
@@ -4054,7 +4062,7 @@
   </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 <script src="/app.js?v=4" defer></script>
-<script src="/app/common.js?v=13" defer></script>
+<script src="/app/common.js?v=14" defer></script>
 <script src="/brand-logo.js?v=4" defer></script>
 </body>
 </html>
