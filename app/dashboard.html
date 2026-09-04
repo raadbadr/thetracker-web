@@ -2990,7 +2990,12 @@
           app.openNewOrgDialog();
           var typeSel = document.getElementById("newOrgType"), nameInp = document.getElementById("newOrgInput");
           if (typeSel && type) { typeSel.value = type; typeSel.dispatchEvent(new Event("change")); }
-          if (nameInp) { nameInp.value = clean; var reg = document.getElementById("newOrgReg"); if (reg) reg.focus(); }
+          if (nameInp) {
+            nameInp.value = clean;
+            nameInp.dataset.prefill = "1"; /* اسم مقترح: الاسم النظامي في المستند يعلو عليه */
+            var reg = document.getElementById("newOrgReg");
+            if (reg) reg.focus();
+          }
           return;
         }
         guard(function () {
@@ -4091,7 +4096,7 @@
   </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 <script src="/app.js?v=4" defer></script>
-<script src="/app/common.js?v=20" defer></script>
+<script src="/app/common.js?v=21" defer></script>
 <script src="/brand-logo.js?v=4" defer></script>
 </body>
 </html>

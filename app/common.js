@@ -898,7 +898,6 @@
      بترتيب بصري) لا يُقرأ: نكتشفه ونرسل صورة الصفحة ليقرأها نموذج الرؤية. */
   function textLooksMangled(text) {
     var value = String(text || "");
-    if (/[\uFB50-\uFDFF\uFE70-\uFEFF]/.test(value)) return true;
     var singles = (value.match(/(?:^|\s)[\u0600-\u06FF](?=\s|$)/g) || []).length;
     var words = (value.match(/\S+/g) || []).length;
     return words > 10 && singles / words > 0.3;
@@ -910,9 +909,12 @@
     var isPdf = /\.pdf$/i.test(file.name || "") || file.type === "application/pdf";
     if (!isPdf) return fileToImageData(file).then(function (img) { return analyzeDocument({ image: img }); });
     return pdfRead(file).then(function (r) {
-      if (r.text && r.text.length >= 40 && !textLooksMangled(r.text)) return analyzeDocument({ text: r.text });
-      /* PDF ممسوح ضوئياً: تُقرأ صورة صفحته الأولى */
-      return pdfPageImage(r.pdf, 1).then(function (img) { return analyzeDocument({ image: img }); });
+      var text = String(r.text || "").normalize("NFKC");
+      if (text.length >= 40 && !textLooksMangled(text)) return analyzeDocument({ text: text });
+      /* نص ناقص أو مفكّك: تُرسل صورة الصفحة معه ليختار الخادم أوضحهما */
+      return pdfPageImage(r.pdf, 1).then(function (img) {
+        return analyzeDocument(text.length >= 40 ? { text: text, image: img } : { image: img });
+      });
     });
   }
 
@@ -2701,7 +2703,7 @@
         '<label id="newOrgRegLabel">' + escapeHtml(rt.commercial_register) +
           '<input type="text" id="newOrgReg" maxlength="40" dir="ltr" inputmode="numeric" autocomplete="off"></label>' +
         "<label>" + escapeHtml(rt.expiry) +
-          '<input type="text" id="newOrgExpiry" dir="ltr" autocomplete="off" placeholder="' + escapeHtml(rt.expiryHint) + '"></label>' +
+          '<input type="text" id="newOrgExpiry" dir="ltr" inputmode="numeric" maxlength="10" autocomplete="off" placeholder="' + escapeHtml(rt.expiryHint) + '"></label>' +
         '<div id="newOrgExpiryEcho" style="font-size:.8rem;color:var(--text-secondary);margin:-.6rem 0 .8rem"></div>' +
 
         '<button type="button" id="newOrgSave">' + escapeHtml(t.save) + "</button>" +
@@ -2723,6 +2725,7 @@
       nameLabel.childNodes[0].nodeValue = isPersonType(typeSel.value) ? t.nameSelf : t.name;
       if (isPersonType(typeSel.value) && !String(input.value || "").trim() && app.profile && app.profile.full_name) {
         input.value = app.profile.full_name;
+        input.dataset.prefill = "1"; /* قيمة مقترحة: يستبدلها اسم المستند */
       }
     });
     /* ما فهمه النظام من التاريخ يُعرض تحته: ميلادي وهجري معاً */
@@ -2735,9 +2738,20 @@
       var iso = parseAnyDate(raw);
       expiryEcho.textContent = iso ? (rt.expiryReads + " " + iso + " — " + gregorianToHijriText(iso)) : rt.expiryBad;
     }
-    if (expiryEl) { expiryEl.addEventListener("input", showExpiry); showExpiry(); }
+    if (expiryEl) {
+      /* يكتب الأرقام فقط والشرطات تُضاف وحدها: 14470512 ← 1447/05/12 */
+      expiryEl.addEventListener("input", function () {
+        var digits = String(this.value || "").replace(/[^\d]/g, "").slice(0, 8);
+        if (digits.length >= 5 && String(this.value || "").indexOf("/") === -1 && String(this.value || "").indexOf("-") === -1) {
+          this.value = digits.slice(0, 4) + "/" + digits.slice(4, 6) + (digits.length > 6 ? "/" + digits.slice(6, 8) : "");
+        }
+        showExpiry();
+      });
+      showExpiry();
+    }
 
     /* الورقة تُقرأ فور اختيارها فتملأ النوع والاسم والرقم وتاريخ الانتهاء */
+    if (input) input.addEventListener("input", function () { delete this.dataset.prefill; });
     var fileInput = document.getElementById("newOrgFile");
     var readMsg = document.getElementById("newOrgRead");
     if (fileInput) fileInput.addEventListener("change", function () {
@@ -2753,7 +2767,12 @@
           nameLabel.childNodes[0].nodeValue = isPersonType(typeSel.value) ? t.nameSelf : t.name;
           filled.push(entityLabel(typeSel.value));
         }
-        if (fields.party && input && !String(input.value || "").trim()) { input.value = fields.party; filled.push(rt.readName); }
+        /* اسم الجهة من الورقة يعلو على أي اسم مقترح: هو الاسم النظامي */
+        if (fields.party && input && (!String(input.value || "").trim() || input.dataset.prefill === "1")) {
+          input.value = fields.party;
+          delete input.dataset.prefill;
+          filled.push(rt.readName);
+        }
         var regEl = document.getElementById("newOrgReg");
         if (fields.number && regEl && !String(regEl.value || "").trim()) { regEl.value = String(fields.number).replace(/\s/g, ""); filled.push(rt.readNumber); }
         var expEl = document.getElementById("newOrgExpiry");
@@ -2802,12 +2821,12 @@
     var orgs = (app && app.orgs) || [];
     var current = app && app.org ? app.org : null;
     if (!current && !orgs.length) return "";
-    /* الاسم ونوعه: الشخصي يُعرف من الشركة بنظرة، وكل ما هو عضو فيه معروض */
+    /* الاسم كما هو في السجل التجاري بلا أي لاحقة، والنوع تلميح عند المرور */
     var opts = orgs.map(function (o) {
       var type = o.entity_type ? entityLabel(o.entity_type) : "";
-      var label = (o.name || "") + (type ? " — " + type : "");
-      return '<option value="' + escapeHtml(o.id) + '"' + (current && o.id === current.id ? " selected" : "") + ">" +
-             escapeHtml(label) + "</option>";
+      return '<option value="' + escapeHtml(o.id) + '"' + (current && o.id === current.id ? " selected" : "") +
+             (type ? ' title="' + escapeHtml(type) + '"' : "") + ">" +
+             escapeHtml(o.name || "") + "</option>";
     }).join("");
     opts += '<option value="__new">' + escapeHtml(sidebarLabel(NEW_ORG_LABELS)) + "</option>";
     return '<div class="app-orgbox" title="' + escapeHtml(sidebarLabel(ORG_LABELS)) + '">' +
