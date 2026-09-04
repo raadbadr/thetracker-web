@@ -714,6 +714,8 @@
 
   function driveAvailable() { return !!(driveConfig.clientId && driveConfig.apiKey); }
 
+  function driveAppId() { return String(driveConfig.clientId || "").split("-")[0] || ""; }
+
   function loadScriptOnce(src, test) {
     return new Promise(function (resolve, reject) {
       if (test()) { resolve(); return; }
@@ -745,7 +747,8 @@
       });
   }
 
-  function pickFromDrive() {
+  function pickFromDrive(opts) {
+    var multi = !opts || opts.multi !== false;
     if (!driveAvailable()) return Promise.reject(new Error("drive_unavailable"));
     return driveAccessToken().then(function (token) {
       return loadScriptOnce("https://apis.google.com/js/api.js", function () { return !!window.gapi; })
@@ -753,12 +756,14 @@
         .then(function () {
           return new Promise(function (resolve, reject) {
             var view = new window.google.picker.DocsView(window.google.picker.ViewId.DOCS).setIncludeFolders(true).setSelectFolderEnabled(false);
-            var picker = new window.google.picker.PickerBuilder()
+            var builder = new window.google.picker.PickerBuilder()
               .setOAuthToken(token)
               .setDeveloperKey(driveConfig.apiKey)
+              .setAppId(driveAppId())
               .setLocale(lang() === "ar" || lang() === "ur" ? "ar" : lang())
-              .addView(view)
-              .enableFeature(window.google.picker.Feature.MULTISELECT_ENABLED)
+              .addView(view);
+            if (multi) builder.enableFeature(window.google.picker.Feature.MULTISELECT_ENABLED);
+            var picker = builder
               .setCallback(function (data) {
                 if (data.action === window.google.picker.Action.PICKED) resolve(data.docs || []);
                 else if (data.action === window.google.picker.Action.CANCEL) reject(new Error("cancelled"));
@@ -767,6 +772,34 @@
             picker.setVisible(true);
           });
         });
+    });
+  }
+
+  /* ملف درايف المختار يُنزَّل مؤقتا في المتصفح ليقرأه المحلل، ولا يُرفع لتخزيننا.
+     ملفات جوجل (مستند/جدول) تُصدَّر PDF أو XLSX لأنها لا تنزل كما هي. */
+  var GOOGLE_EXPORT = {
+    "application/vnd.google-apps.document": ["application/pdf", ".pdf"],
+    "application/vnd.google-apps.presentation": ["application/pdf", ".pdf"],
+    "application/vnd.google-apps.drawing": ["application/pdf", ".pdf"],
+    "application/vnd.google-apps.spreadsheet": ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", ".xlsx"]
+  };
+
+  function driveDownload(doc) {
+    if (!doc || !doc.id) return Promise.reject(new Error("no_file"));
+    return driveAccessToken().then(function (token) {
+      var exp = GOOGLE_EXPORT[doc.mimeType];
+      var url = exp
+        ? "https://www.googleapis.com/drive/v3/files/" + encodeURIComponent(doc.id) + "/export?mimeType=" + encodeURIComponent(exp[0])
+        : "https://www.googleapis.com/drive/v3/files/" + encodeURIComponent(doc.id) + "?alt=media";
+      return fetch(url, { headers: { Authorization: "Bearer " + token } }).then(function (r) {
+        if (!r.ok) throw new Error("drive_download_" + r.status);
+        return r.blob();
+      }).then(function (blob) {
+        var name = String(doc.name || "drive-file");
+        if (exp && name.slice(-exp[1].length).toLowerCase() !== exp[1]) name += exp[1];
+        try { return new File([blob], name, { type: blob.type || (exp ? exp[0] : doc.mimeType) || "application/octet-stream" }); }
+        catch (e) { blob.name = name; return blob; }
+      });
     });
   }
 
@@ -1936,6 +1969,7 @@
   app.addAttachmentLink = addAttachmentLink;
   app.driveAvailable = driveAvailable;
   app.pickFromDrive = pickFromDrive;
+  app.driveDownload = driveDownload;
   app.attachDriveFiles = attachDriveFiles;
   app.attachmentUrl = attachmentUrl;
   app.deleteAttachment = deleteAttachment;

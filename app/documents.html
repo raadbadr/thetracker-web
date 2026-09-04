@@ -744,6 +744,7 @@
           <p data-i18n="docDropHint">اسحب الملف هنا أو اختره: مستند أو جدول</p>
           <button type="button" class="waitlist-btn" id="docChooseBtn" data-i18n="docChoose">اختيار ملف</button>
           <input type="file" id="docFile" accept=".pdf,.png,.jpg,.jpeg,.webp,.xlsx,.xlsm,.xls,.csv,.tsv,.txt,.json,application/pdf,image/*,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" hidden>
+          <button type="button" class="chat-option-btn" id="docDriveBtn" data-i18n="docDrive" hidden>اختيار من Google Drive</button>
           <button type="button" class="chat-option-btn" id="docTemplateBtn" data-i18n="templateBtn">تنزيل القالب</button>
         </div>
         <p class="waitlist-msg" id="docStatus" role="status" aria-live="polite" hidden></p>
@@ -1015,6 +1016,8 @@
         docAddIntro: "ارفع أي ملف: مستند مثل السجل التجاري أو الشهادة الضريبية أو الرخصة أو صحيفة الدعوى فيقرأه النظام ويستخرج نوعه ورقمه وتاريخ انتهائه، أو جدول إكسل فتُستورد صفوفه عناصر لها مواعيد وتذكيرات.",
         docDropHint: "اسحب الملف هنا أو اختره: مستند أو جدول",
         docChoose: "اختيار ملف",
+        docDrive: "اختيار من Google Drive",
+        docDriveFailed: "تعذر جلب الملف من Google Drive.",
         docKind: "نوع المستند",
         docTitleField: "العنوان",
         docNumber: "رقم المستند",
@@ -1304,6 +1307,8 @@
         docAddIntro: "Upload any file: a document such as a commercial register, VAT certificate, licence or statement of claim is read and its type, number and expiry extracted; a spreadsheet has its rows imported as items with dates and reminders.",
         docDropHint: "Drop a file here or choose one: document or spreadsheet",
         docChoose: "Choose file",
+        docDrive: "Pick from Google Drive",
+        docDriveFailed: "Could not fetch the file from Google Drive.",
         docKind: "Document type",
         docTitleField: "Title",
         docNumber: "Document number",
@@ -1593,6 +1598,8 @@
         docAddIntro: "Importez n'importe quel fichier : un document comme un registre de commerce, un certificat de TVA, une licence ou une requête est lu et son type, son numéro et son échéance extraits ; un tableur voit ses lignes importées comme éléments avec dates et rappels.",
         docDropHint: "Déposez un fichier ici ou choisissez-en un : document ou tableur",
         docChoose: "Choisir un fichier",
+        docDrive: "Choisir depuis Google Drive",
+        docDriveFailed: "Impossible de récupérer le fichier depuis Google Drive.",
         docKind: "Type de document",
         docTitleField: "Titre",
         docNumber: "Numéro",
@@ -1882,6 +1889,8 @@
         docAddIntro: "کوئی بھی فائل اپ لوڈ کریں: تجارتی رجسٹر، ٹیکس سرٹیفکیٹ، لائسنس یا دعویٰ جیسی دستاویز پڑھی جاتی ہے اور اس کی قسم، نمبر اور تاریخ نکالی جاتی ہے؛ اسپریڈ شیٹ کی سطریں تاریخوں اور یاد دہانیوں کے ساتھ آئٹمز بن جاتی ہیں۔",
         docDropHint: "فائل یہاں چھوڑیں یا منتخب کریں: دستاویز یا اسپریڈ شیٹ",
         docChoose: "فائل چنیں",
+        docDrive: "گوگل ڈرائیو سے منتخب کریں",
+        docDriveFailed: "گوگل ڈرائیو سے فائل نہیں مل سکی۔",
         docKind: "دستاویز کی قسم",
         docTitleField: "عنوان",
         docNumber: "دستاویز نمبر",
@@ -2393,6 +2402,12 @@
         }).then(function (inserted) {
           var id = inserted && inserted[0] && inserted[0].id;
           if (!id) throw new Error("insert");
+          if (state.driveDoc) {
+            return app.attachDriveFiles(id, [state.driveDoc]).catch(function () {
+              setStatus(t("docFileFailed"), "error");
+              return null;
+            });
+          }
           return app.uploadAttachment(id, state.file).catch(function (err) {
             var code = String((err && (err.message || err.code)) || "");
             setStatus(code.indexOf("PLAN_LIMIT_STORAGE") !== -1 ? t("docStorageLimit") : t("docFileFailed"), "error");
@@ -2401,7 +2416,7 @@
         }).then(function () {
           setStatus(t("docSaved"), "success");
           show("docForm", false);
-          state.file = null; $("docFile").value = "";
+          state.file = null; state.driveDoc = null; $("docFile").value = "";
           return Promise.all([loadDocs(), loadPapers()]);
         }).catch(function () { setStatus(t("docFailed"), "error"); })
           .finally(function () { btn.disabled = false; });
@@ -2512,17 +2527,41 @@
 
       function wire() {
         $("docChooseBtn").addEventListener("click", function () { $("docFile").click(); });
+
+        /* Google Drive: الملف يبقى في درايف المستخدم، ننزله ليقرأه المحلل ونربط رابطه بالعنصر. */
+        function syncDriveBtn() {
+          var b = $("docDriveBtn");
+          if (b) b.hidden = !(app && app.driveAvailable && app.driveAvailable());
+        }
+        document.addEventListener("tracker:drive", syncDriveBtn);
+        syncDriveBtn();
+        $("docDriveBtn").addEventListener("click", function () {
+          var btn = this; btn.disabled = true;
+          setStatus(t("docReading"));
+          app.pickFromDrive({ multi: false }).then(function (docs) {
+            var picked = docs && docs[0];
+            if (!picked) throw new Error("cancelled");
+            return app.driveDownload(picked).then(function (file) {
+              state.driveDoc = picked;
+              handleFile(file);
+            });
+          }).catch(function (err) {
+            state.driveDoc = null;
+            setStatus(String((err && err.message) || "") === "cancelled" ? "" : t("docDriveFailed"),
+                      String((err && err.message) || "") === "cancelled" ? "" : "error");
+          }).finally(function () { btn.disabled = false; });
+        });
         $("docTemplateBtn").addEventListener("click", function (e) {
           e.stopPropagation();
           if (window.trackerImport && window.trackerImport.template) window.trackerImport.template();
         });
-        $("docFile").addEventListener("change", function () { handleFile(this.files && this.files[0]); });
+        $("docFile").addEventListener("change", function () { state.driveDoc = null; handleFile(this.files && this.files[0]); });
         var dz = $("docDrop");
         dz.addEventListener("dragover", function (e) { e.preventDefault(); dz.classList.add("is-over"); });
         dz.addEventListener("dragleave", function () { dz.classList.remove("is-over"); });
         dz.addEventListener("drop", function (e) { e.preventDefault(); dz.classList.remove("is-over"); handleFile(e.dataTransfer.files && e.dataTransfer.files[0]); });
         $("docForm").addEventListener("submit", save);
-        $("docCancelBtn").addEventListener("click", function () { show("docForm", false); state.file = null; $("docFile").value = ""; setStatus(""); });
+        $("docCancelBtn").addEventListener("click", function () { show("docForm", false); state.file = null; state.driveDoc = null; $("docFile").value = ""; setStatus(""); });
         $("filterKind").addEventListener("change", function () { state.kind = this.value; render(); });
         $("filterSearch").addEventListener("input", function () { state.search = this.value.trim(); render(); });
         $("papersBody").addEventListener("click", function (e) {
