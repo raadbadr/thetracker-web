@@ -2086,7 +2086,7 @@
         var ids = Object.keys(people);
         var html = '<table class="raci-table"><thead><tr><th>' + esc(t("stepTitle")) + "</th>" + ids.map(function (id) { return "<th>" + esc(name(id)) + "</th>"; }).join("") + "</tr></thead><tbody>";
         (p.steps || []).forEach(function (s, i) {
-          html += "<tr><td>" + (i + 1) + ". " + esc(s.title) + "</td>" + ids.map(function (id) {
+          html += "<tr><td>" + (i + 1) + '. <span data-tr>' + esc(s.title) + "</span></td>" + ids.map(function (id) {
             var letters = ["R","A","C","I"].filter(function (k) { return s[k] === id; });
             return "<td>" + letters.map(function (k) { return '<span class="raci-badge raci-' + k + '">' + k + "</span>"; }).join(" ") + "</td>";
           }).join("") + "</tr>";
@@ -2095,11 +2095,13 @@
         var flow = "";
         (p.steps || []).forEach(function (s, i) {
           var who = ["R","A"].map(function (k) { return s[k] ? k + ": " + name(s[k]) : ""; }).filter(Boolean).join(" · ");
-          flow += '<div class="flow-node ' + (s.type === "decision" ? "decision" : "") + '"><strong>' + (i + 1) + ". " + esc(s.title || "") + "</strong>" + (who ? '<span class="role">' + esc(who) + "</span>" : "") +
+          flow += '<div class="flow-node ' + (s.type === "decision" ? "decision" : "") + '"><strong>' + (i + 1) + '. <span data-tr>' + esc(s.title || "") + "</span></strong>" + (who ? '<span class="role">' + esc(who) + "</span>" : "") +
                   (s.type === "decision" ? '<span class="role flow-branch">' + esc(t("yes")) + " → " + esc(s.yesTarget || "-") + " · " + esc(t("no")) + " → " + esc(s.noTarget || "-") + "</span>" : "") + "</div>";
           if (i < p.steps.length - 1) flow += '<div class="flow-arrow"></div>';
         });
         $("flow").innerHTML = flow || '<p class="empty-note">' + esc(t("noSteps")) + "</p>";
+        /* نداء واحد للتفاصيل كلها: الخطوات نص حر يقرؤه كل عضو بلغته */
+        if (app && app.translateNodes) app.translateNodes($("detailCard") || $("flow"));
         state.current = p;
         show("listCard", false); show("editorCard", false); show("detailCard", true);
       }
