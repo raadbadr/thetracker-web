@@ -5,6 +5,7 @@
  */
 
 import { handleAssistantRequest, askAssistant } from "./assistant.js";
+import { handleTranslate } from "./translate.js";
 import { handleCalendar } from "./calendar.js";
 import { handleDocumentAnalyze } from "./documents.js";
 import { runNotificationCron, linkChannelByCode, notifyTarget, sendTelegram, sendWhatsapp, sendSms, sendEmail, rpc, t as channelText,
@@ -747,6 +748,13 @@ export default {
         if (!docUser) return json({ error: "unauthorized" }, 401);
         if (tgAiRateLimited("doc:" + docUser.id)) return json({ error: "rate_limited" }, 429);
         return await handleDocumentAnalyze(request, env);
+      }
+      if (path === "/api/translate" && request.method === "POST") {
+        /* ترجمة العرض: جلسة مستخدم + حد معدل، والنتائج تُخزن مؤقتا في القاعدة */
+        const trUser = await authedUser(request, env);
+        if (!trUser) return json({ error: "unauthorized" }, 401);
+        if (tgAiRateLimited("tr:" + trUser.id)) return json({ error: "rate_limited" }, 429);
+        return await handleTranslate(request, env);
       }
       if (path === "/api/client-error" && request.method === "POST") {
         /* تقارير إقلاع الواجهة: تُسجَّل في سجل الـ Worker فقط (wrangler tail)، لا تُخزَّن ولا تحمل بيانات شخصية */

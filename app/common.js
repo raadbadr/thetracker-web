@@ -1104,6 +1104,104 @@
 
   /* يربط ملفات درايف المختارة بعنصر: صف مرفق لكل ملف برابطه (بلا رفع) */
   /* ------------------------------------------------------------
+   * ترجمة العرض التلقائية (أمر المهندس رعد): نص حر كتبه مستخدم بلغة يظهر لغيره بلغة واجهته.
+   * الصفحة تضع data-tr على عناصر النص الحر وتنادي app.translateNodes(container) بعد كل رسم.
+   * لا يُرسل شيء حين تتطابق لغة النص مع لغة الواجهة أو حين يكون النص أرقاما ورموزا فقط.
+   * ------------------------------------------------------------ */
+  var TR_MEM = {};
+  var TR_PREFIX = "tracker_tr:";
+  var TR_MAX_LOCAL = 400;
+  function trScript(text) {
+    var t = String(text || "");
+    if (!/[A-Za-z\u00C0-\u024F\u0600-\u06FF]/.test(t)) return "none";
+    var ar = (t.match(/[\u0600-\u06FF]/g) || []).length, la = (t.match(/[A-Za-z\u00C0-\u024F]/g) || []).length;
+    if (ar >= la) return /[ٹڈڑںھہۃیےۓکگ]/.test(t) ? "ur" : "ar";
+    return "latin";
+  }
+  function trNeeded(text, target) {
+    var sc = trScript(text);
+    if (sc === "none") return false;
+    if (sc === "latin") return target === "ar" || target === "ur";   /* إنجليزي/فرنسي لا يُفرَّق بينهما من الحروف: لا يُترجم بينهما */
+    return sc !== target;
+  }
+  function trKey(text, target) {
+    var h = 5381, str = target + "\n" + text;
+    for (var i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0;
+    return TR_PREFIX + target + ":" + (h >>> 0).toString(36) + ":" + str.length;
+  }
+  function trLocalGet(key) { if (TR_MEM[key]) return TR_MEM[key]; try { return localStorage.getItem(key); } catch (e) { return null; } }
+  function trLocalSet(key, value) {
+    TR_MEM[key] = value;
+    try {
+      var n = Number(localStorage.getItem(TR_PREFIX + "count") || 0);
+      if (n > TR_MAX_LOCAL) { Object.keys(localStorage).forEach(function (k) { if (k.indexOf(TR_PREFIX) === 0) localStorage.removeItem(k); }); n = 0; }
+      localStorage.setItem(key, value); localStorage.setItem(TR_PREFIX + "count", String(n + 1));
+    } catch (e) { /* التخزين محجوب */ }
+  }
+  var trPending = null;
+  function translateTexts(texts, target) {
+    target = target || lang();
+    var list = (texts || []).map(function (t) { return String(t == null ? "" : t); });
+    var out = list.slice();
+    var ask = [], askIdx = [];
+    list.forEach(function (t, i) {
+      var trimmed = t.trim();
+      if (!trimmed || !trNeeded(trimmed, target)) return;
+      var hit = trLocalGet(trKey(trimmed, target));
+      if (hit) { out[i] = hit; return; }
+      if (ask.indexOf(trimmed) === -1) ask.push(trimmed);
+      askIdx.push(i);
+    });
+    if (!ask.length) return Promise.resolve(out);
+    var auth = window.trackerAuth;
+    var session = auth && auth.getSession ? auth.getSession() : Promise.resolve(null);
+    var chunks = []; for (var c = 0; c < ask.length; c += 40) chunks.push(ask.slice(c, c + 40));
+    return Promise.resolve(session).then(function (sess) {
+      var headers = { "Content-Type": "application/json" };
+      if (sess && sess.access_token) headers.Authorization = "Bearer " + sess.access_token;
+      var map = {};
+      return chunks.reduce(function (p, chunk) {
+        return p.then(function () {
+          return fetch("/api/translate", { method: "POST", headers: headers, body: JSON.stringify({ texts: chunk, target: target }) })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (d) {
+              var tr = d && d.translations || [];
+              chunk.forEach(function (t, k) { if (tr[k] && tr[k] !== t) { map[t] = tr[k]; trLocalSet(trKey(t, target), tr[k]); } });
+            }).catch(function () { /* الشبكة أو الحد: يبقى النص الأصلي */ });
+        });
+      }, Promise.resolve()).then(function () {
+        askIdx.forEach(function (i) { var t = list[i].trim(); if (map[t]) out[i] = map[t]; });
+        return out;
+      });
+    });
+  }
+  /* يترجم كل [data-tr] داخل root (أو root نفسه) لغة العارض، ويحفظ الأصل في data-tr-original وفي title */
+  function translateNodes(root, target) {
+    target = target || lang();
+    root = root || document;
+    var nodes = [];
+    if (root !== document && root.matches && root.matches("[data-tr]")) nodes.push(root);
+    (root.querySelectorAll ? root.querySelectorAll("[data-tr]") : []).forEach(function (el) { nodes.push(el); });
+    nodes = nodes.filter(function (el) { return el.dataset.trDone !== target; });
+    if (!nodes.length) return Promise.resolve(0);
+    var originals = nodes.map(function (el) { return el.dataset.trOriginal !== undefined ? el.dataset.trOriginal : el.textContent; });
+    return translateTexts(originals, target).then(function (tr) {
+      var changed = 0;
+      nodes.forEach(function (el, i) {
+        var original = originals[i];
+        el.dataset.trOriginal = original;
+        el.dataset.trDone = target;
+        if (tr[i] && tr[i] !== original) {
+          el.textContent = tr[i]; el.title = original; el.classList.add("is-translated"); el.setAttribute("dir", "auto"); changed++;
+        } else if (el.dataset.trOriginal !== undefined && el.textContent !== original) {
+          el.textContent = original; el.removeAttribute("title"); el.classList.remove("is-translated");
+        }
+      });
+      return changed;
+    });
+  }
+
+  /* ------------------------------------------------------------
    * التخزين في Google Drive الخاص بالمستخدم (خيار؛ الافتراضي تخزين المنصة)
    * الرفع يحتاج رمز OAuth فقط (drive.file) ولا يحتاج مفتاح Picker.
    * ------------------------------------------------------------ */
@@ -1279,11 +1377,19 @@
     }, Promise.resolve()).then(function () { return list.length; });
   }
 
-  function attachmentUrl(att) {
+  /* رابط المرفق: للعرض (افتراضي) أو للتنزيل الحقيقي ({download:true|اسم الملف}):
+     تخزين المنصة يرسل Content-Disposition: attachment من الخادم نفسه (سمة download لا تعمل عبر النطاقات)،
+     وملف درايف يُحمَّل من uc?export=download بمعرّفه، وإلا يُفتح في عارض درايف. */
+  function attachmentUrl(att, opts) {
     if (!att) return Promise.resolve(null);
-    if (att.external_url) return Promise.resolve(att.external_url);
+    var download = opts && opts.download;
+    if (att.external_url) {
+      if (download && att.drive_file_id) return Promise.resolve("https://drive.google.com/uc?export=download&id=" + encodeURIComponent(att.drive_file_id));
+      return Promise.resolve(att.external_url);
+    }
     return run(function (client) {
-      return client.storage.from(ATTACH_BUCKET).createSignedUrl(att.storage_path, 300).then(function (res) {
+      var options = download ? { download: typeof download === "string" ? download : (att.name || true) } : undefined;
+      return client.storage.from(ATTACH_BUCKET).createSignedUrl(att.storage_path, 300, options).then(function (res) {
         if (res && res.error) throw res.error;
         return res.data ? res.data.signedUrl : null;
       });
@@ -2558,6 +2664,8 @@
   app.addAttachmentLink = addAttachmentLink;
   app.driveAvailable = driveAvailable;
   app.driveOAuthAvailable = driveOAuthAvailable;
+  app.translateTexts = translateTexts;
+  app.translateNodes = translateNodes;
   app.storageMode = storageMode;
   app.connectDrive = driveAccessToken;
   /* مجلد درايف الخاص بالشركة الحالية: ينشأ إن لم يوجد، ويعاد معرفه ورابطه لعرضه في الإعدادات */
