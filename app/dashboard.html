@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://cloudflareinsights.com; worker-src 'self' blob:;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://static.cloudflareinsights.com https://accounts.google.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://cloudflareinsights.com https://accounts.google.com https://www.googleapis.com https://apis.google.com; frame-src https://accounts.google.com https://docs.google.com https://drive.google.com; worker-src 'self' blob:;">
   <meta name="theme-color" content="#1a2933" id="themeColorMeta">
   <meta name="robots" content="noindex">
   <link rel="icon" href="/favicon.ico">
@@ -589,7 +589,7 @@
     /* المرفقات */
     .attach-block { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--glass-border); }
     .attach-title { margin: 0 0 0.75rem; font-size: 0.95rem; color: var(--text-secondary); }
-    .attach-actions { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0.6rem; align-items: center; }
+    .attach-actions { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; gap: 0.6rem; align-items: center; }
     @media (max-width: 720px) { .attach-actions { grid-template-columns: 1fr; } }
     .attach-upload { cursor: pointer; text-align: center; white-space: nowrap; }
     .attach-list { display: grid; gap: 0.5rem; margin-top: 0.9rem; }
@@ -956,6 +956,7 @@
                 <span data-i18n="attachUpload">رفع ملف (PDF أو Word)</span>
                 <input type="file" id="attachFile" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.webp,.txt" hidden>
               </label>
+              <button type="button" class="chat-option-btn" id="attachDriveBtn" data-i18n="attachDrive" hidden>اختيار من Google Drive</button>
               <input type="url" class="waitlist-input" id="attachLink" placeholder="أو الصق رابط جوجل درايف" data-i18n-placeholder="attachLinkPlaceholder" dir="ltr">
               <button type="button" class="chat-option-btn" id="attachLinkBtn" data-i18n="attachLinkBtn">إضافة الرابط</button>
             </div>
@@ -1164,6 +1165,7 @@
         totalOverdue: "تجاوزت موعد السداد",
         sar: "ر.س",
         attachTitle: "المرفقات",
+        attachDrive: "اختيار من Google Drive",
         attachUpload: "رفع ملف (PDF أو Word)",
         attachLinkPlaceholder: "أو الصق رابط جوجل درايف",
         attachLinkBtn: "إضافة الرابط",
@@ -1375,6 +1377,7 @@
         totalOverdue: "Past due",
         sar: "SAR",
         attachTitle: "Attachments",
+        attachDrive: "Pick from Google Drive",
         attachUpload: "Upload a file (PDF or Word)",
         attachLinkPlaceholder: "Or paste a Google Drive link",
         attachLinkBtn: "Add link",
@@ -1586,6 +1589,7 @@
         totalOverdue: "En retard",
         sar: "SAR",
         attachTitle: "Pièces jointes",
+        attachDrive: "Choisir dans Google Drive",
         attachUpload: "Téléverser un fichier (PDF ou Word)",
         attachLinkPlaceholder: "Ou collez un lien Google Drive",
         attachLinkBtn: "Ajouter le lien",
@@ -1797,6 +1801,7 @@
         totalOverdue: "مدت گزر گئی",
         sar: "ریال",
         attachTitle: "منسلکات",
+        attachDrive: "گوگل ڈرائیو سے چنیں",
         attachUpload: "فائل اپ لوڈ کریں (PDF یا Word)",
         attachLinkPlaceholder: "یا گوگل ڈرائیو لنک چسپاں کریں",
         attachLinkBtn: "لنک شامل کریں",
@@ -3376,6 +3381,24 @@
             var code = String((err && (err.message || err.code)) || "");
             setMsg("attachMsg", code.indexOf("PLAN_LIMIT_STORAGE") !== -1 ? T("attachLimit") : T("attachFailed"), "error");
           }).finally(function () { fileInput.value = ""; });
+        });
+
+        var driveBtn = $("attachDriveBtn");
+        function syncDriveBtn() { if (driveBtn) driveBtn.hidden = !(app.driveAvailable && app.driveAvailable()); }
+        syncDriveBtn();
+        document.addEventListener("tracker:drive", syncDriveBtn);
+        if (driveBtn) driveBtn.addEventListener("click", function () {
+          if (!state.editing) return;
+          setMsg("attachMsg", T("attachUploading"));
+          app.pickFromDrive().then(function (docs) {
+            return app.attachDriveFiles(state.editing.id, docs);
+          }).then(function (n) {
+            setMsg("attachMsg", n ? T("attachDone") : "", n ? "success" : "");
+            return loadAttachments();
+          }).catch(function (err) {
+            if (String(err && err.message) === "cancelled") { clearMsg("attachMsg"); return; }
+            setMsg("attachMsg", T("attachFailed"), "error");
+          });
         });
 
         var linkBtn = $("attachLinkBtn");

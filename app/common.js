@@ -638,6 +638,91 @@
     });
   }
 
+  /* ---------- Google Drive: اختيار ملف من درايف المستخدم وربطه بالعنصر ----------
+     يعمل عبر Google Picker بصلاحية drive.file (غير حساسة): المستخدم يختار الملف
+     بنفسه، ونخزّن رابطه واسمه فقط؛ الملف يبقى في درايفه. */
+  var DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
+  var driveConfig = { clientId: null, apiKey: null };
+  var driveToken = null;
+
+  function driveAvailable() { return !!(driveConfig.clientId && driveConfig.apiKey); }
+
+  function loadScriptOnce(src, test) {
+    return new Promise(function (resolve, reject) {
+      if (test()) { resolve(); return; }
+      var el = document.createElement("script");
+      el.src = src; el.async = true;
+      el.onload = function () { resolve(); };
+      el.onerror = function () { reject(new Error("load_failed")); };
+      document.head.appendChild(el);
+    });
+  }
+
+  function driveAccessToken() {
+    if (driveToken && driveToken.expires > Date.now()) return Promise.resolve(driveToken.token);
+    return loadScriptOnce("https://accounts.google.com/gsi/client", function () { return !!(window.google && window.google.accounts && window.google.accounts.oauth2); })
+      .then(function () {
+        return new Promise(function (resolve, reject) {
+          var tc = window.google.accounts.oauth2.initTokenClient({
+            client_id: driveConfig.clientId,
+            scope: DRIVE_SCOPE,
+            callback: function (resp) {
+              if (!resp || !resp.access_token) { reject(new Error("no_token")); return; }
+              driveToken = { token: resp.access_token, expires: Date.now() + (Number(resp.expires_in) || 3000) * 1000 - 60000 };
+              resolve(resp.access_token);
+            },
+            error_callback: function () { reject(new Error("denied")); }
+          });
+          tc.requestAccessToken({ prompt: driveToken ? "" : "consent" });
+        });
+      });
+  }
+
+  function pickFromDrive() {
+    if (!driveAvailable()) return Promise.reject(new Error("drive_unavailable"));
+    return driveAccessToken().then(function (token) {
+      return loadScriptOnce("https://apis.google.com/js/api.js", function () { return !!window.gapi; })
+        .then(function () { return new Promise(function (resolve) { window.gapi.load("picker", { callback: resolve }); }); })
+        .then(function () {
+          return new Promise(function (resolve, reject) {
+            var view = new window.google.picker.DocsView(window.google.picker.ViewId.DOCS).setIncludeFolders(true).setSelectFolderEnabled(false);
+            var picker = new window.google.picker.PickerBuilder()
+              .setOAuthToken(token)
+              .setDeveloperKey(driveConfig.apiKey)
+              .setLocale(lang() === "ar" || lang() === "ur" ? "ar" : lang())
+              .addView(view)
+              .enableFeature(window.google.picker.Feature.MULTISELECT_ENABLED)
+              .setCallback(function (data) {
+                if (data.action === window.google.picker.Action.PICKED) resolve(data.docs || []);
+                else if (data.action === window.google.picker.Action.CANCEL) reject(new Error("cancelled"));
+              })
+              .build();
+            picker.setVisible(true);
+          });
+        });
+    });
+  }
+
+  /* يربط ملفات درايف المختارة بعنصر: صف مرفق لكل ملف برابطه (بلا رفع) */
+  function attachDriveFiles(itemId, docs) {
+    var list = (docs || []).filter(function (d) { return d && d.url; });
+    return list.reduce(function (p, d) {
+      return p.then(function () {
+        return run(function (client) {
+          var orgId = requireOrg();
+          return client.from("attachments").insert({
+            org_id: orgId, item_id: itemId || null,
+            name: String(d.name || "Google Drive").slice(0, 200),
+            mime: d.mimeType || null,
+            size_bytes: Number(d.sizeBytes) || 0,
+            external_url: d.url,
+            uploaded_by: app.user.id
+          }).then(unwrap);
+        });
+      });
+    }, Promise.resolve()).then(function () { return list.length; });
+  }
+
   function attachmentUrl(att) {
     if (!att) return Promise.resolve(null);
     if (att.external_url) return Promise.resolve(att.external_url);
@@ -1615,6 +1700,9 @@
   app.listAttachments = listAttachments;
   app.uploadAttachment = uploadAttachment;
   app.addAttachmentLink = addAttachmentLink;
+  app.driveAvailable = driveAvailable;
+  app.pickFromDrive = pickFromDrive;
+  app.attachDriveFiles = attachDriveFiles;
   app.attachmentUrl = attachmentUrl;
   app.deleteAttachment = deleteAttachment;
   app.storageUsed = storageUsed;
@@ -2139,6 +2227,18 @@
     var p = app.profile || {};
     return !!(String(p.full_name || "").trim() && String(p.phone || "").trim());
   }
+
+  (function fetchDriveConfig() {
+    try {
+      fetch("/api/config", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (cfg) {
+        if (!cfg) return;
+        driveConfig.clientId = cfg.googleClientId || null;
+        driveConfig.apiKey = cfg.googleApiKey || null;
+        document.documentElement.dataset.drive = driveAvailable() ? "1" : "0";
+        document.dispatchEvent(new CustomEvent("tracker:drive", { detail: { available: driveAvailable() } }));
+      }).catch(function () { /* بلا درايف */ });
+    } catch (e) { /* ignore */ }
+  })();
 
   function mountProfileGate() {
     if (document.getElementById("appProfileGate")) return;
