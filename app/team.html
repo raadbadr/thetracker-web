@@ -496,6 +496,85 @@
       background: var(--primary-light);
       color: var(--btn-ink);
     }
+    /* ---------- الدردشة: شاشة كاملة بنفس لغة النيومورفيك ---------- */
+    .chat-shell {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 1rem;
+      height: calc(100vh - 52px - 60px - 9rem);
+      min-height: 520px;
+    }
+    .content.chat-card { padding: 1.25rem; }
+    .chat-threads, .chat-pane {
+      display: flex; flex-direction: column; min-height: 0;
+      border-radius: 18px; border: 1px solid var(--glass-border); background: var(--glass);
+      box-shadow: 4px 4px 10px var(--shadow-dark), -4px -4px 10px var(--shadow-light);
+    }
+    .chat-threads-title {
+      padding: 0.9rem 1rem 0.5rem; font-size: 0.8rem; font-weight: 700; letter-spacing: .06em;
+      color: var(--text-secondary); text-transform: uppercase;
+    }
+    .chat-thread-list { overflow-y: auto; padding: 0 0.5rem 0.5rem; display: grid; gap: 0.35rem; align-content: start; }
+    .chat-thread {
+      display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 0.7rem; align-items: center;
+      width: 100%; padding: 0.6rem 0.7rem; border: 0; border-radius: 14px; background: transparent;
+      color: var(--text-secondary); font: inherit; text-align: start; cursor: pointer; transition: all .2s ease;
+    }
+    .chat-thread:hover { background: var(--glass-border); color: var(--text-primary); }
+    .chat-thread.is-active { background: var(--primary); color: var(--btn-ink); box-shadow: 0 6px 18px var(--primary-shadow); }
+    .chat-thread.is-active .chat-thread-sub, .chat-thread.is-active .chat-avatar { color: inherit; opacity: .85; }
+    .chat-avatar {
+      width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+      background: var(--glass-strong); border: 1px solid var(--glass-border); font-weight: 700; font-size: 0.95rem; color: var(--primary);
+    }
+    .chat-thread.is-active .chat-avatar { background: rgba(255,255,255,.2); border-color: transparent; }
+    .chat-thread-name { display: block; font-weight: 600; font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .chat-thread-sub { display: block; font-size: 0.75rem; opacity: .8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .chat-badge {
+      min-width: 22px; height: 22px; padding: 0 .45rem; border-radius: 11px; display: grid; place-items: center;
+      background: var(--error); color: #fff; font-size: 0.72rem; font-weight: 700;
+    }
+    .chat-thread.is-active .chat-badge { background: rgba(255,255,255,.25); }
+
+    .chat-head {
+      display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1.1rem;
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .chat-head-name { font-weight: 700; color: var(--text-primary); }
+    .chat-head-sub { font-size: 0.78rem; color: var(--text-secondary); }
+    .chat-live { margin-inline-start: auto; font-size: 0.75rem; color: var(--text-secondary); display: inline-flex; align-items: center; gap: .35rem; }
+    .chat-live::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--warning); }
+    .chat-live.is-on::before { background: var(--success); }
+
+    .chat-messages { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .chat-day { align-self: center; font-size: 0.72rem; color: var(--text-tertiary); padding: 0.15rem 0.7rem; border-radius: 10px; background: var(--glass-border); margin: 0.4rem 0; }
+    .chat-msg { max-width: min(72%, 640px); display: grid; gap: 0.15rem; }
+    .chat-msg.is-mine { align-self: flex-end; }
+    .chat-msg.is-theirs { align-self: flex-start; }
+    .chat-msg-author { font-size: 0.72rem; color: var(--text-secondary); padding: 0 .4rem; }
+    .chat-bubble {
+      padding: 0.6rem 0.9rem; border-radius: 18px; line-height: 1.6; font-size: 0.95rem;
+      white-space: pre-wrap; overflow-wrap: anywhere; color: var(--text-primary);
+      background: var(--glass-strong); border: 1px solid var(--glass-border);
+    }
+    .chat-msg.is-mine .chat-bubble { background: var(--primary); color: var(--btn-ink); border-color: transparent; }
+    .chat-msg-meta { display: flex; align-items: center; gap: 0.5rem; font-size: 0.7rem; color: var(--text-tertiary); padding: 0 .4rem; }
+    .chat-msg.is-mine .chat-msg-meta { justify-content: flex-end; }
+    .chat-msg-del { border: 0; background: transparent; color: inherit; font: inherit; font-size: 0.7rem; cursor: pointer; opacity: .7; padding: 0; }
+    .chat-msg-del:hover { opacity: 1; text-decoration: underline; }
+    .chat-empty { margin: auto; color: var(--text-tertiary); text-align: center; }
+
+    .chat-compose { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.6rem; align-items: end; padding: 0.75rem 1rem; border-top: 1px solid var(--glass-border); }
+    .chat-compose textarea { width: 100%; min-width: 0; resize: none; min-height: 46px; max-height: 160px; line-height: 1.5; }
+    .chat-compose .waitlist-btn { white-space: nowrap; height: 46px; }
+
+    @media (max-width: 860px) {
+      .chat-shell { grid-template-columns: 1fr; height: auto; min-height: 0; }
+      .chat-threads { max-height: 220px; }
+      .chat-pane { height: 70vh; min-height: 460px; }
+      .chat-msg { max-width: 88%; }
+    }
+    @media (prefers-reduced-motion: reduce) { .chat-thread, .waitlist-btn, .chat-option-btn { transition: none; } }
   </style>
 </head>
 <body class="has-site-header">
@@ -605,11 +684,31 @@
       <p id="unassignedEmpty" data-i18n="unassignedEmpty" hidden>كل الأعمال مُسندة.</p>
     </div>
 
-    <!-- الدردشة صارت شاشة كاملة -->
-    <div class="content" id="chatLinkCard" hidden>
+    <!-- الدردشة داخل الفريق -->
+    <div class="content chat-card" id="chatCard" hidden>
       <h2 data-i18n="chatTitle">تواصل الفريق</h2>
-      <p data-i18n="chatIntro">محادثة عامة للفريق كله، ومحادثات خاصة بينك وبين كل عضو، حية بلا تحديث.</p>
-      <p><a href="/app/chat.html" class="back-btn" data-i18n="chatOpen">افتح الدردشة</a></p>
+      <div class="chat-shell">
+        <aside class="chat-threads" aria-label="المحادثات">
+          <div class="chat-threads-title" data-i18n="chatThreads">المحادثات</div>
+          <div class="chat-thread-list" id="threadList" role="list"></div>
+        </aside>
+        <section class="chat-pane">
+          <div class="chat-head">
+            <span class="chat-avatar" id="paneAvatar">★</span>
+            <div>
+              <div class="chat-head-name" id="paneName"></div>
+              <div class="chat-head-sub" id="paneSub"></div>
+            </div>
+            <span class="chat-live" id="liveDot" data-i18n="chatOffline">يُعاد الاتصال...</span>
+          </div>
+          <div class="chat-messages" id="messages" aria-live="polite"></div>
+          <form class="chat-compose" id="composeForm" novalidate>
+            <textarea class="waitlist-input" id="chatInput" rows="1" maxlength="2000" placeholder="اكتب رسالتك... (Enter للإرسال، Shift+Enter لسطر جديد)" autocomplete="off"></textarea>
+            <button type="submit" class="waitlist-btn" id="sendBtn" data-i18n="chatSend">إرسال</button>
+          </form>
+        </section>
+      </div>
+      <p class="waitlist-msg error" id="chatError" hidden></p>
     </div>
 
     <div style="text-align: center; padding: 2rem;">
@@ -692,8 +791,20 @@
         unassign: "بلا صاحب",
         noDue: "بلا موعد",
         chatTitle: "تواصل الفريق",
-        chatIntro: "محادثة عامة للفريق كله، ومحادثات خاصة بينك وبين كل عضو، حية بلا تحديث.",
-        chatOpen: "افتح الدردشة",
+        chatThreads: "المحادثات",
+        chatTeam: "الفريق كله",
+        chatTeamHint: "اكتب للكل",
+        chatPrivate: "خاص",
+        chatPlaceholder: "اكتب رسالتك... (Enter للإرسال، Shift+Enter لسطر جديد)",
+        chatSend: "إرسال",
+        chatEmpty: "لا رسائل بعد.",
+        chatLoadError: "تعذّر تحميل الرسائل.",
+        chatDelete: "حذف",
+        chatConfirmDelete: "حذف هذه الرسالة؟",
+        chatUnread: "{n} جديدة",
+        chatToday: "اليوم",
+        chatLive: "متصل",
+        chatOffline: "يُعاد الاتصال...",
         invitationsTitle: "الدعوات المعلقة",
         invitationsEmpty: "لا توجد دعوات معلقة.",
         invitedOn: "أُضيفت في {date}",
@@ -776,8 +887,20 @@
         unassign: "Unassigned",
         noDue: "No due date",
         chatTitle: "Team chat",
-        chatIntro: "One conversation for the whole team, and a private one with each member, live without refreshing.",
-        chatOpen: "Open the chat",
+        chatThreads: "Conversations",
+        chatTeam: "Whole team",
+        chatTeamHint: "Everyone",
+        chatPrivate: "Private",
+        chatPlaceholder: "Write a message... (Enter to send, Shift+Enter for a new line)",
+        chatSend: "Send",
+        chatEmpty: "No messages yet.",
+        chatLoadError: "Could not load messages.",
+        chatDelete: "Delete",
+        chatConfirmDelete: "Delete this message?",
+        chatUnread: "{n} new",
+        chatToday: "Today",
+        chatLive: "Live",
+        chatOffline: "Reconnecting...",
         invitationsTitle: "Pending invitations",
         invitationsEmpty: "No pending invitations.",
         invitedOn: "added on {date}",
@@ -860,8 +983,20 @@
         unassign: "Non attribué",
         noDue: "Sans échéance",
         chatTitle: "Discussion d'équipe",
-        chatIntro: "Une conversation pour toute l'équipe, et une conversation privée avec chaque membre, en direct sans actualiser.",
-        chatOpen: "Ouvrir la discussion",
+        chatThreads: "Conversations",
+        chatTeam: "Toute l'équipe",
+        chatTeamHint: "À tous",
+        chatPrivate: "Privé",
+        chatPlaceholder: "Écrivez un message... (Entrée pour envoyer, Maj+Entrée pour une nouvelle ligne)",
+        chatSend: "Envoyer",
+        chatEmpty: "Aucun message.",
+        chatLoadError: "Impossible de charger les messages.",
+        chatDelete: "Supprimer",
+        chatConfirmDelete: "Supprimer ce message ?",
+        chatUnread: "{n} nouveau(x)",
+        chatToday: "Aujourd'hui",
+        chatLive: "En direct",
+        chatOffline: "Reconnexion...",
         invitationsTitle: "Invitations en attente",
         invitationsEmpty: "Aucune invitation en attente.",
         invitedOn: "ajoutée le {date}",
@@ -944,8 +1079,20 @@
         unassign: "بغیر ذمہ دار",
         noDue: "کوئی تاریخ نہیں",
         chatTitle: "ٹیم رابطہ",
-        chatIntro: "پوری ٹیم کے لیے ایک گفتگو، اور ہر رکن کے ساتھ نجی گفتگو، بغیر ریفریش کے لائیو۔",
-        chatOpen: "چیٹ کھولیں",
+        chatThreads: "گفتگوئیں",
+        chatTeam: "پوری ٹیم",
+        chatTeamHint: "سب کو",
+        chatPrivate: "نجی",
+        chatPlaceholder: "پیغام لکھیں... (Enter بھیجنے کے لیے، Shift+Enter نئی سطر)",
+        chatSend: "بھیجیں",
+        chatEmpty: "ابھی کوئی پیغام نہیں۔",
+        chatLoadError: "پیغامات لوڈ نہیں ہو سکے۔",
+        chatDelete: "حذف کریں",
+        chatConfirmDelete: "یہ پیغام حذف کریں؟",
+        chatUnread: "{n} نئے",
+        chatToday: "آج",
+        chatLive: "لائیو",
+        chatOffline: "دوبارہ جوڑا جا رہا ہے...",
         invitationsTitle: "زیرِ التوا دعوتیں",
         invitationsEmpty: "کوئی زیرِ التوا دعوت نہیں۔",
         invitedOn: "شامل کی گئی: {date}",
@@ -980,7 +1127,7 @@
     document.documentElement.lang = l;
     document.documentElement.dir = (l === "ar" || l === "ur") ? "rtl" : "ltr";
 
-    const placeholderKeys = { inviteEmail: "inviteEmailPlaceholder" };
+    const placeholderKeys = { inviteEmail: "inviteEmailPlaceholder", chatInput: "chatPlaceholder" };
     const ariaKeys = { inviteRole: "roleLabel" };
     function applyPlaceholders(code) {
       const dict = translations[code] || translations.ar;
@@ -1014,6 +1161,7 @@
       document.title = (translations[code] && translations[code].title ? translations[code].title : "Team") + " | TheTracker";
       if (typeof window.__trackerAuthRefresh === "function") window.__trackerAuthRefresh();
       if (typeof window.__teamRender === "function") window.__teamRender();
+      if (typeof window.__chatRender === "function") window.__chatRender();
     }
 
     function setTheme(th) {
@@ -1611,6 +1759,267 @@
         }).catch(function (err) {
           state.error = err;
           render();
+        });
+      }
+
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+      else boot();
+    })();
+  </script>
+  <script>
+    /* الدردشة داخل صفحة الفريق */
+    (function () {
+      "use strict";
+
+      var TEAM = "";                       /* معرّف محادثة الفريق كله */
+      var SEEN_KEY = "tracker_chat_seen";  /* آخر وقت قراءة لكل محادثة، في هذا المتصفح */
+      var POLL_MS = 15000;                 /* استقصاء احتياطي إن انقطع البث الحي */
+
+      var app = null;
+      var state = { members: [], messages: [], thread: TEAM, live: false, channel: null, poll: null, seen: {} };
+
+      function $(id) { return document.getElementById(id); }
+      function lang() { try { return localStorage.getItem("tracker_lang") || "ar"; } catch (e) { return "ar"; } }
+      function t(key) { var d = translations[lang()] || translations.ar; return d[key] || translations.ar[key] || key; }
+      function tf(key, vars) { var s = t(key); Object.keys(vars || {}).forEach(function (k) { s = s.split("{" + k + "}").join(String(vars[k])); }); return s; }
+      function esc(s) {
+        if (app && typeof app.escapeHtml === "function") return app.escapeHtml(s);
+        return String(s === null || s === undefined ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      }
+      function show(id, on) { var el = $(id); if (el) el.hidden = !on; }
+      function toast(m, k) { if (app && app.toast) app.toast(m, k); }
+      function me() { return app && app.user ? app.user.id : null; }
+
+      function memberById(id) { for (var i = 0; i < state.members.length; i++) if (state.members[i].user_id === id) return state.members[i]; return null; }
+      function nameOf(id) { var m = memberById(id); if (!m) return "-"; var p = m.profiles || {}; return p.full_name || p.email || m.invited_email || "-"; }
+      function initials(name) { var parts = String(name || "").trim().split(/\s+/); return (parts[0] ? parts[0].charAt(0) : "") + (parts[1] ? parts[1].charAt(0) : ""); }
+
+      function loadSeen() { try { state.seen = JSON.parse(localStorage.getItem(SEEN_KEY) || "{}") || {}; } catch (e) { state.seen = {}; } }
+      function markSeen(thread) {
+        state.seen[thread || TEAM] = new Date().toISOString();
+        try { localStorage.setItem(SEEN_KEY, JSON.stringify(state.seen)); } catch (e) { /* التخزين محجوب */ }
+      }
+
+      /* أي محادثة تخص هذه الرسالة؟ الفريق كله، أو الطرف الآخر في محادثة خاصة. */
+      function threadOf(msg) {
+        if (!msg.to_user_id) return TEAM;
+        return msg.author_id === me() ? msg.to_user_id : msg.author_id;
+      }
+
+      function unreadCount(thread) {
+        var since = state.seen[thread || TEAM] || "";
+        var n = 0;
+        state.messages.forEach(function (m) {
+          if (threadOf(m) !== thread) return;
+          if (m.author_id === me()) return;
+          if (!since || m.created_at > since) n++;
+        });
+        return n;
+      }
+
+      function lastMessage(thread) {
+        var last = null;
+        state.messages.forEach(function (m) { if (threadOf(m) === thread && (!last || m.created_at > last.created_at)) last = m; });
+        return last;
+      }
+
+      /* ---------- المحادثات ---------- */
+
+      function renderThreads() {
+        var list = $("threadList");
+        var rows = [{ id: TEAM, name: t("chatTeam"), sub: t("chatTeamHint"), star: true }];
+        state.members.forEach(function (m) {
+          if (m.user_id === me()) return;
+          rows.push({ id: m.user_id, name: nameOf(m.user_id), sub: t("chatPrivate") });
+        });
+        list.innerHTML = rows.map(function (r) {
+          var last = lastMessage(r.id);
+          var sub = last ? (last.author_id === me() ? "" : "") + String(last.body || "").replace(/\s+/g, " ").slice(0, 60) : r.sub;
+          var unread = unreadCount(r.id);
+          return '<button type="button" class="chat-thread' + (state.thread === r.id ? " is-active" : "") + '" data-thread="' + esc(r.id) + '" role="listitem">' +
+                   '<span class="chat-avatar">' + (r.star ? "★" : esc(initials(r.name).toUpperCase())) + "</span>" +
+                   "<span><span class=\"chat-thread-name\">" + esc(r.name) + "</span><span class=\"chat-thread-sub\">" + esc(sub) + "</span></span>" +
+                   (unread ? '<span class="chat-badge" aria-label="' + esc(tf("chatUnread", { n: unread })) + '">' + unread + "</span>" : "<span></span>") +
+                 "</button>";
+        }).join("");
+      }
+
+      function renderHead() {
+        var isTeam = state.thread === TEAM;
+        $("paneAvatar").textContent = isTeam ? "★" : initials(nameOf(state.thread)).toUpperCase();
+        $("paneName").textContent = isTeam ? t("chatTeam") : nameOf(state.thread);
+        $("paneSub").textContent = isTeam ? t("chatTeamHint") : t("chatPrivate");
+      }
+
+      function dayKey(iso) { var d = new Date(iso); return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate(); }
+      function dayLabel(iso) {
+        var d = new Date(iso), now = new Date();
+        if (dayKey(iso) === dayKey(now.toISOString())) return t("chatToday");
+        return app && app.fmtDate ? app.fmtDate(iso) : d.toLocaleDateString();
+      }
+      function timeLabel(iso) {
+        try { return new Intl.DateTimeFormat(lang() === "ar" ? "ar-SA-u-nu-latn" : lang(), { hour: "2-digit", minute: "2-digit" }).format(new Date(iso)); }
+        catch (e) { return ""; }
+      }
+
+      function renderMessages() {
+        var box = $("messages");
+        var mine = me();
+        var rows = state.messages.filter(function (m) { return threadOf(m) === state.thread; })
+          .sort(function (a, b) { return a.created_at < b.created_at ? -1 : 1; });
+        if (!rows.length) { box.innerHTML = '<p class="chat-empty">' + esc(t("chatEmpty")) + "</p>"; return; }
+        var html = "", lastDay = "";
+        var canManage = app && app.role && (app.role() === "owner" || app.role() === "admin");
+        rows.forEach(function (m) {
+          var dk = dayKey(m.created_at);
+          if (dk !== lastDay) { html += '<div class="chat-day">' + esc(dayLabel(m.created_at)) + "</div>"; lastDay = dk; }
+          var isMine = m.author_id === mine;
+          var del = (isMine || canManage) ? '<button type="button" class="chat-msg-del" data-del="' + esc(m.id) + '">' + esc(t("chatDelete")) + "</button>" : "";
+          html += '<div class="chat-msg ' + (isMine ? "is-mine" : "is-theirs") + '">' +
+                    (!isMine && state.thread === TEAM ? '<span class="chat-msg-author">' + esc(nameOf(m.author_id)) + "</span>" : "") +
+                    '<div class="chat-bubble">' + esc(m.body || "") + "</div>" +
+                    '<div class="chat-msg-meta"><span>' + esc(timeLabel(m.created_at)) + "</span>" + del + "</div>" +
+                  "</div>";
+        });
+        box.innerHTML = html;
+        box.scrollTop = box.scrollHeight;
+      }
+
+      function render() {
+        renderThreads();
+        renderHead();
+        renderMessages();
+        var live = $("liveDot");
+        live.textContent = t(state.live ? "chatLive" : "chatOffline");
+        live.classList.toggle("is-on", !!state.live);
+        var input = $("chatInput");
+        if (input) input.placeholder = t("chatPlaceholder");
+      }
+      window.__chatRender = render;
+
+      function openThread(id) {
+        state.thread = id || TEAM;
+        markSeen(state.thread);
+        render();
+        $("chatInput").focus();
+        /* تنبيهات الجرس عن هذه المحادثة تُعلَّم مقروءة */
+        if (app && app.markChatRead) app.markChatRead(state.thread === TEAM ? null : state.thread).catch(function () {});
+      }
+
+      /* ---------- البيانات ---------- */
+
+      function load() {
+        return Promise.all([app.listMembers(), app.listTeamMessages(500)]).then(function (res) {
+          state.members = res[0] || [];
+          state.messages = res[1] || [];
+          
+          show("chatCard", true);
+          markSeen(state.thread);
+          render();
+        });
+      }
+
+      function refresh() {
+        return app.listTeamMessages(500).then(function (rows) {
+          state.messages = rows || [];
+          render();
+        }).catch(function () { /* الاستقصاء ليس حرجاً */ });
+      }
+
+      function upsert(msg) {
+        for (var i = 0; i < state.messages.length; i++) if (state.messages[i].id === msg.id) { state.messages[i] = msg; return; }
+        state.messages.push(msg);
+      }
+
+      /* البث الحي عبر Supabase Realtime؛ وإن تعذّر، استقصاء كل 15 ثانية. */
+      function subscribe() {
+        var client = app.client;
+        if (!client || typeof client.channel !== "function") { startPolling(); return; }
+        var orgId = app.org.id;
+        state.channel = client.channel("team_messages:" + orgId)
+          .on("postgres_changes", { event: "INSERT", schema: "public", table: "team_messages", filter: "org_id=eq." + orgId }, function (payload) {
+            var msg = payload.new;
+            if (!msg) return;
+            /* الخصوصية تُطبَّق في القاعدة، وهنا نحترمها مرة أخرى احتياطاً */
+            if (msg.to_user_id && msg.to_user_id !== me() && msg.author_id !== me()) return;
+            upsert(msg);
+            if (threadOf(msg) === state.thread) markSeen(state.thread);
+            render();
+          })
+          .on("postgres_changes", { event: "DELETE", schema: "public", table: "team_messages", filter: "org_id=eq." + orgId }, function (payload) {
+            var old = payload.old || {};
+            state.messages = state.messages.filter(function (m) { return m.id !== old.id; });
+            render();
+          })
+          .subscribe(function (status) {
+            state.live = status === "SUBSCRIBED";
+            if (state.live) stopPolling(); else startPolling();
+            render();
+          });
+      }
+
+      function startPolling() { if (!state.poll) state.poll = setInterval(refresh, POLL_MS); }
+      function stopPolling() { if (state.poll) { clearInterval(state.poll); state.poll = null; } }
+
+      /* ---------- الإرسال ---------- */
+
+      function send(ev) {
+        if (ev) ev.preventDefault();
+        var input = $("chatInput");
+        var body = String(input.value || "").trim();
+        if (!body) return;
+        var btn = $("sendBtn");
+        btn.disabled = true;
+        var to = state.thread === TEAM ? null : state.thread;
+        app.sendTeamMessage(body, to, null).then(function (row) {
+          input.value = "";
+          autosize(input);
+          if (row) { upsert(row); markSeen(state.thread); render(); }
+        }).catch(function (err) {
+          $("chatError").textContent = err && err.message ? err.message : t("chatLoadError");
+          show("chatError", true);
+        }).finally(function () { btn.disabled = false; input.focus(); });
+      }
+
+      function autosize(el) { el.style.height = "auto"; el.style.height = Math.min(160, el.scrollHeight) + "px"; }
+
+      function boot() {
+        app = window.trackerApp || null;
+        loadSeen();
+        $("threadList").addEventListener("click", function (ev) {
+          var b = ev.target.closest("[data-thread]");
+          if (b) openThread(b.getAttribute("data-thread"));
+        });
+        $("composeForm").addEventListener("submit", send);
+        $("chatInput").addEventListener("keydown", function (ev) {
+          if (ev.key === "Enter" && !ev.shiftKey) { ev.preventDefault(); send(); }
+        });
+        $("chatInput").addEventListener("input", function () { autosize(this); });
+        $("messages").addEventListener("click", function (ev) {
+          var b = ev.target.closest("[data-del]");
+          if (!b) return;
+          if (!window.confirm(t("chatConfirmDelete"))) return;
+          var id = b.getAttribute("data-del");
+          app.deleteTeamMessage(id).then(function () {
+            state.messages = state.messages.filter(function (m) { return m.id !== id; });
+            render();
+          }).catch(function (err) { toast(err && err.message ? err.message : t("chatLoadError"), "error"); });
+        });
+
+        if (!app || !app.ready) {  return; }
+        app.ready.then(function (res) {
+          if (app.unavailable || (res && res.unavailable)) {  return; }
+          if (!app.org) {  return; }
+          try { var p = new URLSearchParams(window.location.search).get("with"); if (p) state.thread = p; } catch (e) { /* ignore */ }
+          return load().then(function () {
+            subscribe();
+            if (app.markChatRead) app.markChatRead(state.thread === TEAM ? null : state.thread).catch(function () {});
+          });
+        }).catch(function (err) {
+          
+          $("chatError").textContent = err && err.message ? err.message : t("chatLoadError");
+          show("chatError", true);
+          show("chatCard", true);
         });
       }
 
