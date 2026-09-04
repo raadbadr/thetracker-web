@@ -738,12 +738,13 @@
     <div id="docsView" hidden>
       <!-- (1) رفع مستند وفهمه -->
       <div class="content" id="uploadCard">
-        <h2 data-i18n="docAddTitle">إضافة مستند</h2>
-        <p data-i18n="docAddIntro">ارفع السجل التجاري أو الشهادة الضريبية أو الرخصة أو صحيفة الدعوى أو أي مستند (PDF أو صورة)، وسيقرأه النظام ويستخرج نوعه ورقمه وتاريخ انتهائه ويضيفه للمتابعة والتنبيه تلقائيا.</p>
+        <h2 data-i18n="docAddTitle">إضافة مستند أو جدول</h2>
+        <p data-i18n="docAddIntro">ارفع أي ملف: مستند مثل السجل التجاري أو الشهادة الضريبية أو الرخصة أو صحيفة الدعوى فيقرأه النظام ويستخرج نوعه ورقمه وتاريخ انتهائه، أو جدول إكسل فتُستورد صفوفه عناصر لها مواعيد وتذكيرات.</p>
         <div class="feature-card drop-zone" id="docDrop" tabindex="0" role="button">
-          <p data-i18n="docDropHint">اسحب المستند هنا أو اختر ملفا</p>
+          <p data-i18n="docDropHint">اسحب الملف هنا أو اختره: مستند أو جدول</p>
           <button type="button" class="waitlist-btn" id="docChooseBtn" data-i18n="docChoose">اختيار ملف</button>
-          <input type="file" id="docFile" accept=".pdf,.png,.jpg,.jpeg,.webp,application/pdf,image/*" hidden>
+          <input type="file" id="docFile" accept=".pdf,.png,.jpg,.jpeg,.webp,.xlsx,.xlsm,.xls,.csv,.tsv,.txt,.json,application/pdf,image/*,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" hidden>
+          <button type="button" class="chat-option-btn" id="docTemplateBtn" data-i18n="templateBtn">تنزيل القالب</button>
         </div>
         <p class="waitlist-msg" id="docStatus" role="status" aria-live="polite" hidden></p>
 
@@ -812,27 +813,15 @@
         </div>
         <p class="empty-note" id="docsEmpty" data-i18n="docsEmpty" hidden>لا مستندات بعد.</p>
       </div>
-      <!-- (4) استيراد إكسل — كان صفحة مستقلة ثم دُمج هنا -->
-      <div class="content" id="importIntroCard">
-        <h2 data-i18n="importTitle">استيراد من إكسل</h2>
-        <p class="waitlist-note" data-i18n="importIntro">ارفع كشف المخالفات أو الجلسات أو أي جدول، فتُقرأ صفوفه وتُحفظ عناصر لها مواعيد وتذكيرات.</p>
+      <!-- (4) خطوات الاستيراد تظهر تلقائيا حين يكون المرفوع جدولا -->
+    <div id="importFlow" hidden>
+        <!-- Step 1: file -->
+        <div class="content" id="step1" hidden>
+        <h2 data-i18n="step1Title">1. الملف</h2>
+        <p class="waitlist-msg" id="fileStatus" role="status" aria-live="polite" hidden></p>
       </div>
 
-      <div id="importFlow" hidden>
-        <!-- Step 1: file -->
-        <div class="content" id="step1">
-          <h2 data-i18n="step1Title">1. اختر الملف</h2>
-          <div class="feature-card drop-zone" id="dropZone" tabindex="0" role="button" aria-controls="fileInput">
-            <p class="platform-stat-label" data-i18n="dropTitle">اسحب الملف إلى هنا أو انقر لاختياره</p>
-            <p data-i18n="dropHint">xlsx · xls · csv · tsv · json</p>
-            <button type="button" class="waitlist-btn" id="chooseFileBtn" data-i18n="chooseFile">اختيار ملف</button>
-            <button type="button" class="chat-option-btn" id="templateBtn" data-i18n="templateBtn">تنزيل القالب</button>
-            <input type="file" id="fileInput" accept=".xlsx,.xlsm,.xls,.csv,.tsv,.txt,.json,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" hidden>
-          </div>
-          <p class="waitlist-msg" id="fileStatus" role="status" aria-live="polite" hidden></p>
-        </div>
-
-        <!-- Step 2: preview -->
+      <!-- Step 2: preview -->
         <div class="content" id="step2" hidden>
           <h2 data-i18n="step2Title">2. معاينة البيانات</h2>
           <div class="field stats-block" id="sheetRow" hidden>
@@ -1021,9 +1010,9 @@
         kind_lease_contract: "عقد إيجار",
         fCase: "القضية",
         title: "المستندات",
-        docAddTitle: "إضافة مستند",
-        docAddIntro: "ارفع السجل التجاري أو الشهادة الضريبية أو الرخصة أو صحيفة الدعوى أو أي مستند (PDF أو صورة)، وسيقرأه النظام ويستخرج نوعه ورقمه وتاريخ انتهائه ويضيفه للمتابعة والتنبيه تلقائيا.",
-        docDropHint: "اسحب المستند هنا أو اختر ملفا",
+        docAddTitle: "إضافة مستند أو جدول",
+        docAddIntro: "ارفع أي ملف: مستند مثل السجل التجاري أو الشهادة الضريبية أو الرخصة أو صحيفة الدعوى فيقرأه النظام ويستخرج نوعه ورقمه وتاريخ انتهائه، أو جدول إكسل فتُستورد صفوفه عناصر لها مواعيد وتذكيرات.",
+        docDropHint: "اسحب الملف هنا أو اختره: مستند أو جدول",
         docChoose: "اختيار ملف",
         docKind: "نوع المستند",
         docTitleField: "العنوان",
@@ -1084,6 +1073,11 @@
         kind_invoice: "فاتورة",
         kind_power_of_attorney: "وكالة",
         kind_id_document: "هوية / إقامة",
+        kind_passport: "جواز سفر",
+        kind_driving_license: "رخصة قيادة",
+        kind_vehicle_registration: "استمارة مركبة",
+        kind_insurance_policy: "وثيقة تأمين",
+        kind_employment_contract: "عقد عمل",
         kind_other: "مستند آخر",
         intro: "أضف أعضاء فريقك وحدد أدوارهم، وتابع الدعوات المعلقة.",
         backBtn: "العودة إلى لوحة التحكم",
@@ -1304,9 +1298,9 @@
         kind_lease_contract: "Lease contract",
         fCase: "Case",
         title: "Documents",
-        docAddTitle: "Add a document",
-        docAddIntro: "Upload a commercial register, VAT certificate, licence, statement of claim or any document (PDF or image); the system reads it, extracts its type, number and expiry, and adds it to tracking and reminders.",
-        docDropHint: "Drop the document here or choose a file",
+        docAddTitle: "Add a document or spreadsheet",
+        docAddIntro: "Upload any file: a document such as a commercial register, VAT certificate, licence or statement of claim is read and its type, number and expiry extracted; a spreadsheet has its rows imported as items with dates and reminders.",
+        docDropHint: "Drop a file here or choose one: document or spreadsheet",
         docChoose: "Choose file",
         docKind: "Document type",
         docTitleField: "Title",
@@ -1367,6 +1361,11 @@
         kind_invoice: "Invoice",
         kind_power_of_attorney: "Power of attorney",
         kind_id_document: "ID document",
+        kind_passport: "Passport",
+        kind_driving_license: "Driving licence",
+        kind_vehicle_registration: "Vehicle registration",
+        kind_insurance_policy: "Insurance policy",
+        kind_employment_contract: "Employment contract",
         kind_other: "Other document",
         intro: "Add your team members, set their roles, and follow up on pending invitations.",
         backBtn: "Back to Dashboard",
@@ -1587,9 +1586,9 @@
         kind_lease_contract: "Contrat de bail",
         fCase: "Affaire",
         title: "Documents",
-        docAddTitle: "Ajouter un document",
-        docAddIntro: "Téléversez un registre de commerce, une attestation TVA, une licence, une requête ou tout document (PDF ou image) ; le système le lit, en extrait le type, le numéro et l'échéance, et l'ajoute au suivi et aux rappels.",
-        docDropHint: "Déposez le document ici ou choisissez un fichier",
+        docAddTitle: "Ajouter un document ou un tableur",
+        docAddIntro: "Importez n'importe quel fichier : un document comme un registre de commerce, un certificat de TVA, une licence ou une requête est lu et son type, son numéro et son échéance extraits ; un tableur voit ses lignes importées comme éléments avec dates et rappels.",
+        docDropHint: "Déposez un fichier ici ou choisissez-en un : document ou tableur",
         docChoose: "Choisir un fichier",
         docKind: "Type de document",
         docTitleField: "Titre",
@@ -1650,6 +1649,11 @@
         kind_invoice: "Facture",
         kind_power_of_attorney: "Procuration",
         kind_id_document: "Pièce d'identité",
+        kind_passport: "Passeport",
+        kind_driving_license: "Permis de conduire",
+        kind_vehicle_registration: "Carte grise",
+        kind_insurance_policy: "Police d'assurance",
+        kind_employment_contract: "Contrat de travail",
         kind_other: "Autre document",
         intro: "Ajoutez les membres de votre équipe, définissez leurs rôles et suivez les invitations en attente.",
         backBtn: "Retour au tableau de bord",
@@ -1870,9 +1874,9 @@
         kind_lease_contract: "کرایہ نامہ",
         fCase: "مقدمہ",
         title: "دستاویزات",
-        docAddTitle: "دستاویز شامل کریں",
-        docAddIntro: "کمرشل رجسٹر، ٹیکس سرٹیفکیٹ، لائسنس، دعوی یا کوئی بھی دستاویز (PDF یا تصویر) اپ لوڈ کریں؛ نظام اسے پڑھ کر قسم، نمبر اور میعاد نکالتا ہے اور ٹریکنگ و یاد دہانی میں شامل کرتا ہے۔",
-        docDropHint: "دستاویز یہاں ڈالیں یا فائل چنیں",
+        docAddTitle: "دستاویز یا اسپریڈ شیٹ شامل کریں",
+        docAddIntro: "کوئی بھی فائل اپ لوڈ کریں: تجارتی رجسٹر، ٹیکس سرٹیفکیٹ، لائسنس یا دعویٰ جیسی دستاویز پڑھی جاتی ہے اور اس کی قسم، نمبر اور تاریخ نکالی جاتی ہے؛ اسپریڈ شیٹ کی سطریں تاریخوں اور یاد دہانیوں کے ساتھ آئٹمز بن جاتی ہیں۔",
+        docDropHint: "فائل یہاں چھوڑیں یا منتخب کریں: دستاویز یا اسپریڈ شیٹ",
         docChoose: "فائل چنیں",
         docKind: "دستاویز کی قسم",
         docTitleField: "عنوان",
@@ -1933,6 +1937,11 @@
         kind_invoice: "انوائس",
         kind_power_of_attorney: "مختار نامہ",
         kind_id_document: "شناختی دستاویز",
+        kind_passport: "پاسپورٹ",
+        kind_driving_license: "ڈرائیونگ لائسنس",
+        kind_vehicle_registration: "گاڑی کی رجسٹریشن",
+        kind_insurance_policy: "انشورنس پالیسی",
+        kind_employment_contract: "ملازمت کا معاہدہ",
         kind_other: "دیگر دستاویز",
         intro: "اپنی ٹیم کے اراکین شامل کریں، ان کے کردار طے کریں اور زیر التوا دعوتوں پر نظر رکھیں۔",
         backBtn: "ڈیش بورڈ پر واپس جائیں",
@@ -2185,7 +2194,7 @@
       var state = { items: [], attachments: {}, file: null, fields: null, tracker: null, kind: "", search: "", papers: null, pendingKind: null, wantedKind: null };
       var PDF_SRC = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
       var PDF_WORKER = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-      var KINDS = ["commercial_register","articles_of_association","bylaws","chamber_certificate","gosi_certificate","zakat_certificate","saudization_certificate","vat_certificate","license","lease_contract","contract","case_filing","court_ruling","hearing_notice","violation","invoice","power_of_attorney","id_document","other"];
+      var KINDS = ["commercial_register","articles_of_association","bylaws","chamber_certificate","gosi_certificate","zakat_certificate","saudization_certificate","vat_certificate","license","lease_contract","contract","case_filing","court_ruling","hearing_notice","violation","invoice","power_of_attorney","id_document","passport","driving_license","vehicle_registration","insurance_policy","employment_contract","other"];
       var TRACKER_NAME = { ar: "المستندات", en: "Documents", fr: "Documents", ur: "دستاویزات" };
 
       function $(id) { return document.getElementById(id); }
@@ -2264,8 +2273,29 @@
         }).then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error || "analyze"); return d.fields; }); });
       }
 
+      function isSheetFile(file) {
+        var ext = String(file.name || "").split(".").pop().toLowerCase();
+        var known = (window.trackerImport && window.trackerImport.extensions) || ["xlsx", "xlsm", "xls", "csv", "tsv", "txt", "json"];
+        return known.indexOf(ext) !== -1;
+      }
+
       function handleFile(file) {
         if (!file) return;
+        /* جدول بيانات يذهب إلى الاستيراد، والمستند يُقرأ ويُحفظ: منطقة رفع واحدة تكفي */
+        if (isSheetFile(file)) {
+          state.pendingKind = null;
+          setStatus("");
+          show("docForm", false);
+          if (window.trackerImport && window.trackerImport.accept) {
+            window.trackerImport.accept(file);
+            var flow = $("importFlow");
+            if (flow) { flow.hidden = false; try { flow.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) { /* ignore */ } }
+          } else {
+            setStatus(t("libMissing"), "error");
+          }
+          $("docFile").value = "";
+          return;
+        }
         state.file = file;
         var wantedKind = state.pendingKind; state.pendingKind = null;
         state.wantedKind = wantedKind;
@@ -2479,6 +2509,10 @@
 
       function wire() {
         $("docChooseBtn").addEventListener("click", function () { $("docFile").click(); });
+        $("docTemplateBtn").addEventListener("click", function (e) {
+          e.stopPropagation();
+          if (window.trackerImport && window.trackerImport.template) window.trackerImport.template();
+        });
         $("docFile").addEventListener("change", function () { handleFile(this.files && this.files[0]); });
         var dz = $("docDrop");
         dz.addEventListener("dragover", function (e) { e.preventDefault(); dz.classList.add("is-over"); });
@@ -3127,8 +3161,10 @@
         els.sheetSelect.disabled = on;
         els.trackerSelect.disabled = on;
         els.trackerName.disabled = on;
-        els.chooseFileBtn.disabled = on;
-        els.fileInput.disabled = on;
+        var mainFile = document.getElementById("docFile");
+        var mainBtn = document.getElementById("docChooseBtn");
+        if (mainFile) mainFile.disabled = on;
+        if (mainBtn) mainBtn.disabled = on;
         els.mappingGrid.querySelectorAll("select").forEach(function (s) { s.disabled = on; });
       }
 
@@ -3256,7 +3292,8 @@
         state.mapping = { title: -1, due: -1, category: -1, assignee: -1, status: -1 };
         state.analysis = null;
         state.result = null;
-        els.fileInput.value = "";
+        var mainInput = document.getElementById("docFile");
+        if (mainInput) mainInput.value = "";
         els.trackerName.value = "";
         els.previewTable.innerHTML = "";
         els.mappingGrid.innerHTML = "";
@@ -3294,42 +3331,12 @@
           analyzeAndRender();
         });
 
-        els.chooseFileBtn.addEventListener("click", function (e) {
-          e.stopPropagation();
-          if (!state.busy) els.fileInput.click();
-        });
-        document.getElementById("templateBtn").addEventListener("click", function (e) { e.stopPropagation(); downloadTemplate(); });
-        els.dropZone.addEventListener("click", function () { if (!state.busy) els.fileInput.click(); });
-        els.dropZone.addEventListener("keydown", function (e) {
-          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (!state.busy) els.fileInput.click(); }
-        });
-        ["dragenter", "dragover"].forEach(function (ev) {
-          els.dropZone.addEventListener(ev, function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            if (!state.busy) els.dropZone.classList.add("is-dragover");
-          });
-        });
-        ["dragleave", "drop"].forEach(function (ev) {
-          els.dropZone.addEventListener(ev, function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            els.dropZone.classList.remove("is-dragover");
-          });
-        });
-        els.dropZone.addEventListener("drop", function (e) {
-          if (state.busy) return;
-          const files = e.dataTransfer && e.dataTransfer.files;
-          if (files && files.length) readFile(files[0]);
-        });
-        /* Dropping outside the zone must not navigate the page away. */
-        document.addEventListener("dragover", function (e) { e.preventDefault(); });
-        document.addEventListener("drop", function (e) { e.preventDefault(); });
-
-        els.fileInput.addEventListener("change", function () {
-          const f = els.fileInput.files && els.fileInput.files[0];
-          if (f) readFile(f);
-        });
+        /* لا منطقة رفع خاصة بالمستورد: الصفحة تسلمه الملف حين تتعرف أنه جدول */
+        window.trackerImport = {
+          extensions: ALLOWED_EXT.slice(),
+          accept: function (file) { show(els.step1, true); readFile(file); },
+          template: downloadTemplate
+        };
         els.sheetSelect.addEventListener("change", function () { if (state.workbook) selectSheet(els.sheetSelect.value); });
         els.trackerSelect.addEventListener("change", toggleTrackerName);
         els.importBtn.addEventListener("click", function () { runImport(); });
@@ -3341,7 +3348,7 @@
           loadingCard: null, unavailableCard: null, noOrgCard: null,
           importFlow: $("importFlow"),
           step1: $("step1"), step2: $("step2"), step3: $("step3"), step4: $("step4"), step5: $("step5"),
-          dropZone: $("dropZone"), chooseFileBtn: $("chooseFileBtn"), fileInput: $("fileInput"), fileStatus: $("fileStatus"),
+          fileStatus: $("fileStatus"),
           sheetRow: $("sheetRow"), sheetSelect: $("sheetSelect"), previewNote: $("previewNote"), previewTable: $("previewTable"),
           mappingGrid: $("mappingGrid"), mappingStats: $("mappingStats"), unmatchedHint: $("unmatchedHint"),
           importMode: $("importMode"), graceField: $("graceField"), graceDays: $("graceDays"),
@@ -3380,7 +3387,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
 <script src="/app.js?v=4" defer></script>
-<script src="/app/common.js?v=9" defer></script>
+<script src="/app/common.js?v=10" defer></script>
 <script src="/brand-logo.js?v=4" defer></script>
 </body>
 </html>

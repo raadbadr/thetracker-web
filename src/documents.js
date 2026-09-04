@@ -29,6 +29,11 @@ const DOC_KINDS = [
   "invoice",               // فاتورة
   "power_of_attorney",     // وكالة شرعية
   "id_document",           // هوية / إقامة
+  "passport",              // جواز سفر
+  "driving_license",       // رخصة قيادة
+  "vehicle_registration",  // استمارة مركبة
+  "insurance_policy",      // وثيقة تأمين
+  "employment_contract",   // عقد عمل
   "other",
 ];
 
@@ -62,63 +67,63 @@ ${text}
 }
 
 function parseJson(raw) {
-  const s = String(raw || "");
-  const start = s.indexOf("{");
-  const end = s.lastIndexOf("}");
+  const text = String(raw || "");
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
   if (start === -1 || end === -1) return null;
-  try { return JSON.parse(s.slice(start, end + 1)); } catch { return null; }
+  try { return JSON.parse(text.slice(start, end + 1)); } catch { return null; }
 }
 
 /* تحويل هجري (أم القرى) → ميلادي حسابيا: نقدر اليوم ثم نبحث حوله عن اليوم الذي
    ينتج التاريخ الهجري نفسه في Intl. لا نثق بتحويل النموذج اللغوي. */
 const HIJRI_FMT = new Intl.DateTimeFormat("en-u-ca-islamic-umalqura", { day: "numeric", month: "numeric", year: "numeric" });
-function hijriParts(d) {
+function hijriParts(date) {
   const out = {};
-  for (const p of HIJRI_FMT.formatToParts(d)) if (p.type !== "literal") out[p.type] = parseInt(p.value, 10);
+  for (const part of HIJRI_FMT.formatToParts(date)) if (part.type !== "literal") out[part.type] = parseInt(part.value, 10);
   return out;
 }
-function hijriToGregorian(y, m, d) {
+function hijriToGregorian(year, month, day) {
   // تقدير: 1 محرم 1 ه ≈ 16 يوليو 622 م، والسنة الهجرية 354.367 يوما
-  const approx = new Date(Date.UTC(622, 6, 16) + ((y - 1) * 354.367 + (m - 1) * 29.53 + (d - 1)) * 86400000);
-  for (let off = -40; off <= 40; off++) {
-    const cand = new Date(approx.getTime() + off * 86400000);
-    const h = hijriParts(cand);
-    if (h.year === y && h.month === m && h.day === d) return cand;
+  const approx = new Date(Date.UTC(622, 6, 16) + ((year - 1) * 354.367 + (month - 1) * 29.53 + (day - 1)) * 86400000);
+  for (let dayOffset = -40; dayOffset <= 40; dayOffset++) {
+    const candidate = new Date(approx.getTime() + dayOffset * 86400000);
+    const hijri = hijriParts(candidate);
+    if (hijri.year === year && hijri.month === month && hijri.day === day) return candidate;
   }
   return null;
 }
 function normalizeDate(value, calendar) {
   if (typeof value !== "string") return null;
-  const m = value.trim().match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);
-  if (!m) return null;
-  const y = +m[1], mo = +m[2], d = +m[3];
-  const isHijri = calendar === "hijri" || (y >= 1300 && y < 1600);
+  const match = value.trim().match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);
+  if (!match) return null;
+  const year = +match[1], month = +match[2], day = +match[3];
+  const isHijri = calendar === "hijri" || (year >= 1300 && year < 1600);
   if (isHijri) {
-    const g = hijriToGregorian(y, mo, d);
-    return g ? g.toISOString().slice(0, 10) : null;
+    const gregorianDate = hijriToGregorian(year, month, day);
+    return gregorianDate ? gregorianDate.toISOString().slice(0, 10) : null;
   }
-  if (y < 1900 || y > 2200 || mo < 1 || mo > 12 || d < 1 || d > 31) return null;
-  return `${y}-${String(mo).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+  if (year < 1900 || year > 2200 || month < 1 || month > 12 || day < 1 || day > 31) return null;
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
 function clean(out) {
-  const o = out && typeof out === "object" ? out : {};
-  const date = (v, cal) => normalizeDate(v, cal);
-  const num = (v) => { const n = Number(String(v ?? "").replace(/[^0-9.\-]/g, "")); return isFinite(n) && n !== 0 ? n : null; };
-  const str = (v) => (v == null ? null : String(v).trim().slice(0, 300) || null);
+  const source = out && typeof out === "object" ? out : {};
+  const date = (value, calendarName) => normalizeDate(value, calendarName);
+  const num = (value) => { const numeric = Number(String(value ?? "").replace(/[^0-9.\-]/g, "")); return isFinite(numeric) && numeric !== 0 ? numeric : null; };
+  const str = (value) => (value == null ? null : String(value).trim().slice(0, 300) || null);
   return {
-    kind: DOC_KINDS.includes(o.kind) ? o.kind : "other",
-    title: str(o.title),
-    number: str(o.number),
-    issuer: str(o.issuer),
-    party: str(o.party),
-    issue_date: date(o.issue_date, o.issue_date_calendar),
-    expiry_date: date(o.expiry_date, o.expiry_date_calendar),
-    amount: num(o.amount),
-    case_number: str(o.case_number),
-    court: str(o.court),
-    summary: str(o.summary),
-    confidence: Math.max(0, Math.min(1, Number(o.confidence) || 0)),
+    kind: DOC_KINDS.includes(source.kind) ? source.kind : "other",
+    title: str(source.title),
+    number: str(source.number),
+    issuer: str(source.issuer),
+    party: str(source.party),
+    issue_date: date(source.issue_date, source.issue_date_calendar),
+    expiry_date: date(source.expiry_date, source.expiry_date_calendar),
+    amount: num(source.amount),
+    case_number: str(source.case_number),
+    court: str(source.court),
+    summary: str(source.summary),
+    confidence: Math.max(0, Math.min(1, Number(source.confidence) || 0)),
   };
 }
 
@@ -173,11 +178,23 @@ const KIND_RULES = [
   { kind: "invoice", test: /فاتورة|invoice|tax\s*invoice/i,
     number: ["رقم\\s*الفاتورة", "invoice\\s*(?:No\\.?|#)?"], numPat: "[0-9A-Za-z\\-\\/]{3,25}", party: ["العميل", "اسم\\s*العميل", "المشتري", "bill\\s*to"],
     amount: /(?:الإجمالي|المجموع|الإجمالي\s*شامل|total\s*(?:amount)?|grand\s*total)[^0-9]{0,25}([0-9][0-9,\.]{1,})/i },
+  { kind: "passport", test: /جواز\s*(?:ال)?سفر|passport/i, issuer: "المديرية العامة للجوازات",
+    number: ["رقم\\s*(?:ال)?جواز", "passport\\s*(?:No\\.?)?"], numPat: "[A-Z]\\d{6,9}|\\d{7,9}", party: ["الاسم", "اسم\\s*صاحب\\s*الجواز"] },
   { kind: "id_document", test: /الهوية\s*الوطنية|بطاقة\s*(?:ال)?هوية|إقامة|رخصة\s*إقامة|جواز\s*سفر|passport|national\s*id|iqama/i, issuer: "وزارة الداخلية",
     number: ["رقم\\s*الهوية", "رقم\\s*الإقامة", "رقم\\s*الجواز", "ID\\s*(?:No\\.?)?"], numPat: "[12]\\d{9}|[A-Z]\\d{7,9}", party: ["الاسم", "اسم\\s*صاحب\\s*الهوية"] },
+  { kind: "driving_license", test: /رخصة\s*(?:ال)?قيادة|driv(?:ing|er'?s)\s*licen[cs]e/i, issuer: "الإدارة العامة للمرور",
+    number: ["رقم\\s*(?:ال)?رخصة", "رقم\\s*الهوية"], numPat: "[12]\\d{9}|\\d{6,12}", party: ["الاسم", "اسم\\s*صاحب\\s*الرخصة"] },
+  { kind: "vehicle_registration", test: /استمارة\s*(?:ال)?(?:سيارة|مركبة)|رخصة\s*سير|vehicle\s*registration/i, issuer: "الإدارة العامة للمرور",
+    number: ["الرقم\\s*التسلسلي", "رقم\\s*اللوحة", "رقم\\s*الهيكل", "plate\\s*(?:No\\.?)?"], numPat: "[0-9A-Za-z\\-]{4,20}", party: ["اسم\\s*المالك", "المالك"] },
   { kind: "license", test: new RegExp(wordBoundaryAr("رخصة|الرخصة|ترخيص|الترخيص|تصريح|التصريح") + "|licen[cs]e|permit", "i"),
     number: ["رقم\\s*الرخصة", "رقم\\s*الترخيص", "رقم\\s*التصريح", "Licen[cs]e\\s*(?:No\\.?)?"], numPat: "[A-Za-z0-9\\-\\/]{4,30}", party: ["اسم\\s*المنشأة", "الاسم\\s*التجاري", "اسم\\s*الشركة", "اسم\\s*المرخص\\s*له"],
     issuerTest: [[/البلدية|أمانة/, "الأمانة / البلدية"], [/الدفاع\s*المدني/, "الدفاع المدني"], [/الهيئة\s*العامة\s*للنقل/, "الهيئة العامة للنقل"], [/وزارة\s*الصحة/, "وزارة الصحة"]] },
+  { kind: "insurance_policy", test: /وثيقة\s*(?:ال)?تأمين|بوليصة\s*(?:ال)?تأمين|insurance\s*policy/i,
+    number: ["رقم\\s*(?:ال)?وثيقة", "رقم\\s*(?:ال)?بوليصة", "policy\\s*(?:No\\.?)?"], numPat: "[0-9A-Za-z\\-\\/]{4,25}", party: ["اسم\\s*المؤمن\\s*له", "المؤمن\\s*له"],
+    amount: /(?:إجمالي\s*القسط|قسط\s*التأمين|القسط|premium)[^0-9]{0,25}([0-9][0-9,\.]{1,})/i },
+  { kind: "employment_contract", test: /عقد\s*(?:ال)?عمل|employment\s*contract/i, issuer: "وزارة الموارد البشرية والتنمية الاجتماعية",
+    number: ["رقم\\s*(?:ال)?عقد", "رقم\\s*التوثيق"], numPat: "[0-9A-Za-z\\-]{4,25}", party: ["اسم\\s*الموظف", "العامل", "الطرف\\s*الثاني"],
+    amount: /(?:الراتب\s*(?:الأساسي|الشهري)?|الأجر\s*(?:الشهري|الأساسي)|salary)[^0-9]{0,25}([0-9][0-9,\.]{1,})/i },
   { kind: "contract", test: new RegExp(wordBoundaryAr("عقد|العقد|اتفاقية|الاتفاقية") + "|contract|agreement", "i"),
     number: ["رقم\\s*العقد", "رقم\\s*الاتفاقية", "contract\\s*(?:No\\.?)?"], numPat: "[0-9A-Za-z\\-\\/]{3,25}", party: ["الطرف\\s*الأول", "الطرف\\s*الثاني", "العميل"],
     amount: /(?:قيمة\s*العقد|إجمالي\s*(?:قيمة\s*)?العقد|المبلغ\s*الإجمالي|contract\s*value)[^0-9]{0,25}([0-9][0-9,\.]{2,})/i },
@@ -194,7 +211,7 @@ function rulesExtract(rawText) {
     if (rule.party) out.party = findAfter(text, rule.party, "[^\\n:،,]{3,80}") || null;
     if (rule.issuerTest) for (const [re, name] of rule.issuerTest) if (re.test(text)) { out.issuer = name; break; }
     if (!out.issuer && rule.issuer) out.issuer = rule.issuer;
-    if (rule.amount) { const m = text.match(rule.amount); if (m) out.amount = Number(m[1].replace(/,/g, "")) || null; }
+    if (rule.amount) { const amountMatch = text.match(rule.amount); if (amountMatch) out.amount = Number(amountMatch[1].replace(/,/g, "")) || null; }
   }
   /* أوراق المحاكم: رقم الدعوى واسم المحكمة والدائرة تُقرأ مباشرة */
   if (["hearing_notice", "case_filing", "court_ruling"].includes(out.kind)) {
@@ -206,35 +223,36 @@ function rulesExtract(rawText) {
   }
   /* رقم عام: "رقم ...: 123456" إن لم تجده القاعدة */
   if (!out.number) { const genericNumberMatch = text.match(/رقم\s*[^:：\n]{0,25}[:：]\s*([0-9]{5,20})/); if (genericNumberMatch) out.number = genericNumberMatch[1]; }
-  const exp = findDate(text, ["تاريخ\\s*(?:ال)?انتهاء", "ينتهي\\s*(?:في|بتاريخ)", "صالح(?:ة)?\\s*حتى", "تاريخ\\s*نهاية", "الانتهاء", "تاريخ\\s*(?:ال)?جلسة", "موعد\\s*(?:ال)?جلسة", "تاريخ\\s*(?:ال)?استحقاق", "تاريخ\\s*(?:ال)?سداد", "expir(?:y|es|ation)\\s*(?:date)?", "valid\\s*(?:until|to)", "due\\s*date", "hearing\\s*date"]);
-  const iss = findDate(text, ["تاريخ\\s*(?:ال)?إصدار", "تاريخ\\s*(?:ال)?اصدار", "تاريخ\\s*التسجيل", "تاريخ\\s*(?:ال)?بداية", "تاريخ\\s*(?:ال)?تحرير", "تاريخ\\s*العقد", "صدر\\s*(?:في|بتاريخ)", "حرر\\s*(?:في|بتاريخ)", "issue\\s*date", "issued\\s*on", "registration\\s*date", "date"]);
-  if (exp) { out.expiry_date = exp.raw; out.expiry_date_calendar = exp.year < 1700 ? "hijri" : "gregorian"; }
-  if (iss) { out.issue_date = iss.raw; out.issue_date_calendar = iss.year < 1700 ? "hijri" : "gregorian"; }
+  const expiryDateInfo = findDate(text, ["تاريخ\\s*(?:ال)?انتهاء", "ينتهي\\s*(?:في|بتاريخ)", "صالح(?:ة)?\\s*حتى", "تاريخ\\s*نهاية", "الانتهاء", "تاريخ\\s*(?:ال)?جلسة", "موعد\\s*(?:ال)?جلسة", "تاريخ\\s*(?:ال)?استحقاق", "تاريخ\\s*(?:ال)?سداد", "expir(?:y|es|ation)\\s*(?:date)?", "valid\\s*(?:until|to)", "due\\s*date", "hearing\\s*date"]);
+  const issueDateInfo = findDate(text, ["تاريخ\\s*(?:ال)?إصدار", "تاريخ\\s*(?:ال)?اصدار", "تاريخ\\s*التسجيل", "تاريخ\\s*(?:ال)?بداية", "تاريخ\\s*(?:ال)?تحرير", "تاريخ\\s*العقد", "صدر\\s*(?:في|بتاريخ)", "حرر\\s*(?:في|بتاريخ)", "issue\\s*date", "issued\\s*on", "registration\\s*date", "date"]);
+  if (expiryDateInfo) { out.expiry_date = expiryDateInfo.raw; out.expiry_date_calendar = expiryDateInfo.year < 1700 ? "hijri" : "gregorian"; }
+  if (issueDateInfo) { out.issue_date = issueDateInfo.raw; out.issue_date_calendar = issueDateInfo.year < 1700 ? "hijri" : "gregorian"; }
   return out;
 }
 function mergeRules(model, rules) {
-  const m = model && typeof model === "object" ? { ...model } : {};
-  for (const k of Object.keys(rules)) {
-    const bad = m[k] == null || m[k] === "" || m[k] === 0 || (k === "kind" && m[k] === "other");
-    if (bad) m[k] = rules[k];
+  const merged = model && typeof model === "object" ? { ...model } : {};
+  for (const key of Object.keys(rules)) {
+    const isMissing = merged[key] == null || merged[key] === "" || merged[key] === 0 || (key === "kind" && merged[key] === "other");
+    if (isMissing) merged[key] = rules[key];
   }
-  if (rules.kind && m.kind !== rules.kind && (m.kind === "other" || m.kind == null)) m.kind = rules.kind;
-  if (!m.title && rules.kind) {
+  if (rules.kind && merged.kind !== rules.kind && (merged.kind === "other" || merged.kind == null)) merged.kind = rules.kind;
+  if (!merged.title && rules.kind) {
     const names = { commercial_register: "السجل التجاري", vat_certificate: "الشهادة الضريبية", license: "الرخصة",
       articles_of_association: "عقد التأسيس", bylaws: "النظام الأساسي", chamber_certificate: "شهادة الغرفة التجارية",
       gosi_certificate: "شهادة التأمينات الاجتماعية", zakat_certificate: "شهادة الزكاة", saudization_certificate: "شهادة السعودة", lease_contract: "عقد الإيجار",
-      power_of_attorney: "الوكالة", court_ruling: "الحكم", case_filing: "صحيفة الدعوى", hearing_notice: "إشعار الجلسة", violation: "المخالفة", invoice: "الفاتورة", id_document: "الهوية", contract: "العقد" };
-    m.title = (names[rules.kind] || "مستند") + (rules.party ? " — " + rules.party : rules.number ? " " + rules.number : "");
+      power_of_attorney: "الوكالة", court_ruling: "الحكم", case_filing: "صحيفة الدعوى", hearing_notice: "إشعار الجلسة", violation: "المخالفة", invoice: "الفاتورة", id_document: "الهوية", passport: "جواز السفر", driving_license: "رخصة القيادة",
+      vehicle_registration: "استمارة المركبة", insurance_policy: "وثيقة التأمين", employment_contract: "عقد العمل", contract: "العقد" };
+    merged.title = (names[rules.kind] || "مستند") + (rules.party ? " — " + rules.party : rules.number ? " " + rules.number : "");
   }
-  return m;
+  return merged;
 }
 
-function url_fast(request) { try { return new URL(request.url).searchParams.get("fast") === "1"; } catch { return false; } }
+function isFastPathRequested(request) { try { return new URL(request.url).searchParams.get("fast") === "1"; } catch { return false; } }
 
 async function readImage(env, base64) {
   const bin = atob(String(base64 || "").replace(/^data:[^,]+,/, ""));
   const bytes = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  for (let index = 0; index < bin.length; index++) bytes[index] = bin.charCodeAt(index);
   const res = await env.AI.run(VISION_MODEL, {
     prompt: "This is a scanned Arabic/English official document. Transcribe ALL visible text exactly, line by line, keeping labels and their values together (e.g. 'رقم السجل التجاري: 1010123456', 'تاريخ الانتهاء: 1447-05-10'). Digits must be Western. No commentary.",
     image: Array.from(bytes),
@@ -260,7 +278,7 @@ export async function handleDocumentAnalyze(request, env) {
   if (text.trim().length < 12) return new Response(JSON.stringify({ error: "no_text" }), { status: 422, headers });
 
   const rules = rulesExtract(text);
-  const fast = url_fast(request) || (rules.kind && (rules.number || rules.party) && (rules.expiry_date || rules.issue_date));
+  const fast = isFastPathRequested(request) || (rules.kind && (rules.number || rules.party) && (rules.expiry_date || rules.issue_date));
   if (fast && rules.kind) {
     const merged = mergeRules(null, rules);
     merged.summary = merged.title; merged.confidence = 0.9;
