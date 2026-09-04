@@ -7,7 +7,8 @@
  */
 
 const TEXT_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
-const VISION_MODEL = "@cf/meta/llama-3.2-11b-vision-instruct";
+/* Llama 4 Scout: متعدد اللغات أصلاً (عربية/إنجليزية) ويقبل الصورة في الرسائل — اختير بعد اختبار فعلي على صورة سجل تجاري ثنائي اللغة */
+const VISION_MODEL = "@cf/meta/llama-4-scout-17b-16e-instruct";
 const MAX_TEXT = 12000;
 
 const DOC_KINDS = [
@@ -92,6 +93,12 @@ function hijriToGregorian(year, month, day) {
   }
   return null;
 }
+function plusOneYear(iso) {
+  if (!iso) return null;
+  const parts = iso.split("-").map(Number);
+  const d = new Date(Date.UTC(parts[0] + 1, parts[1] - 1, parts[2]));
+  return isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10);
+}
 function normalizeDate(value, calendar) {
   if (typeof value !== "string") return null;
   const match = value.trim().match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);
@@ -118,7 +125,9 @@ function clean(out) {
     issuer: str(source.issuer),
     party: str(source.party),
     issue_date: date(source.issue_date, source.issue_date_calendar),
-    expiry_date: date(source.expiry_date, source.expiry_date_calendar),
+    expiry_date: date(source.expiry_date, source.expiry_date_calendar) || plusOneYear(date(source.issue_date, source.issue_date_calendar)),
+    /* لا تاريخ انتهاء في الورقة: يُفترض سنة من الإصدار (قاعدة المهندس رعد) ويُعلَم أنه مفترض */
+    expiry_assumed: !date(source.expiry_date, source.expiry_date_calendar) && !!date(source.issue_date, source.issue_date_calendar),
     amount: num(source.amount),
     case_number: str(source.case_number),
     court: str(source.court),
@@ -152,9 +161,67 @@ function joinSpacedArabic(text) {
   });
 }
 
+/* أشكال العرض العربية (U+FB50–FEFF) في ملفات PDF الرسمية تُقرأ تماماً بعد التطبيع NFKC؛
+   المشوّه فعلاً هو النص المفرّق حروفاً (كل حرف كلمة). */
+export function normalizeArabicText(text) {
+  const base = String(text || "").normalize("NFKC").replace(/[\u200B-\u200F\u202A-\u202E\u2066-\u2069\u0640]/g, "");
+  return base.split(/\r?\n/).map(repairVisualOrder).join("\n");
+}
+
+/* بعض ملفات PDF الرسمية تُخرج العربية بترتيب بصري: كل حرف كلمة مستقلة، والحروف والكلمات معكوسة.
+   لكل سطر: تُلصق الحروف المفردة، ثم تُقارن نسخة معكوسة (ترتيب الرموز معكوس، وحروف الرموز العربية معكوسة،
+   والمقاطع اللاتينية/الرقمية تبقى بترتيبها) بالأصل بمقياس كلمات عربية شائعة، وتُختار الأقرأ. */
+const AR_LETTER = "[\u0621-\u064A\u0671-\u06D3]";
+const AR_COMMON = ["السجل","التجاري","تجاري","شركة","رقم","تاريخ","الاسم","اسم","المنشأة","وزارة","التجارة","الوطني","الموحد","انتهاء","الانتهاء","إصدار","الإصدار","شهادة","المملكة","العربية","السعودية","النشاط","المدينة","الرياض","جدة","محدودة","مسؤولية","ذات","مؤسسة","الرقم","الضريبي","الهوية","الجواز","وثيقة","العمل","الحر","رخصة","الرخصة","عقد","الطرف","المحكمة","الدعوى","القضية","المدعي","عليه","الحكم","الغرفة","التأمينات","الزكاة","صاحب","صالحة","حتى","في","من","إلى","على","بتاريخ","المعتمد","المصدر","الجهة","نوع","الكيان","التسجيل","الموقع","العنوان","بلدية","أمانة","مخالفة","المخالفة","غرامة","الفاتورة","ريال"];
+function arabicScore(line) {
+  const words = line.split(/\s+/).filter(Boolean);
+  let score = 0;
+  for (const w of words) {
+    const core = w.replace(/[^\u0621-\u064A\u0671-\u06D3]/g, "");
+    if (!core) continue;
+    if (AR_COMMON.indexOf(core) !== -1) score += 3;
+    if (/^ال/.test(core)) score += 1;          /* الكلمات تبدأ بـ«ال» في العربية السليمة */
+    if (/(ة|ات|ية|ين|ون)$/.test(core)) score += 1;
+  }
+  return score;
+}
+function joinSingles(line) {
+  /* «ش ر ك ة» → «شركة»: سلسلة حروف عربية مفردة تفصلها مسافات */
+  return line.replace(new RegExp("(?:" + AR_LETTER + "\\s){2,}" + AR_LETTER, "g"), (run) => run.replace(/\s+/g, ""));
+}
+function reverseVisual(line) {
+  const tokens = line.trim().split(/\s+/).filter(Boolean).reverse();
+  /* المقاطع اللاتينية/الرقمية المتتالية تعود إلى ترتيبها الأصلي، والحروف العربية تُعكس داخل كل رمز */
+  const out = []; let latin = [];
+  const flush = () => { if (latin.length) { out.push(...latin.reverse()); latin = []; } };
+  for (const tok of tokens) {
+    if (new RegExp(AR_LETTER).test(tok)) { flush(); out.push([...tok].reverse().join("")); }
+    else if (/^[^\w\u0621-\u06D3]+$/.test(tok)) { flush(); out.push(tok); } /* علامات الترقيم تبقى في موضعها المعكوس */
+    else latin.push(tok);
+  }
+  flush();
+  return out.join(" ");
+}
+/* سطر مفكّك حروفاً (كل حرف عنصر نصي): المسافة الواحدة بين حرفين عربيين فاصل رسم لا فاصل كلمة،
+   والمسافتان أو أكثر فاصل كلمة حقيقي. */
+function looksGlyphSplit(line) {
+  const tokens = line.trim().split(/\s+/).filter(Boolean);
+  const singles = tokens.filter((t) => new RegExp("^" + AR_LETTER + "$").test(t)).length;
+  return tokens.length >= 6 && singles / tokens.length >= 0.4 && /\S {2,}\S/.test(line);
+}
+function collapseGlyphGaps(line) {
+  return line.replace(new RegExp("(" + AR_LETTER + ") (?=" + AR_LETTER + ")", "g"), "$1").replace(/ {2,}/g, " ");
+}
+function repairVisualOrder(line) {
+  if (!new RegExp(AR_LETTER).test(line)) return line;
+  const joined = looksGlyphSplit(line) ? collapseGlyphGaps(line) : joinSingles(line);
+  const flipped = reverseVisual(joined);
+  const a = arabicScore(joined), b = arabicScore(flipped);
+  return b > a ? flipped : joined;
+}
+
 export function looksMangledArabic(text) {
-  var value = String(text || "");
-  if (/[\uFB50-\uFDFF\uFE70-\uFEFF]/.test(value)) return true;
+  var value = normalizeArabicText(text);
   var singles = (value.match(/(?:^|\s)[\u0600-\u06FF](?=\s|$)/g) || []).length;
   var words = (value.match(/\S+/g) || []).length;
   return words > 10 && singles / words > 0.3;
@@ -178,7 +245,7 @@ function findAfter(text, labels, pattern) {
 /* جدول الأوراق الرسمية المعروفة: كل نوع بكلماته ومسمّيات رقمه وجهته. يُفحص بالترتيب. */
 const wordBoundaryAr = (pattern) => "(?<![\\u0600-\\u06FF])(?:" + pattern + ")(?![\\u0600-\\u06FF])";
 const KIND_RULES = [
-  { kind: "commercial_register", entity: "company", test: /السجل\s*التجاري|سجل\s*تجاري|رقم\s*السجل|شهادة\s*(?:ال)?سجل|commercial\s*regist/i, issuer: "وزارة التجارة",
+  { kind: "commercial_register", entity: "company", test: /السجل\s*التجاري|سجل\s*تجاري|رقم\s*السجل|شهادة\s*(?:ال)?سجل|commercial\s*regist|(?=[\s\S]*سجل)(?=[\s\S]*\b[1247]\d{9}\b)/i, issuer: "وزارة التجارة",
     number: ["رقم\\s*السجل\\s*التجاري", "رقم\\s*السجل", "الرقم\\s*الوطني\\s*الموحد", "الرقم\\s*الموحد", "C\\.?R\\.?\\s*(?:No\\.?)?", "national\\s*number", "unified\\s*number", "registration\\s*number"],
     numPat: "[1247]\\d{9}",
     party: ["اسم\\s*المنشأة", "الاسم\\s*التجاري", "اسم\\s*الشركة", "اسم\\s*التاجر", "business\\s*name", "trade\\s*name", "company\\s*name", "entity\\s*name"] },
@@ -258,7 +325,7 @@ function strongKind(text) {
   return hit ? hit.kind : null;
 }
 
-function rulesExtract(rawText) {
+export function rulesExtract(rawText) {
   const text = joinSpacedArabic(arabicPresentationToBase(westernize(rawText))).replace(/[\u200f\u200e]/g, "");
   const out = {};
   const strong = strongKind(text);
@@ -281,6 +348,17 @@ function rulesExtract(rawText) {
     const afterTitle = text.match(/(?:شهادة\s*(?:ال)?سجل\s*(?:ال)?تجاري|commercial\s*registration\s*certificate)\s+(.{3,80}?)\s+(?:الرقم|رقم\s|national\s*number|unified|status|entity\s*type|release\s*date|تاريخ|حالة|نوع)/i);
     if (afterTitle) out.party = afterTitle[1].replace(/[:\-–\s]+$/, "").trim();
   }
+  if (out.kind === "commercial_register" && !out.party) {
+    /* السجل الجديد يكتب اسم الشركة بلا تسمية: أول «شركة/مؤسسة …» ليست وصف شكل قانوني */
+    /* أوصاف الشكل القانوني ليست اسماً، حتى إن جاءت حروفها مشوّهة («تاذ» بدل «ذات») */
+    const legalForm = /ذات|تاذ|مسؤولي|مسئولي|محدود|محدةدو|مساهمة|الشخص|شخص|مهنية|توصية|تضامن|قابضة|أجنبية|فردية|واحد|اوحد/;
+    const re = /(?:^|\s)((?:شركة|مؤسسة)\s+[^\d:،,()\n]{2,60}?)(?=\s+(?:\d|:|الرقم|رقم|تاريخ|نوع|حالة|صفات|شهادة|$))/g;
+    let m;
+    while ((m = re.exec(text))) {
+      const cand = m[1].trim();
+      if (!legalForm.test(cand) && cand.split(/\s+/).length <= 7) { out.party = cand; break; }
+    }
+  }
 
   /* أوراق المحاكم: رقم الدعوى واسم المحكمة والدائرة تُقرأ مباشرة */
   if (["hearing_notice", "case_filing", "court_ruling"].includes(out.kind)) {
@@ -296,6 +374,16 @@ function rulesExtract(rawText) {
   const issueDateInfo = findDate(text, ["تاريخ\\s*(?:ال)?إصدار", "تاريخ\\s*(?:ال)?اصدار", "تاريخ\\s*التسجيل", "تاريخ\\s*(?:ال)?بداية", "تاريخ\\s*(?:ال)?تحرير", "تاريخ\\s*العقد", "صدر\\s*(?:في|بتاريخ)", "حرر\\s*(?:في|بتاريخ)", "issue\\s*date", "issued\\s*on", "registration\\s*date", "date"]);
   if (expiryDateInfo) { out.expiry_date = expiryDateInfo.raw; out.expiry_date_calendar = expiryDateInfo.year < 1700 ? "hijri" : "gregorian"; }
   if (issueDateInfo) { out.issue_date = issueDateInfo.raw; out.issue_date_calendar = issueDateInfo.year < 1700 ? "hijri" : "gregorian"; }
+  /* تسمية التاريخ مشوّهة أو غائبة: إن كان في الورقة تاريخ واحد فهو تاريخ إصدارها (السجل الجديد بلا انتهاء) */
+  if (!out.issue_date && !out.expiry_date) {
+    const all = (westernize(text).match(/\b(?:\d{4}[\/\-.]\d{1,2}[\/\-.]\d{1,2}|\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{4})\b/g) || []);
+    const uniq = all.filter((d, i) => all.indexOf(d) === i);
+    if (uniq.length === 1) {
+      let parts = uniq[0].replace(/[\/.]/g, "-").split("-").map((x) => x.padStart(2, "0"));
+      if (parts[0].length !== 4) parts = [parts[2], parts[1], parts[0]];
+      out.issue_date = parts.join("-"); out.issue_date_calendar = Number(parts[0]) < 1700 ? "hijri" : "gregorian";
+    }
+  }
   return out;
 }
 function mergeRules(model, rules) {
@@ -321,15 +409,19 @@ function mergeRules(model, rules) {
 function isFastPathRequested(request) { try { return new URL(request.url).searchParams.get("fast") === "1"; } catch { return false; } }
 
 async function readImage(env, base64) {
-  const bin = atob(String(base64 || "").replace(/^data:[^,]+,/, ""));
-  const bytes = new Uint8Array(bin.length);
-  for (let index = 0; index < bin.length; index++) bytes[index] = bin.charCodeAt(index);
+  const raw = String(base64 || "");
+  const dataUrl = /^data:/.test(raw) ? raw : "data:image/png;base64," + raw;
   const res = await env.AI.run(VISION_MODEL, {
-    prompt: "This is a scanned Arabic/English official document. Transcribe ALL visible text exactly, line by line, keeping labels and their values together (e.g. 'رقم السجل التجاري: 1010123456', 'تاريخ الانتهاء: 1447-05-10'). Digits must be Western. No commentary.",
-    image: Array.from(bytes),
+    messages: [{ role: "user", content: [
+      { type: "text", text: "This is an official Saudi document that mixes Arabic and English. Transcribe ALL visible text exactly, line by line, keeping each label and its value together on one line (e.g. 'رقم السجل التجاري: 1010123456'). Keep numbers and dates exactly as printed. Output plain text only, no commentary." },
+      { type: "image_url", image_url: { url: dataUrl } }
+    ] }],
     max_tokens: 1400,
+    temperature: 0.1,
   });
-  return String((res && (res.response || res.description)) || "").trim();
+  const choice = res && res.choices && res.choices[0];
+  const content = (choice && choice.message && choice.message.content) || (res && (res.response || res.result || res.description)) || "";
+  return normalizeArabicText(String(content)).trim();
 }
 
 export async function handleDocumentAnalyze(request, env) {
@@ -340,7 +432,7 @@ export async function handleDocumentAnalyze(request, env) {
   try { body = await request.json(); } catch { body = null; }
   if (!body) return new Response(JSON.stringify({ error: "invalid_body" }), { status: 400, headers });
 
-  let text = String(body.text || "").slice(0, MAX_TEXT);
+  let text = normalizeArabicText(String(body.text || "")).slice(0, MAX_TEXT);
   /* نص PDF عربي مشوّه (أشكال عرض أو حروف مفرّقة) لا يُفهم: تُقرأ صورة الصفحة بدله */
   const mangled = text.trim() ? looksMangledArabic(text) : false;
   try {

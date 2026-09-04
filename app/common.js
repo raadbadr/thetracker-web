@@ -420,7 +420,7 @@
   function loadOrgs(client, user) {
     /* كل جهة هو عضو نشط فيها: التي يملكها والتي دُعي إليها سواء، ومعها نوعها */
     return client.from("org_members")
-      .select("org_id, role, status, organizations(id,name,plan_code,plan_expires_at,org_profiles(entity_type))")
+      .select("org_id, role, status, organizations(id,name,name_en,plan_code,plan_expires_at,org_profiles(entity_type))")
       .eq("user_id", user.id)
       .eq("status", "active")
       .then(unwrap)
@@ -429,19 +429,19 @@
           var o = r.organizations;
           var prof = o.org_profiles;
           if (Array.isArray(prof)) prof = prof[0];
-          return { id: o.id, name: o.name, plan_code: o.plan_code, plan_expires_at: o.plan_expires_at,
+          return { id: o.id, name: o.name, name_en: o.name_en || null, plan_code: o.plan_code, plan_expires_at: o.plan_expires_at,
                    role: r.role, entity_type: (prof && prof.entity_type) || null };
         });
       })
       .catch(function () {
         /* لو تعذر ضم بطاقة الجهة لا نفقد قائمة الحسابات */
         return client.from("org_members")
-          .select("org_id, role, status, organizations(id,name,plan_code,plan_expires_at)")
+          .select("org_id, role, status, organizations(id,name,name_en,plan_code,plan_expires_at)")
           .eq("user_id", user.id).eq("status", "active").then(unwrap)
           .then(function (rows) {
             return (rows || []).filter(function (r) { return r.organizations; }).map(function (r) {
               var o = r.organizations;
-              return { id: o.id, name: o.name, plan_code: o.plan_code, plan_expires_at: o.plan_expires_at, role: r.role, entity_type: null };
+              return { id: o.id, name: o.name, name_en: o.name_en || null, plan_code: o.plan_code, plan_expires_at: o.plan_expires_at, role: r.role, entity_type: null };
             });
           });
       });
@@ -525,12 +525,13 @@
 
   /* لا جهة بلا مستندها الرسمي: الدالة create_org_registered في القاعدة هي الطريق الوحيد،
      تتحقق من الرقم (سجل تجاري / رخصة / هوية بحسب النوع) وتاريخ الانتهاء وتسجّله مستنداً أولاً. */
-  function createOrg(name, entityType, regNumber, regExpiry) {
+  function createOrg(name, entityType, regNumber, regExpiry, nameEn) {
     return run(function (client) {
       var clean = String(name || "").trim();
-      if (!clean) throw new Error("name required");
+      var cleanEn = String(nameEn || "").trim();
+      if (!clean && !cleanEn) throw new Error("name required");
       var type = entityTypeValue(entityType);
-      return client.rpc("create_org_registered", { p_name: clean, p_entity_type: type, p_reg_number: String(regNumber || "").trim(), p_reg_expiry: regExpiry || null })
+      return client.rpc("create_org_registered", { p_name: clean, p_entity_type: type, p_reg_number: String(regNumber || "").trim(), p_reg_expiry: regExpiry || null, p_name_en: cleanEn || null })
         .then(unwrap)
         .then(function (org) {
           org.role = "owner";
@@ -1224,16 +1225,20 @@
     });
   }
 
-  function renameOrg(name) {
+  function renameOrg(name, nameEn) {
     return run(function (client) {
       var orgId = requireOrg();
       var clean = String(name || "").trim();
-      if (!clean) throw new Error("name required");
-      return client.from("organizations").update({ name: clean }).eq("id", orgId).select("*").single()
+      var cleanEn = String(nameEn == null ? (app.org && app.org.name_en) || "" : nameEn).trim();
+      if (!clean && !cleanEn) throw new Error("name required");
+      return client.rpc("rename_org", { p_org: orgId, p_name: clean, p_name_en: cleanEn || null })
         .then(unwrap)
         .then(function (row) {
           app.org.name = row.name;
-          for (var i = 0; i < app.orgs.length; i++) if (app.orgs[i].id === row.id) app.orgs[i].name = row.name;
+          app.org.name_en = row.name_en || null;
+          for (var i = 0; i < app.orgs.length; i++) if (app.orgs[i].id === row.id) {
+            app.orgs[i].name = row.name; app.orgs[i].name_en = row.name_en || null;
+          }
           return row;
         });
     });
@@ -2367,6 +2372,7 @@
     return true;
   }
 
+  app.orgDisplayName = orgDisplayName;
   app.paint = paint;
   app.exportXlsx = exportXlsx;
   app.setMemberPerson = setMemberPerson;
@@ -2671,10 +2677,10 @@
   };
 
   var NEW_ORG_TEXT = {
-    ar: { title: "حساب جديد", hint: "اختر نوع الحساب ثم اكتب الاسم.", type: "نوع الحساب", name: "اسم الجهة", nameSelf: "اسمك الكامل", save: "إنشاء", cancel: "إلغاء", error: "تعذر الإنشاء، حاول مرة أخرى." },
-    en: { title: "New account", hint: "Choose the account type, then enter the name.", type: "Account type", name: "Entity name", nameSelf: "Your full name", save: "Create", cancel: "Cancel", error: "Could not create it, try again." },
-    fr: { title: "Nouveau compte", hint: "Choisissez le type de compte, puis saisissez le nom.", type: "Type de compte", name: "Nom de l'entité", nameSelf: "Votre nom complet", save: "Créer", cancel: "Annuler", error: "Création impossible, réessayez." },
-    ur: { title: "نیا اکاؤنٹ", hint: "اکاؤنٹ کی قسم منتخب کریں پھر نام لکھیں۔", type: "اکاؤنٹ کی قسم", name: "ادارے کا نام", nameSelf: "آپ کا پورا نام", save: "بنائیں", cancel: "منسوخ", error: "نہیں بن سکا، دوبارہ کوشش کریں۔" }
+    ar: { title: "حساب جديد", hint: "اختر نوع الحساب ثم اكتب الاسم.", type: "نوع الحساب", name: "اسم الجهة بالعربية", nameEn: "اسم الجهة بالإنجليزية", nameSelf: "اسمك الكامل", nameSelfEn: "اسمك بالإنجليزية", oneName: "اكتب الاسم بالعربية أو بالإنجليزية، أحدهما يكفي.", save: "إنشاء", cancel: "إلغاء", error: "تعذر الإنشاء، حاول مرة أخرى." },
+    en: { title: "New account", hint: "Choose the account type, then enter the name.", type: "Account type", name: "Entity name in Arabic", nameEn: "Entity name in English", nameSelf: "Your full name", nameSelfEn: "Your name in English", oneName: "Enter the name in Arabic or English; either one is enough.", save: "Create", cancel: "Cancel", error: "Could not create it, try again." },
+    fr: { title: "Nouveau compte", hint: "Choisissez le type de compte, puis saisissez le nom.", type: "Type de compte", name: "Nom de l'entité en arabe", nameEn: "Nom de l'entité en anglais", nameSelf: "Votre nom complet", nameSelfEn: "Votre nom en anglais", oneName: "Saisissez le nom en arabe ou en anglais ; l'un suffit.", save: "Créer", cancel: "Annuler", error: "Création impossible, réessayez." },
+    ur: { title: "نیا اکاؤنٹ", hint: "اکاؤنٹ کی قسم منتخب کریں پھر نام لکھیں۔", type: "اکاؤنٹ کی قسم", name: "ادارے کا نام عربی میں", nameEn: "ادارے کا نام انگریزی میں", nameSelf: "آپ کا پورا نام", nameSelfEn: "آپ کا نام انگریزی میں", oneName: "نام عربی یا انگریزی میں لکھیں؛ ایک کافی ہے۔", save: "بنائیں", cancel: "منسوخ", error: "نہیں بن سکا، دوبارہ کوشش کریں۔" }
   };
 
   /* إضافة شركة من الشريط العلوي مباشرة */
@@ -2701,6 +2707,9 @@
           }).join("") + "</select></label>" +
         '<label id="newOrgNameLabel">' + escapeHtml(t.name) +
           '<input type="text" id="newOrgInput" maxlength="120" autocomplete="organization" dir="auto"></label>' +
+        '<label id="newOrgLabelEn">' + escapeHtml(t.nameEn) +
+          '<input type="text" id="newOrgInputEn" maxlength="120" dir="ltr" autocomplete="organization"></label>' +
+        '<p class="app-gate-hint" style="font-size:.8rem;color:var(--text-secondary);margin:-.5rem 0 .6rem">' + escapeHtml(t.oneName) + "</p>" +
         '<p class="app-gate-hint" style="font-size:.85rem;color:var(--text-secondary);margin:.25rem 0 .5rem">' + escapeHtml(rt.gate) + "</p>" +
         '<label id="newOrgRegLabel">' + escapeHtml(rt.commercial_register) +
           '<input type="text" id="newOrgReg" maxlength="40" dir="ltr" inputmode="numeric" autocomplete="off"></label>' +
@@ -2790,8 +2799,9 @@
 
     document.getElementById("newOrgSave").addEventListener("click", function () {
       var name = String(input.value || "").trim();
+      var nameEn = String((document.getElementById("newOrgInputEn") || {}).value || "").trim();
       var err = document.getElementById("newOrgErr");
-      if (!name) { input.focus(); return; }
+      if (!name && !nameEn) { input.focus(); return; }
       var type = typeSel ? typeSel.value : "company";
       var reg = String((document.getElementById("newOrgReg") || {}).value || "").replace(/\s/g, "");
       var expiryRaw = String((document.getElementById("newOrgExpiry") || {}).value || "").trim();
@@ -2803,7 +2813,7 @@
       err.textContent = "";
       var btn = this;
       btn.disabled = true;
-      createOrg(name, type, reg, expiry).then(function (org) {
+      createOrg(name, type, reg, expiry, nameEn).then(function (org) {
         /* الملف نفسه يُرفع مرفقاً على مستند التسجيل الذي أنشأته القاعدة */
         if (file && org && org.item_id) {
           return uploadAttachment(org.item_id, file).catch(function () { err.textContent = rt.fileFailed; return null; });
@@ -2819,6 +2829,13 @@
     });
   }
 
+  /* الاسم المعروض للجهة: بالإنجليزية في الواجهتين الإنجليزية والفرنسية إن وُجد */
+  function orgDisplayName(o) {
+    if (!o) return "";
+    var wantEn = ["en", "fr"].indexOf(lang()) !== -1;
+    return (wantEn ? (o.name_en || o.name) : (o.name || o.name_en)) || "";
+  }
+
   function orgBoxHtml() {
     var orgs = (app && app.orgs) || [];
     var current = app && app.org ? app.org : null;
@@ -2828,7 +2845,7 @@
       var type = o.entity_type ? entityLabel(o.entity_type) : "";
       return '<option value="' + escapeHtml(o.id) + '"' + (current && o.id === current.id ? " selected" : "") +
              (type ? ' title="' + escapeHtml(type) + '"' : "") + ">" +
-             escapeHtml(o.name || "") + "</option>";
+             escapeHtml(orgDisplayName(o)) + "</option>";
     }).join("");
     opts += '<option value="__new">' + escapeHtml(sidebarLabel(NEW_ORG_LABELS)) + "</option>";
     return '<div class="app-orgbox" title="' + escapeHtml(sidebarLabel(ORG_LABELS)) + '">' +
