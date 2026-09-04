@@ -1295,8 +1295,8 @@
         active = here.indexOf("/" + item.path) !== -1 ? " is-active" : "";
       }
       html += '<a class="app-sidebar-link' + active + '" href="' + item.href + '">' +
-              "<span>" + escapeHtml(sidebarLabel(item.labels)) + "</span>" +
-              '<svg viewBox="0 0 24 24" aria-hidden="true">' + item.icon + "</svg></a>";
+              '<svg viewBox="0 0 24 24" aria-hidden="true">' + item.icon + "</svg>" +
+              "<span>" + escapeHtml(sidebarLabel(item.labels)) + "</span></a>";
     });
     nav.innerHTML = html;
   }
