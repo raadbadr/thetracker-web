@@ -1699,6 +1699,10 @@
       ar: "{actor} انضم إلى شركة {org}", en: "{actor} joined {org}",
       fr: "{actor} a rejoint {org}", ur: "{actor} {org} میں شامل ہو گئے"
     },
+    team_room: {
+      ar: "{actor} في دردشة الفريق: {item}", en: "{actor} in team chat: {item}",
+      fr: "{actor} dans la discussion : {item}", ur: "{actor} ٹیم چیٹ میں: {item}"
+    },
     team_message: {
       ar: "رسالة من {actor}", en: "Message from {actor}",
       fr: "Message de {actor}", ur: "{actor} کی طرف سے پیغام"

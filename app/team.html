@@ -1885,7 +1885,18 @@
         box.scrollTop = box.scrollHeight;
       }
 
+      /* شيء جديد في الدردشة؟ تصعد بطاقتها إلى أعلى الصفحة. */
+      function liftIfNew() {
+        var card = $("chatCard"), team = $("teamCard");
+        if (!card || !team || !team.parentNode) return;
+        var total = 0;
+        state.members.forEach(function (m) { if (m.user_id !== me()) total += unreadCount(m.user_id); });
+        total += unreadCount(TEAM);
+        if (total > 0 && card.nextSibling !== team) team.parentNode.insertBefore(card, team);
+      }
+
       function render() {
+        liftIfNew();
         renderThreads();
         renderHead();
         renderMessages();
@@ -1914,7 +1925,6 @@
           state.messages = res[1] || [];
           
           show("chatCard", true);
-          markSeen(state.thread);
           render();
         });
       }
