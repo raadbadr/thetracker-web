@@ -2028,7 +2028,11 @@
         return Promise.all([app.listProcesses(), app.listMembers()]).then(function (res) {
           state.list = res[0] || []; state.members = res[1] || []; state.names = {};
           state.members.forEach(function (m) { var pr = m.profiles || {}; state.names[m.user_id] = pr.full_name || pr.email || ""; });
-          $("areaFilter").innerHTML = '<option value="">' + esc(t("allAreas")) + "</option>" + AREAS.map(function (a) { return '<option value="' + a + '">' + esc(t("area_" + a)) + "</option>"; }).join("");
+          /* المرشّح يُبنى مرة، ويحتفظ باختيار المستخدم بعد كل حفظ أو حذف */
+          var filterHtml = '<option value="">' + esc(t("allAreas")) + "</option>" + AREAS.map(function (a) { return '<option value="' + a + '">' + esc(t("area_" + a)) + "</option>"; }).join("");
+          var asel = $("areaFilter");
+          if (asel.innerHTML !== filterHtml) asel.innerHTML = filterHtml;
+          asel.value = state.area || "";
           renderList();
         });
       }

@@ -1315,13 +1315,12 @@
             counts = {};
             orgsLoaded = true;
             setStatus($("orgsStatus"), "");
-            renderOrgs();
-            renderActivateOptions();
             const snapshot = orgs;
             return loadOwners(snapshot).then(() => {
-              if (orgs === snapshot) renderOrgs();
+              /* الملاك أولا: البطاقات تُرسم مرة واحدة بأسمائهم لا بشرطة ثم اسم */
+              if (orgs === snapshot) { renderOrgs(); renderActivateOptions(); }
               return loadCounts(snapshot);
-            });
+            }).catch(() => { renderOrgs(); renderActivateOptions(); });
           })
           .catch(err => { setStatus($("orgsStatus"), T("loadError") + " " + (err && err.message ? err.message : ""), "error"); })
           .then(() => { $("orgsRefresh").disabled = false; });
