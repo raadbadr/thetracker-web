@@ -1814,6 +1814,9 @@
        عنوان القسم يأخذ هواء فوقه، وآخر عنصر في البطاقة لا يلتصق بحافتها، والقوائم والشبكات تفصل عما بعدها */
     ".content h3{margin:1.75rem 0 .75rem}",
     ".content h2+h3,.content h3:first-child{margin-top:.25rem}",
+    /* عناوين البطاقات داخل التطبيق هادئة: لا خط تحتها ولا حجم عنوان صفحة */
+    "body .content h2{font-size:1.15rem;font-weight:700;padding-bottom:0;border-bottom:0;background:none;",
+    "color:var(--text-primary);-webkit-text-fill-color:currentColor;letter-spacing:0}",
     ".content>:last-child{margin-bottom:0}",
     ".content .features-grid+h3,.content .user-list+h3,.content table+h3,.content .table-wrap+h3{margin-top:2rem}",
     ".content .features-grid+p,.content .user-list+p{margin-top:1rem}",

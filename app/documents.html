@@ -642,8 +642,14 @@
     @media (prefers-reduced-motion: reduce) { .chat-thread, .waitlist-btn, .chat-option-btn { transition: none; } }
 
     /* أنماط صفحة المستندات (منقولة من صفحتي الاستيراد ولوحة التحكم) */
-    .drop-zone { text-align: center; cursor: pointer; }
-    .drop-zone.is-dragover { border-color: var(--primary); }
+    .drop-zone { text-align: center; cursor: pointer; background: transparent;
+      border: 2px dashed var(--glass-border); padding: 1.5rem 1rem;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      transition: border-color .2s ease, background .2s ease; }
+    .drop-zone:hover, .drop-zone:focus-visible, .drop-zone.is-dragover, .drop-zone.is-over {
+      border-color: var(--primary); background: var(--glass); }
+    .drop-icon { width: 34px; height: 34px; fill: var(--primary); opacity: .9; margin-bottom: .4rem; }
+    .drop-actions { display: flex; flex-wrap: wrap; gap: .6rem; justify-content: center; align-items: center; }
     .drop-zone p { margin-bottom: 0.75rem; }
     .drop-zone .platform-stat-label { max-width: none; margin-bottom: 0.5rem; }
     .field-label {
@@ -741,13 +747,17 @@
         <h2 data-i18n="docAddTitle">إضافة مستند أو جدول</h2>
         <p data-i18n="docAddIntro">مستند يُقرأ، أو جدول تُستورد صفوفه.</p>
         <div class="feature-card drop-zone" id="docDrop" tabindex="0" role="button">
+          <svg class="drop-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 15v4H5v-4H3v6h18v-6h-2zM11 3v9.17l-2.59-2.58L7 11l5 5 5-5-1.41-1.41L13 12.17V3h-2z"/></svg>
           <p data-i18n="docDropHint">اسحب الملف أو اختره</p>
+          <div class="drop-actions">
           <button type="button" class="waitlist-btn" id="docChooseBtn" data-i18n="docChoose">اختيار ملف</button>
           <input type="file" id="docFile" accept=".pdf,.png,.jpg,.jpeg,.webp,.xlsx,.xlsm,.xls,.csv,.tsv,.txt,.json,application/pdf,image/*,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" hidden>
           <button type="button" class="chat-option-btn" id="docDriveBtn" data-i18n="docDrive" hidden>اختيار من Google Drive</button>
           <button type="button" class="chat-option-btn" id="docTemplateBtn" data-i18n="templateBtn">تنزيل القالب</button>
+          </div>
         </div>
         <p class="waitlist-msg" id="docStatus" role="status" aria-live="polite" hidden></p>
+        <p class="waitlist-msg" id="fileStatus" role="status" aria-live="polite" hidden></p>
 
         <form id="docForm" class="doc-form" hidden novalidate>
           <div class="form-grid">
@@ -817,11 +827,6 @@
       <!-- (4) خطوات الاستيراد تظهر تلقائيا حين يكون المرفوع جدولا -->
     <div id="importFlow" hidden>
         <!-- Step 1: file -->
-        <div class="content" id="step1" hidden>
-        <h2 data-i18n="step1Title">1. الملف</h2>
-        <p class="waitlist-msg" id="fileStatus" role="status" aria-live="polite" hidden></p>
-      </div>
-
       <!-- Step 2: preview -->
         <div class="content" id="step2" hidden>
           <h2 data-i18n="step2Title">2. معاينة البيانات</h2>
@@ -2609,6 +2614,18 @@
     (function () {
       "use strict";
 
+      /* قاموس الصفحة ولغتها عامّان، أما دالتا الترجمة فتعيشان في نطاق آخر:
+         تُعرَّفان هنا وإلا توقف تدفق الاستيراد عند أول نص. */
+      function t(key) {
+        const d = translations[l] || translations.ar;
+        return d[key] || translations.ar[key] || key;
+      }
+      function fmt(key, vars) {
+        return String(t(key)).replace(/\{(\w+)\}/g, function (_, k) {
+          return vars && vars[k] !== undefined && vars[k] !== null ? String(vars[k]) : "";
+        });
+      }
+
       const NEW_TheTracker = "__new__";
       const MAX_PREVIEW = 20;
       const CHUNK = 200;
@@ -3203,10 +3220,6 @@
         els.sheetSelect.disabled = on;
         els.trackerSelect.disabled = on;
         els.trackerName.disabled = on;
-        var mainFile = document.getElementById("docFile");
-        var mainBtn = document.getElementById("docChooseBtn");
-        if (mainFile) mainFile.disabled = on;
-        if (mainBtn) mainBtn.disabled = on;
         els.mappingGrid.querySelectorAll("select").forEach(function (s) { s.disabled = on; });
       }
 
@@ -3302,7 +3315,7 @@
           };
           setMsg(els.importProgress, "");
           renderSummary();
-          [els.step1, els.step2, els.step3, els.step4, els.step5].forEach(function (s) { show(s, false); });
+          [els.step2, els.step3, els.step4, els.step5].forEach(function (s) { show(s, false); });
           show(els.summaryCard, true);
           els.summaryCard.scrollIntoView({ behavior: "smooth", block: "start" });
           toast(t("summaryTitle"), "success");
@@ -3344,11 +3357,11 @@
         setMsg(els.unmatchedHint, "");
         show(els.summaryCard, false);
         [els.step2, els.step3, els.step4, els.step5].forEach(function (s) { show(s, false); });
-        show(els.step1, true);
         els.importBtn.disabled = false;
         renderTrackerSelect();
         refreshPlanData().catch(function () { /* ignore */ });
-        els.step1.scrollIntoView({ behavior: "smooth", block: "start" });
+        var up = document.getElementById("uploadCard");
+        if (up) up.scrollIntoView({ behavior: "smooth", block: "start" });
       }
 
       /* ---------- boot ---------- */
@@ -3373,23 +3386,19 @@
           analyzeAndRender();
         });
 
-        /* لا منطقة رفع خاصة بالمستورد: الصفحة تسلمه الملف حين تتعرف أنه جدول */
-        window.trackerImport = {
-          extensions: ALLOWED_EXT.slice(),
-          accept: function (file) { show(els.step1, true); readFile(file); },
-          template: downloadTemplate
-        };
         els.sheetSelect.addEventListener("change", function () { if (state.workbook) selectSheet(els.sheetSelect.value); });
         els.trackerSelect.addEventListener("change", toggleTrackerName);
         els.importBtn.addEventListener("click", function () { runImport(); });
         els.importAnotherBtn.addEventListener("click", resetFlow);
       }
 
-      function boot() {
+      /* عناصر الاستيراد تُجمع مرة واحدة، وتُطلب عند أول ملف حتى لو تعثر الإقلاع */
+      function buildEls() {
+        if (els && els.importFlow) return els;
         els = {
           loadingCard: null, unavailableCard: null, noOrgCard: null,
           importFlow: $("importFlow"),
-          step1: $("step1"), step2: $("step2"), step3: $("step3"), step4: $("step4"), step5: $("step5"),
+          step1: null, step2: $("step2"), step3: $("step3"), step4: $("step4"), step5: $("step5"),
           fileStatus: $("fileStatus"),
           sheetRow: $("sheetRow"), sheetSelect: $("sheetSelect"), previewNote: $("previewNote"), previewTable: $("previewTable"),
           mappingGrid: $("mappingGrid"), mappingStats: $("mappingStats"), unmatchedHint: $("unmatchedHint"),
@@ -3400,6 +3409,23 @@
           summaryCard: $("summaryCard"), summaryStats: $("summaryStats"), summaryTracker: $("summaryTracker"),
           summaryRule: $("summaryRule"), summaryUnmatched: $("summaryUnmatched"), importAnotherBtn: $("importAnotherBtn")
         };
+        return els;
+      }
+
+      /* الجسر يُعرَّف فوراً لا داخل الإقلاع: الجدول يُقرأ حتى لو تعثر أي شيء آخر */
+      window.trackerImport = {
+        extensions: ALLOWED_EXT.slice(),
+        accept: function (file) {
+          buildEls();
+          var flow = document.getElementById("importFlow");
+          if (flow) flow.hidden = false;
+          readFile(file);
+        },
+        template: function () { downloadTemplate(); }
+      };
+
+      function boot() {
+        buildEls();
         wireEvents();
 
         const app = window.trackerApp;
