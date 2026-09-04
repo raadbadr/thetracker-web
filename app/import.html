@@ -609,9 +609,10 @@
         <h2 data-i18n="step1Title">1. اختر الملف</h2>
         <div class="feature-card drop-zone" id="dropZone" tabindex="0" role="button" aria-controls="fileInput">
           <p class="platform-stat-label" data-i18n="dropTitle">اسحب الملف إلى هنا أو انقر لاختياره</p>
-          <p data-i18n="dropHint">الصيغ المدعومة: xlsx و xls و csv</p>
+          <p data-i18n="dropHint">xlsx · xls · csv · tsv · json</p>
           <button type="button" class="waitlist-btn" id="chooseFileBtn" data-i18n="chooseFile">اختيار ملف</button>
-          <input type="file" id="fileInput" accept=".xlsx,.xlsm,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" hidden>
+          <button type="button" class="chat-option-btn" id="templateBtn" data-i18n="templateBtn">تنزيل القالب</button>
+          <input type="file" id="fileInput" accept=".xlsx,.xlsm,.xls,.csv,.tsv,.txt,.json,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" hidden>
         </div>
         <p class="waitlist-msg" id="fileStatus" role="status" aria-live="polite" hidden></p>
       </div>
@@ -717,6 +718,7 @@
   <script>
     const translations = {
       ar: {
+        templateBtn: "تنزيل القالب",
         title: "استيراد من Excel",
         subtitle: "ارفع ملف Excel أو CSV، ثم اربط أعمدته بحقول السجل، وسنتولى الباقي.",
         loading: "جارٍ التحميل...",
@@ -729,7 +731,7 @@
         backBtn: "العودة إلى لوحة التحكم",
         step1Title: "1. اختر الملف",
         dropTitle: "اسحب الملف إلى هنا أو انقر لاختياره",
-        dropHint: "الصيغ المدعومة: xlsx و xls و csv",
+        dropHint: "xlsx · xls · csv · tsv · json",
         chooseFile: "اختيار ملف",
         readingFile: "جارٍ قراءة الملف...",
         readError: "تعذّرت قراءة الملف، تأكد من أنه ملف Excel أو CSV صالح.",
@@ -815,6 +817,7 @@
         dark: "داكن"
       },
       en: {
+        templateBtn: "Download template",
         title: "Import from Excel",
         subtitle: "Upload an Excel or CSV file, map its columns to the tracker fields, and we will handle the rest.",
         loading: "Loading...",
@@ -827,7 +830,7 @@
         backBtn: "Back to the dashboard",
         step1Title: "1. Choose the file",
         dropTitle: "Drag the file here or click to choose it",
-        dropHint: "Supported formats: xlsx, xls and csv",
+        dropHint: "xlsx · xls · csv · tsv · json",
         chooseFile: "Choose a file",
         readingFile: "Reading the file...",
         readError: "The file could not be read. Make sure it is a valid Excel or CSV file.",
@@ -913,6 +916,7 @@
         dark: "Dark"
       },
       fr: {
+        templateBtn: "Télécharger le modèle",
         title: "Importer depuis Excel",
         subtitle: "Téléversez un fichier Excel ou CSV, associez ses colonnes aux champs du suivi, et nous nous occupons du reste.",
         loading: "Chargement...",
@@ -925,7 +929,7 @@
         backBtn: "Retour au tableau de bord",
         step1Title: "1. Choisir le fichier",
         dropTitle: "Glissez le fichier ici ou cliquez pour le choisir",
-        dropHint: "Formats pris en charge : xlsx, xls et csv",
+        dropHint: "xlsx · xls · csv · tsv · json",
         chooseFile: "Choisir un fichier",
         readingFile: "Lecture du fichier...",
         readError: "Impossible de lire le fichier. Vérifiez qu'il s'agit d'un fichier Excel ou CSV valide.",
@@ -1011,6 +1015,7 @@
         dark: "Sombre"
       },
       ur: {
+        templateBtn: "ٹیمپلیٹ ڈاؤن لوڈ",
         title: "Excel سے درآمد",
         subtitle: "Excel یا CSV فائل اپ لوڈ کریں، اس کے کالمز کو ٹریکر کے خانوں سے جوڑیں، باقی ہم سنبھال لیں گے۔",
         loading: "لوڈ ہو رہا ہے...",
@@ -1023,7 +1028,7 @@
         backBtn: "ڈیش بورڈ پر واپس",
         step1Title: "1. فائل منتخب کریں",
         dropTitle: "فائل یہاں گھسیٹیں یا منتخب کرنے کے لیے کلک کریں",
-        dropHint: "معاون فارمیٹس: xlsx، xls اور csv",
+        dropHint: "xlsx · xls · csv · tsv · json",
         chooseFile: "فائل منتخب کریں",
         readingFile: "فائل پڑھی جا رہی ہے...",
         readError: "فائل نہیں پڑھی جا سکی۔ یقینی بنائیں کہ یہ درست Excel یا CSV فائل ہے۔",
@@ -1236,7 +1241,7 @@
       const MAX_PREVIEW = 20;
       const CHUNK = 200;
       const MAX_UNMATCHED_LISTED = 10;
-      const ALLOWED_EXT = ["xlsx", "xlsm", "xls", "csv"];
+      const ALLOWED_EXT = ["xlsx", "xlsm", "xls", "csv", "tsv", "txt", "json"];
 
       /* Mapping fields; keyword lists are matched against normalised header names
          (exact match first, then substring) — each header is used at most once. */
@@ -1344,6 +1349,19 @@
         return isNaN(n) ? null : n;
       }
 
+      /* القالب: رأس بأسماء الحقول بلغة الصفحة وصف مثال */
+      function downloadTemplate() {
+        const heads = FIELDS.map((f) => t(f.labelKey));
+        const sample = ["مثال: جلسة محكمة", new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10), "قضية", "", "0", "", "", "", "", "open"];
+        const q = (v) => '"' + String(v).replace(/"/g, '""') + '"';
+        const csv = "\ufeff" + heads.map(q).join(",") + "\r\n" + sample.map(q).join(",") + "\r\n";
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+        a.download = "thetracker-template.csv";
+        document.body.appendChild(a); a.click();
+        setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      }
+
       function fileExt(name) {
         const m = String(name || "").match(/\.([^.]+)$/);
         return m ? m[1].toLowerCase() : "";
@@ -1362,9 +1380,19 @@
         reader.onerror = function () { setMsg(els.fileStatus, t("readError"), "error"); };
         reader.onload = function () {
           try {
-            const wb = ext === "csv"
-              ? XLSX.read(reader.result, { type: "string", raw: true })
-              : XLSX.read(new Uint8Array(reader.result), { type: "array", cellDates: true });
+            let wb;
+            if (ext === "json") {
+              /* JSON: مصفوفة كائنات، أو {rows|items|data: [...]} — تتحول إلى ورقة فيمر بالمسار نفسه */
+              const body = JSON.parse(String(reader.result || "").replace(/^\ufeff/, ""));
+              const rows = Array.isArray(body) ? body : (body.rows || body.items || body.data || []);
+              if (!Array.isArray(rows) || !rows.length) throw new Error("no rows");
+              wb = XLSX.utils.book_new();
+              XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows.map((r) => (r && typeof r === "object") ? r : { title: String(r) })), "data");
+            } else if (ext === "csv" || ext === "tsv" || ext === "txt") {
+              wb = XLSX.read(reader.result, { type: "string", raw: true });
+            } else {
+              wb = XLSX.read(new Uint8Array(reader.result), { type: "array", cellDates: true });
+            }
             if (!wb || !wb.SheetNames || !wb.SheetNames.length) throw new Error("no sheets");
             state.file = file;
             state.fileBase = file.name.replace(/\.[^.]+$/, "");
@@ -1378,7 +1406,7 @@
             setMsg(els.fileStatus, t("readError"), "error");
           }
         };
-        if (ext === "csv") reader.readAsText(file, "UTF-8");
+        if (ext === "csv" || ext === "tsv" || ext === "txt" || ext === "json") reader.readAsText(file, "UTF-8");
         else reader.readAsArrayBuffer(file);
       }
 
@@ -1967,6 +1995,7 @@
           e.stopPropagation();
           if (!state.busy) els.fileInput.click();
         });
+        document.getElementById("templateBtn").addEventListener("click", function (e) { e.stopPropagation(); downloadTemplate(); });
         els.dropZone.addEventListener("click", function () { if (!state.busy) els.fileInput.click(); });
         els.dropZone.addEventListener("keydown", function (e) {
           if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (!state.busy) els.fileInput.click(); }

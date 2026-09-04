@@ -1665,6 +1665,9 @@
   app.deleteTeamMessage = deleteTeamMessage;
   app.markChatRead = markChatRead;
   app.exportCsv = exportCsv;
+  app.apiKeys = apiKeys;
+  app.createApiKey = createApiKey;
+  app.revokeApiKey = revokeApiKey;
   app.removeMember = removeMember;
   app.setMemberRole = setMemberRole;
   app.listRules = listRules;
@@ -1871,6 +1874,23 @@
     a.download = filename || "export.csv";
     document.body.appendChild(a); a.click();
     setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+
+  function apiKeys() {
+    return run(function (client) {
+      var orgId = requireOrg();
+      return client.from("api_keys").select("id,name,prefix,created_at,last_used_at,revoked_at")
+        .eq("org_id", orgId).is("revoked_at", null).order("created_at", { ascending: false }).then(unwrap);
+    });
+  }
+  function createApiKey(name) {
+    return run(function (client) {
+      var orgId = requireOrg();
+      return client.rpc("api_key_create", { p_org: orgId, p_name: String(name || "").trim() }).then(unwrap);
+    });
+  }
+  function revokeApiKey(id) {
+    return run(function (client) { return client.rpc("api_key_revoke", { p_id: id }).then(unwrap); });
   }
 
   function markChatRead(peerId) {

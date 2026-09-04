@@ -11,6 +11,7 @@ import { runNotificationCron, linkChannelByCode, notifyTarget, sendTelegram, sen
          bot as botText, menuKeyboard, menuAction, urlButton, formatItems, telegramItems, linkChannelDirect, linkChannelByPhone, contactKeyboard,
          sendChatAction, fetchTelegramFile, bytesToBase64, TELEGRAM_FILE_MAX, answerCallback, clearInlineButtons, confirmButtons, actionButtons } from "./notify.js";
 import { ALLOWED_EXT, fileExt, parseWorkbook, draftPayload, commitImport } from "./telegram-import.js";
+import * as XLSX from "xlsx";
 import { extractIntent, describeAction, formatSearch, executeAction, runTelegramDigests } from "./telegram-actions.js";
 
 function json(data, status = 200) {
@@ -97,6 +98,101 @@ async function authedUser(request, env) {
   if (!res.ok) return null;
   const user = await res.json();
   return user && user.id ? user : null;
+}
+
+/* ============================================================
+ * /api/v1 — واجهة عامة بمفتاح: Authorization: Bearer tt_live_…
+ * POST /api/v1/import  ← JSON (مصفوفة أو {rows,tracker}) أو CSV/Excel كملف
+ * GET  /api/v1/items?tracker=&format=json|csv
+ * GET  /api/v1/ping
+ * ============================================================ */
+async function sha256Hex(text) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+function v1Json(data, status = 200) {
+  const r = json(data, status);
+  r.headers.set("Access-Control-Allow-Origin", "*");
+  return r;
+}
+async function v1Auth(request, env) {
+  if (!env.WORKER_SECRET) return { error: v1Json({ error: "not configured" }, 503) };
+  const m = (request.headers.get("Authorization") || "").match(/^Bearer\s+(tt_live_[a-f0-9]{48})$/i);
+  if (!m) return { error: v1Json({ error: "missing or malformed API key" }, 401) };
+  const hash = await sha256Hex(m[1]);
+  let who = null;
+  try { who = await rpc(env, "api_key_resolve", { p_secret: env.WORKER_SECRET, p_hash: hash }); } catch { who = null; }
+  if (!who || !who.org_id) return { error: v1Json({ error: "invalid or revoked API key" }, 401) };
+  return { hash, who };
+}
+function csvOf(rows) {
+  const keys = ["number", "title", "category", "tracker", "status", "due_at", "assignee_email", "amount", "client_name", "case_number", "created_at"];
+  const extra = new Set();
+  rows.forEach((r) => Object.keys(r.data || {}).forEach((k) => extra.add(k)));
+  const cols = keys.concat([...extra]);
+  const q = (v) => '"' + String(v === null || v === undefined ? "" : (typeof v === "object" ? JSON.stringify(v) : v)).replace(/"/g, '""') + '"';
+  const lines = [cols.map(q).join(",")];
+  rows.forEach((r) => lines.push(cols.map((c) => q(c in r ? r[c] : (r.data || {})[c])).join(",")));
+  return "\ufeff" + lines.join("\r\n");
+}
+async function handleV1(request, env, url) {
+  const path = url.pathname;
+  const auth = await v1Auth(request, env);
+  if (auth.error) return auth.error;
+  const { hash, who } = auth;
+
+  if (path === "/api/v1/ping") return v1Json({ ok: true, org: who.org_name });
+
+  if (path === "/api/v1/items" && request.method === "GET") {
+    const tracker = url.searchParams.get("tracker") || null;
+    let rows = [];
+    try { rows = (await rpc(env, "api_items_export", { p_secret: env.WORKER_SECRET, p_hash: hash, p_tracker: tracker })) || []; }
+    catch (e) { return v1Json({ error: String(e.message || e).slice(0, 200) }, 500); }
+    if ((url.searchParams.get("format") || "").toLowerCase() === "csv") {
+      return new Response(csvOf(rows), { headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": "attachment; filename=items.csv", "Access-Control-Allow-Origin": "*", "Cache-Control": "no-store" } });
+    }
+    return v1Json({ count: rows.length, items: rows });
+  }
+
+  if (path === "/api/v1/import" && request.method === "POST") {
+    const ct = (request.headers.get("Content-Type") || "").toLowerCase();
+    let bytes = null, filename = "api.csv", trackerName = url.searchParams.get("tracker") || null;
+    try {
+      if (ct.includes("multipart/form-data")) {
+        const form = await request.formData();
+        const f = form.get("file");
+        if (!f || typeof f.arrayBuffer !== "function") return v1Json({ error: "file field missing" }, 400);
+        trackerName = trackerName || form.get("tracker") || null;
+        filename = f.name || filename; bytes = await f.arrayBuffer();
+      } else if (ct.includes("application/json") || ct.includes("text/json")) {
+        const body = await request.json();
+        const rows = Array.isArray(body) ? body : (body.rows || body.items || body.data || []);
+        if (!Array.isArray(rows) || !rows.length) return v1Json({ error: "no rows" }, 400);
+        trackerName = trackerName || body.tracker || null;
+        const ws = XLSX.utils.json_to_sheet(rows.map((r) => (r && typeof r === "object") ? r : { title: String(r) }));
+        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, trackerName || "data");
+        bytes = XLSX.write(wb, { type: "array", bookType: "csv" }); filename = (trackerName || "api") + ".csv";
+      } else {
+        bytes = await request.arrayBuffer(); filename = (trackerName || "api") + (ct.includes("spreadsheet") || ct.includes("excel") ? ".xlsx" : ".csv");
+      }
+    } catch (e) { return v1Json({ error: "unreadable body: " + String(e.message || e).slice(0, 120) }, 400); }
+    if (!ALLOWED_EXT.includes(fileExt(filename))) return v1Json({ error: "unsupported file type" }, 415);
+
+    let parsed;
+    try { parsed = parseWorkbook(bytes, filename); } catch (e) { return v1Json({ error: "cannot parse: " + String(e.message || e).slice(0, 120) }, 422); }
+    const payload = draftPayload(parsed);
+    const results = [], errors = [];
+    for (const sh of payload.sheets) {
+      try {
+        results.push(await rpc(env, "api_import", {
+          p_secret: env.WORKER_SECRET, p_hash: hash, p_filename: filename,
+          p_tracker_name: trackerName || sh.tracker || sh.name, p_columns: sh.columns || [], p_mapping: sh.mapping || {}, p_rows: sh.rows || [],
+        }));
+      } catch (e) { errors.push({ sheet: sh.name, message: String(e.message || e).slice(0, 200) }); }
+    }
+    return v1Json({ ok: errors.length === 0, results, errors, unusable: (parsed.unusable || []).map((u) => ({ sheet: u.name, rows: u.skipped })) }, errors.length && !results.length ? 422 : 200);
+  }
+  return v1Json({ error: "not found" }, 404);
 }
 
 /** POST /api/notify/test { channel } — رسالة تجريبية لقناة المستخدم الحالي */
@@ -599,6 +695,7 @@ export default {
     }
 
     try {
+      if (path.startsWith("/api/v1/")) return await handleV1(request, env, url);
       if (path === "/api/config" && request.method === "GET") return handleConfig(env);
       if (path === "/api/stats" && request.method === "GET") return await handleStats(env);
       if (path === "/api/assistant" && request.method === "POST") return await handleAssistantRequest(request, env);

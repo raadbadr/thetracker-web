@@ -1,0 +1,3 @@
+-- مفاتيح API لربط المنصات الأخرى: استيراد وتصدير عبر /api/v1/*. المفتاح يُعرض مرة
+-- واحدة ويُخزَّن ببصمته، والـ Worker يحلّه إلى شركة. النص الكامل مطبَّق على المشروع
+-- (api_keys, api_key_create, api_key_revoke, api_key_resolve, api_import, api_items_export).

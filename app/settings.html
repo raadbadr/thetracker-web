@@ -527,6 +527,9 @@
       background: var(--primary-light);
       color: var(--btn-ink);
     }
+    .api-docs { margin-top: 1rem; }
+    .api-docs summary { cursor: pointer; color: var(--primary); font-weight: 600; }
+    .api-docs pre { margin-top: .75rem; padding: 1rem; border-radius: 12px; background: var(--glass); border: 1px solid var(--glass-border); font-size: .78rem; overflow-x: auto; text-align: left; white-space: pre; }
   </style>
 </head>
 <body class="has-site-header">
@@ -676,6 +679,39 @@
         <div id="rulesWrap"></div>
       </div>
 
+      <!-- API -->
+      <div class="content" id="apiCard">
+        <h2 data-i18n="apiTitle">ربط المنصات (API)</h2>
+        <p data-i18n="apiIntro">مفتاح لكل منصة. يظهر مرة واحدة عند إنشائه.</p>
+        <div class="waitlist-form">
+          <input type="text" class="waitlist-input" id="apiKeyName" placeholder="اسم المنصة" maxlength="60">
+          <button type="button" class="waitlist-btn" id="apiKeyCreateBtn" data-i18n="apiCreate">إنشاء مفتاح</button>
+        </div>
+        <div class="waitlist-form" id="apiKeyReveal" hidden>
+          <input type="text" class="waitlist-input" id="apiKeyValue" readonly dir="ltr">
+          <button type="button" class="waitlist-btn" id="apiKeyCopyBtn" data-i18n="copyUrlBtn">نسخ الرابط</button>
+        </div>
+        <p class="waitlist-msg" id="apiMsg" hidden role="status" aria-live="polite"></p>
+        <div class="platform-stat-detail" id="apiKeyList" hidden></div>
+        <details class="api-docs">
+          <summary data-i18n="apiDocs">طريقة الاستخدام</summary>
+<pre dir="ltr"># ping
+curl -H "Authorization: Bearer tt_live_..." https://appmails.net/api/v1/ping
+
+# import JSON
+curl -X POST -H "Authorization: Bearer tt_live_..." -H "Content-Type: application/json" \
+  -d '{"tracker":"القضايا","rows":[{"title":"جلسة","due":"2026-10-01","category":"قضية","amount":500}]}' \
+  https://appmails.net/api/v1/import
+
+# import CSV / Excel file
+curl -X POST -H "Authorization: Bearer tt_live_..." -F "file=@items.xlsx" -F "tracker=القضايا" \
+  https://appmails.net/api/v1/import
+
+# export
+curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?tracker=&amp;format=csv"</pre>
+        </details>
+      </div>
+
       <!-- (4) Calendar -->
       <div class="content" id="calendarCard">
         <h2 data-i18n="calendarTitle">التقويم</h2>
@@ -745,6 +781,15 @@
   <script>
     const translations = {
       ar: {
+        apiTitle: "ربط المنصات (API)",
+        apiIntro: "مفتاح لكل منصة. يظهر مرة واحدة عند إنشائه.",
+        apiCreate: "إنشاء مفتاح",
+        apiDocs: "طريقة الاستخدام",
+        apiRevoke: "إلغاء",
+        apiCreated: "أُنشئ المفتاح، انسخه الآن.",
+        apiRevoked: "أُلغي المفتاح.",
+        apiNone: "لا مفاتيح بعد.",
+        apiLastUsed: "آخر استخدام",
         title: "الإعدادات",
         intro: "إدارة ملفك الشخصي وقنوات التنبيه وقواعد التذكير والتقويم والاشتراك.",
         loading: "جارٍ التحميل...",
@@ -873,6 +918,15 @@
         dark: "داكن"
       },
       en: {
+        apiTitle: "Integrations (API)",
+        apiIntro: "One key per platform. Shown once when created.",
+        apiCreate: "Create key",
+        apiDocs: "How to use",
+        apiRevoke: "Revoke",
+        apiCreated: "Key created — copy it now.",
+        apiRevoked: "Key revoked.",
+        apiNone: "No keys yet.",
+        apiLastUsed: "Last used",
         title: "Settings",
         intro: "Manage your profile, notification channels, reminder rules, calendar and subscription.",
         loading: "Loading...",
@@ -1001,6 +1055,15 @@
         dark: "Dark"
       },
       fr: {
+        apiTitle: "Intégrations (API)",
+        apiIntro: "Une clé par plateforme. Affichée une seule fois.",
+        apiCreate: "Créer une clé",
+        apiDocs: "Mode d'emploi",
+        apiRevoke: "Révoquer",
+        apiCreated: "Clé créée — copiez-la maintenant.",
+        apiRevoked: "Clé révoquée.",
+        apiNone: "Aucune clé.",
+        apiLastUsed: "Dernière utilisation",
         title: "Paramètres",
         intro: "Gérez votre profil, vos canaux de notification, vos règles de rappel, votre calendrier et votre abonnement.",
         loading: "Chargement...",
@@ -1129,6 +1192,15 @@
         dark: "Sombre"
       },
       ur: {
+        apiTitle: "انضمام (API)",
+        apiIntro: "ہر پلیٹ فارم کے لیے ایک کلید۔ صرف ایک بار دکھائی جاتی ہے۔",
+        apiCreate: "کلید بنائیں",
+        apiDocs: "استعمال کا طریقہ",
+        apiRevoke: "منسوخ",
+        apiCreated: "کلید بن گئی، ابھی کاپی کریں۔",
+        apiRevoked: "کلید منسوخ۔",
+        apiNone: "ابھی کوئی کلید نہیں۔",
+        apiLastUsed: "آخری استعمال",
         title: "ترتیبات",
         intro: "اپنی پروفائل، اطلاعاتی چینلز، یاد دہانی کے اصول، کیلنڈر اور سبسکرپشن کا انتظام کریں۔",
         loading: "لوڈ ہو رہا ہے...",
@@ -1875,6 +1947,51 @@
 
       /* ---------- calendar ---------- */
 
+      /* ---------- API keys ---------- */
+      function renderApiKeys(rows) {
+        var box = el("apiKeyList");
+        rows = rows || [];
+        box.hidden = !rows.length;
+        if (!rows.length) { setMsg("apiMsg", t("apiNone")); return; }
+        box.innerHTML = rows.map(function (k) {
+          return '<div class="platform-stat-detail-row"><span><b>' + esc(k.name) + '</b> <code dir="ltr">' + esc(k.prefix) + '…</code> · ' + esc(app.fmtDate(k.created_at)) +
+                 (k.last_used_at ? " · " + esc(t("apiLastUsed")) + " " + esc(app.fmtDate(k.last_used_at, { withTime: true })) : "") + "</span>" +
+                 '<span class="platform-stat-detail-val"><button type="button" class="chat-option-btn" data-revoke-key="' + esc(k.id) + '">' + esc(t("apiRevoke")) + "</button></span></div>";
+        }).join("");
+      }
+      function loadApiKeys() {
+        return app.apiKeys().then(renderApiKeys).catch(function (err) { setMsg("apiMsg", errorMessage(err), "error"); });
+      }
+      function wireApi() {
+        var card = el("apiCard"); if (!card) return;
+        var role = app.role ? app.role() : "";
+        if (role !== "owner" && role !== "admin") { card.hidden = true; return; }
+        el("apiKeyCreateBtn").addEventListener("click", function () {
+          var btn = this; btn.disabled = true;
+          app.createApiKey(el("apiKeyName").value).then(function (res) {
+            el("apiKeyValue").value = res && res.key ? res.key : "";
+            el("apiKeyReveal").hidden = false;
+            setMsg("apiMsg", t("apiCreated"), "success");
+            el("apiKeyName").value = "";
+            return loadApiKeys();
+          }).catch(function (err) { setMsg("apiMsg", errorMessage(err), "error"); })
+            .finally(function () { btn.disabled = false; });
+        });
+        el("apiKeyCopyBtn").addEventListener("click", function () {
+          var v = el("apiKeyValue").value; if (!v) return;
+          var ok = function () { toast(t("urlCopied"), "success"); };
+          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(v).then(ok, ok);
+          else { el("apiKeyValue").select(); try { document.execCommand("copy"); } catch (e) { /* ignore */ } ok(); }
+        });
+        el("apiKeyList").addEventListener("click", function (ev) {
+          var b = ev.target.closest("[data-revoke-key]"); if (!b) return;
+          b.disabled = true;
+          app.revokeApiKey(b.getAttribute("data-revoke-key")).then(function () { setMsg("apiMsg", t("apiRevoked"), "success"); return loadApiKeys(); })
+            .catch(function (err) { b.disabled = false; setMsg("apiMsg", errorMessage(err), "error"); });
+        });
+        loadApiKeys();
+      }
+
       function loadCalendar() {
         if (!app.org) {
           setMsg("calendarMsg", t("noOrg"), "error");
@@ -2114,6 +2231,7 @@
               .catch(function () { setMsg("orgMsg", t("genericError"), "error"); });
           });
           loadPlanRequests();
+          try { wireApi(); } catch (e) { if (window.console) console.warn("api card:", e); }
           el("regenerateBtn").addEventListener("click", regenerateCalendar);
           var soBtn = el("signOutBtn");
           if (soBtn) soBtn.addEventListener("click", signOut);
