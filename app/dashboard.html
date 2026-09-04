@@ -874,7 +874,7 @@
 
     <div class="content" id="createOrgCard" hidden>
       <h2 data-i18n="createOrgTitle">أنشئ شركتك</h2>
-      <p data-i18n="createOrgIntro">ابدأ بإنشاء شركتك لتتمكن من إضافة المتتبعات والعناصر ودعوة فريقك.</p>
+      <p data-i18n="createOrgIntro">ابدأ بإنشاء شركتك لتتمكن من إضافة السجلات والعناصر ودعوة فريقك.</p>
       <form class="waitlist-form" id="createOrgForm" novalidate>
         <input type="text" class="waitlist-input" id="createOrgName" placeholder="اسم الشركة" maxlength="120" autocomplete="organization">
         <button type="submit" class="waitlist-btn" data-i18n="newOrgSubmit">إنشاء</button>
@@ -927,7 +927,7 @@
           <form id="editForm" novalidate>
             <div class="form-grid">
               <label class="form-field"><span data-i18n="fieldTitle">العنوان</span><input type="text" class="waitlist-input" id="editTitle" placeholder="عنوان العنصر" maxlength="300"></label>
-              <label class="form-field"><span data-i18n="fieldTracker">المتتبع</span><select class="waitlist-input" id="editTracker"></select></label>
+              <label class="form-field"><span data-i18n="fieldTracker">السجل</span><select class="waitlist-input" id="editTracker"></select></label>
               <label class="form-field"><span data-i18n="fieldDue">موعد الاستحقاق</span><input type="datetime-local" class="waitlist-input" id="editDue" dir="ltr"></label>
               <label class="form-field"><span data-i18n="fieldCategory">التصنيف</span><input type="text" class="waitlist-input" id="editCategory" placeholder="التصنيف (اختياري)" maxlength="120"></label>
               <label class="form-field"><span data-i18n="fieldAssignee">المسؤول</span><select class="waitlist-input" id="editAssignee"></select></label>
@@ -965,24 +965,24 @@
 
           <div class="inline-form" id="addItemPanel" hidden>
             <h3 data-i18n="addItemTitle">عنصر جديد</h3>
-            <p class="inline-hint" id="noTrackersHint" data-i18n="noTrackersHint" hidden>لا توجد متتبعات بعد، أنشئ متتبعاً أولاً لتتمكن من إضافة العناصر.</p>
+            <p class="inline-hint" id="noTrackersHint" data-i18n="noTrackersHint" hidden>لا توجد سجلات بعد، أنشئ سجلاً أولاً لتتمكن من إضافة العناصر.</p>
             <form id="addItemForm" novalidate>
               <div class="form-grid">
                 <label class="form-field"><span data-i18n="fieldTitle">العنوان</span><input type="text" class="waitlist-input" id="addTitle" placeholder="عنوان العنصر" maxlength="300"></label>
-                <label class="form-field"><span data-i18n="fieldTracker">المتتبع</span><select class="waitlist-input" id="addTracker"></select></label>
+                <label class="form-field"><span data-i18n="fieldTracker">السجل</span><select class="waitlist-input" id="addTracker"></select></label>
                 <label class="form-field"><span data-i18n="fieldDue">موعد الاستحقاق</span><input type="datetime-local" class="waitlist-input" id="addDue" dir="ltr"></label>
                 <label class="form-field"><span data-i18n="fieldCategory">التصنيف</span><input type="text" class="waitlist-input" id="addCategory" placeholder="التصنيف (اختياري)" maxlength="120"></label>
                 <label class="form-field"><span data-i18n="fieldAssignee">المسؤول</span><select class="waitlist-input" id="addAssignee"></select></label>
               </div>
               <div class="waitlist-form form-actions">
                 <button type="submit" class="waitlist-btn" id="addSaveBtn" data-i18n="add">إضافة</button>
-                <button type="button" class="chat-option-btn" id="newTrackerBtn" data-i18n="newTrackerBtn">+ متتبع جديد</button>
+                <button type="button" class="chat-option-btn" id="newTrackerBtn" data-i18n="newTrackerBtn">+ سجل جديد</button>
                 <button type="button" class="chat-option-btn" id="addCancelBtn" data-i18n="cancel">إلغاء</button>
               </div>
               <p class="waitlist-msg" id="addMsg" hidden role="status" aria-live="polite"></p>
             </form>
             <form class="waitlist-form" id="newTrackerForm" hidden novalidate>
-              <input type="text" class="waitlist-input" id="newTrackerName" placeholder="اسم المتتبع" maxlength="120">
+              <input type="text" class="waitlist-input" id="newTrackerName" placeholder="اسم السجل" maxlength="120">
               <button type="submit" class="waitlist-btn" data-i18n="newOrgSubmit">إنشاء</button>
               <button type="button" class="chat-option-btn" id="newTrackerCancel" data-i18n="cancel">إلغاء</button>
             </form>
@@ -1027,7 +1027,7 @@
               <thead>
                 <tr>
                   <th data-i18n="colTitle">العنوان</th>
-                  <th data-i18n="colTracker">المتتبع</th>
+                  <th data-i18n="colTracker">السجل</th>
                   <th data-i18n="colDue">موعد الاستحقاق</th>
                   <th data-i18n="colAssignee">المسؤول</th>
                   <th data-i18n="colStatus">الحالة</th>
@@ -1110,12 +1110,12 @@
         renameOrgBtn: "تعديل الاسم",
         deleteOrgBtn: "حذف الشركة",
         orgRenamed: "تم تعديل اسم الشركة.",
-        deleteOrgConfirm: "سيُحذف سجل «{name}» وكل عناصره ومتتبعاته نهائياً. هل تتابع؟",
+        deleteOrgConfirm: "ستُحذف الشركة «{name}» وكل عناصرها وسجلاتها نهائياً. هل تتابع؟",
         newOrgPlaceholder: "اسم الشركة",
         newOrgSubmit: "إنشاء",
         cancel: "إلغاء",
         createOrgTitle: "أنشئ شركتك",
-        createOrgIntro: "ابدأ بإنشاء شركتك لتتمكن من إضافة المتتبعات والعناصر ودعوة فريقك.",
+        createOrgIntro: "ابدأ بإنشاء شركتك لتتمكن من إضافة السجلات والعناصر ودعوة فريقك.",
         orgCreated: "تم إنشاء الشركة.",
         orgNameRequired: "أدخل اسم الشركة.",
         linkImport: "استيراد ملف",
@@ -1210,7 +1210,7 @@
         svcCalendarTitle: "ربط التقويم",
         svcCalendarText: "اربط مواعيدك بتقويم جوجل أو آبل أو أوتلوك بنقرة.",
         tabCalendar: "التقويم",
-        filterAllTrackers: "كل المتتبعات",
+        filterAllTrackers: "كل السجلات",
         filterAllStatuses: "كل الحالات",
         searchPlaceholder: "بحث في العناوين",
         statusOpen: "مفتوح",
@@ -1218,7 +1218,7 @@
         statusCancelled: "ملغى",
         statusOverdue: "متأخر",
         colTitle: "العنوان",
-        colTracker: "المتتبع",
+        colTracker: "السجل",
         colDue: "موعد الاستحقاق",
         colAssignee: "المسؤول",
         colStatus: "الحالة",
@@ -1235,23 +1235,23 @@
         addItemBtn: "+ عنصر",
         addItemTitle: "عنصر جديد",
         fieldTitle: "العنوان",
-        fieldTracker: "المتتبع",
+        fieldTracker: "السجل",
         fieldDue: "موعد الاستحقاق",
         fieldCategory: "التصنيف",
         fieldAssignee: "المسؤول",
         fieldStatus: "الحالة",
         titlePlaceholder: "عنوان العنصر",
         categoryPlaceholder: "التصنيف (اختياري)",
-        chooseTracker: "اختر المتتبع",
+        chooseTracker: "اختر السجل",
         save: "حفظ",
         add: "إضافة",
         titleRequired: "أدخل عنوان العنصر.",
-        trackerRequired: "اختر متتبعاً أولاً.",
-        newTrackerBtn: "+ متتبع جديد",
-        newTrackerPlaceholder: "اسم المتتبع",
-        trackerCreated: "تم إنشاء المتتبع.",
-        trackerNameRequired: "أدخل اسم المتتبع.",
-        noTrackersHint: "لا توجد متتبعات بعد، أنشئ متتبعاً أولاً لتتمكن من إضافة العناصر.",
+        trackerRequired: "اختر سجلاً أولاً.",
+        newTrackerBtn: "+ سجل جديد",
+        newTrackerPlaceholder: "اسم السجل",
+        trackerCreated: "تم إنشاء السجل.",
+        trackerNameRequired: "أدخل اسم السجل.",
+        noTrackersHint: "لا توجد سجلات بعد، أنشئ سجلاً أولاً لتتمكن من إضافة العناصر.",
         calPrev: "الشهر السابق",
         calNext: "الشهر التالي",
         calToday: "اليوم",

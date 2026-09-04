@@ -581,7 +581,7 @@
   <div class="container">
     <div class="header">
       <h1 data-i18n="title">استيراد من Excel</h1>
-      <p data-i18n="subtitle">ارفع ملف Excel أو CSV، ثم اربط أعمدته بحقول المتتبع، وسنتولى الباقي.</p>
+      <p data-i18n="subtitle">ارفع ملف Excel أو CSV، ثم اربط أعمدته بحقول السجل، وسنتولى الباقي.</p>
     </div>
 
     <!-- Loading -->
@@ -652,15 +652,15 @@
 
       <!-- Step 4: tracker -->
       <div class="content" id="step4" hidden>
-        <h2 data-i18n="step4Title">4. المتتبع</h2>
+        <h2 data-i18n="step4Title">4. السجل</h2>
         <div class="features-grid">
           <div class="field">
             <label class="field-label" for="trackerSelect" data-i18n="trackerLabel">أضف العناصر إلى</label>
             <select class="waitlist-input" id="trackerSelect"></select>
           </div>
           <div class="field" id="trackerNameField">
-            <label class="field-label" for="trackerName" data-i18n="trackerNamePlaceholder">اسم المتتبع الجديد</label>
-            <input type="text" class="waitlist-input" id="trackerName" placeholder="اسم المتتبع الجديد" maxlength="120" autocomplete="off">
+            <label class="field-label" for="trackerName" data-i18n="trackerNamePlaceholder">اسم السجل الجديد</label>
+            <input type="text" class="waitlist-input" id="trackerName" placeholder="اسم السجل الجديد" maxlength="120" autocomplete="off">
           </div>
         </div>
       </div>
@@ -718,7 +718,7 @@
     const translations = {
       ar: {
         title: "استيراد من Excel",
-        subtitle: "ارفع ملف Excel أو CSV، ثم اربط أعمدته بحقول المتتبع، وسنتولى الباقي.",
+        subtitle: "ارفع ملف Excel أو CSV، ثم اربط أعمدته بحقول السجل، وسنتولى الباقي.",
         loading: "جارٍ التحميل...",
         serviceUnavailableTitle: "الخدمة قيد التجهيز",
         serviceUnavailableText: "نعمل حالياً على تجهيز الخدمة، حاول مرة أخرى لاحقاً.",
@@ -766,11 +766,11 @@
         skippedRows: "صفوف ستُتجاهل لعدم وجود عنوان أو تاريخ صالح: {n}",
         unmatchedAssignees: "صفوف ببريد مسؤول غير موجود في الفريق: {n}",
         unmatchedHint: "لم يُعثر على هذه العناوين بين أعضاء الفريق، وستُستورد عناصرها بدون مسؤول: {list}",
-        step4Title: "4. المتتبع",
+        step4Title: "4. السجل",
         trackerLabel: "أضف العناصر إلى",
-        newTracker: "متتبع جديد",
-        trackerNamePlaceholder: "اسم المتتبع الجديد",
-        trackerNameRequired: "أدخل اسم المتتبع الجديد.",
+        newTracker: "سجل جديد",
+        trackerNamePlaceholder: "اسم السجل الجديد",
+        trackerNameRequired: "أدخل اسم السجل الجديد.",
         step5Title: "5. التحقق من الباقة",
         importsThisMonth: "عمليات الاستيراد هذا الشهر",
         itemsUsage: "العناصر المستخدمة",
@@ -785,7 +785,7 @@
         importBtn: "بدء الاستيراد",
         mappingRequired: "اختر عمود العنوان وعمود تاريخ الاستحقاق أولاً.",
         noValidRows: "لا توجد صفوف صالحة للاستيراد، تحقق من ربط الأعمدة.",
-        progressCreatingTracker: "جارٍ إنشاء المتتبع...",
+        progressCreatingTracker: "جارٍ إنشاء السجل...",
         progressImport: "جارٍ تسجيل عملية الاستيراد...",
         progressInserting: "جارٍ إدراج العناصر: {done} من {total}",
         progressRule: "جارٍ إنشاء قاعدة التنبيه الافتراضية...",
@@ -796,7 +796,7 @@
         summaryInserted: "عناصر مُدرجة",
         summarySkipped: "صفوف مُتجاهلة",
         summaryUnmatched: "صفوف بمسؤول غير مطابق",
-        summaryTracker: "أُضيفت العناصر إلى المتتبع: {name}",
+        summaryTracker: "أُضيفت العناصر إلى السجل: {name}",
         summaryRuleNote: "أُنشئت قاعدة تنبيه افتراضية: تذكير عبر البريد الإلكتروني قبل الاستحقاق بيوم واحد.",
         summaryRuleFailed: "تعذّر إنشاء قاعدة التنبيه الافتراضية، يمكنك إضافتها لاحقاً من صفحة التنبيهات.",
         importAnother: "استيراد ملف آخر",
