@@ -882,6 +882,10 @@
         personKindLabel: "الصفة",
         jobTitleLabel: "المسمى الوظيفي",
         personUnset: "غير محددة",
+        departmentLabel: "القسم",
+        deptUnset: "بلا قسم (يرى الأساسيات فقط)",
+        dept_management: "الإدارة",
+        deptUpdated: "حُفظ القسم؛ يرى العضو خدمات قسمه فقط.",
         personPartner: "شريك",
         personManager: "مدير",
         personEmployee: "موظف",
@@ -1026,6 +1030,10 @@
         personKindLabel: "Relationship",
         jobTitleLabel: "Job title",
         personUnset: "Not set",
+        departmentLabel: "Department",
+        deptUnset: "No department (basics only)",
+        dept_management: "Management",
+        deptUpdated: "Department saved; the member sees their department's services only.",
         personPartner: "Partner",
         personManager: "Manager",
         personEmployee: "Employee",
@@ -1170,6 +1178,10 @@
         personKindLabel: "Qualité",
         jobTitleLabel: "Intitulé du poste",
         personUnset: "Non défini",
+        departmentLabel: "Service",
+        deptUnset: "Sans service (bases seulement)",
+        dept_management: "Direction",
+        deptUpdated: "Service enregistré ; le membre ne voit que les services de son service.",
         personPartner: "Associé",
         personManager: "Directeur",
         personEmployee: "Employé",
@@ -1314,6 +1326,10 @@
         personKindLabel: "حیثیت",
         jobTitleLabel: "عہدہ",
         personUnset: "مقرر نہیں",
+        departmentLabel: "شعبہ",
+        deptUnset: "کوئی شعبہ نہیں (صرف بنیادی)",
+        dept_management: "انتظامیہ",
+        deptUpdated: "شعبہ محفوظ؛ رکن صرف اپنے شعبے کی خدمات دیکھتا ہے۔",
         personPartner: "شریک",
         personManager: "منتظم",
         personEmployee: "ملازم",
@@ -1671,6 +1687,12 @@
 
       /* ---------- members ---------- */
 
+      function departmentName(m) {
+        if (m.role === "owner" || m.role === "admin") return t("dept_management");
+        if (!m.department) return t("deptUnset");
+        return (app && app.departmentLabel) ? app.departmentLabel(m.department) : m.department;
+      }
+
       function personKindName(k) {
         if (!k) return "-";
         var key = { partner: "personPartner", manager: "personManager", employee: "personEmployee", contractor: "personContractor" }[k];
@@ -1699,6 +1721,8 @@
               '<span class="platform-stat-detail-val" dir="ltr" style="overflow-wrap:anywhere">' + esc(email || "-") + "</span></div>" +
             '<div class="platform-stat-detail-row"><span>' + esc(t("personKindLabel")) + "</span>" +
               '<span class="platform-stat-detail-val">' + esc(personKindName(m.person_kind)) + "</span></div>" +
+            '<div class="platform-stat-detail-row"><span>' + esc(t("departmentLabel")) + "</span>" +
+              '<span class="platform-stat-detail-val">' + esc(departmentName(m)) + "</span></div>" +
             '<div class="platform-stat-detail-row"><span>' + esc(t("jobTitleLabel")) + "</span>" +
               '<span class="platform-stat-detail-val">' + esc(m.job_title || "-") + "</span></div>" +
             '<div class="platform-stat-detail-row"><span>' + esc(t("joinedLabel")) + "</span>" +
@@ -1708,6 +1732,12 @@
           if (state.canManage) {
             controls +=
               '<div class="waitlist-form">' +
+                '<select class="waitlist-input" data-dept-user="' + esc(m.user_id) + '" aria-label="' + esc(t("departmentLabel")) + '"' + (isOwner ? " disabled" : "") + '>' +
+                  '<option value=""' + (!m.department ? " selected" : "") + ">" + esc(t("deptUnset")) + "</option>" +
+                  (app && app.departments ? app.departments() : []).map(function (d) {
+                    return '<option value="' + d.value + '"' + (m.department === d.value ? " selected" : "") + ">" + esc(app.departmentLabel(d.value)) + "</option>";
+                  }).join("") +
+                "</select>" +
                 '<select class="waitlist-input" data-person-user="' + esc(m.user_id) + '" aria-label="' + esc(t("personKindLabel")) + '">' +
                   '<option value=""' + (!m.person_kind ? " selected" : "") + ">" + esc(t("personUnset")) + "</option>" +
                   ["partner", "manager", "employee", "contractor"].map(function (k) {
@@ -1770,6 +1800,21 @@
       }
 
       function onMembersChange(ev) {
+        var deptSel = ev.target.closest("[data-dept-user]");
+        if (deptSel) {
+          var dUser = deptSel.getAttribute("data-dept-user"), dMember = findMember(dUser), prevDept = dMember ? (dMember.department || "") : "";
+          deptSel.disabled = true;
+          app.setMemberPerson(dUser, { department: deptSel.value || null }).then(function (rows) {
+            if (!rows || !rows.length) throw new Error("not allowed");
+            if (dMember) dMember.department = deptSel.value || null;
+            toast(t("deptUpdated"), "success");
+            render();
+          }).catch(function (err) {
+            deptSel.value = prevDept; deptSel.disabled = false;
+            toast(errorMessage(err), "error");
+          });
+          return;
+        }
         var sel = ev.target.closest("[data-role-user]");
         if (!sel) return;
         var userId = sel.getAttribute("data-role-user");
@@ -2790,7 +2835,7 @@
   </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 <script src="/app.js?v=4" defer></script>
-<script src="/app/common.js?v=12" defer></script>
+<script src="/app/common.js?v=13" defer></script>
 <script src="/brand-logo.js?v=4" defer></script>
 </body>
 </html>

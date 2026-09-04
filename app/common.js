@@ -450,7 +450,10 @@
           app.orgs = orgs;
           app.org = pickOrg(orgs);
           try { if (app.org) localStorage.setItem(ORG_KEY, app.org.id); } catch (e) { /* ignore */ }
-          return { user: app.user, profile: app.profile, orgs: app.orgs, org: app.org };
+          return loadServices(app.client, app.org);
+        }).then(function (services) {
+          app.services = services; /* null = غير معروف (لا تصفية)، مصفوفة = المسموح فقط */
+          return { user: app.user, profile: app.profile, orgs: app.orgs, org: app.org, services: app.services };
         });
       });
     });
@@ -545,6 +548,29 @@
 
   var ORG_PROFILE_FIELDS = ["entity_type", "legal_name", "cr_number", "vat_number", "unified_number",
     "license_number", "national_address", "phone", "email", "website", "iban", "bank_name", "account_name", "notes"];
+
+  /* الأقسام: المالك/المشرف/الإدارة يرون كل شيء؛ الباقون بحسب خريطة department_services في القاعدة */
+  var DEPARTMENTS = [
+    { value: "management", ar: "الإدارة",           en: "Management", fr: "Direction",              ur: "انتظامیہ" },
+    { value: "legal",      ar: "القسم القانوني",     en: "Legal",      fr: "Juridique",              ur: "قانونی شعبہ" },
+    { value: "hr",         ar: "الموارد البشرية",    en: "HR",         fr: "Ressources humaines",    ur: "انسانی وسائل" },
+    { value: "finance",    ar: "القسم المالي",       en: "Finance",    fr: "Finance",                ur: "مالیات" },
+    { value: "operations", ar: "التشغيل",            en: "Operations", fr: "Opérations",             ur: "آپریشنز" },
+    { value: "other",      ar: "أخرى",               en: "Other",      fr: "Autre",                  ur: "دیگر" }
+  ];
+  function departments() { return DEPARTMENTS.slice(); }
+  function departmentLabel(v) {
+    var row = null; DEPARTMENTS.forEach(function (d) { if (d.value === String(v || "")) row = d; });
+    return row ? (row[lang()] || row.ar) : "";
+  }
+
+  /* خدمات المستخدم في الشركة الحالية — من القاعدة، لا من الواجهة */
+  function loadServices(client, org) {
+    if (!org) return Promise.resolve(null);
+    return client.rpc("my_services", { p_org: org.id }).then(unwrap)
+      .then(function (list) { return Array.isArray(list) ? list : null; })
+      .catch(function () { return null; });
+  }
 
   function orgProfile() {
     return run(function (client) {
@@ -1070,7 +1096,7 @@
   function listMembers() {
     return run(function (client) {
       var orgId = requireOrg();
-      return client.from("org_members").select("org_id,user_id,role,status,invited_email,created_at,job_title,person_kind")
+      return client.from("org_members").select("org_id,user_id,role,status,invited_email,created_at,job_title,person_kind,department")
         .eq("org_id", orgId).order("created_at", { ascending: true })
         .then(unwrap)
         .then(function (members) {
@@ -1244,6 +1270,11 @@
       if (Object.prototype.hasOwnProperty.call(f, "person_kind")) {
         var k = String(f.person_kind || "");
         row.person_kind = ["partner", "manager", "employee", "contractor"].indexOf(k) !== -1 ? k : null;
+      }
+      /* القسم يحدد ما يراه العضو من خدمات (my_services في القاعدة هي الحكم) */
+      if (Object.prototype.hasOwnProperty.call(f, "department")) {
+        var d = String(f.department || "");
+        row.department = DEPARTMENTS.some(function (x) { return x.value === d; }) ? d : null;
       }
       if (!Object.keys(row).length) return null;
       return client.from("org_members").update(row).eq("org_id", orgId).eq("user_id", userId).select("*").then(unwrap);
@@ -1709,30 +1740,30 @@
    * ============================================================ */
 
   var NAV_ITEMS = [
-    { href: "/app/dashboard.html", path: "dashboard",
+    { href: "/app/dashboard.html", path: "dashboard", service: "dashboard",
       icon: '<path d="M4 13h6V4H4v9zm0 7h6v-5H4v5zm9 0h7v-9h-7v9zm0-16v5h7V4h-7z"/>',
       labels: { ar: "لوحة التحكم", en: "Dashboard", fr: "Tableau de bord", ur: "ڈیش بورڈ" } },
-    { href: "/app/dashboard.html?type=cases", path: "type=cases",
+    { href: "/app/dashboard.html?type=cases", path: "type=cases", service: "cases",
       icon: '<path d="M20 6h-3V4a2 2 0 00-2-2H9a2 2 0 00-2 2v2H4a2 2 0 00-2 2v11a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2zM9 4h6v2H9V4zm11 15H4V8h16v11z"/><path d="M11 10h2v7h-2z"/>',
       labels: { ar: "القضايا", en: "Cases", fr: "Affaires", ur: "مقدمات" } },
-    { href: "/app/dashboard.html?type=violations", path: "type=violations",
+    { href: "/app/dashboard.html?type=violations", path: "type=violations", service: "violations",
       icon: '<path d="M12 2L1 21h22L12 2zm1 15h-2v-2h2v2zm0-4h-2V9h2v4z"/>',
       labels: { ar: "المخالفات", en: "Violations", fr: "Infractions", ur: "خلاف ورزیاں" } },
-    { href: "/app/dashboard.html?type=expenses", path: "type=expenses", iconMask: true,
+    { href: "/app/dashboard.html?type=expenses", path: "type=expenses", service: "expenses", iconMask: true,
       labels: { ar: "مصاريف التشغيل", en: "Expenses", fr: "Charges", ur: "اخراجات" } },
-    { href: "/app/documents.html", path: "documents",
+    { href: "/app/documents.html", path: "documents", service: "documents",
       icon: '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2z"/>',
       labels: { ar: "المستندات", en: "Documents", fr: "Documents", ur: "دستاویزات" } },
-    { href: "/app/processes.html", path: "processes",
+    { href: "/app/processes.html", path: "processes", service: "processes",
       icon: '<path d="M3 5h8v4H3V5zm10 0h8v4h-8V5zM3 15h8v4H3v-4zm10 0h8v4h-8v-4zM7 9v6h2V9H7zm10 0v6h2V9h-2z"/>',
       labels: { ar: "مكتبة الإجراءات", en: "Process library", fr: "Bibliothèque des procédures", ur: "طریقہ کار لائبریری" } },
-    { href: "/app/risks.html", path: "risks",
+    { href: "/app/risks.html", path: "risks", service: "risks",
       icon: '<path d="M12 2L2 7v6c0 5.25 3.75 10.15 10 11.5C18.25 23.15 22 18.25 22 13V7l-10-5zm-1 6h2v6h-2V8zm0 8h2v2h-2v-2z"/>',
       labels: { ar: "إدارة المخاطر", en: "Risk management", fr: "Gestion des risques", ur: "خطرات کا انتظام" } },
-    { href: "/app/team.html", path: "team",
+    { href: "/app/team.html", path: "team", service: "team",
       icon: '<path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>',
       labels: { ar: "الفريق", en: "Team", fr: "Équipe", ur: "ٹیم" } },
-    { href: "/app/settings.html", path: "settings",
+    { href: "/app/settings.html", path: "settings", service: "settings",
       icon: '<path d="M19.14 12.94a7.07 7.07 0 000-1.88l2.03-1.58a.5.5 0 00.12-.64l-1.92-3.32a.5.5 0 00-.61-.22l-2.39.96a7.03 7.03 0 00-1.62-.94l-.36-2.54a.5.5 0 00-.5-.42h-3.84a.5.5 0 00-.5.42l-.36 2.54c-.58.24-1.12.56-1.62.94l-2.39-.96a.5.5 0 00-.61.22L2.65 8.84a.5.5 0 00.12.64l2.03 1.58a7.07 7.07 0 000 1.88l-2.03 1.58a.5.5 0 00-.12.64l1.92 3.32c.13.22.39.3.61.22l2.39-.96c.5.38 1.04.7 1.62.94l.36 2.54c.04.24.25.42.5.42h3.84c.25 0 .46-.18.5-.42l.36-2.54c.58-.24 1.12-.56 1.62-.94l2.39.96c.22.08.48 0 .61-.22l1.92-3.32a.5.5 0 00-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1112 8.5a3.5 3.5 0 010 7z"/>',
       labels: { ar: "الإعدادات", en: "Settings", fr: "Paramètres", ur: "ترتیبات" } },
     { href: "/app/admin.html", path: "admin", adminOnly: true,
@@ -1844,13 +1875,34 @@
     if (remember) { try { localStorage.setItem(SIDEBAR_KEY, on ? "on" : "off"); } catch (e) { /* التخزين محجوب */ } }
   }
 
+  function serviceAllowed(key) {
+    if (!key) return true;
+    if (!app || !Array.isArray(app.services)) return true; /* غير معروف بعد: لا نخفي شيئاً */
+    return app.services.indexOf(key) !== -1;
+  }
+
+  /* الصفحة الحالية ليست من خدمات قسمه؟ إلى لوحة التحكم (المسموحة للجميع) */
+  function enforceServiceAccess() {
+    if (!app || !Array.isArray(app.services)) return;
+    var here = String(window.location.pathname || ""), qs = String(window.location.search || "");
+    var current = null;
+    NAV_ITEMS.forEach(function (item) {
+      if (!item.service) return;
+      if (item.path.indexOf("type=") === 0) { if (qs.indexOf(item.path) !== -1) current = item.service; }
+      else if (item.path !== "dashboard" && here.indexOf("/" + item.path) !== -1) current = item.service;
+    });
+    if (current && !serviceAllowed(current)) window.location.replace("/app/dashboard.html");
+  }
+
   function renderSidebar() {
     var nav = document.getElementById("appSidebar");
     if (!nav) return;
+    enforceServiceAccess();
     var here = String(window.location.pathname || "");
     var html = '<div class="app-sidebar-title">' + escapeHtml(sidebarLabel({ ar: "الخدمات", en: "Services", fr: "Services", ur: "خدمات" })) + "</div>";
     NAV_ITEMS.forEach(function (item) {
       if (item.adminOnly && !nav.dataset.admin) return;
+      if (!serviceAllowed(item.service)) return;
       var qs = String(window.location.search || "");
       var active = "";
       if (item.path.indexOf("type=") === 0) {
@@ -1957,6 +2009,9 @@
   app.achievements = achievements;
   app.exportXlsx = exportXlsx;
   app.setMemberPerson = setMemberPerson;
+  app.departments = departments;
+  app.departmentLabel = departmentLabel;
+  app.serviceAllowed = serviceAllowed;
   app.entityTypes = function () { return ENTITY_TYPES.slice(); };
   app.entityLabel = entityLabel;
   app.isPersonType = isPersonType;
@@ -2309,6 +2364,7 @@
     var here = String(window.location.pathname || "");
     var nav = "";
     TOPNAV.forEach(function (item) {
+      if (item.service && !serviceAllowed(item.service)) return;
       var label = escapeHtml(sidebarLabel(item.labels));
       var inApp = item.href.indexOf("/app/") === 0;
       var active = inApp && here.indexOf(item.href) === 0 ? "is-active" : "";

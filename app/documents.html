@@ -2632,7 +2632,6 @@
       }
 
       const NEW_TheTracker = "__new__";
-      const MAX_PREVIEW = 20;
       const CHUNK = 200;
       const MAX_UNMATCHED_LISTED = 10;
       const ALLOWED_EXT = ["xlsx", "xlsm", "xls", "csv", "tsv", "txt", "json"];
@@ -2825,19 +2824,38 @@
         return null;
       }
 
-      function parseSheet(ws) {
+      /* أسطر مرشحة ليكون أحدها صف العناوين، تُعرض على المستخدم حين لا نثق بالتخمين */
+      function candidateHeaderRows(aoa) {
+        const scanTo = Math.min(aoa.length, 15);
+        const out = [];
+        for (let i = 0; i < scanTo; i++) {
+          const cells = (aoa[i] || []).map(cellText).filter(function (v) { return v; });
+          if (cells.length) out.push({ row: i, preview: cells.slice(0, 4).join(" · ") });
+        }
+        return out;
+      }
+
+      /* forcedRow: فهرس صف العناوين صفر الأساس، يفرضه المستخدم من منتقي الصفوف
+         حين لا يثق التخمين بنفسه. confident=false توقف الاستيراد عند خطوة
+         الربط وتعرض المنتقي بدل الاستمرار بأعمدة "عمود 1، عمود 2..." بلا معنى. */
+      function parseSheet(ws, forcedRow) {
         const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: null, blankrows: false });
         let hi = -1;
         let best = -1;
         const scanTo = Math.min(aoa.length, 30);
-        for (let i = 0; i < scanTo; i++) {
-          const sc = headerScore(aoa[i], nextDataRow(aoa, i));
-          if (sc > best) { best = sc; hi = i; }
+        if (typeof forcedRow === "number" && forcedRow >= 0 && forcedRow < aoa.length) {
+          hi = forcedRow;
+          best = headerScore(aoa[hi], nextDataRow(aoa, hi));
+        } else {
+          for (let i = 0; i < scanTo; i++) {
+            const sc = headerScore(aoa[i], nextDataRow(aoa, i));
+            if (sc > best) { best = sc; hi = i; }
+          }
         }
         if (hi === -1) {
           for (let i = 0; i < aoa.length; i++) if (aoa[i] && aoa[i].some(nonEmpty)) { hi = i; break; }
         }
-        if (hi === -1) return { headers: [], rows: [] };
+        if (hi === -1) return { headers: [], rows: [], confident: false, candidates: [] };
 
         const rawHeaders = aoa[hi];
         let width = rawHeaders.length;
@@ -2845,8 +2863,11 @@
 
         const headers = [];
         const seen = {};
+        let fallbackCount = 0;
         for (let c = 0; c < width; c++) {
-          let name = cellText(rawHeaders[c]) || (t("columnN") + " " + (c + 1));
+          const raw = cellText(rawHeaders[c]);
+          let name = raw || (t("columnN") + " " + (c + 1));
+          if (!raw) fallbackCount++;
           if (seen[name]) { seen[name] += 1; name = name + " (" + seen[name] + ")"; } else { seen[name] = 1; }
           headers.push(name);
         }
@@ -2859,7 +2880,9 @@
           for (let c = 0; c < width; c++) row[c] = c < src.length ? src[c] : null;
           rows.push(row);
         }
-        return { headers: headers, rows: rows };
+        /* واثقون إن حُدّد الصف يدوياً، أو إن أغلب الأعمدة حملت نصاً حقيقياً لا أسماء احتياطية */
+        const confident = typeof forcedRow === "number" || (width > 0 && fallbackCount / width <= 0.3);
+        return { headers: headers, rows: rows, confident: confident, headerRow: hi, candidates: candidateHeaderRows(aoa) };
       }
 
       /* اسم الورقة يحدد النوع والعميل: "مخالفات بلدي - ابراج الكهرباء" ← مخالفات، العميل: ابراج الكهرباء */
@@ -2873,7 +2896,7 @@
         return { kind: kind, client: client };
       }
 
-      function selectSheet(name) {
+      function selectSheet(name, forcedHeaderRow) {
         const ws = state.workbook && state.workbook.Sheets[name];
         state.sheetName = name;
         const profile = sheetProfile(name);
@@ -2881,17 +2904,21 @@
         state.mode = profile.kind === "violations" ? "violations" : "general";
         if (els.importMode) els.importMode.value = state.mode;
         if (els.graceField) show(els.graceField, state.mode === "violations");
-        const parsed = ws ? parseSheet(ws) : { headers: [], rows: [] };
+        const parsed = ws ? parseSheet(ws, forcedHeaderRow) : { headers: [], rows: [], confident: true, candidates: [] };
         state.headers = parsed.headers;
         state.rows = parsed.rows;
+        state.headerCandidates = parsed.candidates || [];
+        state.headerRow = parsed.headerRow;
 
         if (!state.headers.length || !state.rows.length) {
           setMsg(els.fileStatus, t("emptySheet"), "error");
+          show(els.headerPicker, false);
           [els.step2, els.step3, els.step4, els.step5].forEach(function (s) { show(s, false); });
           return;
         }
 
         setMsg(els.fileStatus, fmt("fileLoaded", { name: state.file.name, rows: state.rows.length, cols: state.headers.length }), "success");
+        renderHeaderPicker(parsed.confident);
         guessMapping();
         renderPreview();
         renderMapping();
@@ -2900,6 +2927,21 @@
         [els.step2, els.step3, els.step4, els.step5].forEach(function (s) { show(s, true); });
         show(els.summaryCard, false);
         setMsg(els.importProgress, "");
+      }
+
+      /* الصف لم يُلتقط بثقة: تنبيه واحد + منتقي صفوف بديل، بدل ترك المستخدم
+         أمام أعمدة "عمود 1، عمود 2..." بلا معنى. */
+      function renderHeaderPicker(confident) {
+        if (!els.headerPicker) return;
+        show(els.headerPicker, !confident);
+        if (confident) return;
+        const keep = els.headerRowSelect.value;
+        els.headerRowSelect.innerHTML = "";
+        state.headerCandidates.forEach(function (c) {
+          els.headerRowSelect.appendChild(new Option(fmt("headerRowOption", { n: c.row + 1, preview: c.preview }), String(c.row)));
+        });
+        const wanted = keep !== "" ? keep : String(state.headerRow || 0);
+        if ([].some.call(els.headerRowSelect.options, function (o) { return o.value === wanted; })) els.headerRowSelect.value = wanted;
       }
 
       /* ---------- mapping ---------- */
@@ -3009,17 +3051,29 @@
         show(els.sheetRow, names.length > 1);
       }
 
+      /* معاينة ثانوية صغيرة فقط: أول أعمدة قليلة وأسطر قليلة، بلا زحمة تكسر البطاقة */
+      const PREVIEW_ROWS = 5;
+      const PREVIEW_COLS = 12;
       function renderPreview() {
-        const head = "<thead><tr>" + state.headers.map(function (h) { return "<th>" + esc(h) + "</th>"; }).join("") + "</tr></thead>";
-        const body = "<tbody>" + state.rows.slice(0, MAX_PREVIEW).map(function (r) {
-          return "<tr>" + state.headers.map(function (_h, i) { return "<td>" + esc(cellText(r[i])) + "</td>"; }).join("") + "</tr>";
+        const shownCols = Math.min(PREVIEW_COLS, state.headers.length);
+        const extraCols = state.headers.length - shownCols;
+        const head = "<thead><tr>" + state.headers.slice(0, shownCols).map(function (h) { return "<th>" + esc(h) + "</th>"; }).join("") + "</tr></thead>";
+        const body = "<tbody>" + state.rows.slice(0, PREVIEW_ROWS).map(function (r) {
+          return "<tr>" + state.headers.slice(0, shownCols).map(function (_h, i) { return "<td>" + esc(cellText(r[i])) + "</td>"; }).join("") + "</tr>";
         }).join("") + "</tbody>";
         els.previewTable.innerHTML = head + body;
-        els.previewNote.textContent = fmt("previewNote", { shown: Math.min(MAX_PREVIEW, state.rows.length), total: state.rows.length });
+        els.previewNote.textContent = fmt("previewNote", { shown: Math.min(PREVIEW_ROWS, state.rows.length), total: state.rows.length });
+        if (els.previewMoreCols) {
+          show(els.previewMoreCols, extraCols > 0);
+          if (extraCols > 0) els.previewMoreCols.textContent = fmt("previewMoreCols", { n: extraCols });
+        }
       }
 
+      /* الحقول الأساسية تظهر مباشرة، والباقي تحت "تفاصيل إضافية" — الواجهة تنظّم
+         حسب حقولنا نحن لا حسب فوضى الملف الوارد. */
       function renderMapping() {
         els.mappingGrid.innerHTML = "";
+        if (els.optionalMappingGrid) els.optionalMappingGrid.innerHTML = "";
         FIELDS.forEach(function (f) {
           const wrap = document.createElement("div");
           wrap.className = "field";
@@ -3041,7 +3095,8 @@
           });
           wrap.appendChild(label);
           wrap.appendChild(sel);
-          els.mappingGrid.appendChild(wrap);
+          const target = (f.required || !els.optionalMappingGrid) ? els.mappingGrid : els.optionalMappingGrid;
+          target.appendChild(wrap);
         });
       }
 
@@ -3379,6 +3434,9 @@
         });
 
         els.sheetSelect.addEventListener("change", function () { if (state.workbook) selectSheet(els.sheetSelect.value); });
+        els.headerRowSelect.addEventListener("change", function () {
+          if (state.workbook) selectSheet(state.sheetName, parseInt(els.headerRowSelect.value, 10));
+        });
         els.trackerSelect.addEventListener("change", toggleTrackerName);
         els.importBtn.addEventListener("click", function () { runImport(); });
         els.importAnotherBtn.addEventListener("click", resetFlow);
@@ -3393,7 +3451,9 @@
           step1: null, step2: $("step2"), step3: $("step3"), step4: $("step4"), step5: $("step5"),
           fileStatus: $("fileStatus"),
           sheetRow: $("sheetRow"), sheetSelect: $("sheetSelect"), previewNote: $("previewNote"), previewTable: $("previewTable"),
-          mappingGrid: $("mappingGrid"), mappingStats: $("mappingStats"), unmatchedHint: $("unmatchedHint"),
+          previewMoreCols: $("previewMoreCols"),
+          headerPicker: $("headerPicker"), headerPickerMsg: $("headerPickerMsg"), headerRowSelect: $("headerRowSelect"),
+          mappingGrid: $("mappingGrid"), optionalMappingGrid: $("optionalMappingGrid"), mappingStats: $("mappingStats"), unmatchedHint: $("unmatchedHint"),
           importMode: $("importMode"), graceField: $("graceField"), graceDays: $("graceDays"),
           trackerSelect: $("trackerSelect"), trackerNameField: $("trackerNameField"), trackerName: $("trackerName"),
           planStats: $("planStats"), planMsg: $("planMsg"), planUpgrade: $("planUpgrade"),
@@ -3446,7 +3506,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
 <script src="/app.js?v=4" defer></script>
-<script src="/app/common.js?v=12" defer></script>
+<script src="/app/common.js?v=13" defer></script>
 <script src="/brand-logo.js?v=4" defer></script>
 </body>
 </html>
