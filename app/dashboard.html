@@ -455,7 +455,10 @@
     .tabs-row { margin-top: 0; margin-bottom: 1.25rem; }
 
     /* لوحة المعلومات: عمود رئيسي للخدمات والقائمة، وعمود جانبي للتقويم والأرقام */
-    .dash-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+    .dash-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; align-items: start; margin-bottom: 1.5rem; }
+    /* رابط التقويم بطاقة مستقلة بالمسافة نفسها التي بين بطاقات اللوحة */
+    #icsCard { margin-top: 1.5rem; margin-bottom: 1.5rem; }
+    #icsCard .ics-form { justify-content: flex-start; }
     @media (min-width: 1150px) { .dash-grid { grid-template-columns: minmax(0, 1fr) minmax(320px, 400px); } }
     .dash-main, .dash-side { min-width: 0; }
     .dash-side { display: grid; gap: 1.5rem; align-content: start; }
