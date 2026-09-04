@@ -1747,8 +1747,18 @@
   function keepInsideApp() {
     /* لا شيء يُخرج المستخدم من لوحته: روابط الموقع العام في التذييل تُزال داخل
        التطبيق، وما تبقّى من روابط خارجية يُفتح في تبويب جديد. */
-    var footerLinks = document.querySelectorAll(".footer-links");
-    for (var f = 0; f < footerLinks.length; f++) footerLinks[f].hidden = true;
+    /* نُخفي روابط الموقع العام في التذييل فقط، ونُبقي روابط التطبيق مثل لوحة التحكم. */
+    var footerRows = document.querySelectorAll(".footer-links");
+    for (var f = 0; f < footerRows.length; f++) {
+      var kids = footerRows[f].querySelectorAll("a[href]");
+      var visible = 0;
+      for (var j = 0; j < kids.length; j++) {
+        var h = kids[j].getAttribute("href") || "";
+        if (h.indexOf("/app/") === 0) { visible++; continue; }
+        kids[j].hidden = true;
+      }
+      footerRows[f].hidden = visible === 0;
+    }
 
     /* زر الخروج واحد فقط، في الشريط العلوي؛ أي زر آخر في الصفحات يُخفى. */
     var strays = document.querySelectorAll("#signOutCard, #signOutBtn, #quickLinks");
