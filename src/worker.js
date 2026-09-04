@@ -699,7 +699,13 @@ export default {
       if (path === "/api/config" && request.method === "GET") return handleConfig(env);
       if (path === "/api/stats" && request.method === "GET") return await handleStats(env);
       if (path === "/api/assistant" && request.method === "POST") return await handleAssistantRequest(request, env);
-      if (path === "/api/documents/analyze" && request.method === "POST") return await handleDocumentAnalyze(request, env);
+      if (path === "/api/documents/analyze" && request.method === "POST") {
+        /* قراءة المستندات تستهلك حصة الذكاء، فتلزمها جلسة مستخدم وحدّ معدل كالنيّة */
+        const docUser = await authedUser(request, env);
+        if (!docUser) return json({ error: "unauthorized" }, 401);
+        if (tgAiRateLimited("doc:" + docUser.id)) return json({ error: "rate_limited" }, 429);
+        return await handleDocumentAnalyze(request, env);
+      }
       if (path === "/api/contact" && request.method === "POST") return await handleContact(request, env);
       if (path === "/api/notify/test" && request.method === "POST") return await handleNotifyTest(request, env);
       if (path === "/api/telegram/webhook" && request.method === "POST") return await handleTelegramWebhook(request, env);

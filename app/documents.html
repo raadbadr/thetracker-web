@@ -1738,13 +1738,17 @@
         });
       }
       function pdfFirstPageImage(pdf) { return pdfPageImage(pdf, 1); }
-      var ERROR_TEXT = { ar: { ai_unavailable: "خدمة القراءة غير متاحة الآن.", no_text: "لم يقرأ نص من الملف. جرب صورة أوضح.", image_read_failed: "تعذرت قراءة الصورة.", extract_failed: "قرئ النص لكن تعذر فهم المستند." },
-                         en: { ai_unavailable: "Reading service unavailable.", no_text: "No text could be read. Try a clearer image.", image_read_failed: "Could not read the image.", extract_failed: "Text was read but the document could not be understood." } };
+      var ERROR_TEXT = { ar: { unauthorized: "انتهت الجلسة، سجل الدخول من جديد.", rate_limited: "طلبات كثيرة، انتظر دقيقة ثم أعد المحاولة.", ai_unavailable: "خدمة القراءة غير متاحة الآن.", no_text: "لم يقرأ نص من الملف. جرب صورة أوضح.", image_read_failed: "تعذرت قراءة الصورة.", extract_failed: "قرئ النص لكن تعذر فهم المستند." },
+                         en: { unauthorized: "Session expired, sign in again.", rate_limited: "Too many requests, wait a minute and try again.", ai_unavailable: "Reading service unavailable.", no_text: "No text could be read. Try a clearer image.", image_read_failed: "Could not read the image.", extract_failed: "Text was read but the document could not be understood." } };
       function errorText(code) { var d = ERROR_TEXT[lang()] || ERROR_TEXT.ar; return d[code] || (ERROR_TEXT.ar[code]) || ""; }
 
       function analyze(payload) {
-        return fetch("/api/documents/analyze", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
-          .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error || "analyze"); return d.fields; }); });
+        return window.trackerAuth.getSession().then(function (session) {
+          var jwt = session && session.access_token;
+          var headers = { "Content-Type": "application/json" };
+          if (jwt) headers.Authorization = "Bearer " + jwt;
+          return fetch("/api/documents/analyze", { method: "POST", headers: headers, body: JSON.stringify(payload) });
+        }).then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error || "analyze"); return d.fields; }); });
       }
 
       function handleFile(file) {

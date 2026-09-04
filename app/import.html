@@ -786,6 +786,7 @@
         upgradePlan: "ترقية الباقة",
         importBtn: "بدء الاستيراد",
         mappingRequired: "اختر عمود العنوان وعمود تاريخ الاستحقاق أولا.",
+        mappingRequiredDue: "اختر عمود تاريخ الاستحقاق أولا.",
         noValidRows: "لا توجد صفوف صالحة للاستيراد، تحقق من ربط الأعمدة.",
         progressCreatingTracker: "جاري إنشاء السجل...",
         progressImport: "جاري تسجيل عملية الاستيراد...",
@@ -885,6 +886,7 @@
         upgradePlan: "Upgrade plan",
         importBtn: "Start import",
         mappingRequired: "Choose the title column and the due date column first.",
+        mappingRequiredDue: "Choose the due date column first.",
         noValidRows: "There are no valid rows to import. Check the column mapping.",
         progressCreatingTracker: "Creating the tracker...",
         progressImport: "Registering the import...",
@@ -984,6 +986,7 @@
         upgradePlan: "Changer de forfait",
         importBtn: "Lancer l'importation",
         mappingRequired: "Choisissez d'abord la colonne du titre et celle de la date d'échéance.",
+        mappingRequiredDue: "Choisissez d'abord la colonne de la date d'échéance.",
         noValidRows: "Aucune ligne valide à importer. Vérifiez l'association des colonnes.",
         progressCreatingTracker: "Création du suivi...",
         progressImport: "Enregistrement de l'importation...",
@@ -1083,6 +1086,7 @@
         upgradePlan: "پلان اپ گریڈ کریں",
         importBtn: "درآمد شروع کریں",
         mappingRequired: "پہلے عنوان اور مقررہ تاریخ کے کالم منتخب کریں۔",
+        mappingRequiredDue: "پہلے مقررہ تاریخ کا کالم منتخب کریں۔",
         noValidRows: "درآمد کے لیے کوئی درست قطار نہیں۔ کالمز کی منسلکی چیک کریں۔",
         progressCreatingTracker: "ٹریکر بنایا جا رہا ہے...",
         progressImport: "درآمد رجسٹر کی جا رہی ہے...",
@@ -1841,7 +1845,11 @@
       async function runImport() {
         if (state.busy) return;
         const m = state.mapping;
-        if (m.title < 0 || m.due < 0) { setMsg(els.importProgress, t("mappingRequired"), "error"); return; }
+        /* في وضع المخالفات يُبنى العنوان من رقم المخالفة، فلا يلزم عمود عنوان */
+        var needsTitle = state.mode !== "violations";
+        if ((needsTitle && m.title < 0) || m.due < 0) {
+          setMsg(els.importProgress, t(needsTitle ? "mappingRequired" : "mappingRequiredDue"), "error"); return;
+        }
 
         const isNew = els.trackerSelect.value === NEW_TheTracker;
         const trackerName = String(els.trackerName.value || "").trim();
@@ -1890,6 +1898,9 @@
                 due_at: r.due_at,
                 status: r.status,
                 assignee_id: r.assignee_id,
+                amount: r.amount != null ? r.amount : null,
+                client_name: r.client_name || null,
+                case_number: r.case_number || null,
                 data: r.data
               };
             });
@@ -1902,7 +1913,7 @@
           if (isNew) {
             progress(t("progressRule"));
             try {
-              await trackerApp.saveRule({ tracker_id: tracker.id, offset_minutes: 1440, channels: ["email"], target: "assignee" });
+              await trackerApp.saveRule({ tracker_id: tracker.id, offset_minutes: 1440, channels: ["telegram"], target: "assignee" });
               ruleCreated = true;
             } catch (e) {
               ruleCreated = false;
@@ -1987,8 +1998,8 @@
         if (els.importMode) els.importMode.addEventListener("change", function () {
           state.mode = this.value === "violations" ? "violations" : "general";
           show(els.graceField, state.mode === "violations");
-          if (typeof refreshMapping === "function") refreshMapping();
-          else if (typeof renderMapping === "function") { renderMapping(); }
+          renderMapping();
+          analyzeAndRender();
         });
 
         els.chooseFileBtn.addEventListener("click", function (e) {

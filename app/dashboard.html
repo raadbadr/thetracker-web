@@ -2966,7 +2966,7 @@
           { label: "category", get: function (r) { return r.category; } },
           { label: T("colTracker"), get: function (r) { return r.trackers && r.trackers.name || ""; } },
           { label: T("colStatus"), get: function (r) { return r.status; } },
-          { label: T("colDue"), get: function (r) { return r.due_at ? fmtDate(r.due_at, { withTime: true }) : ""; } },
+          { label: T("colDue"), get: function (r) { return r.due_at ? app.fmtDate(r.due_at, { withTime: true }) : ""; } },
           { label: T("colAssignee"), get: function (r) { return r.assignee_id ? assigneeName(r.assignee_id) : ""; } },
           { label: T("colAmount"), get: function (r) { return r.amount; } },
           { label: T("colClient"), get: function (r) { return r.client_name; } },
@@ -3211,9 +3211,10 @@
         });
       }
 
-      $("itemsBody").addEventListener("click", function (ev) {
+      /* جدولا القائمة والمخالفات يتشاركان الأزرار نفسها، فالمستمع على المستند */
+      document.addEventListener("click", function (ev) {
         var b = ev.target.closest("button[data-action]");
-        if (!b) return;
+        if (!b || !b.closest("#itemsBody, #violationsBody")) return;
         var item = findItem(b.dataset.id);
         if (!item) return;
         var action = b.dataset.action;

@@ -1264,7 +1264,102 @@
   }
 
   /* سطر الإدخال الذكي: النص ← نية (عنوان/نوع/موعد/عميل/رقم دعوى/اسم المنفذ) عبر ال Worker بجلسة المستخدم */
+  /* ============================================================
+   * إدخال سريع بلا ذكاء اصطناعي: أنماط معروفة (تاريخ، وقت، رقم قضية أو
+   * مخالفة، مبلغ) تُحل فوراً في المتصفح. لا شبكة ولا انتظار إن كفت القواعد.
+   * ============================================================ */
+  var AR_WEEKDAYS = { "الاحد": 0, "الأحد": 0, "الاثنين": 1, "الإثنين": 1, "الثلاثاء": 2, "الاربعاء": 3, "الأربعاء": 3, "الخميس": 4, "الجمعة": 5, "السبت": 6 };
+  var QA_KIND_RX = { violation: /مخالفة|مخالفه|غرامة|fine|violation/i, session: /جلسة|جلسه|نظر الدعوى|hearing|session|قضية|دعوى/i };
+  var QA_HAS_ADD_WORD = /سجل|أضف|اضف|ضيف|موعد|جلسة|جلسه|نظر الدعوى|مخالفة|مخالفه|غرامة|مهمة|مهمه|deadline|hearing|session|fine|violation|appointment|add|schedule/i;
+  var QA_DATE_NUM_RX = /\b(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})\b|\b(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})\b/;
+
+
+  function riyadhNow() {
+    var parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Riyadh", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).formatToParts(new Date());
+    var m = {}; parts.forEach(function (p) { m[p.type] = p.value; });
+    return { y: Number(m.year), mo: Number(m.month), d: Number(m.day), h: Number(m.hour), mi: Number(m.minute) };
+  }
+  function riyadhIso(y, mo, d, h, mi) {
+    var pad = function (n) { return String(n).padStart(2, "0"); };
+    return y + "-" + pad(mo) + "-" + pad(d) + "T" + pad(h) + ":" + pad(mi) + ":00+03:00";
+  }
+  function riyadhWeekday(y, mo, d) {
+    /* Sunday=0..Saturday=6 بحسب توقيت الرياض، بلا التواء المنطقة الزمنية المحلية للمتصفح */
+    return new Date(Date.UTC(y, mo - 1, d, -3)).getUTCDay();
+  }
+  function addDaysRiyadh(now, n) {
+    var t = Date.UTC(now.y, now.mo - 1, now.d) + n * 86400000;
+    var dt = new Date(t);
+    return { y: dt.getUTCFullYear(), mo: dt.getUTCMonth() + 1, d: dt.getUTCDate() };
+  }
+  /* الوقت يُلتقط فقط قريباً من "الساعة" أو ملاصقاً لمؤشر ص/م أو بصيغة HH:MM — أرقام
+     أخرى في النص (رقم القضية مثلاً) لا تُخلط بوقت الجلسة أبداً */
+  function timeFrom(hStr, miStr, mark) {
+    var h = Number(hStr) || 0, mi = Number(miStr) || 0; mark = (mark || "").toLowerCase();
+    if (/^(م|مساء|مساءً|pm)$/.test(mark) && h < 12) h += 12;
+    if (/^(ص|صباحا|صباحاً|am)$/.test(mark) && h === 12) h = 0;
+    return { h: h, mi: mi };
+  }
+  function extractTime(text, defaultH, defaultM) {
+    var m = text.match(/الساعة\s*(\d{1,2})(?::(\d{2}))?\s*(ص|صباحا|صباحاً|م|مساء|مساءً|am|pm)?/i);
+    if (m) return timeFrom(m[1], m[2], m[3]);
+    m = text.match(/\b(\d{1,2}):(\d{2})\b/);
+    if (m) return timeFrom(m[1], m[2], null);
+    m = text.match(/\b(\d{1,2})\s*(ص|صباحا|صباحاً|م|مساء|مساءً|am|pm)\b/i);
+    if (m) return timeFrom(m[1], null, m[2]);
+    return { h: defaultH, mi: defaultM };
+  }
+  function extractDate(text, now) {
+    if (/غدا|غداً|بكرة|بكره/.test(text) && !/بعد\s*غد/.test(text)) return addDaysRiyadh(now, 1);
+    if (/بعد\s*غد/.test(text)) return addDaysRiyadh(now, 2);
+    var afterN = text.match(/بعد\s*(\d{1,3})\s*(?:يوم|أيام|ايام)/);
+    if (afterN) return addDaysRiyadh(now, Number(afterN[1]));
+    var num = text.match(QA_DATE_NUM_RX);
+    if (num) {
+      if (num[1]) return { y: Number(num[1]), mo: Number(num[2]), d: Number(num[3]) };
+      var y = Number(num[6]); if (y < 100) y += 2000;
+      return { y: y, mo: Number(num[5]), d: Number(num[4]) };
+    }
+    for (var name in AR_WEEKDAYS) {
+      if (text.indexOf(name) === -1) continue;
+      var target = AR_WEEKDAYS[name];
+      var todayWd = riyadhWeekday(now.y, now.mo, now.d);
+      var delta = (target - todayWd + 7) % 7;
+      if (delta === 0) delta = 7;
+      if (/القادم|القادمة|الجاي|الجاية|بعد اسبوع|بعد أسبوع/.test(text)) delta += 7;
+      return addDaysRiyadh(now, delta);
+    }
+    return null;
+  }
+
+  /* يعيد عنصراً كاملاً إن وثقت القواعد من نوعه وموعده، وإلا null لتذهب للنموذج اللغوي */
+  function quickParseFast(text) {
+    var t = String(text || "").trim();
+    if (!t || !QA_HAS_ADD_WORD.test(t)) return null;
+    var kind = QA_KIND_RX.violation.test(t) ? "violation" : QA_KIND_RX.session.test(t) ? "session" : "task";
+    var now = riyadhNow();
+    var date = extractDate(t, now);
+    if (!date) return null;
+    var time = extractTime(t, kind === "violation" ? 23 : 9, kind === "violation" ? 59 : 0);
+    var caseNo = (t.match(/(?:دعوى|قضية|القضية|الدعوى|case)\s*(?:رقم|no\.?|#)?\s*([0-9]{2,})/i) || [])[1] || null;
+    var violNo = (t.match(/(?:مخالفة|مخالفه)\s*(?:رقم|no\.?|#)?\s*([0-9]{2,})/i) || [])[1] || null;
+    var amount = (t.match(/(?:مبلغ|قيمة|غرامة)[^0-9]{0,15}([0-9][0-9,\.]{1,})\s*(?:ريال|رس|sar)?/i) || t.match(/([0-9][0-9,\.]{2,})\s*(?:ريال|رس|sar)/i) || [])[1];
+    amount = amount ? Number(String(amount).replace(/,/g, "")) : null;
+    return {
+      action: "add",
+      item: {
+        kind: kind, title: t.slice(0, 160),
+        due_at: riyadhIso(date.y, date.mo, date.d, time.h, time.mi),
+        case_number: caseNo, violation_number: violNo, amount: amount
+      },
+      fast: true
+    };
+  }
+  app.quickParseFast = quickParseFast;
+
   function parseIntent(text) {
+    var fast = quickParseFast(text);
+    if (fast) return Promise.resolve(fast);
     return app.ready.then(function () {
       requireClient();
       return window.trackerAuth.getSession();

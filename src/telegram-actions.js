@@ -44,8 +44,64 @@ ${ctx && ctx.attachment ? `The message came with a ${ctx.attachment.kind} whose 
 Never invent numbers; leave fields absent if unknown.`;
 }
 
+/* حل تاريخ ووقت فعليين بتوقيت الرياض من نص عربي: أرقام، أيام الأسبوع، غدا/بعد غد،
+   "بعد N يوم" — بلا نموذج لغوي. يطابق افتراضات النظام في intentSystem أعلاه. */
+const AR_WEEKDAYS = { "الاحد": 0, "الأحد": 0, "الاثنين": 1, "الإثنين": 1, "الثلاثاء": 2, "الاربعاء": 3, "الأربعاء": 3, "الخميس": 4, "الجمعة": 5, "السبت": 6 };
+function riyadhNowParts() {
+  const parts = new Intl.DateTimeFormat("en-GB", { timeZone: RIYADH, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
+  const m = {}; parts.forEach((p) => { m[p.type] = p.value; });
+  return { y: Number(m.year), mo: Number(m.month), d: Number(m.day) };
+}
+function riyadhWeekday(y, mo, d) { return new Date(Date.UTC(y, mo - 1, d, -3)).getUTCDay(); }
+function addDaysRiyadh(now, n) {
+  const dt = new Date(Date.UTC(now.y, now.mo - 1, now.d) + n * 86400000);
+  return { y: dt.getUTCFullYear(), mo: dt.getUTCMonth() + 1, d: dt.getUTCDate() };
+}
+function riyadhIso(y, mo, d, h, mi) {
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${y}-${pad(mo)}-${pad(d)}T${pad(h)}:${pad(mi)}:00+03:00`;
+}
+function extractTimeOfDay(text, defH, defM) {
+  let m = text.match(/الساعة\s*(\d{1,2})(?::(\d{2}))?\s*(ص|صباحا|صباحاً|م|مساء|مساءً|am|pm)?/i);
+  if (m) return timeFrom(m[1], m[2], m[3]);
+  m = text.match(/\b(\d{1,2}):(\d{2})\b/);
+  if (m) return timeFrom(m[1], m[2], null);
+  m = text.match(/\b(\d{1,2})\s*(ص|صباحا|صباحاً|م|مساء|مساءً|am|pm)\b/i);
+  if (m) return timeFrom(m[1], null, m[2]);
+  return { h: defH, mi: defM };
+}
+function timeFrom(hStr, miStr, mark) {
+  let h = Number(hStr) || 0; const mi = Number(miStr) || 0; mark = (mark || "").toLowerCase();
+  if (/^(م|مساء|مساءً|pm)$/.test(mark) && h < 12) h += 12;
+  if (/^(ص|صباحا|صباحاً|am)$/.test(mark) && h === 12) h = 0;
+  return { h, mi };
+}
+function extractDueDate(text) {
+  const now = riyadhNowParts();
+  if (/بعد\s*غد/.test(text)) return addDaysRiyadh(now, 2);
+  if (/غدا|غداً|بكرة|بكره/.test(text)) return addDaysRiyadh(now, 1);
+  const afterN = text.match(/بعد\s*(\d{1,3})\s*(?:يوم|أيام|ايام)/);
+  if (afterN) return addDaysRiyadh(now, Number(afterN[1]));
+  const isoNum = text.match(/\b(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})\b/);
+  if (isoNum) return { y: Number(isoNum[1]), mo: Number(isoNum[2]), d: Number(isoNum[3]) };
+  const dmyNum = text.match(/\b(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})\b/);
+  if (dmyNum) {
+    let y = Number(dmyNum[3]); if (y < 100) y += 2000;
+    return { y, mo: Number(dmyNum[2]), d: Number(dmyNum[1]) };
+  }
+  for (const name in AR_WEEKDAYS) {
+    if (!text.includes(name)) continue;
+    const target = AR_WEEKDAYS[name];
+    let delta = (target - riyadhWeekday(now.y, now.mo, now.d) + 7) % 7;
+    if (delta === 0) delta = 7;
+    if (/القادم|القادمة|الجاي|الجاية|بعد اسبوع|بعد أسبوع/.test(text)) delta += 7;
+    return addDaysRiyadh(now, delta);
+  }
+  return null;
+}
+
 /* تصنيف احتياطي بالقواعد: موعد/جلسة/مخالفة مع تاريخ ← تسجيل، حتى لو تعثر النموذج */
-const DATE_RX = /(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4})|(\d{4}-\d{2}-\d{2})|(الأحد|الاثنين|الإثنين|الثلاثاء|الأربعاء|الخميس|الجمعة|السبت|غد|بكرة|بعد غد|الأسبوع|الشهر|صباح|مساء|الساعة|\d{1,2}\s*(ص|م|صباحا|مساء|AM|PM))/i;
+const DATE_RX = /(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4})|(\d{4}-\d{2}-\d{2})|(الأحد|الاثنين|الإثنين|الثلاثاء|الأربعاء|الخميس|الجمعة|السبت|غد|بكرة|بعد غد|بعد\s*\d{1,3}\s*(?:يوم|أيام|ايام)|الأسبوع|الشهر|صباح|مساء|الساعة|\d{1,2}\s*(ص|م|صباحا|مساء|AM|PM))/i;
 const ADD_RX = /(سجل|سجل|أضف|اضف|ضيف|موعد|جلسة|جلسه|نظر الدعوى|مخالفة|مخالفه|غرامة|مهمة|مهمه|deadline|hearing|session|fine|violation|appointment|add|schedule)/i;
 const DONE_RX = /(خلصت|خلصت|أنجزت|انجزت|تم سداد|سددت|أغلقت|اغلقت|انتهت|منجز|done|completed|paid|closed)/i;
 const ASSIGN_RX = /(أسند|اسند|حول|حول|كلف|كلف|assign|hand)/i;
@@ -59,7 +115,11 @@ export function heuristicIntent(text) {
   if (ADD_RX.test(t) && DATE_RX.test(t)) {
     const kind = /(مخالفة|مخالفه|غرامة|fine|violation)/i.test(t) ? "violation" : /(جلسة|جلسه|نظر الدعوى|hearing|session|قضية|دعوى)/i.test(t) ? "session" : "task";
     const caseNo = (t.match(/(?:دعوى|قضية|القضية|الدعوى|case)\s*(?:رقم|no\.?|#)?\s*([0-9]{2,})/i) || [])[1] || null;
-    return { action: "add", item: { kind, title: t.slice(0, 160), case_number: caseNo } };
+    const violNo = (t.match(/(?:مخالفة|مخالفه)\s*(?:رقم|no\.?|#)?\s*([0-9]{2,})/i) || [])[1] || null;
+    const date = extractDueDate(t);
+    let due_at = null;
+    if (date) { const time = extractTimeOfDay(t, kind === "violation" ? 23 : 9, kind === "violation" ? 59 : 0); due_at = riyadhIso(date.y, date.mo, date.d, time.h, time.mi); }
+    return { action: "add", item: { kind, title: t.slice(0, 160), case_number: caseNo, violation_number: violNo, due_at }, confident: !!due_at };
   }
   return null;
 }
@@ -73,7 +133,12 @@ function firstJson(text) {
 
 /* يستخرج نية واحدة من الرسالة (ومحتوى المرفق إن وجد) */
 export async function extractIntent(env, text, ctx) {
-  if (!env.AI) return { action: "question" };
+  /* نمط واضح بلا مرفق يحتاج قراءة: تاريخ محلول ونوع معروف — لا حاجة للنموذج إطلاقاً */
+  if (!ctx || !ctx.attachment) {
+    const quick = heuristicIntent(text);
+    if (quick && (quick.action === "done" || quick.action === "search" || (quick.action === "add" && quick.confident))) return quick;
+  }
+  if (!env.AI) return heuristicIntent(text) || { action: "question" };
   const user = (ctx && ctx.attachment ? `[${ctx.attachment.kind}: ${ctx.attachment.name}]\n${String(ctx.attachment.content || "").slice(0, 6000)}\n\nUser message: ` : "") + String(text || "");
   const messages = [{ role: "system", content: intentSystem(ctx) }, { role: "user", content: user }];
   let out = null;
