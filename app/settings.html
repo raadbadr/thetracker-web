@@ -431,6 +431,11 @@
     .channel-status.success { color: var(--success); }
     .channel-status.warning { color: var(--warning); }
     .channel-status.error { color: var(--error); }
+    /* رمز QR لرابط الربط: أسود على أبيض دائماً حتى تقرأه كاميرا الجوال في الثيمين */
+    .channel-qr { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; margin: 0.75rem 0 0.5rem; }
+    .channel-qr-img { width: 168px; height: 168px; padding: 10px; border-radius: 14px; background: #fff; box-shadow: 0 4px 16px var(--shadow-dark); }
+    .channel-qr-img svg { display: block; width: 100%; height: 100%; }
+    .channel-qr .settings-note { margin: 0; }
     .channel-code {
       font-size: 1.6rem;
       font-weight: 700;
@@ -774,6 +779,7 @@
         tgInstruction: "افتح {bot} في تيليجرام وأرسل الأمر {command}",
         waInstruction: "أرسل الرمز {code} إلى الرقم {number} على واتساب.",
         openTelegram: "فتح تيليجرام",
+        tgQrHint: "أو امسح الرمز بكاميرا الجوال لربط تيليجرام مباشرة",
         openWhatsapp: "فتح واتساب",
         testSending: "جارٍ الإرسال...",
         testSent: "أُرسلت الرسالة التجريبية.",
@@ -898,6 +904,7 @@
         tgInstruction: "Open {bot} in Telegram and send the command {command}",
         waInstruction: "Send the code {code} to {number} on WhatsApp.",
         openTelegram: "Open Telegram",
+        tgQrHint: "Or scan with your phone camera to link Telegram directly",
         openWhatsapp: "Open WhatsApp",
         testSending: "Sending...",
         testSent: "Test message sent.",
@@ -1022,6 +1029,7 @@
         tgInstruction: "Ouvrez {bot} dans Telegram et envoyez la commande {command}",
         waInstruction: "Envoyez le code {code} au numéro {number} sur WhatsApp.",
         openTelegram: "Ouvrir Telegram",
+        tgQrHint: "Ou scannez avec l’appareil photo du téléphone pour lier Telegram directement",
         openWhatsapp: "Ouvrir WhatsApp",
         testSending: "Envoi en cours...",
         testSent: "Message test envoyé.",
@@ -1146,6 +1154,7 @@
         tgInstruction: "ٹیلیگرام میں {bot} کھولیں اور یہ کمانڈ بھیجیں {command}",
         waInstruction: "کوڈ {code} واٹس ایپ پر نمبر {number} کو بھیجیں۔",
         openTelegram: "ٹیلیگرام کھولیں",
+        tgQrHint: "یا ٹیلیگرام کو براہ راست منسلک کرنے کے لیے فون کے کیمرے سے اسکین کریں",
         openWhatsapp: "واٹس ایپ کھولیں",
         testSending: "بھیجا جا رہا ہے...",
         testSent: "آزمائشی پیغام بھیج دیا گیا۔",
@@ -1553,6 +1562,9 @@
             html += '<div class="chat-options"><a class="chat-option-btn" target="_blank" rel="noopener" href="https://t.me/' +
                     encodeURIComponent(config.telegramBot) + "?start=" + encodeURIComponent(code) + '">' +
                     esc(t("openTelegram")) + "</a></div>";
+            /* الرابط نفسه رمز QR: يمسحه بكاميرا الجوال فيفتح تيليجرام على /start بالرمز مباشرة */
+            html += '<div class="channel-qr" id="telegramQr"><div class="channel-qr-img" id="telegramQrImg" aria-hidden="true"></div>' +
+                    '<p class="settings-note">' + esc(t("tgQrHint")) + "</p></div>";
           } else {
             html += "<p>" + fill("waInstruction", {
               code: '<span dir="ltr">' + esc(code) + "</span>",
@@ -1571,6 +1583,21 @@
         if (link) html += actionBtn("unlink", channel, "unlinkBtn");
         html += "</div>";
         body.innerHTML = html;
+        renderTelegramQr(body);
+      }
+
+      /* يرسم رمز QR لرابط t.me الموجود في البطاقة؛ إن لم تُحمَّل المكتبة تُزال الحاوية بصمت */
+      function renderTelegramQr(body) {
+        var box = el("telegramQr"), img = el("telegramQrImg");
+        if (!box || !img) return;
+        var link = body.querySelector('a[href^="https://t.me/"]');
+        if (!link || typeof qrcode !== "function") { box.remove(); return; }
+        try {
+          var q = qrcode(0, "M");
+          q.addData(link.href);
+          q.make();
+          img.innerHTML = q.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+        } catch (err) { box.remove(); }
       }
 
       function renderSms() {
@@ -2054,6 +2081,8 @@
     })();
   </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+<!-- رمز QR لربط تيليجرام من الجوال (qrcode-generator من cdnjs — مسموح في CSP) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="/app.js?v=4" defer></script>
 <script src="/app/common.js?v=6" defer></script>
 <script src="/brand-logo.js?v=4" defer></script>
