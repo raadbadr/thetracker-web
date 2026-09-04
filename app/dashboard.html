@@ -852,12 +852,12 @@
           <button type="button" class="chat-option-btn" id="newOrgBtn" data-i18n="newOrgBtn">+ شركة جديدة</button>
         </div>
         <form class="waitlist-form" id="renameOrgForm" hidden novalidate>
-          <input type="text" class="waitlist-input" id="renameOrgName" maxlength="120" autocomplete="organization">
+          <input type="text" class="waitlist-input" id="renameOrgName" maxlength="120" autocomplete="organization" dir="auto">
           <button type="submit" class="waitlist-btn" data-i18n="save">حفظ</button>
           <button type="button" class="chat-option-btn" id="renameOrgCancel" data-i18n="cancel">إلغاء</button>
         </form>
         <form class="waitlist-form" id="newOrgForm" hidden novalidate>
-          <input type="text" class="waitlist-input" id="newOrgName" placeholder="اسم الشركة" maxlength="120" autocomplete="organization">
+          <input type="text" class="waitlist-input" id="newOrgName" placeholder="اسم الشركة" maxlength="120" autocomplete="organization" dir="auto">
           <button type="submit" class="waitlist-btn" data-i18n="newOrgSubmit">إنشاء</button>
           <button type="button" class="chat-option-btn" id="newOrgCancel" data-i18n="cancel">إلغاء</button>
         </form>
@@ -886,7 +886,7 @@
       <p data-i18n="createOrgIntro">اختر نوع الحساب: شركة أو مؤسسة أو وثيقة عمل حر، أو شخصا يريد ترتيب أوراقه.</p>
       <form class="waitlist-form" id="createOrgForm" novalidate>
         <select class="waitlist-input" id="createOrgType" aria-label="نوع الحساب"></select>
-        <input type="text" class="waitlist-input" id="createOrgName" placeholder="اسم الجهة" maxlength="120" autocomplete="organization">
+        <input type="text" class="waitlist-input" id="createOrgName" placeholder="اسم الجهة" maxlength="120" autocomplete="organization" dir="auto">
         <button type="submit" class="waitlist-btn" data-i18n="newOrgSubmit">إنشاء</button>
       </form>
       <p class="waitlist-msg" id="createOrgMsg" hidden role="status" aria-live="polite"></p>
@@ -936,14 +936,14 @@
           <h3 data-i18n="editTitle">تعديل العنصر</h3>
           <form id="editForm" novalidate>
             <div class="form-grid">
-              <label class="form-field"><span data-i18n="fieldTitle">العنوان</span><input type="text" class="waitlist-input" id="editTitle" placeholder="عنوان العنصر" maxlength="300"></label>
+              <label class="form-field"><span data-i18n="fieldTitle">العنوان</span><input type="text" class="waitlist-input" id="editTitle" placeholder="عنوان العنصر" maxlength="300" dir="auto"></label>
               <label class="form-field"><span data-i18n="fieldTracker">السجل</span><select class="waitlist-input" id="editTracker"></select></label>
               <label class="form-field"><span data-i18n="fieldDue">موعد الاستحقاق</span><input type="datetime-local" class="waitlist-input" id="editDue" dir="ltr"></label>
-              <label class="form-field"><span data-i18n="fieldCategory">التصنيف</span><input type="text" class="waitlist-input" id="editCategory" placeholder="التصنيف (اختياري)" maxlength="120"></label>
+              <label class="form-field"><span data-i18n="fieldCategory">التصنيف</span><input type="text" class="waitlist-input" id="editCategory" placeholder="التصنيف (اختياري)" maxlength="120" dir="auto"></label>
               <label class="form-field"><span data-i18n="fieldAssignee">المسؤول</span><select class="waitlist-input" id="editAssignee"></select></label>
               <label class="form-field"><span data-i18n="fieldStatus">الحالة</span><select class="waitlist-input" id="editStatus"></select></label>
               <label class="form-field"><span data-i18n="fieldAmount">المبلغ</span><input type="number" step="0.01" min="0" class="waitlist-input" id="editAmount" dir="ltr"></label>
-              <label class="form-field"><span data-i18n="fieldClient">الجهة أو العميل</span><input type="text" class="waitlist-input" id="editClient" maxlength="160"></label>
+              <label class="form-field"><span data-i18n="fieldClient">الجهة أو العميل</span><input type="text" class="waitlist-input" id="editClient" maxlength="160" dir="auto"></label>
               <label class="form-field"><span data-i18n="fieldCaseNumber">رقم الملف</span><input type="text" class="waitlist-input" id="editCaseNumber" maxlength="120" dir="ltr"></label>
             </div>
             <div class="waitlist-form form-actions">
@@ -973,7 +973,7 @@
           <form class="waitlist-form filters-row" id="filterForm" novalidate>
             <select class="waitlist-input" id="filterTracker"></select>
             <select class="waitlist-input" id="filterStatus"></select>
-            <input type="search" class="waitlist-input" id="filterSearch" placeholder="بحث في العناوين" maxlength="120">
+            <input type="search" class="waitlist-input" id="filterSearch" placeholder="بحث في العناوين" maxlength="120" dir="auto">
             <button type="button" class="waitlist-btn" id="addItemBtn" data-i18n="addItemBtn">+ عنصر</button>
             <button type="button" class="chat-option-btn" id="exportXlsxBtn" data-i18n="exportXlsx">تصدير إكسل</button>
             <button type="button" class="chat-option-btn" id="exportCsvBtn" data-i18n="exportCsv">تصدير CSV</button>
@@ -984,13 +984,13 @@
             <p class="inline-hint" id="noTrackersHint" data-i18n="noTrackersHint" hidden>لا توجد سجلات بعد، أنشئ سجلا أولا لتتمكن من إضافة العناصر.</p>
             <form id="addItemForm" novalidate>
               <div class="form-grid">
-                <label class="form-field"><span data-i18n="fieldTitle">العنوان</span><input type="text" class="waitlist-input" id="addTitle" placeholder="عنوان العنصر" maxlength="300"></label>
+                <label class="form-field"><span data-i18n="fieldTitle">العنوان</span><input type="text" class="waitlist-input" id="addTitle" placeholder="عنوان العنصر" maxlength="300" dir="auto"></label>
                 <label class="form-field"><span data-i18n="fieldTracker">السجل</span><select class="waitlist-input" id="addTracker"></select></label>
                 <label class="form-field"><span data-i18n="fieldDue">موعد الاستحقاق</span><input type="datetime-local" class="waitlist-input" id="addDue" dir="ltr"></label>
-                <label class="form-field"><span data-i18n="fieldCategory">التصنيف</span><input type="text" class="waitlist-input" id="addCategory" placeholder="التصنيف (اختياري)" maxlength="120"></label>
+                <label class="form-field"><span data-i18n="fieldCategory">التصنيف</span><input type="text" class="waitlist-input" id="addCategory" placeholder="التصنيف (اختياري)" maxlength="120" dir="auto"></label>
                 <label class="form-field"><span data-i18n="fieldAssignee">المسؤول</span><select class="waitlist-input" id="addAssignee"></select></label>
                 <label class="form-field"><span data-i18n="fieldAmount">المبلغ</span><input type="number" step="0.01" min="0" class="waitlist-input" id="addAmount" dir="ltr"></label>
-                <label class="form-field"><span data-i18n="fieldClient">الجهة أو العميل</span><input type="text" class="waitlist-input" id="addClient" maxlength="160"></label>
+                <label class="form-field"><span data-i18n="fieldClient">الجهة أو العميل</span><input type="text" class="waitlist-input" id="addClient" maxlength="160" dir="auto"></label>
                 <label class="form-field"><span data-i18n="fieldCaseNumber">رقم الملف</span><input type="text" class="waitlist-input" id="addCaseNumber" maxlength="120" dir="ltr"></label>
               </div>
               <div class="waitlist-form form-actions">
@@ -1001,7 +1001,7 @@
               <p class="waitlist-msg" id="addMsg" hidden role="status" aria-live="polite"></p>
             </form>
             <form class="waitlist-form" id="newTrackerForm" hidden novalidate>
-              <input type="text" class="waitlist-input" id="newTrackerName" placeholder="اسم السجل" maxlength="120">
+              <input type="text" class="waitlist-input" id="newTrackerName" placeholder="اسم السجل" maxlength="120" dir="auto">
               <button type="submit" class="waitlist-btn" data-i18n="newOrgSubmit">إنشاء</button>
               <button type="button" class="chat-option-btn" id="newTrackerCancel" data-i18n="cancel">إلغاء</button>
             </form>

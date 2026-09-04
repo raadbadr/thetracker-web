@@ -588,7 +588,7 @@
         <form id="profileForm" novalidate>
           <div class="settings-field">
             <label for="fullName" data-i18n="fullNameLabel">الاسم الكامل</label>
-            <input type="text" class="waitlist-input" id="fullName" placeholder="اسمك الكامل" autocomplete="name" maxlength="120">
+            <input type="text" class="waitlist-input" id="fullName" placeholder="اسمك الكامل" autocomplete="name" maxlength="120" dir="auto">
           </div>
           <div class="settings-field">
             <label for="profileEmail" data-i18n="emailLabel">البريد الإلكتروني</label>
@@ -687,7 +687,7 @@
         <h2 data-i18n="apiTitle">ربط المنصات (API)</h2>
         <p data-i18n="apiIntro">مفتاح لكل منصة. يظهر مرة واحدة عند إنشائه.</p>
         <div class="waitlist-form">
-          <input type="text" class="waitlist-input" id="apiKeyName" placeholder="اسم المنصة" maxlength="60">
+          <input type="text" class="waitlist-input" id="apiKeyName" placeholder="اسم المنصة" maxlength="60" dir="auto">
           <button type="button" class="waitlist-btn" id="apiKeyCreateBtn" data-i18n="apiCreate">إنشاء مفتاح</button>
         </div>
         <div class="waitlist-form" id="apiKeyReveal" hidden>
@@ -772,7 +772,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
           </div>
           <div class="settings-field">
             <label for="opLegalName" data-i18n="opLegalName">الاسم النظامي</label>
-            <input type="text" class="waitlist-input" id="opLegalName" maxlength="200" autocomplete="organization">
+            <input type="text" class="waitlist-input" id="opLegalName" maxlength="200" autocomplete="organization" dir="auto">
           </div>
           <div class="settings-field">
             <label for="opCr" data-i18n="opCr">رقم السجل التجاري</label>
@@ -808,7 +808,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
           </div>
           <div class="settings-field">
             <label for="opBank" data-i18n="opBank">البنك</label>
-            <input type="text" class="waitlist-input" id="opBank" maxlength="80">
+            <input type="text" class="waitlist-input" id="opBank" maxlength="80" dir="auto">
           </div>
           <div class="settings-field">
             <label for="opIban" data-i18n="opIban">الآيبان</label>
@@ -816,7 +816,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
           </div>
           <div class="settings-field">
             <label for="opAccountName" data-i18n="opAccountName">اسم صاحب الحساب</label>
-            <input type="text" class="waitlist-input" id="opAccountName" maxlength="160">
+            <input type="text" class="waitlist-input" id="opAccountName" maxlength="160" dir="auto">
           </div>
           <div class="settings-actions">
             <button type="submit" class="waitlist-btn" id="opSaveBtn" data-i18n="saveBtn">حفظ</button>
@@ -828,7 +828,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
       <div class="content" id="orgCard">
         <h2 data-i18n="orgCardTitle">الشركة</h2>
         <div class="invite-row">
-          <input type="text" class="waitlist-input" id="orgNameInput" maxlength="120" autocomplete="organization">
+          <input type="text" class="waitlist-input" id="orgNameInput" maxlength="120" autocomplete="organization" dir="auto">
           <button type="button" class="waitlist-btn" id="orgSaveBtn" data-i18n="save">حفظ</button>
         </div>
         <p class="waitlist-msg" id="orgMsg" style="display:none" role="status" aria-live="polite"></p>

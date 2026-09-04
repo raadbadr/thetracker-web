@@ -2624,7 +2624,7 @@
             return '<option value="' + e.value + '">' + escapeHtml(e[lang()] || e.ar) + "</option>";
           }).join("") + "</select></label>" +
         '<label id="newOrgNameLabel">' + escapeHtml(t.name) +
-          '<input type="text" id="newOrgInput" maxlength="120" autocomplete="organization"></label>' +
+          '<input type="text" id="newOrgInput" maxlength="120" autocomplete="organization" dir="auto"></label>' +
         '<p class="app-gate-hint" style="font-size:.85rem;color:var(--text-secondary);margin:.25rem 0 .5rem">' + escapeHtml(rt.gate) + "</p>" +
         '<label id="newOrgRegLabel">' + escapeHtml(rt.commercial_register) +
           '<input type="text" id="newOrgReg" maxlength="40" dir="ltr" inputmode="numeric" autocomplete="off"></label>' +
@@ -3044,7 +3044,7 @@
       '<div class="app-gate-card" role="dialog" aria-modal="true">' +
         "<h2>" + escapeHtml(t.title) + "</h2><p>" + escapeHtml(t.intro) + "</p>" +
         "<label>" + escapeHtml(t.name) + '<input type="text" id="gateName" maxlength="120" autocomplete="name" value="' +
-          escapeHtml(String((app.profile || {}).full_name || "")) + '"></label>' +
+          escapeHtml(String((app.profile || {}).full_name || "")) + '" dir="auto"></label>' +
         "<label>" + escapeHtml(t.phone) + '<input type="tel" id="gatePhone" dir="ltr" placeholder="+9665xxxxxxx" autocomplete="tel" value="' +
           escapeHtml(String((app.profile || {}).phone || "")) + '"></label>' +
         '<button type="button" id="gateSave">' + escapeHtml(t.save) + "</button>" +

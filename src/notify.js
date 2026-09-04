@@ -194,14 +194,14 @@ export function urlButton(label, url) {
 }
 
 /* قائمة مواعيد بنص مقروء */
-export function formatItems(lang, rows, title, emptyText, userTimeZone) {
+export function formatItems(lang, rows, title, emptyText, userTimeZone, userHour12) {
   const list = Array.isArray(rows) ? rows : [];
   if (!list.length) return emptyText;
   const lines = list.map((r, i) => {
     const who = r.client_name ? ` — ${r.client_name}` : "";
     const num = r.case_number ? ` (${r.case_number})` : "";
     const tr = r.tracker_name ? ` · ${r.tracker_name}` : "";
-    return `${i + 1}. ${r.title || ""}${who}${num}\n   ${r.due_at ? fmtDue(r.due_at, userTimeZone) : "-"}${tr}`;
+    return `${i + 1}. ${r.title || ""}${who}${num}\n   ${r.due_at ? fmtDue(r.due_at, userTimeZone, userHour12) : "-"}${tr}`;
   });
   return `${title}\n\n${lines.join("\n")}`;
 }
@@ -223,29 +223,30 @@ export async function linkChannelDirect(env, userId, channel, externalId) {
   return rpc(env, "link_channel_direct", { p_secret: env.WORKER_SECRET, p_user_id: userId, p_channel: channel, p_external_id: String(externalId) });
 }
 
-/* الصيغة القياسية نفسها في كل قناة: dd-MM-yyyy HH:mm، ميلادي، 24 ساعة، أرقام
-   غربية، بلا اختلاف بين اللغات — مطابقة app.fmtDate في الموقع ومعيار تطبيق
-   باركينزي. المنطقة الزمنية باختيار المستلم من إعداداته (profiles.tz)،
-   وتوقيت الرياض هو الافتراضي فقط حين لا يختار المستخدم غيره. */
-function fmtDue(iso, userTimeZone) {
+/* الصيغة القياسية نفسها في كل قناة: dd-MM-yyyy HH:mm، ميلادي، أرقام غربية،
+   بلا اختلاف بين اللغات — مطابقة app.fmtDate في الموقع ومعيار تطبيق باركينزي.
+   المنطقة الزمنية وصيغة الوقت (24 أو 12 ساعة) باختيار المستلم من إعداداته
+   (profiles.tz وprofiles.time_format)، والافتراض توقيت الرياض و24 ساعة. */
+function fmtDue(iso, userTimeZone, userHour12) {
   try {
     const parts = new Intl.DateTimeFormat("en-GB", {
       timeZone: userTimeZone || "Asia/Riyadh", numberingSystem: "latn",
-      year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false,
+      year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: !!userHour12,
     }).formatToParts(new Date(iso));
     const by = {};
     parts.forEach((p) => { by[p.type] = p.value; });
-    return `${by.day}-${by.month}-${by.year} ${by.hour}:${by.minute}`;
+    const timePart = userHour12 ? `${by.hour}:${by.minute} ${(by.dayPeriod || "").toUpperCase()}` : `${by.hour}:${by.minute}`;
+    return `${by.day}-${by.month}-${by.year} ${timePart}`;
   } catch { return String(iso); }
 }
 
 // ---------- القنوات ----------
-export async function sendEmail(env, { to, lang, title, due_at, tracker_name, org_name, tz: userTimeZone }) {
+export async function sendEmail(env, { to, lang, title, due_at, tracker_name, org_name, tz: userTimeZone, hour12: userHour12 }) {
   if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY || !env.WORKER_SECRET) throw new Error("email not configured");
   const res = await fetch(`${env.SUPABASE_URL}/functions/v1/send-zoho-email`, {
     method: "POST",
     headers: { ...anonHeaders(env), "x-tracker-secret": env.WORKER_SECRET },
-    body: JSON.stringify({ action: "send-reminder", to, lang, title, due_at, tracker_name, org_name, tz: userTimeZone }),
+    body: JSON.stringify({ action: "send-reminder", to, lang, title, due_at, tracker_name, org_name, tz: userTimeZone, hour12: userHour12 }),
     cf: NO_CACHE,
   });
   if (!res.ok) throw new Error(`email ${res.status}: ${(await res.text()).slice(0, 200)}`);
@@ -390,12 +391,13 @@ export async function runNotificationCron(env) {
   for (const n of pending) {
     const lang = n.lang || "ar";
     const userTimeZone = n.tz || "Asia/Riyadh";
-    const text = t(lang).reminder(n.title || "", n.due_at ? fmtDue(n.due_at, userTimeZone) : "-", n.tracker_name);
+    const userHour12 = n.time_format === "12";
+    const text = t(lang).reminder(n.title || "", n.due_at ? fmtDue(n.due_at, userTimeZone, userHour12) : "-", n.tracker_name);
     let status = "sent", error = null;
     try {
       if (n.channel === "email") {
         if (!n.email) throw new Error("no email");
-        await sendEmail(env, { to: n.email, lang, title: n.title, due_at: n.due_at, tracker_name: n.tracker_name, org_name: n.org_name, tz: userTimeZone });
+        await sendEmail(env, { to: n.email, lang, title: n.title, due_at: n.due_at, tracker_name: n.tracker_name, org_name: n.org_name, tz: userTimeZone, hour12: userHour12 });
       } else if (!n.external_id) {
         status = "skipped"; error = "channel not linked";
       } else if (n.channel === "telegram") await sendTelegram(env, n.external_id, text);

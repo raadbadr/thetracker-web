@@ -846,7 +846,7 @@
               </div>
               <div class="field" id="trackerNameField">
                 <label class="field-label" for="trackerName" data-i18n="trackerNamePlaceholder">اسم السجل الجديد</label>
-                <input type="text" class="waitlist-input" id="trackerName" placeholder="اسم السجل الجديد" maxlength="120" autocomplete="off">
+                <input type="text" class="waitlist-input" id="trackerName" placeholder="اسم السجل الجديد" maxlength="120" autocomplete="off" dir="auto">
               </div>
             </div>
           </div>
@@ -869,15 +869,15 @@
         <form id="docForm" class="doc-form" hidden novalidate>
           <div class="form-grid">
             <label class="form-field"><span data-i18n="docKind">نوع المستند</span><select class="waitlist-input" id="fKind"></select></label>
-            <label class="form-field"><span data-i18n="docTitleField">العنوان</span><input type="text" class="waitlist-input" id="fTitle" maxlength="300"></label>
+            <label class="form-field"><span data-i18n="docTitleField">العنوان</span><input type="text" class="waitlist-input" id="fTitle" maxlength="300" dir="auto"></label>
             <label class="form-field"><span data-i18n="docNumber">رقم المستند</span><input type="text" class="waitlist-input" id="fNumber" maxlength="120" dir="ltr"></label>
-            <label class="form-field"><span data-i18n="docIssuer">الجهة المصدرة</span><input type="text" class="waitlist-input" id="fIssuer" maxlength="200"></label>
-            <label class="form-field"><span data-i18n="docParty">الشركة / صاحب المستند</span><input type="text" class="waitlist-input" id="fParty" maxlength="200"></label>
+            <label class="form-field"><span data-i18n="docIssuer">الجهة المصدرة</span><input type="text" class="waitlist-input" id="fIssuer" maxlength="200" dir="auto"></label>
+            <label class="form-field"><span data-i18n="docParty">الشركة / صاحب المستند</span><input type="text" class="waitlist-input" id="fParty" maxlength="200" dir="auto"></label>
             <label class="form-field"><span data-i18n="docIssueDate">تاريخ الإصدار</span><input type="date" class="waitlist-input" id="fIssue" dir="ltr"></label>
             <label class="form-field"><span data-i18n="docExpiry">تاريخ الانتهاء / الاستحقاق</span><input type="date" class="waitlist-input" id="fExpiry" dir="ltr"></label>
             <label class="form-field"><span data-i18n="docAmount">المبلغ (<span class="sar-symbol" aria-label="ريال سعودي"></span>)</span><input type="number" class="waitlist-input" id="fAmount" step="0.01" dir="ltr"></label>
             <label class="form-field"><span data-i18n="docCase">رقم الدعوى</span><input type="text" class="waitlist-input" id="fCase" maxlength="120" dir="ltr"></label>
-            <label class="form-field"><span data-i18n="docCourt">المحكمة</span><input type="text" class="waitlist-input" id="fCourt" maxlength="200"></label>
+            <label class="form-field"><span data-i18n="docCourt">المحكمة</span><input type="text" class="waitlist-input" id="fCourt" maxlength="200" dir="auto"></label>
           </div>
           <p class="inline-hint" id="fSummary"></p>
           <div class="waitlist-form form-actions">
@@ -912,7 +912,7 @@
         <h2 data-i18n="docListTitle">مستندات الشركة</h2>
         <div class="waitlist-form filters-row">
           <select class="waitlist-input" id="filterKind"></select>
-          <input type="search" class="waitlist-input" id="filterSearch" placeholder="بحث" data-i18n-placeholder="search" maxlength="120">
+          <input type="search" class="waitlist-input" id="filterSearch" placeholder="بحث" data-i18n-placeholder="search" maxlength="120" dir="auto">
         </div>
         <div class="table-wrap" id="docsWrap" hidden>
           <table class="items-table">

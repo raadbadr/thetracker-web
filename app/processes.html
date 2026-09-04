@@ -771,7 +771,7 @@
         <h2 data-i18n="libTitle">مكتبة الإجراءات</h2>
         <p data-i18n="libIntro">الإجراءات القانونية المعتمدة في المكتب خطوة خطوة: من يفعل ماذا (RACI)، وما الذي يبدأ الإجراء وما ينتج عنه.</p>
         <div class="proc-toolbar">
-          <input type="search" class="waitlist-input" id="search" placeholder="بحث" data-i18n-placeholder="search">
+          <input type="search" class="waitlist-input" id="search" placeholder="بحث" data-i18n-placeholder="search" dir="auto">
           <select class="waitlist-input" id="areaFilter"></select>
           <button type="button" class="waitlist-btn" id="newBtn" data-i18n="newProcess">＋ إجراء جديد</button>
         </div>
@@ -788,14 +788,14 @@
         <h2 id="editorTitle" data-i18n="editorNew">إجراء جديد</h2>
         <form id="form" novalidate>
           <div class="form-grid">
-            <label class="form-field"><span data-i18n="fName">اسم الإجراء</span><input type="text" class="waitlist-input" id="fName" maxlength="200" required></label>
+            <label class="form-field"><span data-i18n="fName">اسم الإجراء</span><input type="text" class="waitlist-input" id="fName" maxlength="200" required dir="auto"></label>
             <label class="form-field"><span data-i18n="fArea">المجال</span><select class="waitlist-input" id="fArea"></select></label>
             <label class="form-field"><span data-i18n="fOwner">المسؤول عن الإجراء</span><select class="waitlist-input" id="fOwner"></select></label>
-            <label class="form-field"><span data-i18n="fFrequency">التكرار</span><input type="text" class="waitlist-input" id="fFrequency" maxlength="120" placeholder="عند الحاجة / شهري"></label>
-            <label class="form-field"><span data-i18n="fTrigger">ما الذي يبدأ الإجراء</span><input type="text" class="waitlist-input" id="fTrigger" maxlength="300"></label>
+            <label class="form-field"><span data-i18n="fFrequency">التكرار</span><input type="text" class="waitlist-input" id="fFrequency" maxlength="120" placeholder="عند الحاجة / شهري" dir="auto"></label>
+            <label class="form-field"><span data-i18n="fTrigger">ما الذي يبدأ الإجراء</span><input type="text" class="waitlist-input" id="fTrigger" maxlength="300" dir="auto"></label>
             <label class="form-field"><span data-i18n="fStatus">الحالة</span><select class="waitlist-input" id="fStatus"></select></label>
-            <label class="form-field"><span data-i18n="fInputs">المدخلات</span><input type="text" class="waitlist-input" id="fInputs" maxlength="300"></label>
-            <label class="form-field"><span data-i18n="fOutputs">المخرجات</span><input type="text" class="waitlist-input" id="fOutputs" maxlength="300"></label>
+            <label class="form-field"><span data-i18n="fInputs">المدخلات</span><input type="text" class="waitlist-input" id="fInputs" maxlength="300" dir="auto"></label>
+            <label class="form-field"><span data-i18n="fOutputs">المخرجات</span><input type="text" class="waitlist-input" id="fOutputs" maxlength="300" dir="auto"></label>
           </div>
           <label class="form-field" style="display:block;margin-top:.75rem"><span data-i18n="fDescription">الوصف</span><textarea class="waitlist-input" id="fDescription" rows="2" maxlength="1000"></textarea></label>
 
@@ -1976,7 +1976,7 @@
               '<label><span class="mini-label">' + esc(t("stepType")) + '</span><select class="waitlist-input" data-f="type" data-i="' + i + '">' +
                 '<option value="task"' + (st.type !== "decision" ? " selected" : "") + ">" + esc(t("typeTask")) + "</option>" +
                 '<option value="decision"' + (st.type === "decision" ? " selected" : "") + ">" + esc(t("typeDecision")) + "</option></select></label>" +
-              '<label><span class="mini-label">' + esc(t("stepTitle")) + '</span><input type="text" class="waitlist-input" data-f="title" data-i="' + i + '" value="' + esc(st.title) + '" maxlength="200"></label>' +
+              '<label><span class="mini-label">' + esc(t("stepTitle")) + '</span><input type="text" class="waitlist-input" data-f="title" data-i="' + i + '" value="' + esc(st.title) + '" maxlength="200" dir="auto"></label>' +
             "</div>" +
             '<div class="raci-grid">' +
               ["R","A","C","I"].map(function (k) { return '<label><span class="mini-label">' + k + " — " + esc(t("raci_" + k)) + '</span><select class="waitlist-input" data-f="' + k + '" data-i="' + i + '">' + memberOptions(st[k], true) + "</select></label>"; }).join("") +
@@ -1985,7 +1985,7 @@
               ? '<div class="raci-grid" style="grid-template-columns:repeat(2,minmax(0,1fr))"><label><span class="mini-label">' + esc(t("yesTo")) + '</span><select class="waitlist-input" data-f="yesTarget" data-i="' + i + '"><option value="">-</option>' + targets + '</select></label>' +
                 '<label><span class="mini-label">' + esc(t("noTo")) + '</span><select class="waitlist-input" data-f="noTarget" data-i="' + i + '"><option value="">-</option>' + targets + "</select></label></div>"
               : "") +
-            '<label style="display:block;margin-top:.5rem"><span class="mini-label">' + esc(t("stepNote")) + '</span><input type="text" class="waitlist-input" data-f="note" data-i="' + i + '" value="' + esc(st.note || "") + '" maxlength="300"></label>';
+            '<label style="display:block;margin-top:.5rem"><span class="mini-label">' + esc(t("stepNote")) + '</span><input type="text" class="waitlist-input" data-f="note" data-i="' + i + '" value="' + esc(st.note || "") + '" maxlength="300" dir="auto"></label>';
           box.appendChild(row);
           if (st.type === "decision") { row.querySelector('[data-f="yesTarget"]').value = st.yesTarget || ""; row.querySelector('[data-f="noTarget"]').value = st.noTarget || ""; }
         });

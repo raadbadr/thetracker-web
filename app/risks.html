@@ -789,7 +789,7 @@
 
       <div class="content" id="registerCard">
         <div class="toolbar">
-          <input type="search" class="waitlist-input" id="search" placeholder="بحث" data-i18n-placeholder="search">
+          <input type="search" class="waitlist-input" id="search" placeholder="بحث" data-i18n-placeholder="search" dir="auto">
           <select class="waitlist-input" id="statusFilter"></select>
           <button type="button" class="chat-option-btn" id="xlsxBtn" data-i18n="exportXlsx">تصدير إكسل</button>
           <button type="button" class="chat-option-btn" id="csvBtn" data-i18n="exportCsv">تصدير CSV</button>
@@ -809,9 +809,9 @@
         <h2 id="editorTitle" data-i18n="editorNew">خطر جديد</h2>
         <form id="form" novalidate>
           <div class="form-grid">
-            <label class="form-field"><span data-i18n="fTitle">عنوان الخطر</span><input type="text" class="waitlist-input" id="fTitle" maxlength="200" required></label>
+            <label class="form-field"><span data-i18n="fTitle">عنوان الخطر</span><input type="text" class="waitlist-input" id="fTitle" maxlength="200" required dir="auto"></label>
             <label class="form-field"><span data-i18n="fCategory">التصنيف</span><select class="waitlist-input" id="fCategory"></select></label>
-            <label class="form-field"><span data-i18n="fClient">العميل / الشركة</span><input type="text" class="waitlist-input" id="fClient" maxlength="200"></label>
+            <label class="form-field"><span data-i18n="fClient">العميل / الشركة</span><input type="text" class="waitlist-input" id="fClient" maxlength="200" dir="auto"></label>
             <label class="form-field"><span data-i18n="fCase">رقم الدعوى</span><input type="text" class="waitlist-input" id="fCase" maxlength="120" dir="ltr"></label>
             <label class="form-field"><span data-i18n="fProcess">الإجراء المرتبط</span><select class="waitlist-input" id="fProcess"></select></label>
             <label class="form-field"><span data-i18n="fOwner">المسؤول</span><select class="waitlist-input" id="fOwner"></select></label>
@@ -2203,7 +2203,7 @@
         var box = $("actions"); box.innerHTML = "";
         state.draft.actions.forEach(function (a, i) {
           var row = document.createElement("div"); row.className = "action-row";
-          row.innerHTML = '<input type="text" class="waitlist-input" data-af="title" data-i="' + i + '" value="' + esc(a.title || "") + '" placeholder="' + esc(t("actionTitle")) + '" maxlength="200">' +
+          row.innerHTML = '<input type="text" class="waitlist-input" data-af="title" data-i="' + i + '" value="' + esc(a.title || "") + '" placeholder="' + esc(t("actionTitle")) + '" maxlength="200" dir="auto">' +
             '<select class="waitlist-input" data-af="owner_id" data-i="' + i + '">' + memberOptions(a.owner_id) + "</select>" +
             '<input type="date" class="waitlist-input" data-af="due" data-i="' + i + '" value="' + esc(a.due || "") + '" dir="ltr">' +
             '<label class="rule-check" style="white-space:nowrap"><input type="checkbox" data-af="done" data-i="' + i + '"' + (a.done ? " checked" : "") + "> " + esc(t("done")) + "</label>" +

@@ -161,7 +161,7 @@ export async function extractIntent(env, text, ctx) {
 /* اسم اليوم بلغة المستخدم، والتاريخ والوقت بالصيغة القياسية الثابتة
    (dd-MM-yyyy HH:mm، أرقام غربية) — نفس app.fmtDate في الموقع، بلا اختلاف
    بين اللغات في ترتيب الأرقام، مع إضافة مفيدة لسياق المحادثة: اسم اليوم. */
-export function fmtWhen(iso, lang, userTimeZone) {
+export function fmtWhen(iso, lang, userTimeZone, userHour12) {
   if (!iso) return "-";
   try {
     const date = new Date(iso);
@@ -169,11 +169,12 @@ export function fmtWhen(iso, lang, userTimeZone) {
     const weekday = new Intl.DateTimeFormat(weekdayLocale, { timeZone: userTimeZone || RIYADH, weekday: "short" }).format(date);
     const parts = new Intl.DateTimeFormat("en-GB", {
       timeZone: userTimeZone || RIYADH, numberingSystem: "latn",
-      year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false,
+      year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: !!userHour12,
     }).formatToParts(date);
     const by = {};
     parts.forEach((p) => { by[p.type] = p.value; });
-    return `${weekday} ${by.day}-${by.month}-${by.year} ${by.hour}:${by.minute}`;
+    const timePart = userHour12 ? `${by.hour}:${by.minute} ${(by.dayPeriod || "").toUpperCase()}` : `${by.hour}:${by.minute}`;
+    return `${weekday} ${by.day}-${by.month}-${by.year} ${timePart}`;
   } catch { return String(iso); }
 }
 /* المبلغ القياسي: خانتان عشريتان ثابتتان دائماً + فاصلة آلاف — نفس معيار
@@ -183,13 +184,13 @@ function money(n) {
   return isNaN(v) ? "" : new Intl.NumberFormat("en-US", { numberingSystem: "latn", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
 }
 
-export function describeAction(lang, intent, userTimeZone) {
+export function describeAction(lang, intent, userTimeZone, userHour12) {
   const b = botText(lang);
   const it = intent.item || {};
   if (intent.action === "add") {
     const kind = it.kind === "violation" ? b.kindViolation : it.kind === "session" ? b.kindSession : b.kindTask;
     const lines = [b.actAddTitle, `• ${kind}: ${it.title || "-"}`];
-    if (it.due_at) lines.push(`• ${b.fWhen}: ${fmtWhen(it.due_at, lang, userTimeZone)}`);
+    if (it.due_at) lines.push(`• ${b.fWhen}: ${fmtWhen(it.due_at, lang, userTimeZone, userHour12)}`);
     if (it.client_name) lines.push(`• ${b.fClient}: ${it.client_name}`);
     if (it.case_number) lines.push(`• ${b.fCase}: ${it.case_number}`);
     if (it.violation_number) lines.push(`• ${b.fViolation}: ${it.violation_number}`);
@@ -203,7 +204,7 @@ export function describeAction(lang, intent, userTimeZone) {
   return "";
 }
 
-export function formatSearch(lang, query, rows, userTimeZone) {
+export function formatSearch(lang, query, rows, userTimeZone, userHour12) {
   const b = botText(lang);
   const list = Array.isArray(rows) ? rows : [];
   if (!list.length) return b.searchNone(query);
@@ -211,7 +212,7 @@ export function formatSearch(lang, query, rows, userTimeZone) {
     const bits = [r.title];
     if (r.client_name) bits.push(r.client_name);
     if (r.case_number) bits.push(`${b.fCase} ${r.case_number}`);
-    const tail = [r.due_at ? fmtWhen(r.due_at, lang, userTimeZone) : null, r.amount != null ? money(r.amount) : null, r.status === "done" ? b.statusDone : null, r.attachments ? `📎${r.attachments}` : null].filter(Boolean).join(" · ");
+    const tail = [r.due_at ? fmtWhen(r.due_at, lang, userTimeZone, userHour12) : null, r.amount != null ? money(r.amount) : null, r.status === "done" ? b.statusDone : null, r.attachments ? `📎${r.attachments}` : null].filter(Boolean).join(" · ");
     const roles = r.roles ? `\n   👥 ${r.roles}` : "";
     return `${i + 1}. ${bits.filter(Boolean).join(" — ")}${r.item_number ? ` (${r.item_number})` : ""}${tail ? `\n   ${tail}` : ""}${roles}`;
   });
@@ -255,29 +256,29 @@ export async function executeAction(env, userId, intent, lang) {
 }
 
 // ---------- الإيجاز الصباحي وتجهيز الغد ----------
-function itemLine(lang, r, b, userTimeZone) {
-  const bits = [r.due_at ? fmtWhen(r.due_at, lang, userTimeZone) : null, r.title, r.client_name, r.case_number ? `${b.fCase} ${r.case_number}` : null].filter(Boolean);
+function itemLine(lang, r, b, userTimeZone, userHour12) {
+  const bits = [r.due_at ? fmtWhen(r.due_at, lang, userTimeZone, userHour12) : null, r.title, r.client_name, r.case_number ? `${b.fCase} ${r.case_number}` : null].filter(Boolean);
   return `• ${bits.join(" — ")}${r.attachments ? ` 📎${r.attachments}` : ""}`;
 }
 
-export function formatDigest(lang, name, d, kind, userTimeZone) {
+export function formatDigest(lang, name, d, kind, userTimeZone, userHour12) {
   const b = botText(lang);
   const lines = [];
   if (kind === "evening") {
     lines.push(b.prepTitle(name));
     if (!d.tomorrow.length) lines.push(b.prepNone);
     else {
-      d.tomorrow.forEach((r) => lines.push(itemLine(lang, r, b, userTimeZone) + (r.attachments ? "" : ` ${b.noFiles}`)));
+      d.tomorrow.forEach((r) => lines.push(itemLine(lang, r, b, userTimeZone, userHour12) + (r.attachments ? "" : ` ${b.noFiles}`)));
     }
     return lines.join("\n");
   }
   lines.push(b.digestTitle(name));
   lines.push(d.today.length ? b.digestToday(d.today.length) : b.digestTodayNone);
-  d.today.forEach((r) => lines.push(itemLine(lang, r, b, userTimeZone)));
-  if (d.tomorrow.length) { lines.push(b.digestTomorrow(d.tomorrow.length)); d.tomorrow.forEach((r) => lines.push(itemLine(lang, r, b, userTimeZone))); }
+  d.today.forEach((r) => lines.push(itemLine(lang, r, b, userTimeZone, userHour12)));
+  if (d.tomorrow.length) { lines.push(b.digestTomorrow(d.tomorrow.length)); d.tomorrow.forEach((r) => lines.push(itemLine(lang, r, b, userTimeZone, userHour12))); }
   if (d.violations_soon.length) {
     lines.push(b.digestFines(d.violations_soon.length, money(d.violations_soon_total)));
-    d.violations_soon.forEach((r) => lines.push(`• ${r.title}${r.client_name ? " — " + r.client_name : ""}${r.amount != null ? " — " + money(r.amount) : ""} — ${fmtWhen(r.due_at, lang, userTimeZone)}`));
+    d.violations_soon.forEach((r) => lines.push(`• ${r.title}${r.client_name ? " — " + r.client_name : ""}${r.amount != null ? " — " + money(r.amount) : ""} — ${fmtWhen(r.due_at, lang, userTimeZone, userHour12)}`));
   }
   if (d.overdue_count) lines.push(b.digestOverdue(d.overdue_count, money(d.overdue_amount)));
   if (d.neglected.length) { lines.push(b.digestNeglected); d.neglected.forEach((r) => lines.push(`• ${r.title}${r.client_name ? " — " + r.client_name : ""} (${r.days} ${b.days})`)); }
@@ -297,7 +298,7 @@ export async function runTelegramDigests(env) {
         await rpc(env, "telegram_mark_digest", { p_secret: env.WORKER_SECRET, p_user_id: t.user_id, p_kind: "evening" });
         continue; // لا جلسات غدا: لا إزعاج
       }
-      const text = formatDigest(t.lang || "ar", t.name || "", d || { today: [], tomorrow: [], violations_soon: [], neglected: [] }, t.kind, t.tz || "Asia/Riyadh");
+      const text = formatDigest(t.lang || "ar", t.name || "", d || { today: [], tomorrow: [], violations_soon: [], neglected: [] }, t.kind, t.tz || "Asia/Riyadh", t.time_format === "12");
       await sendTelegram(env, t.chat_id, text, urlButton(botText(t.lang || "ar").openDash, DASHBOARD_URL));
       await rpc(env, "telegram_mark_digest", { p_secret: env.WORKER_SECRET, p_user_id: t.user_id, p_kind: t.kind });
       sent++;

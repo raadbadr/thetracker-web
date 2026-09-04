@@ -726,7 +726,7 @@
       <div class="invite-block">
         <h3 class="invite-block-title" data-i18n="lookupTitle">أو من المسجلين في المنصة</h3>
         <div class="invite-row" id="lookupRow">
-          <input type="text" class="waitlist-input" id="lookupQuery" placeholder="بريد أو جوال أو رقم مستخدم" data-i18n-placeholder="lookupPlaceholder" autocomplete="off">
+          <input type="text" class="waitlist-input" id="lookupQuery" placeholder="بريد أو جوال أو رقم مستخدم" data-i18n-placeholder="lookupPlaceholder" autocomplete="off" dir="auto">
           <button type="button" class="waitlist-btn" id="lookupBtn" data-i18n="lookupBtn">عرض المستخدمين</button>
         </div>
         <div class="user-list" id="lookupResult" hidden></div>
@@ -762,7 +762,7 @@
       <h3 class="invite-block-title" data-i18n="quickAddTitle">إدخال سريع</h3>
       <p class="settings-note" data-i18n="quickAddHint">اكتب المهمة كما تقولها: «جلسة القضية 4521 لشركة الأبراج الأحد 10 صباحا لأحمد» — يفهم النوع والموعد والعميل ورقم الدعوى ومن ينفذ، ويسجل ويوزع بضغطة واحدة.</p>
       <form class="invite-row quick-add" id="quickAddForm" novalidate>
-        <input type="text" class="waitlist-input" id="quickAddText" maxlength="500" autocomplete="off" placeholder="اكتب المهمة ومن ينفذها وموعدها…">
+        <input type="text" class="waitlist-input" id="quickAddText" maxlength="500" autocomplete="off" placeholder="اكتب المهمة ومن ينفذها وموعدها…" dir="auto">
         <select class="waitlist-input" id="quickAddMember" aria-label="المنفذ"></select>
         <button type="submit" class="waitlist-btn" id="quickAddBtn" data-i18n="quickAddBtn">إضافة</button>
       </form>
@@ -780,7 +780,7 @@
       <div class="chat-options"><button type="button" class="chat-option-btn" id="rasiToggle" data-i18n="rasiShowMatrix">عرض المصفوفة الكاملة</button></div>
       <div id="rasiMatrixWrap" hidden>
         <div class="rasi-tools">
-          <input type="search" class="waitlist-input" id="rasiSearch" placeholder="ابحث بالعنوان أو الرقم" autocomplete="off">
+          <input type="search" class="waitlist-input" id="rasiSearch" placeholder="ابحث بالعنوان أو الرقم" autocomplete="off" dir="auto">
         </div>
         <div class="rasi-wrap"><table class="rasi-table" id="rasiTable"><thead></thead><tbody></tbody></table></div>
       </div>
@@ -1744,7 +1744,7 @@
                     return '<option value="' + k + '"' + (m.person_kind === k ? " selected" : "") + ">" + esc(personKindName(k)) + "</option>";
                   }).join("") +
                 "</select>" +
-                '<input type="text" class="waitlist-input" data-title-user="' + esc(m.user_id) + '" maxlength="80" value="' + esc(m.job_title || "") + '" placeholder="' + esc(t("jobTitleLabel")) + '">' +
+                '<input type="text" class="waitlist-input" data-title-user="' + esc(m.user_id) + '" maxlength="80" value="' + esc(m.job_title || "") + '" placeholder="' + esc(t("jobTitleLabel")) + '" dir="auto">' +
               "</div>";
           }
           if (state.canManage && !isOwner && !isSelf) {
