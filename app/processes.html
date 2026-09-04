@@ -756,6 +756,14 @@
       .step-row .raci-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .flow { max-width: 100%; }
     }
+
+    /* الحقل داخل أي شبكة ضيقة يملأ خانته ولا يتمدد فوق جاره:
+       .waitlist-input تحمل min-width:140px للنماذج العريضة، وهي تكسر
+       أعمدة الخطوات وRACI فتتراكب الحقول (بلاغ المهندس رعد). */
+    .sgrid, .raci-grid, .quick-add, .form-grid, .rasi-tools { min-width: 0; }
+    .sgrid > label, .raci-grid > label, .quick-add > label, .form-grid > label { min-width: 0; display: block; }
+    .sgrid .waitlist-input, .raci-grid .waitlist-input, .quick-add .waitlist-input,
+    .form-grid .waitlist-input, .heat-tools .waitlist-input { width: 100%; min-width: 0; max-width: 100%; }
 </style>
 </head>
 <body class="has-site-header">
