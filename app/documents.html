@@ -788,7 +788,7 @@
     .footer .footer-copyright > span { display: inline-flex; align-items: center; gap: .45rem; }
     .footer #footerLogo { height: 1.15em; width: auto; vertical-align: middle; }
     .footer .footer-year { font-variant-numeric: tabular-nums; }
-    /* حين تُخفى روابط الفوتر للمستخدم المسجل لا يبقى فراغ فوق السطر */
+    /* حين تخفى روابط الفوتر للمستخدم المسجل لا يبقى فراغ فوق السطر */
     .footer .footer-links[hidden] + .footer-copyright { margin-top: 0; }
 </style>
 </head>
@@ -837,6 +837,7 @@
           <p data-i18n="docDropHint">اسحب الملف أو اختره</p>
           <div class="drop-actions">
           <button type="button" class="waitlist-btn" id="docChooseBtn" data-i18n="docChoose">اختيار ملف</button>
+          <input type="file" id="docAttachInput" accept=".pdf,.png,.jpg,.jpeg,.webp,.xlsx,.xls,.csv,application/pdf,image/*" hidden>
           <input type="file" id="docFile" accept=".pdf,.png,.jpg,.jpeg,.webp,.xlsx,.xlsm,.xls,.csv,.tsv,.txt,.json,application/pdf,image/*,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" hidden>
           <button type="button" class="chat-option-btn" id="docDriveBtn" data-i18n="docDrive" hidden>اختيار من Google Drive</button>
           <a class="chat-option-btn" id="docTemplateBtn" data-i18n="templateBtn" href="/api/documents/template?lang=ar" download="thetracker-template.csv">تنزيل القالب</a>
@@ -1166,6 +1167,9 @@
         pAdd: "أضف",
         pOpen: "عرض",
         pDownload: "تنزيل",
+        docAttachFile: "إرفاق ملف",
+        docAddAnother: "إضافة ملف",
+        docFileAdded: "أضيف الملف.",
         pOpen: "افتح",
         pStatValid: "سارية",
         pStatExpiring: "تنتهي قريبا",
@@ -1466,6 +1470,9 @@
         pAdd: "Add",
         pOpen: "View",
         pDownload: "Download",
+        docAttachFile: "Attach file",
+        docAddAnother: "Add file",
+        docFileAdded: "File added.",
         pOpen: "Open",
         pStatValid: "Valid",
         pStatExpiring: "Expiring",
@@ -1766,6 +1773,9 @@
         pAdd: "Ajouter",
         pOpen: "Voir",
         pDownload: "Télécharger",
+        docAttachFile: "Joindre un fichier",
+        docAddAnother: "Ajouter un fichier",
+        docFileAdded: "Fichier ajouté.",
         pOpen: "Ouvrir",
         pStatValid: "Valides",
         pStatExpiring: "Bientôt expirés",
@@ -2066,6 +2076,9 @@
         pAdd: "شامل کریں",
         pOpen: "دیکھیں",
         pDownload: "ڈاؤن لوڈ",
+        docAttachFile: "فائل منسلک کریں",
+        docAddAnother: "فائل شامل کریں",
+        docFileAdded: "فائل شامل ہو گئی۔",
         pOpen: "کھولیں",
         pStatValid: "مؤثر",
         pStatExpiring: "جلد ختم",
@@ -2653,6 +2666,7 @@
                 }).join("")
               : "-") + "</td>" +
             '<td><div class="chat-options row-actions">' +
+              '<button type="button" class="chat-option-btn" data-attach="' + esc(it.id) + '">' + esc(t(files.length ? "docAddAnother" : "docAttachFile")) + "</button>" +
               '<button type="button" class="chat-option-btn is-danger" data-del="' + esc(it.id) + '">' + esc(t("delete")) + "</button>" +
             "</div></td>";
           body.appendChild(tr);
@@ -2714,8 +2728,10 @@
             '<td><div class="chat-options row-actions">' +
               (paperFile(p) ? '<button type="button" class="chat-option-btn" data-paper-open="' + esc(paperFile(p).id) + '">' + esc(t("pOpen")) + "</button>" +
                               '<button type="button" class="chat-option-btn" data-paper-get="' + esc(paperFile(p).id) + '">' + esc(t("pDownload")) + "</button>" : "") +
-              '<button type="button" class="chat-option-btn" data-paper-add="' + esc(p.kind) + '">' +
-                esc(t(p.state === "missing" ? "pAdd" : "docReplace")) + "</button>" +
+              (p.item_id && !paperFile(p)
+                ? '<button type="button" class="chat-option-btn" data-paper-attach="' + esc(p.item_id) + '">' + esc(t("docAttachFile")) + "</button>"
+                : '<button type="button" class="chat-option-btn" data-paper-add="' + esc(p.kind) + '">' +
+                    esc(t(p.state === "missing" ? "pAdd" : "docReplace")) + "</button>") +
             "</div></td>";
           body.appendChild(tr);
         });
@@ -2802,12 +2818,20 @@
           $("docFile").click();
         });
         $("papersBody").addEventListener("click", function (e) {
+          var pat = e.target.closest("[data-paper-attach]");
+          if (pat) {
+            e.preventDefault();
+            var picker = $("docAttachInput");
+            picker.dataset.item = pat.dataset.paperAttach;
+            picker.click();
+            return;
+          }
           var open = e.target.closest("[data-paper-open]"), get = e.target.closest("[data-paper-get]");
           if (!open && !get) return;
           e.preventDefault();
           var att = attachmentById((open || get).getAttribute(open ? "data-paper-open" : "data-paper-get"));
           if (!att) return;
-          /* النافذة تُفتح مع النقرة لا بعد الوعد: سفاري يحجب ما يُفتح لاحقا */
+          /* النافذة تفتح مع النقرة لا بعد الوعد: سفاري يحجب ما يفتح لاحقا */
           var win = open ? window.open("about:blank", "_blank") : null;
           app.attachmentUrl(att, open ? undefined : { download: att.name || true }).then(function (u) {
             if (!u) { if (win) win.close(); return; }
@@ -2817,7 +2841,29 @@
             document.body.appendChild(a); a.click(); a.remove();
           }).catch(function () { if (win) win.close(); setStatus(t("docFailed"), "error"); });
         });
+        $("docAttachInput").addEventListener("change", function () {
+          var file = this.files && this.files[0];
+          var itemId = this.dataset.item;
+          this.value = "";
+          if (!file || !itemId) return;
+          setStatus(t("docSaving"));
+          app.uploadAttachment(itemId, file).then(function () {
+            setStatus(t("docFileAdded"), "success");
+            return loadAll();
+          }).catch(function (err) {
+            var code = String((err && (err.message || err.code)) || "");
+            setStatus(code.indexOf("PLAN_LIMIT_STORAGE") !== -1 ? t("docStorageLimit") : t("docFileFailed"), "error");
+          });
+        });
         $("docsBody").addEventListener("click", function (e) {
+          var at = e.target.closest("[data-attach]");
+          if (at) {
+            e.preventDefault();
+            var picker = $("docAttachInput");
+            picker.dataset.item = at.dataset.attach;
+            picker.click();
+            return;
+          }
           var g = e.target.closest("[data-get]");
           if (g) {
             e.preventDefault();
