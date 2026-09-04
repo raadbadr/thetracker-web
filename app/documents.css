@@ -706,6 +706,19 @@
     .item-title { font-weight: 600; }
     .row-actions { margin-top: 0; flex-wrap: nowrap; }
     .row-actions .chat-option-btn { padding: 0.3rem 0.7rem; font-size: 0.8rem; white-space: nowrap; }
+    /* جدول المستندات: صف واحد لكل مستند، أزراره جنبا إلى جنب،
+       والأعمدة القصيرة لا تنكسر — العنوان وحده يأخذ ما يزيد */
+    .content .items-table .row-actions { display: flex; flex-direction: row; flex-wrap: nowrap;
+      justify-content: flex-start; align-items: center; gap: .4rem; }
+    .content .items-table .row-actions .chat-option-btn { min-height: 32px; padding: .28rem .7rem;
+      font-size: .8rem; white-space: nowrap; width: auto; flex: 0 0 auto; }
+    .content .items-table td, .content .items-table th { white-space: nowrap; vertical-align: middle; }
+    .content .items-table td:nth-child(2), .content .items-table td:nth-child(4),
+    .content .items-table td:nth-child(7) { white-space: normal; }
+    .content .items-table td:nth-child(2) { min-width: 14rem; }
+    .content .items-table td:nth-child(4) { min-width: 10rem; }
+    .content .items-table .file-row { flex-wrap: nowrap; }
+    .content .items-table .file-row .chat-option-btn { min-height: 30px; padding: .22rem .6rem; font-size: .78rem; }
     .status-open { color: var(--primary); font-weight: 600; }
     .status-overdue { color: var(--error); font-weight: 600; }
     .status-done { color: var(--success); font-weight: 600; }

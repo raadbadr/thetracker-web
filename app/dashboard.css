@@ -877,3 +877,10 @@
     .footer .footer-year { font-variant-numeric: tabular-nums; }
     /* حين تُخفى روابط الفوتر للمستخدم المسجل لا يبقى فراغ فوق السطر */
     .footer .footer-links[hidden] + .footer-copyright { margin-top: 0; }
+
+    /* الجداول: أزرار الصف جنبا إلى جنب ولا تنكسر الأعمدة القصيرة */
+    .content .items-table .row-actions { display: flex; flex-direction: row; flex-wrap: nowrap;
+      justify-content: flex-start; align-items: center; gap: .4rem; }
+    .content .items-table .row-actions .chat-option-btn { min-height: 32px; padding: .28rem .7rem;
+      font-size: .8rem; white-space: nowrap; width: auto; flex: 0 0 auto; }
+    .content .items-table td, .content .items-table th { vertical-align: middle; }
