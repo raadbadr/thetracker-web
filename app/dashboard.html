@@ -459,6 +459,11 @@
     /* لوحة المعلومات: عمود رئيسي للخدمات والقائمة، وعمود جانبي للتقويم والأرقام */
     .dash-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--gap); align-items: start; margin-bottom: var(--gap); }
     @media (min-width: 1150px) { .dash-grid { grid-template-columns: minmax(0, 1fr) minmax(320px, 400px); } }
+    .dash-grid--single { grid-template-columns: minmax(0, 1fr) !important; }
+    .dash-grid--single .svc-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    @media (max-width: 1100px) { .dash-grid--single .svc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 560px) { .dash-grid--single .svc-grid { grid-template-columns: 1fr; } }
+    .dash-grid--single .cal-cell { min-height: 92px; }
     .dash-main, .dash-side { min-width: 0; }
     .dash-side { display: grid; gap: var(--gap); align-content: start; }
     /* التقويم داخل العمود الجانبي: خلايا مضغوطة وأزرار في سطر واحد */
@@ -2662,11 +2667,18 @@
         else if (state.viewType === "cases") addChart("casesChart");
         else { addChart("violationsChart"); addChart("casesChart"); }
 
-        /* بطاقة الخدمات هي بوابة لوحة التحكم؛ عرضها داخل شاشة جاء منها الزر تكرار. */
-        if (!state.viewType) mainCol.appendChild(services);
-        mainCol.appendChild(main);
         calCard.appendChild(calendar);
-        sideCol.appendChild(calCard);
+        if (!state.viewType) {
+          /* الرئيسية: التقويم بكامل العرض، ثم الخدمات متجاورة تحته، ثم القائمة */
+          grid.classList.add("dash-grid--single");
+          mainCol.appendChild(calCard);
+          mainCol.appendChild(services);
+          mainCol.appendChild(main);
+        } else {
+          /* القضايا والمخالفات: القائمة في العمود الرئيسي والتقويم جانباً، بلا بطاقة خدمات */
+          mainCol.appendChild(main);
+          sideCol.appendChild(calCard);
+        }
         /* لوحة التحكم الرئيسية: المربعات الأربعة أول شيء فوق بعرض الصفحة */
         if (stats) {
           if (!state.viewType) { stats.classList.add("stats-top"); dash.insertBefore(stats, dash.firstChild); }
@@ -2674,7 +2686,7 @@
         }
 
         grid.appendChild(mainCol);
-        grid.appendChild(sideCol);
+        if (state.viewType) grid.appendChild(sideCol);
 
         /* الخط الزمني يتصدّر اللوحة بعرض الصفحة (وبعد المؤشرات في لوحتي القضايا والمخالفات) */
         var timeline = document.createElement("div");
