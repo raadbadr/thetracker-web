@@ -748,6 +748,12 @@ export default {
         if (tgAiRateLimited("doc:" + docUser.id)) return json({ error: "rate_limited" }, 429);
         return await handleDocumentAnalyze(request, env);
       }
+      if (path === "/api/client-error" && request.method === "POST") {
+        /* تقارير إقلاع الواجهة: تُسجَّل في سجل الـ Worker فقط (wrangler tail)، لا تُخزَّن ولا تحمل بيانات شخصية */
+        const raw = (await request.text()).slice(0, 2000);
+        console.log("client-error", raw, "ip:", request.headers.get("cf-connecting-ip") || "");
+        return new Response(null, { status: 204 });
+      }
       if (path === "/api/contact" && request.method === "POST") return await handleContact(request, env);
       if (path === "/api/notify/test" && request.method === "POST") return await handleNotifyTest(request, env);
       if (path === "/api/telegram/webhook" && request.method === "POST") return await handleTelegramWebhook(request, env);

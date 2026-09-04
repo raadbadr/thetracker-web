@@ -466,21 +466,42 @@
     return orgs[0];
   }
 
+  /* لا صفحة تبقى على «جاري التحميل» بلا سبب معروف: كل مرحلة من الإقلاع مسجلة،
+     وأي فشل أو بطء يُبلَّغ إلى سجل الخادم (/api/client-error) بلا أي بيانات شخصية، وتظهر للمستخدم بطاقة «غير متاح». */
+  var initStep = "start";
+  function reportClientError(kind, detail) {
+    try {
+      var body = JSON.stringify({ kind: kind, detail: String(detail || "").slice(0, 400), step: initStep,
+        page: String(window.location.pathname || "").slice(0, 80), ua: String(navigator.userAgent || "").slice(0, 100), lang: lang(),
+        w: window.innerWidth, sw: !!(navigator.serviceWorker && navigator.serviceWorker.controller) });
+      if (navigator.sendBeacon) navigator.sendBeacon("/api/client-error", body);
+      else fetch("/api/client-error", { method: "POST", body: body, keepalive: true });
+    } catch (e) { /* ignore */ }
+  }
+  var reported = 0;
+  window.addEventListener("error", function (ev) { if (reported++ < 3) reportClientError("window_error", (ev && ev.message) + " @" + (ev && ev.filename ? String(ev.filename).split("/").pop() + ":" + ev.lineno : "")); });
+  window.addEventListener("unhandledrejection", function (ev) { var r = ev && ev.reason; if (reported++ < 3) reportClientError("unhandled_rejection", r && (r.message || r.code || JSON.stringify(r)) || r); });
+
   function init() {
     var auth = window.trackerAuth;
     if (!auth || !auth.ready) {
       app.unavailable = true;
+      reportClientError("no_auth_module", "trackerAuth missing");
       return Promise.resolve({ unavailable: true });
     }
+    setTimeout(function () { if (initStep !== "done" && initStep !== "redirect") reportClientError("init_slow", "15s and still at " + initStep); }, 15000);
     return auth.ready.then(function () {
       if (auth.unavailable || !auth.client) {
         app.unavailable = true;
+        reportClientError("auth_unavailable", "");
         return { unavailable: true };
       }
       app.client = auth.client;
+      initStep = "session";
       return auth.getSession().then(function (session) {
-        if (!session || !session.user) return redirectToLogin();
+        if (!session || !session.user) { initStep = "redirect"; return redirectToLogin(); }
         app.user = session.user;
+        initStep = "profile";
         return loadProfile(app.client, app.user).then(function (profile) {
           app.profile = profile;
           /* لغة الملف الشخصي هي المرجع: واجهة واحدة بلغة واحدة على كل جهاز (لا «Account» وسط صفحة عربية) */
@@ -491,20 +512,32 @@
               if (typeof window.setLang === "function") window.setLang(wanted);
             }
           } catch (e) { /* ignore */ }
+          initStep = "invitations";
           return acceptInvitations(app.client);
         }).then(function (joined) {
           app.joinedOrgs = joined;
+          initStep = "orgs";
           return loadOrgs(app.client, app.user);
         }).then(function (orgs) {
           app.orgs = orgs;
           app.org = pickOrg(orgs);
           try { if (app.org) localStorage.setItem(ORG_KEY, app.org.id); } catch (e) { /* ignore */ }
+          initStep = "services";
           return loadServices(app.client, app.org);
         }).then(function (services) {
           app.services = services; /* null = غير معروف (لا تصفية)، مصفوفة = المسموح فقط */
+          initStep = "done";
           return { user: app.user, profile: app.profile, orgs: app.orgs, org: app.org, services: app.services };
         });
       });
+    }).catch(function (err) {
+      /* فشل الإقلاع لا يُترك صامتا: يُبلَّغ ويُعرض بدل صفحة تحميل أبدية */
+      var detail = err && (err.message || err.code || err.error_description) || String(err);
+      reportClientError("init_failed", detail);
+      if (window.console) console.error("trackerApp init failed at", initStep, err);
+      app.unavailable = true;
+      app.initError = detail;
+      return { unavailable: true, error: detail, step: initStep };
     });
   }
 
