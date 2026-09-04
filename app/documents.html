@@ -813,6 +813,13 @@
   <script>
     const translations = {
       ar: {
+        kind_articles_of_association: "عقد تأسيس",
+        kind_bylaws: "النظام الأساسي",
+        kind_chamber_certificate: "شهادة الغرفة التجارية",
+        kind_gosi_certificate: "شهادة التأمينات الاجتماعية",
+        kind_zakat_certificate: "شهادة الزكاة",
+        kind_saudization_certificate: "شهادة السعودة",
+        kind_lease_contract: "عقد إيجار",
         fCase: "القضية",
         title: "المستندات",
         docAddTitle: "إضافة مستند",
@@ -990,6 +997,13 @@
         dark: "داكن"
       },
       en: {
+        kind_articles_of_association: "Articles of association",
+        kind_bylaws: "Bylaws",
+        kind_chamber_certificate: "Chamber of commerce certificate",
+        kind_gosi_certificate: "GOSI certificate",
+        kind_zakat_certificate: "Zakat certificate",
+        kind_saudization_certificate: "Saudization certificate",
+        kind_lease_contract: "Lease contract",
         fCase: "Case",
         title: "Documents",
         docAddTitle: "Add a document",
@@ -1167,6 +1181,13 @@
         dark: "Dark"
       },
       fr: {
+        kind_articles_of_association: "Statuts constitutifs",
+        kind_bylaws: "Règlement intérieur",
+        kind_chamber_certificate: "Attestation chambre de commerce",
+        kind_gosi_certificate: "Attestation GOSI",
+        kind_zakat_certificate: "Attestation Zakat",
+        kind_saudization_certificate: "Attestation de saoudisation",
+        kind_lease_contract: "Contrat de bail",
         fCase: "Affaire",
         title: "Documents",
         docAddTitle: "Ajouter un document",
@@ -1344,6 +1365,13 @@
         dark: "Sombre"
       },
       ur: {
+        kind_articles_of_association: "کمپنی کا معاہدہ تاسیس",
+        kind_bylaws: "بنیادی قواعد",
+        kind_chamber_certificate: "چیمبر آف کامرس سرٹیفکیٹ",
+        kind_gosi_certificate: "GOSI سرٹیفکیٹ",
+        kind_zakat_certificate: "زکوٰۃ سرٹیفکیٹ",
+        kind_saudization_certificate: "سعودائزیشن سرٹیفکیٹ",
+        kind_lease_contract: "کرایہ نامہ",
         fCase: "مقدمہ",
         title: "دستاویزات",
         docAddTitle: "دستاویز شامل کریں",
@@ -1644,7 +1672,7 @@
       var state = { items: [], attachments: {}, file: null, fields: null, tracker: null, kind: "", search: "" };
       var PDF_SRC = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
       var PDF_WORKER = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-      var KINDS = ["commercial_register","vat_certificate","license","contract","case_filing","court_ruling","hearing_notice","violation","invoice","power_of_attorney","id_document","other"];
+      var KINDS = ["commercial_register","articles_of_association","bylaws","chamber_certificate","gosi_certificate","zakat_certificate","saudization_certificate","vat_certificate","license","lease_contract","contract","case_filing","court_ruling","hearing_notice","violation","invoice","power_of_attorney","id_document","other"];
       var TRACKER_NAME = { ar: "المستندات", en: "Documents", fr: "Documents", ur: "دستاویزات" };
 
       function $(id) { return document.getElementById(id); }

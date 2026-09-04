@@ -12,6 +12,13 @@ const MAX_TEXT = 12000;
 
 const DOC_KINDS = [
   "commercial_register",   // السجل التجاري
+  "articles_of_association", // عقد تأسيس الشركة
+  "bylaws",                // النظام الأساسي
+  "chamber_certificate",   // شهادة الغرفة التجارية
+  "gosi_certificate",      // شهادة التأمينات الاجتماعية
+  "zakat_certificate",     // شهادة الزكاة والدخل
+  "saudization_certificate", // شهادة السعودة / نطاقات
+  "lease_contract",        // عقد إيجار
   "vat_certificate",       // الشهادة الضريبية
   "license",               // رخصة (بلدية، مهنية، دفاع مدني…)
   "contract",              // عقد
@@ -135,7 +142,39 @@ function rulesExtract(rawText) {
   const text = westernize(rawText).replace(/[\u200f\u200e]/g, "");
   const has = (re) => re.test(text);
   const out = {};
-  if (has(/السجل\s*التجاري|سجل\s*تجاري|commercial\s*regist/i)) {
+  if (has(/عقد\s*تأسيس|عقد\s*التأسيس|عقد\s*شركة|articles\s*of\s*(?:association|incorporation)|memorandum\s*of\s*association/i)) {
+    out.kind = "articles_of_association";
+    out.party = findAfter(text, ["اسم\\s*الشركة", "تحت\\s*اسم", "باسم", "شركة"], "[^\\n:،,]{3,80}");
+    out.number = findAfter(text, ["رقم\\s*العقد", "رقم\\s*التوثيق", "رقم\\s*الوثيقة", "رقم\\s*السجل"], "[0-9]{4,20}");
+    out.issuer = has(/وزارة\s*التجارة/) ? "وزارة التجارة" : (has(/كاتب\s*(?:ال)?عدل|العدل/) ? "وزارة العدل" : null);
+  } else if (has(/النظام\s*الأساس|النظام\s*الاساس|bylaws/i)) {
+    out.kind = "bylaws";
+    out.party = findAfter(text, ["اسم\\s*الشركة", "شركة"], "[^\\n:،,]{3,80}");
+    out.issuer = "وزارة التجارة";
+  } else if (has(/الغرفة\s*التجارية|غرفة\s*(?:الرياض|جدة|الشرقية|مكة|المدينة)|chamber\s*of\s*commerce/i)) {
+    out.kind = "chamber_certificate";
+    out.number = findAfter(text, ["رقم\\s*العضوية", "رقم\\s*الاشتراك", "رقم\\s*الشهادة", "membership\\s*(?:No\\.?|number)?"], "[0-9]{4,15}");
+    out.party = findAfter(text, ["اسم\\s*المنشأة", "الاسم\\s*التجاري", "اسم\\s*الشركة", "اسم\\s*العضو"], "[^\\n:]{3,80}");
+    out.issuer = (text.match(/الغرفة\s*التجارية[^\n:،,]{0,30}|غرفة\s*[^\n:،,]{2,25}/) || [])[0] || "الغرفة التجارية";
+  } else if (has(/التأمينات\s*الاجتماعية|GOSI/i)) {
+    out.kind = "gosi_certificate"; out.issuer = "المؤسسة العامة للتأمينات الاجتماعية";
+    out.number = findAfter(text, ["رقم\\s*الاشتراك", "رقم\\s*المنشأة", "رقم\\s*الشهادة", "رقم\\s*المشترك"], "[0-9]{6,15}");
+    out.party = findAfter(text, ["اسم\\s*المنشأة", "اسم\\s*صاحب\\s*العمل", "اسم\\s*الشركة"], "[^\\n:]{3,80}");
+  } else if (has(/شهادة\s*(?:الزكاة|زكاة|الزكاة\s*والدخل)|zakat/i)) {
+    out.kind = "zakat_certificate"; out.issuer = "هيئة الزكاة والضريبة والجمارك";
+    out.number = findAfter(text, ["رقم\\s*الشهادة", "الرقم\\s*المميز", "رقم\\s*المكلف"], "[0-9]{6,15}");
+    out.party = findAfter(text, ["اسم\\s*المكلف", "اسم\\s*المنشأة", "اسم\\s*الشركة"], "[^\\n:]{3,80}");
+  } else if (has(/شهادة\s*(?:السعودة|التوطين)|نطاقات|قوى|saudi[sz]ation|nitaqat/i)) {
+    out.kind = "saudization_certificate"; out.issuer = "وزارة الموارد البشرية والتنمية الاجتماعية";
+    out.number = findAfter(text, ["رقم\\s*الشهادة", "رقم\\s*المنشأة", "الرقم\\s*الموحد"], "[0-9]{6,15}");
+    out.party = findAfter(text, ["اسم\\s*المنشأة", "اسم\\s*الشركة"], "[^\\n:]{3,80}");
+  } else if (has(/عقد\s*(?:إيجار|ايجار|الإيجار|الايجار)|إيجار\s*موثق|lease\s*(?:agreement|contract)/i)) {
+    out.kind = "lease_contract";
+    out.number = findAfter(text, ["رقم\\s*العقد", "رقم\\s*عقد\\s*الإيجار", "رقم\\s*التوثيق", "contract\\s*(?:No\\.?|number)?"], "[0-9A-Za-z\\-]{4,25}");
+    out.issuer = has(/إيجار|ايجار/) && has(/منصة|شبكة|موثق/) ? "منصة إيجار" : null;
+    const rent = text.match(/(?:قيمة\s*(?:الإيجار|الايجار|العقد)|الأجرة\s*السنوية|إجمالي\s*(?:الإيجار|العقد))[^0-9]{0,30}([0-9][0-9,\.]{2,})/);
+    if (rent) out.amount = Number(rent[1].replace(/,/g, "")) || null;
+  } else if (has(/السجل\s*التجاري|سجل\s*تجاري|commercial\s*regist/i)) {
     out.kind = "commercial_register";
     out.issuer = "وزارة التجارة";
     out.number = findAfter(text, ["رقم\\s*السجل\\s*التجاري", "رقم\\s*السجل", "السجل\\s*التجاري\\s*رقم", "C\\.?R\\.?\\s*(?:No\\.?|number)?"], "\\d{10}") || (text.match(/\b[1247]\d{9}\b/) || [])[0] || null;
@@ -158,12 +197,14 @@ function rulesExtract(rawText) {
 function mergeRules(model, rules) {
   const m = model && typeof model === "object" ? { ...model } : {};
   for (const k of Object.keys(rules)) {
-    const bad = m[k] == null || m[k] === "" || (k === "kind" && m[k] === "other");
+    const bad = m[k] == null || m[k] === "" || m[k] === 0 || (k === "kind" && m[k] === "other");
     if (bad) m[k] = rules[k];
   }
   if (rules.kind && m.kind !== rules.kind && (m.kind === "other" || m.kind == null)) m.kind = rules.kind;
   if (!m.title && rules.kind) {
-    const names = { commercial_register: "السجل التجاري", vat_certificate: "الشهادة الضريبية", license: "الرخصة" };
+    const names = { commercial_register: "السجل التجاري", vat_certificate: "الشهادة الضريبية", license: "الرخصة",
+      articles_of_association: "عقد التأسيس", bylaws: "النظام الأساسي", chamber_certificate: "شهادة الغرفة التجارية",
+      gosi_certificate: "شهادة التأمينات الاجتماعية", zakat_certificate: "شهادة الزكاة", saudization_certificate: "شهادة السعودة", lease_contract: "عقد الإيجار" };
     m.title = (names[rules.kind] || "مستند") + (rules.party ? " — " + rules.party : rules.number ? " " + rules.number : "");
   }
   return m;
