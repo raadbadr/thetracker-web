@@ -510,7 +510,7 @@
     [data-theme="light"] .tlx { background: linear-gradient(165deg, rgba(255,255,255,0.78) 0%, rgba(255,255,255,0.48) 45%, rgba(255,255,255,0.38) 100%);
       border: 1px solid rgba(255,255,255,0.72); box-shadow: 0 12px 40px rgba(0,80,140,0.1), inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(0,60,100,0.06); }
     .tlx-nav-row { display: flex; align-items: center; gap: 0.6rem; }
-    .tlx-title { display: flex; align-items: center; justify-content: center; gap: .6rem; margin: -2.4rem 0 1.4rem; font-weight: 700; color: var(--text-primary); font-size: 1rem; }
+    .tlx-title { margin: -2.4rem 0 1.4rem; font-weight: 700; color: var(--text-primary); font-size: 1rem; }
     .tlx-scroll { flex: 1 1 auto; min-width: 0; overflow-x: auto; overflow-y: visible; padding: 2.6rem 0 1.6rem; scrollbar-width: thin; }
     .tlx-scroll .tlx-range-wrap { min-width: max(100%, calc(var(--tlx-days, 30) * 56px)); }
     .tlx-day-tick { position: absolute; top: calc(50% - 5px); width: 1px; height: 10px; background: rgba(255,255,255,0.18); transform: translateX(-50%); pointer-events: none; z-index: 1; }
@@ -543,9 +543,10 @@
     .tlx input[type="range"]::-moz-range-track { height: 20px; border-radius: 999px; background: transparent; border: none; }
     .tlx input[type="range"]::-moz-range-thumb { width: 36px; height: 20px; border: none; border-radius: 10px;
       background: linear-gradient(180deg, #ffffff 0%, #f0f4f8 100%); box-shadow: 0 2px 12px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.4) inset; }
-    .tlx-strip-nav { display: inline-flex; gap: .5rem; }
-    .tlx-title .tlx-nav-btn { width: 30px; height: 30px; }
-    .tlx-ends { display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem; padding-inline: calc(34px + 0.6rem); font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.02em; }
+    .tlx-title, .tlx-ends { display: grid; grid-template-columns: 34px minmax(0, 1fr) 34px; align-items: center; gap: 0.6rem; }
+    .tlx-title > span { text-align: center; }
+    .tlx-ends-dates { display: flex; justify-content: space-between; min-width: 0; }
+    .tlx-ends { margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.02em; }
     .tlx-today { position: absolute; left: 0; top: 0; bottom: 0; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 10; opacity: 0; transition: opacity .18s ease; }
     .tlx-today.is-at-today { opacity: 1; }
     .tlx-today-label { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); white-space: nowrap; font-size: 0.46rem; font-weight: 800; line-height: 1; color: rgba(0,100,180,0.9); letter-spacing: 0.06em; text-transform: uppercase; }
@@ -2492,7 +2493,7 @@
         var daysInMonth = Math.round(spanMs / 86400000);
         var ratioOf = function (ms) { return Math.max(0, Math.min(1, (ms - minMs) / spanMs)); };
         events = events.filter(function (ev) { return ev.ms >= minMs && ev.ms <= maxMs; });
-        var fillPct = Math.round(ratioOf(todayMs) * 100);
+        var fillPct = 100;
 
         var ms = "";
         events.forEach(function (ev, i) {
@@ -2529,12 +2530,11 @@
               (isCurrent ? '<div class="tlx-today is-at-today" id="tlxToday" style="left:' + tlxLeft(ratioOf(todayMs), isRtl) + '"><span class="tlx-today-label">' + esc(T("tlNow")) + "</span></div>" : "") +
             "</div></div>" +
           "</div>" +
-          '<div class="tlx-ends"><span>' + esc(tlxFmtDate(minMs)) + "</span>" +
-            '<span class="tlx-strip-nav">' +
-              '<button type="button" class="tlx-nav-btn" id="tlxPrev" aria-label="' + esc(T("tlPrev")) + '"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M14.5 5.5 8 12l6.5 6.5"/></svg></button>' +
-              '<button type="button" class="tlx-nav-btn" id="tlxNext" aria-label="' + esc(T("tlNext")) + '"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M9.5 5.5 16 12l-6.5 6.5"/></svg></button>' +
-            '</span>' +
-            "<span>" + esc(tlxFmtDate(maxMs)) + "</span></div>" +
+          '<div class="tlx-ends">' +
+            '<button type="button" class="tlx-nav-btn" id="tlxPrev" aria-label="' + esc(T("tlPrev")) + '"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M14.5 5.5 8 12l6.5 6.5"/></svg></button>' +
+            '<span class="tlx-ends-dates"><span>' + esc(tlxFmtDate(minMs)) + "</span><span>" + esc(tlxFmtDate(maxMs)) + "</span></span>" +
+            '<button type="button" class="tlx-nav-btn" id="tlxNext" aria-label="' + esc(T("tlNext")) + '"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M9.5 5.5 16 12l-6.5 6.5"/></svg></button>' +
+          "</div>" +
         "</div>";
         if (!events.length) html += '<p class="empty-note">' + esc(T("timelineEmpty")) + "</p>";
         card.innerHTML = html;
