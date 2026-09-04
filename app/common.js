@@ -1418,7 +1418,6 @@
 
   /* الشريط العلوي للتنقل العام، والقائمة الجانبية للخدمات: لا يتكرر عنصر بينهما. */
   var TOPNAV = [
-    { href: "/app/dashboard.html", labels: { ar: "لوحة المعلومات", en: "Dashboard", fr: "Tableau de bord", ur: "ڈیش بورڈ" } },
     { href: "/about.html", labels: { ar: "الدليل", en: "Guide", fr: "Guide", ur: "رہنما" } },
     { href: "/#contact", labels: { ar: "تواصل معنا", en: "Contact us", fr: "Nous contacter", ur: "رابطہ کریں" } }
   ];
