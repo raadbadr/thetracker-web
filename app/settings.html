@@ -1846,7 +1846,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         el("profileTimeFormat").value = p.time_format === "12" ? "12" : "24";
       }
 
-      /* نفس نمط رقم الجوال في بوابة إكمال الملف الشخصي (app.js) — إلزامي دائماً. */
+      /* نفس نمط رقم الجوال في بوابة إكمال الملف الشخصي (mountProfileGate في common.js) — إلزامي دائماً. */
       var PHONE_RX = /^\+[1-9]\d{7,14}$/;
 
       function saveProfile(ev) {

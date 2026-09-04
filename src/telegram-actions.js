@@ -169,11 +169,12 @@ export function fmtWhen(iso, lang, userTimeZone, userHour12) {
     const weekday = new Intl.DateTimeFormat(weekdayLocale, { timeZone: userTimeZone || RIYADH, weekday: "short" }).format(date);
     const parts = new Intl.DateTimeFormat("en-GB", {
       timeZone: userTimeZone || RIYADH, numberingSystem: "latn",
-      year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: !!userHour12,
+      year: "numeric", month: "2-digit", day: "2-digit", hour: userHour12 ? "numeric" : "2-digit", minute: "2-digit", hour12: !!userHour12,
     }).formatToParts(date);
     const by = {};
     parts.forEach((p) => { by[p.type] = p.value; });
-    const timePart = userHour12 ? `${by.hour}:${by.minute} ${(by.dayPeriod || "").toUpperCase()}` : `${by.hour}:${by.minute}`;
+    const dayPeriod = String(by.dayPeriod || "").replace(/\s/g, "").toUpperCase();
+    const timePart = userHour12 ? `${by.hour}:${by.minute} ${dayPeriod}` : `${by.hour}:${by.minute}`;
     return `${weekday} ${by.day}-${by.month}-${by.year} ${timePart}`;
   } catch { return String(iso); }
 }

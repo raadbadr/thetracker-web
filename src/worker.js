@@ -259,6 +259,15 @@ function telegramLang(code) {
   return ["ar", "en", "fr", "ur"].includes(c) ? c : "ar";
 }
 
+/** اسم المستخدم بلغة المحادثة: الإنجليزي حين تكون اللغة en/fr وهو موجود، وإلا العربي — نفس منطق userDisplayName في common.js */
+function targetDisplayName(target, lang, fallbackName) {
+  const preferEnglish = lang === "en" || lang === "fr";
+  const fullName = target && target.full_name;
+  const fullNameEn = target && target.full_name_en;
+  if (preferEnglish && fullNameEn) return fullNameEn;
+  return fullName || fullNameEn || fallbackName || "";
+}
+
 // --- رمز ربط موقّع (HMAC بسر الـ Worker): زر داخل البوت يفتح الإعدادات فتربط الجلسة المحادثة بلا أي كتابة ---
 async function hmacHex(secret, data) {
   const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
@@ -283,7 +292,7 @@ async function greetLinked(env, chatId, userId, fallbackLang, fallbackName) {
   let target = null;
   try { target = await notifyTarget(env, userId, "telegram"); } catch {}
   const lang = (target && target.lang) || fallbackLang || "ar";
-  const name = (target && target.full_name) || fallbackName || "";
+  const name = targetDisplayName(target, lang, fallbackName);
   try { await sendTelegram(env, chatId, channelText(lang).linked(name, target && target.org_name), menuKeyboard(lang)); } catch {}
   return lang;
 }
@@ -337,7 +346,7 @@ async function telegramAssistantReply(env, chatId, userId, text, attachment) {
   try { overdue = await telegramItems(env, userId, "overdue", 15); } catch {}
   const lang = (target && target.lang) || "ar";
   const facts = {
-    user: { name: (target && target.full_name) || "", company: (target && target.org_name) || "" },
+    user: { name: targetDisplayName(target, lang, ""), company: (target && target.org_name) || "" },
     now_riyadh: new Date().toLocaleString("en-GB", { timeZone: "Asia/Riyadh" }),
     upcoming_items: upcoming, overdue_items: overdue,
     counts: { upcoming: Array.isArray(upcoming) ? upcoming.length : 0, overdue: Array.isArray(overdue) ? overdue.length : 0 },
@@ -505,7 +514,7 @@ async function handleTelegramWebhook(request, env) {
       if (!transcript) { try { await sendTelegram(env, chatId, b.fileUnreadable, menuKeyboard(lang)); } catch {} return json({ ok: true }); }
       const spokenMenu = menuAction(transcript);
       if (spokenMenu) { await runMenu(env, chatId, owner, spokenMenu); return json({ ok: true }); }
-      await smartReply(env, chatId, owner, transcript, lang, (target && target.full_name) || tgName, null, b.voiceHeard + "«" + transcript + "»\n\n", userTimeZone);
+      await smartReply(env, chatId, owner, transcript, lang, targetDisplayName(target, lang, tgName), null, b.voiceHeard + "«" + transcript + "»\n\n", userTimeZone);
       return json({ ok: true });
     }
     // 3-ب) إكسل أو CSV: يُقرأ بمنطق صفحة الاستيراد، ويُعرض ملخصه بزرّي حفظ/إلغاء
@@ -528,7 +537,7 @@ async function handleTelegramWebhook(request, env) {
     let content = null;
     try { content = await readTelegramDocument(env, media, name, mime); } catch (e) { console.error("[telegram] read file failed:", String((e && e.message) || e).slice(0, 200)); }
     if (!content) { try { await sendTelegram(env, chatId, b.fileUnreadable, menuKeyboard(lang)); } catch {} return json({ ok: true }); }
-    await smartReply(env, chatId, owner, caption || b.fileQuestion, lang, (target && target.full_name) || tgName, { name, kind: photo ? "image" : "file", content }, "", userTimeZone);
+    await smartReply(env, chatId, owner, caption || b.fileQuestion, lang, targetDisplayName(target, lang, tgName), { name, kind: photo ? "image" : "file", content }, "", userTimeZone);
     return json({ ok: true });
   }
   if (menu) { await runMenu(env, chatId, owner, menu); return json({ ok: true }); }
@@ -539,7 +548,7 @@ async function handleTelegramWebhook(request, env) {
   const lang = (target && target.lang) || tgLang;
   const userTimeZone = (target && target.tz) || "Asia/Riyadh";
   await sendChatAction(env, chatId, "typing");
-  await smartReply(env, chatId, owner, text, lang, (target && target.full_name) || tgName, null, "", userTimeZone);
+  await smartReply(env, chatId, owner, text, lang, targetDisplayName(target, lang, tgName), null, "", userTimeZone);
   return json({ ok: true });
 }
 

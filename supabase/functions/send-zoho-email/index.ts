@@ -126,17 +126,27 @@ type ReminderPayload = {
   org_name?: string;
   link?: string;
   tz?: string;
+  hour12?: boolean;
 };
 
-/* توقيت العرض باختيار المستلم من إعداداته (profiles.tz عبر الـ Worker)،
-   وتوقيت الرياض هو الافتراضي فقط حين لا يصل تفضيل صريح. */
-function fmtDue(d: string, lang: string, userTimeZone?: string): string {
+/* الصيغة القياسية الثابتة نفسها في كل قناة (dd-MM-yyyy HH:mm، أرقام غربية) —
+   مطابقة app.fmtDate في الموقع، بلا اختلاف بين اللغات في ترتيب الأرقام.
+   المنطقة الزمنية وصيغة الوقت (24 أو 12 ساعة) باختيار المستلم من إعداداته
+   (profiles.tz وprofiles.time_format عبر الـ Worker)، والافتراض توقيت
+   الرياض و24 ساعة. */
+function fmtDue(d: string, lang: string, userTimeZone?: string, userHour12?: boolean): string {
   try {
     const dt = new Date(d);
     if (Number.isNaN(dt.getTime())) return d;
-    return new Intl.DateTimeFormat(lang === "ar" ? "ar-SA-u-nu-latn" : lang === "ur" ? "ur-PK-u-nu-latn" : lang === "fr" ? "fr-FR" : "en-GB", {
-      timeZone: userTimeZone || "Asia/Riyadh", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false,
-    }).format(dt);
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: userTimeZone || "Asia/Riyadh", numberingSystem: "latn",
+      year: "numeric", month: "2-digit", day: "2-digit", hour: userHour12 ? "numeric" : "2-digit", minute: "2-digit", hour12: !!userHour12,
+    }).formatToParts(dt);
+    const by: Record<string, string> = {};
+    parts.forEach((p) => { by[p.type] = p.value; });
+    const dayPeriod = String(by.dayPeriod || "").replace(/\s/g, "").toUpperCase();
+    const timePart = userHour12 ? `${by.hour}:${by.minute} ${dayPeriod}` : `${by.hour}:${by.minute}`;
+    return `${by.day}-${by.month}-${by.year} ${timePart}`;
   } catch { return d; }
 }
 
@@ -163,7 +173,7 @@ function buildReminderHTML(p: ReminderPayload): { subject: string; html: string 
 <tr><td style="padding:24px;">
   <div style="font-size:18px;font-weight:700;color:#1a1a26;margin-bottom:12px;">${t.heading}</div>
   <div style="font-size:16px;color:#1a1a26;margin-bottom:6px;">${esc(p.title)}</div>
-  <div style="font-size:13px;color:#4d4d59;margin-bottom:4px;">${t.due}: <b dir="ltr">${esc(fmtDue(p.due_at, lang, p.tz))}</b></div>
+  <div style="font-size:13px;color:#4d4d59;margin-bottom:4px;">${t.due}: <b dir="ltr">${esc(fmtDue(p.due_at, lang, p.tz, p.hour12))}</b></div>
   ${p.tracker_name ? `<div style="font-size:13px;color:#4d4d59;margin-bottom:4px;">${t.tracker}: ${esc(p.tracker_name)}</div>` : ""}
   ${p.org_name ? `<div style="font-size:13px;color:#4d4d59;margin-bottom:16px;">${esc(p.org_name)}</div>` : "<div style=\"height:12px\"></div>"}
   <a href="${esc(link)}" style="display:inline-block;background:#008cf2;color:#ffffff;text-decoration:none;padding:10px 20px;border-radius:12px;font-size:14px;font-weight:600;">${t.open}</a>
