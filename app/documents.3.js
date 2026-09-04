@@ -309,12 +309,12 @@
             "<td>" + (files.length
               ? files.map(function (a) {
                   return '<span class="file-row"><a href="#" data-open="' + esc(a.id) + '" title="' + esc(a.name) + '">' + esc(a.name) + "</a>" +
-                         '<button type="button" class="chat-option-btn file-get" data-get="' + esc(a.id) + '" title="' + esc(t("pDownload")) + '">' + esc(t("pDownload")) + "</button></span>";
+                         iconBtn("download", t("pDownload"), "data-get", a.id, "file-get") + "</span>";
                 }).join("")
               : "-") + "</td>" +
             '<td><div class="chat-options row-actions">' +
-              '<button type="button" class="chat-option-btn" data-attach="' + esc(it.id) + '">' + PLUS_ICON + esc(t(files.length ? "docAddAnother" : "docAttachFile")) + "</button>" +
-              '<button type="button" class="chat-option-btn is-danger" data-del="' + esc(it.id) + '">' + TRASH_ICON + esc(t("delete")) + "</button>" +
+              iconBtn("plus", t(files.length ? "docAddAnother" : "docAttachFile"), "data-attach", it.id) +
+              iconBtn("trash", t("delete"), "data-del", it.id, "is-danger") +
             "</div></td>";
           body.appendChild(tr);
         });
@@ -341,6 +341,21 @@
       }
 
       /* رمز السلة: الحذف يُعرف بلونه ورمزه في كل مكان */
+      /* الرموز أوضح من الكلمات: كل فعل أيقونة واسمه في التلميح ولقارئ الشاشة */
+      var ICON = {
+        open: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5c-5 0-9 4.5-9 7s4 7 9 7 9-4.5 9-7-4-7-9-7zm0 11a4 4 0 110-8 4 4 0 010 8zm0-6.5A2.5 2.5 0 1014.5 12 2.5 2.5 0 0012 9.5z"/></svg>',
+        download: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v10.6l3.3-3.3 1.4 1.4-5.7 5.7-5.7-5.7 1.4-1.4L10 13.6V3h2zM5 19h14v2H5v-2z"/></svg>',
+        plus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>',
+        replace: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5V2L8 6l4 4V7a5 5 0 11-5 5H5a7 7 0 107-7z"/></svg>',
+        trash: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>'
+      };
+
+      function iconBtn(icon, label, attr, value, extra) {
+        return '<button type="button" class="chat-option-btn is-icon' + (extra ? " " + extra : "") + '" ' +
+               attr + '="' + esc(value) + '" title="' + esc(label) + '" aria-label="' + esc(label) + '">' +
+               ICON[icon] + "</button>";
+      }
+
       var PLUS_ICON = '<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z\"/></svg>';
       var TRASH_ICON = '<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z\"/></svg>';
 
@@ -377,12 +392,11 @@
             '<td><span class="' + st.cls + '">' + esc(p.state === "missing" ? "-" : left) + "</span></td>" +
             '<td><span class="' + st.cls + '">' + esc(t(st.key)) + "</span></td>" +
             '<td><div class="chat-options row-actions">' +
-              (paperFile(p) ? '<button type="button" class="chat-option-btn" data-paper-open="' + esc(paperFile(p).id) + '">' + esc(t("pOpen")) + "</button>" +
-                              '<button type="button" class="chat-option-btn" data-paper-get="' + esc(paperFile(p).id) + '">' + esc(t("pDownload")) + "</button>" : "") +
+              (paperFile(p) ? iconBtn("open", t("pOpen"), "data-paper-open", paperFile(p).id) +
+                              iconBtn("download", t("pDownload"), "data-paper-get", paperFile(p).id) : "") +
               (p.item_id && !paperFile(p)
-                ? '<button type="button" class="chat-option-btn" data-paper-attach="' + esc(p.item_id) + '">' + PLUS_ICON + esc(t("docAttachFile")) + "</button>"
-                : '<button type="button" class="chat-option-btn" data-paper-add="' + esc(p.kind) + '">' +
-                    esc(t(p.state === "missing" ? "pAdd" : "docReplace")) + "</button>") +
+                ? iconBtn("plus", t("docAttachFile"), "data-paper-attach", p.item_id)
+                : iconBtn(p.state === "missing" ? "plus" : "replace", t(p.state === "missing" ? "pAdd" : "docReplace"), "data-paper-add", p.kind)) +
             "</div></td>";
           body.appendChild(tr);
         });

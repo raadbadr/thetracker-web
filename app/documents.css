@@ -732,8 +732,12 @@
     /* الحذف أحمر دائما ومعه رمز السلة، في كل الجداول والبطاقات */
     .chat-option-btn.is-danger { color: var(--error); border-color: var(--error); }
     .chat-option-btn.is-danger:hover, .chat-option-btn.is-danger:focus-visible { background: var(--error); color: #fff; }
-    .chat-option-btn svg { width: 15px; height: 15px; fill: currentColor; flex: 0 0 auto; }
+    .chat-option-btn svg { width: 16px; height: 16px; fill: currentColor; flex: 0 0 auto; }
     .chat-option-btn { display: inline-flex; align-items: center; gap: .35rem; }
+    /* زر الرمز: مربع بلا كلمات، واسم الفعل في التلميح ولقارئ الشاشة */
+    .chat-option-btn.is-icon { width: 34px; height: 34px; min-height: 34px; padding: 0; justify-content: center; }
+    .content .items-table .row-actions .chat-option-btn.is-icon { width: 34px; padding: 0; }
+    .chat-option-btn.is-icon svg { width: 17px; height: 17px; }
     .empty-note { text-align: center; margin: 1rem 0 0; }
     .doc-form { margin-top: 1.25rem; }
     /* اسم الملف وزر تنزيله على سطر واحد */
