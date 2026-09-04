@@ -7,7 +7,9 @@
 import { handleAssistantRequest, askAssistant } from "./assistant.js";
 import { handleCalendar } from "./calendar.js";
 import { runNotificationCron, linkChannelByCode, notifyTarget, sendTelegram, sendWhatsapp, sendSms, sendEmail, rpc, t as channelText,
-         bot as botText, menuKeyboard, menuAction, urlButton, formatItems, telegramItems, linkChannelDirect, linkChannelByPhone, contactKeyboard } from "./notify.js";
+         bot as botText, menuKeyboard, menuAction, urlButton, formatItems, telegramItems, linkChannelDirect, linkChannelByPhone, contactKeyboard,
+         sendChatAction, fetchTelegramFile, bytesToBase64, TELEGRAM_FILE_MAX, answerCallback, clearInlineButtons, confirmButtons } from "./notify.js";
+import { ALLOWED_EXT, fileExt, parseWorkbook, draftPayload, commitImport } from "./telegram-import.js";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -199,7 +201,7 @@ function tgAiRateLimited(chatId) {
   b.count += 1; if (tgAiBuckets.size > 5000) tgAiBuckets.clear();
   return b.count > 12;
 }
-async function telegramAssistantReply(env, chatId, userId, text) {
+async function telegramAssistantReply(env, chatId, userId, text, attachment) {
   if (tgAiRateLimited(chatId)) return null;
   let target = null, upcoming = [], overdue = [];
   try { target = await notifyTarget(env, userId, "telegram"); } catch {}
@@ -212,7 +214,9 @@ async function telegramAssistantReply(env, chatId, userId, text) {
     upcoming_items: upcoming, overdue_items: overdue,
     counts: { upcoming: Array.isArray(upcoming) ? upcoming.length : 0, overdue: Array.isArray(overdue) ? overdue.length : 0 },
     dashboard_url: "https://appmails.net/app/dashboard.html",
+    import_url: "https://appmails.net/app/import.html",
   };
+  if (attachment) facts.attachment = { name: attachment.name || "", kind: attachment.kind || "file", content: String(attachment.content || "").slice(0, 9000) };
   const system = `أنت مساعد TheTracker داخل تلغرام، تخدم المستخدم ${facts.user.name || ""}${facts.user.company ? ` من شركة «${facts.user.company}»` : ""}.
 التراكر منصة لتتبع القضايا والمخالفات والعقود والمواعيد من ملفات إكسل، مع تقويم وتنبيهات.
 قواعدك:
@@ -220,8 +224,39 @@ async function telegramAssistantReply(env, chatId, userId, text) {
 - اعتمد على الحقائق أدناه وحدها (مواعيده القادمة والمتأخرة وعدّها)؛ إن سُئلت عن شيء ليس فيها قل إنك لا تراه هنا ووجّهه إلى لوحة التحكم.
 - أنت للقراءة فقط: لا تعِد بتعديل أو حذف أو إضافة شيء؛ لأي تعديل وجّهه إلى لوحة التحكم: ${facts.dashboard_url}
 - لا تختلق أرقاماً أو قضايا أو تواريخ. لا تخرج عن مواضيع التراكر.
-الحقائق (JSON): ${JSON.stringify(facts).slice(0, 12000)}`;
+- إن وُجد "attachment" في الحقائق فهو محتوى ملف/صورة أرسله المستخدم الآن: افهم المطلوب من رسالته، وإلا فلخّصه واستخرج منه المواعيد والأرقام والأطراف المهمة، واذكر ما يمكنه فعله به في التراكر (الاستيراد من ${facts.import_url} إن كان جدولاً). لا تقل إنك لا تستطيع قراءة الملفات — المحتوى أمامك.
+الحقائق (JSON): ${JSON.stringify(facts).slice(0, 20000)}`;
   return askAssistant(env, system, [{ role: "user", content: text }]);
+}
+
+/** رسالة صوتية ← نص (Whisper على Workers AI) */
+async function transcribeTelegramVoice(env, media) {
+  if (!env.AI) return null;
+  const { bytes } = await fetchTelegramFile(env, media.file_id);
+  const out = await env.AI.run("@cf/openai/whisper-large-v3-turbo", { audio: bytesToBase64(bytes) });
+  return String((out && out.text) || "").trim() || null;
+}
+
+/** مستند أو صورة ← نص: تحويل Markdown (PDF/إكسل/CSV/صور…)؛ وللصور محاولة قراءة بصرية أولاً */
+async function readTelegramDocument(env, media, name, mime) {
+  if (!env.AI) return null;
+  const { bytes } = await fetchTelegramFile(env, media.file_id);
+  const isImage = /^image\//.test(mime || "");
+  if (isImage) {
+    try {
+      const out = await env.AI.run("@cf/meta/llama-3.2-11b-vision-instruct", {
+        messages: [{ role: "user", content: "Read everything written in this image (Arabic or English) and transcribe it faithfully as text, then describe what the document is." }],
+        image: `data:${mime};base64,${bytesToBase64(bytes)}`,
+        max_tokens: 900,
+      });
+      const text = String((out && (out.response || out.result)) || "").trim();
+      if (text) return text;
+    } catch (e) { console.error("[telegram] vision failed:", String((e && e.message) || e).slice(0, 200)); }
+  }
+  const results = await env.AI.toMarkdown([{ name: name || "file", blob: new Blob([bytes], { type: mime || "application/octet-stream" }) }]);
+  const first = Array.isArray(results) ? results[0] : results;
+  const data = first && (first.data || first.markdown || "");
+  return String(data || "").trim() || null;
 }
 
 /** POST /api/telegram/webhook — كل رسالة تُسجَّل ويُرَدّ عليها: ربط (/start الرمز)، قائمة أزرار، أو دعوة للربط */
@@ -232,6 +267,7 @@ async function handleTelegramWebhook(request, env) {
   }
   let update;
   try { update = await request.json(); } catch { return json({ ok: true }); }
+  if (update && update.callback_query) return handleTelegramCallback(env, update.callback_query);
   const msg = update && (update.message || update.edited_message);
   const chatId = msg && msg.chat && msg.chat.id;
   const text = String((msg && msg.text) || "").trim();
@@ -274,10 +310,73 @@ async function handleTelegramWebhook(request, env) {
     return json({ ok: true });
   }
 
-  // 3) رسالة عادية أو زر: سجّلها واعرف صاحب المحادثة (إن كانت مربوطة)
-  const owner = await logMessage();
+  // 3) رسالة عادية أو زر أو وسائط: سجّلها واعرف صاحب المحادثة (إن كانت مربوطة)
+  const voice = msg.voice || msg.audio || msg.video_note || null;
+  const photo = Array.isArray(msg.photo) && msg.photo.length ? msg.photo[msg.photo.length - 1] : null;
+  const doc = msg.document || null;
+  const caption = String((msg && msg.caption) || "").trim();
+  const mediaLabel = voice ? "[voice]" : doc ? `[file: ${doc.file_name || doc.mime_type || "document"}]` : photo ? "[photo]" : "";
+  if (mediaLabel && !text) { /* يُسجَّل نوع الوسيط مع تعليقه */ }
+  const logBody = mediaLabel ? `${mediaLabel} ${caption}`.trim() : text;
+  const owner = await (async () => {
+    if (!env.WORKER_SECRET) return null;
+    try {
+      return await rpc(env, "log_telegram_message", {
+        p_secret: env.WORKER_SECRET, p_chat_id: String(chatId), p_username: from.username || null,
+        p_first_name: [from.first_name, from.last_name].filter(Boolean).join(" ") || null,
+        p_body: logBody || null, p_user_id: null, p_action: "none",
+      });
+    } catch { return null; }
+  })();
   const menu = menuAction(text);
   if (!owner) { await askToLink(env, chatId, tgLang); return json({ ok: true }); }
+
+  // 3-أ) صوت: نفهمه ثم نجيب كأنه نص
+  if (voice || doc || photo) {
+    let target = null;
+    try { target = await notifyTarget(env, owner, "telegram"); } catch {}
+    const lang = (target && target.lang) || tgLang;
+    const b = botText(lang);
+    await sendChatAction(env, chatId, "typing");
+    const size = Number((voice && voice.file_size) || (doc && doc.file_size) || (photo && photo.file_size) || 0);
+    if (size > TELEGRAM_FILE_MAX) { try { await sendTelegram(env, chatId, b.fileTooBig, menuKeyboard(lang)); } catch {} return json({ ok: true }); }
+    if (voice) {
+      let transcript = null;
+      try { transcript = await transcribeTelegramVoice(env, voice); } catch (e) { console.error("[telegram] whisper failed:", String((e && e.message) || e).slice(0, 200)); }
+      if (!transcript) { try { await sendTelegram(env, chatId, b.fileUnreadable, menuKeyboard(lang)); } catch {} return json({ ok: true }); }
+      const spokenMenu = menuAction(transcript);
+      if (spokenMenu) { await runMenu(env, chatId, owner, spokenMenu); return json({ ok: true }); }
+      let reply = null;
+      try { reply = await telegramAssistantReply(env, chatId, owner, transcript); } catch {}
+      const answer = b.voiceHeard + "«" + transcript + "»\n\n" + (reply || channelText(lang).alreadyLinked((target && target.full_name) || tgName));
+      try { await sendTelegram(env, chatId, answer, menuKeyboard(lang)); } catch {}
+      return json({ ok: true });
+    }
+    // 3-ب) إكسل أو CSV: يُقرأ بمنطق صفحة الاستيراد، ويُعرض ملخصه بزرّي حفظ/إلغاء
+    if (doc && ALLOWED_EXT.includes(fileExt(doc.file_name))) {
+      let parsed = null;
+      try { const { bytes } = await fetchTelegramFile(env, doc.file_id); parsed = parseWorkbook(bytes, doc.file_name || "file.xlsx"); }
+      catch (e) { console.error("[telegram] xlsx parse failed:", String((e && e.message) || e).slice(0, 200)); }
+      if (!parsed || !parsed.sheets.length) { try { await sendTelegram(env, chatId, b.importNothing, menuKeyboard(lang)); } catch {} return json({ ok: true }); }
+      try { await rpc(env, "telegram_draft_put", { p_secret: env.WORKER_SECRET, p_chat_id: String(chatId), p_user_id: owner, p_payload: draftPayload(parsed) }); }
+      catch (e) { try { await sendTelegram(env, chatId, b.importFailed, menuKeyboard(lang)); } catch {} return json({ ok: true }); }
+      const lines = parsed.sheets.map((sh) => b.importSheet(sh.tracker || sh.name, sh.records.length, sh.skipped)).join("\n");
+      const summary = b.importFound(doc.file_name || "file", parsed.sheets.length) + "\n" + lines + "\n\n" + b.importAsk;
+      try { await sendTelegram(env, chatId, summary, confirmButtons(lang)); } catch {}
+      return json({ ok: true });
+    }
+    // 3-ج) مستند أو صورة: نقرأه ثم نجيب عن تعليقه (أو نلخّصه)
+    const media = doc || photo;
+    const name = (doc && doc.file_name) || (photo ? "photo.jpg" : "file");
+    const mime = (doc && doc.mime_type) || (photo ? "image/jpeg" : "application/octet-stream");
+    let content = null;
+    try { content = await readTelegramDocument(env, media, name, mime); } catch (e) { console.error("[telegram] read file failed:", String((e && e.message) || e).slice(0, 200)); }
+    if (!content) { try { await sendTelegram(env, chatId, b.fileUnreadable, menuKeyboard(lang)); } catch {} return json({ ok: true }); }
+    let reply = null;
+    try { reply = await telegramAssistantReply(env, chatId, owner, caption || b.fileQuestion, { name, kind: photo ? "image" : "file", content }); } catch {}
+    try { await sendTelegram(env, chatId, reply || b.fileUnreadable, menuKeyboard(lang)); } catch {}
+    return json({ ok: true });
+  }
   if (menu) { await runMenu(env, chatId, owner, menu); return json({ ok: true }); }
   if (text === "/start") { await greetLinked(env, chatId, owner, tgLang, tgName); return json({ ok: true }); }
   // نص حر من مستخدم مربوط: المساعد الذكي يجيب من بياناته؛ وإن تعذّر، رسالة الحالة المعتادة
@@ -285,9 +384,56 @@ async function handleTelegramWebhook(request, env) {
   try { target = await notifyTarget(env, owner, "telegram"); } catch {}
   const lang = (target && target.lang) || tgLang;
   let reply = null;
+  await sendChatAction(env, chatId, "typing");
   try { reply = await telegramAssistantReply(env, chatId, owner, text); } catch {}
   if (!reply) reply = channelText(lang).alreadyLinked((target && target.full_name) || tgName);
   try { await sendTelegram(env, chatId, reply, menuKeyboard(lang)); } catch {}
+  return json({ ok: true });
+}
+
+/** ضغطة زر داخل رسالة البوت: تأكيد الاستيراد أو إلغاؤه */
+async function handleTelegramCallback(env, cq) {
+  const chatId = cq.message && cq.message.chat && cq.message.chat.id;
+  const data = String(cq.data || "");
+  const from = cq.from || {};
+  await answerCallback(env, cq.id);
+  if (!chatId) return json({ ok: true });
+  await clearInlineButtons(env, chatId, cq.message && cq.message.message_id);
+  let owner = null;
+  try {
+    owner = await rpc(env, "log_telegram_message", {
+      p_secret: env.WORKER_SECRET, p_chat_id: String(chatId), p_username: from.username || null,
+      p_first_name: [from.first_name, from.last_name].filter(Boolean).join(" ") || null,
+      p_body: "[button] " + data, p_user_id: null, p_action: "none",
+    });
+  } catch {}
+  const tgLang = telegramLang(from.language_code);
+  if (!owner) { await askToLink(env, chatId, tgLang); return json({ ok: true }); }
+  let target = null;
+  try { target = await notifyTarget(env, owner, "telegram"); } catch {}
+  const lang = (target && target.lang) || tgLang;
+  const b = botText(lang);
+  if (data === "imp:n") {
+    try { await rpc(env, "telegram_draft_take", { p_secret: env.WORKER_SECRET, p_chat_id: String(chatId) }); } catch {}
+    try { await sendTelegram(env, chatId, b.importCancelled, menuKeyboard(lang)); } catch {}
+    return json({ ok: true });
+  }
+  if (data === "imp:y") {
+    let draft = null;
+    try { draft = await rpc(env, "telegram_draft_take", { p_secret: env.WORKER_SECRET, p_chat_id: String(chatId) }); } catch {}
+    if (!draft || !draft.payload || String(draft.user_id) !== String(owner)) {
+      try { await sendTelegram(env, chatId, b.importExpired, menuKeyboard(lang)); } catch {}
+      return json({ ok: true });
+    }
+    await sendChatAction(env, chatId, "typing");
+    const { results, errors } = await commitImport(env, owner, draft.payload);
+    let text = "";
+    if (results.length) text += b.importDoneTitle + "\n" + results.map((r) => b.importDoneLine(r.tracker_name, r.inserted || 0, !!r.tracker_new)).join("\n");
+    if (errors.length) text += (text ? "\n\n" : "") + (errors.some((e) => e.limit) ? b.importLimit : b.importFailed);
+    if (!text) text = b.importFailed;
+    try { await sendTelegram(env, chatId, text, results.length ? urlButton(b.openDash, "https://appmails.net/app/dashboard.html") : menuKeyboard(lang)); } catch {}
+    return json({ ok: true });
+  }
   return json({ ok: true });
 }
 

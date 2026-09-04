@@ -61,6 +61,11 @@ const BOT = {
         linkBtn: "🔗 ربط حسابي", openDash: "فتح لوحة التحكم",
         phoneBtn: "📱 ربط برقم جوالي", phoneHint: "أو شارك رقم جوالك المسجَّل في TheTracker بالزر بالأسفل فيتم الربط فوراً.",
         phoneNotFound: "لم نجد حساباً بهذا الرقم. سجّل الدخول إلى الموقع واضغط زر الربط أعلاه.",
+        importFound: (file, n) => `📄 ${file}\nوجدت ${n} ${n === 1 ? "ورقة قابلة" : "أوراق قابلة"} للاستيراد:`, importSheet: (name, rows, skipped) => `• ${name}: ${rows} صفاً${skipped ? ` (سيُهمل ${skipped} بلا عنوان أو تاريخ)` : ""}`,
+        importAsk: "أحفظها في شركتك الآن؟", importNothing: "لم أجد في الملف جدولاً فيه عمود عنوان وعمود تاريخ (أو رقم مخالفة وتاريخها). استورده من صفحة الاستيراد لتضبط الأعمدة يدوياً.", importDoneTitle: "✅ تم الحفظ:", importDoneLine: (tracker, n, isNew) => `• ${tracker}: ${n} عنصر${isNew ? " (متتبع جديد مع قاعدة تذكير قبل الاستحقاق بيوم)" : ""}`,
+        importCancelled: "أُلغي الاستيراد؛ لم يُحفظ شيء.", importExpired: "انتهت صلاحية هذا الطلب. أرسل الملف مرة أخرى.", importLimit: "توقّف الحفظ عند حد الباقة الحالية للعناصر — رقِّ الباقة من الإعدادات ثم أعد الإرسال.", importFailed: "تعذّر الحفظ. حاول مرة أخرى أو استورد من صفحة الاستيراد.",
+        btnSave: "✅ حفظ", btnCancel: "❌ إلغاء",
+        voiceHeard: "🎙 سمعتك: ", fileUnreadable: "تعذّرت قراءة هذا الملف. أرسل PDF أو صورة أو إكسل أو CSV.", fileTooBig: "الملف أكبر من الحد المسموح (15 ميغابايت).", fileQuestion: "لخّص هذا الملف باختصار، واذكر ما يمكن للمستخدم فعله به في TheTracker (مثلاً استيراده من صفحة الاستيراد إن كان جدول مواعيد أو مخالفات أو قضايا).",
         linkIntro: "أهلاً بك في TheTracker 👋\nاضغط الزر لربط هذا البوت بحسابك: تُفتح صفحة الإعدادات في الموقع ويتم الربط تلقائياً.",
         menuHint: "اختر من الأزرار بالأسفل:",
         upcomingTitle: "📅 مواعيدك القادمة:", overdueTitle: "⏰ المواعيد المتأخرة:",
@@ -70,6 +75,11 @@ const BOT = {
         linkBtn: "🔗 Link my account", openDash: "Open dashboard",
         phoneBtn: "📱 Link with my phone number", phoneHint: "Or share the phone number registered in TheTracker with the button below — the link completes instantly.",
         phoneNotFound: "No account has this number. Sign in on the website and tap the link button above.",
+        importFound: (file, n) => `📄 ${file}\nFound ${n} importable ${n === 1 ? "sheet" : "sheets"}:`, importSheet: (name, rows, skipped) => `• ${name}: ${rows} rows${skipped ? ` (${skipped} without a title or date will be skipped)` : ""}`,
+        importAsk: "Save them to your company now?", importNothing: "I found no table with a title column and a date column (or a violation number and date). Import it from the Import page to map the columns manually.", importDoneTitle: "✅ Saved:", importDoneLine: (tracker, n, isNew) => `• ${tracker}: ${n} items${isNew ? " (new tracker with a reminder rule one day before due)" : ""}`,
+        importCancelled: "Import cancelled; nothing was saved.", importExpired: "This request has expired. Send the file again.", importLimit: "Saving stopped at your plan’s item limit — upgrade from Settings and send the file again.", importFailed: "Saving failed. Try again or import from the Import page.",
+        btnSave: "✅ Save", btnCancel: "❌ Cancel",
+        voiceHeard: "🎙 I heard: ", fileUnreadable: "I could not read this file. Send a PDF, image, Excel or CSV.", fileTooBig: "The file exceeds the allowed size (15 MB).", fileQuestion: "Summarize this file briefly and say what the user can do with it in TheTracker (for example import it from the Import page if it is a table of due dates, violations or cases).",
         linkIntro: "Welcome to TheTracker 👋\nTap the button to link this bot to your account: the settings page opens and the link completes automatically.",
         menuHint: "Pick an option below:",
         upcomingTitle: "📅 Your upcoming due dates:", overdueTitle: "⏰ Overdue items:",
@@ -79,6 +89,11 @@ const BOT = {
         linkBtn: "🔗 Lier mon compte", openDash: "Ouvrir le tableau de bord",
         phoneBtn: "📱 Lier avec mon numéro", phoneHint: "Ou partagez le numéro enregistré dans TheTracker avec le bouton ci-dessous : la liaison est immédiate.",
         phoneNotFound: "Aucun compte avec ce numéro. Connectez-vous sur le site et appuyez sur le bouton de liaison ci-dessus.",
+        importFound: (file, n) => `📄 ${file}\n${n} feuille(s) importable(s) trouvée(s) :`, importSheet: (name, rows, skipped) => `• ${name} : ${rows} lignes${skipped ? ` (${skipped} sans titre ou date seront ignorées)` : ""}`,
+        importAsk: "Les enregistrer dans votre société maintenant ?", importNothing: "Aucun tableau avec une colonne titre et une colonne date (ou numéro d’infraction et date). Importez-le depuis la page Import pour mapper les colonnes.", importDoneTitle: "✅ Enregistré :", importDoneLine: (tracker, n, isNew) => `• ${tracker} : ${n} éléments${isNew ? " (nouveau suivi avec rappel la veille)" : ""}`,
+        importCancelled: "Import annulé ; rien n’a été enregistré.", importExpired: "Cette demande a expiré. Renvoyez le fichier.", importLimit: "Enregistrement arrêté à la limite d’éléments de votre forfait — passez au forfait supérieur puis renvoyez le fichier.", importFailed: "Échec de l’enregistrement. Réessayez ou importez depuis la page Import.",
+        btnSave: "✅ Enregistrer", btnCancel: "❌ Annuler",
+        voiceHeard: "🎙 J’ai entendu : ", fileUnreadable: "Impossible de lire ce fichier. Envoyez un PDF, une image, un Excel ou un CSV.", fileTooBig: "Le fichier dépasse la taille autorisée (15 Mo).", fileQuestion: "Résume brièvement ce fichier et indique ce que l’utilisateur peut en faire dans TheTracker (par exemple l’importer depuis la page Import s’il s’agit d’un tableau d’échéances, d’infractions ou d’affaires).",
         linkIntro: "Bienvenue sur TheTracker 👋\nAppuyez sur le bouton pour lier ce bot à votre compte : la page Paramètres s’ouvre et la liaison se fait automatiquement.",
         menuHint: "Choisissez une option ci-dessous :",
         upcomingTitle: "📅 Vos échéances à venir :", overdueTitle: "⏰ Éléments en retard :",
@@ -88,6 +103,11 @@ const BOT = {
         linkBtn: "🔗 میرا اکاؤنٹ منسلک کریں", openDash: "ڈیش بورڈ کھولیں",
         phoneBtn: "📱 فون نمبر سے منسلک کریں", phoneHint: "یا نیچے دیے بٹن سے TheTracker میں رجسٹرڈ فون نمبر شیئر کریں — منسلکی فوراً مکمل ہو جائے گی۔",
         phoneNotFound: "اس نمبر سے کوئی اکاؤنٹ نہیں ملا۔ ویب سائٹ پر سائن ان کر کے اوپر والا لنک بٹن دبائیں۔",
+        importFound: (file, n) => `📄 ${file}\n${n} قابلِ درآمد شیٹ ملی:`, importSheet: (name, rows, skipped) => `• ${name}: ${rows} قطاریں${skipped ? ` (${skipped} بغیر عنوان یا تاریخ چھوڑ دی جائیں گی)` : ""}`,
+        importAsk: "ابھی اپنی کمپنی میں محفوظ کروں؟", importNothing: "فائل میں عنوان اور تاریخ کے کالم والا جدول نہیں ملا (یا خلاف ورزی نمبر اور تاریخ)۔ کالم خود ترتیب دینے کے لیے درآمد صفحے سے درآمد کریں۔", importDoneTitle: "✅ محفوظ ہو گیا:", importDoneLine: (tracker, n, isNew) => `• ${tracker}: ${n} آئٹمز${isNew ? " (نیا ٹریکر، یاد دہانی ایک دن پہلے)" : ""}`,
+        importCancelled: "درآمد منسوخ؛ کچھ محفوظ نہیں ہوا۔", importExpired: "یہ درخواست ختم ہو گئی۔ فائل دوبارہ بھیجیں۔", importLimit: "آپ کے پلان کی آئٹم حد پر محفوظ کرنا رک گیا — ترتیبات سے پلان اپ گریڈ کر کے دوبارہ بھیجیں۔", importFailed: "محفوظ نہیں ہو سکا۔ دوبارہ کوشش کریں یا درآمد صفحے سے درآمد کریں۔",
+        btnSave: "✅ محفوظ کریں", btnCancel: "❌ منسوخ",
+        voiceHeard: "🎙 میں نے سنا: ", fileUnreadable: "یہ فائل پڑھی نہیں جا سکی۔ PDF، تصویر، ایکسل یا CSV بھیجیں۔", fileTooBig: "فائل اجازت شدہ حد (15 MB) سے بڑی ہے۔", fileQuestion: "اس فائل کا مختصر خلاصہ کریں اور بتائیں کہ صارف TheTracker میں اس کا کیا کر سکتا ہے (مثلاً اگر یہ تاریخوں، خلاف ورزیوں یا مقدمات کا جدول ہے تو درآمد صفحے سے درآمد کریں)۔",
         linkIntro: "TheTracker میں خوش آمدید 👋\nاس بوٹ کو اپنے اکاؤنٹ سے منسلک کرنے کے لیے بٹن دبائیں: ترتیبات کا صفحہ کھلے گا اور منسلکی خود بخود مکمل ہو جائے گی۔",
         menuHint: "نیچے دیے گئے بٹنوں میں سے چنیں:",
         upcomingTitle: "📅 آپ کی آنے والی تاریخیں:", overdueTitle: "⏰ تاخیر شدہ آئٹمز:",
@@ -177,6 +197,63 @@ export async function sendTelegram(env, chatId, text, extra) {
   });
   if (!res.ok) throw new Error(`telegram ${res.status}: ${(await res.text()).slice(0, 200)}`);
   return true;
+}
+
+/* «يكتب الآن…» ريثما يُحضَّر الرد (صوت/ملف/نموذج) */
+export async function sendChatAction(env, chatId, action) {
+  if (!env.TELEGRAM_BOT_TOKEN) return;
+  try {
+    await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendChatAction`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: chatId, action: action || "typing" }),
+    });
+  } catch {}
+}
+
+/* تنزيل ملف أرسله المستخدم (صوت/مستند/صورة) عبر getFile — بحد أقصى للحجم */
+export const TELEGRAM_FILE_MAX = 15 * 1024 * 1024;
+export async function fetchTelegramFile(env, fileId) {
+  if (!env.TELEGRAM_BOT_TOKEN) throw new Error("telegram not configured");
+  const info = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/getFile?file_id=${encodeURIComponent(fileId)}`).then((r) => r.json());
+  const path = info && info.ok && info.result && info.result.file_path;
+  if (!path) throw new Error("getFile failed");
+  const size = Number((info.result && info.result.file_size) || 0);
+  if (size > TELEGRAM_FILE_MAX) throw new Error("file too big");
+  const res = await fetch(`https://api.telegram.org/file/bot${env.TELEGRAM_BOT_TOKEN}/${path}`);
+  if (!res.ok) throw new Error(`file download ${res.status}`);
+  return { bytes: await res.arrayBuffer(), path };
+}
+
+export function bytesToBase64(buf) {
+  const bytes = new Uint8Array(buf);
+  let bin = "";
+  const CH = 0x8000;
+  for (let i = 0; i < bytes.length; i += CH) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CH));
+  return btoa(bin);
+}
+
+/* رد على ضغطة زر داخلي وإزالة الأزرار من الرسالة بعد الاختيار */
+export async function answerCallback(env, callbackId, text) {
+  if (!env.TELEGRAM_BOT_TOKEN) return;
+  try {
+    await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/answerCallbackQuery`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ callback_query_id: callbackId, text: text || undefined }),
+    });
+  } catch {}
+}
+export async function clearInlineButtons(env, chatId, messageId) {
+  if (!env.TELEGRAM_BOT_TOKEN || !messageId) return;
+  try {
+    await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/editMessageReplyMarkup`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: chatId, message_id: messageId, reply_markup: { inline_keyboard: [] } }),
+    });
+  } catch {}
+}
+export function confirmButtons(lang) {
+  const b = bot(lang);
+  return { reply_markup: { inline_keyboard: [[{ text: b.btnSave, callback_data: "imp:y" }, { text: b.btnCancel, callback_data: "imp:n" }]] } };
 }
 
 export async function sendWhatsapp(env, phone, text) {

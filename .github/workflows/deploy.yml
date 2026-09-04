@@ -19,6 +19,11 @@ jobs:
       - id: token
         run: echo "present=${{ secrets.CLOUDFLARE_API_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
 
+      # الـ Worker يحزم مكتبة SheetJS (استيراد الإكسل من بوت تلغرام) فتُثبَّت الاعتماديات أولاً
+      - name: Install dependencies
+        if: steps.token.outputs.present == 'true'
+        run: npm ci --no-audit --no-fund
+
       - name: Deploy
         if: steps.token.outputs.present == 'true'
         run: npx wrangler deploy
