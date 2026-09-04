@@ -442,6 +442,14 @@
         app.user = session.user;
         return loadProfile(app.client, app.user).then(function (profile) {
           app.profile = profile;
+          /* لغة الملف الشخصي هي المرجع: واجهة واحدة بلغة واحدة على كل جهاز (لا «Account» وسط صفحة عربية) */
+          try {
+            var wanted = profile && profile.lang;
+            if (wanted && ["ar", "en", "fr", "ur"].indexOf(wanted) !== -1 && wanted !== lang()) {
+              localStorage.setItem(LANG_KEY, wanted);
+              if (typeof window.setLang === "function") window.setLang(wanted);
+            }
+          } catch (e) { /* ignore */ }
           return acceptInvitations(app.client);
         }).then(function (joined) {
           app.joinedOrgs = joined;
