@@ -2636,11 +2636,11 @@
         grid.appendChild(mainCol);
         grid.appendChild(sideCol);
 
-        /* الخط الزمني أفقي بعرض الصفحة أسفل اللوحة */
+        /* الخط الزمني يتصدّر اللوحة بعرض الصفحة (وبعد المؤشرات في لوحتي القضايا والمخالفات) */
         var timeline = document.createElement("div");
         timeline.className = "content";
         timeline.id = "timelineCard";
-        dash.appendChild(timeline);
+        dash.insertBefore(timeline, grid);
 
         calendar.hidden = false;
         var tabs = dash.querySelector(".tabs-row");
