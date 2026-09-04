@@ -2972,6 +2972,10 @@
 
       /* ---------- list ---------- */
 
+      var pendingOpenItem = (function () {
+        try { return new URLSearchParams(window.location.search).get("item") || ""; } catch (e) { return ""; }
+      })();
+
       function loadItems() {
         var f = state.filters;
         var q = { trackerId: f.tracker || undefined, search: f.search || undefined };
@@ -2982,6 +2986,11 @@
           if (f.status === "overdue") state.items = state.items.filter(function (it) { return !!it.due_at; });
           clearMsg("listMsg");
           renderList();
+          if (pendingOpenItem) {
+            var hit = state.items.filter(function (it) { return it.id === pendingOpenItem; })[0];
+            pendingOpenItem = "";
+            if (hit) openEdit(hit);
+          }
         }).catch(function (err) {
           state.items = [];
           renderList();

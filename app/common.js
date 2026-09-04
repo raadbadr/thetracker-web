@@ -1620,6 +1620,8 @@
     ".app-bell-panel.is-open{display:block}",
     ".app-bell-item{padding:.65rem .75rem;border-radius:12px;font-size:.82rem;color:var(--text-secondary);margin-bottom:.25rem}",
     ".app-bell-item.is-unread{background:var(--glass-border)}",
+    ".app-bell-item.is-link{cursor:pointer}",
+    ".app-bell-item.is-link:hover{background:var(--glass-border)}",
     ".app-bell-num{display:block;font-size:.72rem;opacity:.75;margin-bottom:.15rem}",
     ".app-bell-item{position:relative;padding-inline-end:1.9rem}",
     ".app-bell-del{position:absolute;inset-inline-end:.35rem;inset-block-start:.45rem;width:22px;height:22px;padding:0;",
@@ -1798,6 +1800,8 @@
 
     if (bellPanel) bellPanel.addEventListener("click", function (ev) {
       ev.stopPropagation();
+      var go = ev.target.closest("[data-bell-go]");
+      if (go && !ev.target.closest("[data-bell-del]")) { window.location.href = go.dataset.bellGo; return; }
       var del = ev.target.closest("[data-bell-del]");
       if (del) {
         del.disabled = true;
@@ -1879,6 +1883,20 @@
       .replace("{item}", payload.item_title || payload.excerpt || "");
   }
 
+  /* وجهة كل تنبيه: رسالة فريق → المحادثة، دعوة → الفريق، عنصر → لوحته مفتوحاً على العنصر */
+  function bellTarget(n) {
+    var p = n.payload || {};
+    var kind = p.kind || "";
+    if (kind === "team_message") return "/app/team.html?chat=" + encodeURIComponent(p.author_id || "");
+    if (kind === "invite") return "/app/team.html";
+    if (p.item_id) {
+      var cat = String(p.category || p.item_category || "");
+      var view = /مخالف/.test(cat) ? "?type=violations&" : (/قض|دعو/.test(cat) ? "?type=cases&" : "?");
+      return "/app/dashboard.html" + view + "item=" + encodeURIComponent(p.item_id);
+    }
+    return "";
+  }
+
   function loadBell() {
     var panel = document.getElementById("topBellPanel");
     if (!panel) return;
@@ -1896,7 +1914,9 @@
         var due = payload.due_at || null;
         var number = payload.item_number || "";
         if (!n.read_at) unseen++;
-        html += '<div class="app-bell-item' + (n.read_at ? "" : " is-unread") + '">' +
+        var target = bellTarget(n);
+        html += '<div class="app-bell-item' + (n.read_at ? "" : " is-unread") + (target ? " is-link" : "") + '"' +
+                (target ? ' data-bell-go="' + escapeHtml(target) + '"' : "") + ">" +
                 '<button type="button" class="app-bell-del" data-bell-del="' + escapeHtml(n.id) + '" aria-label="' +
                 escapeHtml(sidebarLabel(BELL_DELETE)) + '" title="' + escapeHtml(sidebarLabel(BELL_DELETE)) + '">✕</button>' +
                 "<strong>" + escapeHtml(title || sidebarLabel(BELL_LABELS)) + "</strong>" +
