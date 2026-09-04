@@ -4,7 +4,7 @@
  * Static assets are served by the [assets] binding automatically.
  */
 
-import { handleAssistantRequest } from "./assistant.js";
+import { handleAssistantRequest, askAssistant } from "./assistant.js";
 import { handleCalendar } from "./calendar.js";
 import { runNotificationCron, linkChannelByCode, notifyTarget, sendTelegram, sendWhatsapp, sendSms, sendEmail, rpc, t as channelText,
          bot as botText, menuKeyboard, menuAction, urlButton, formatItems, telegramItems, linkChannelDirect, linkChannelByPhone, contactKeyboard } from "./notify.js";
@@ -190,6 +190,40 @@ async function runMenu(env, chatId, userId, action) {
   }
 }
 
+/** المساعد الذكي داخل تلغرام: يجيب من بيانات المستخدم وحدها (قراءة فقط) بلغة ملفه */
+const TG_LANG_NAMES = { ar: "العربية الفصحى", en: "English", fr: "le français", ur: "اردو" };
+const tgAiBuckets = new Map();
+function tgAiRateLimited(chatId) {
+  const now = Date.now(); let b = tgAiBuckets.get(chatId);
+  if (!b || now - b.start >= 60_000) { b = { start: now, count: 0 }; tgAiBuckets.set(chatId, b); }
+  b.count += 1; if (tgAiBuckets.size > 5000) tgAiBuckets.clear();
+  return b.count > 12;
+}
+async function telegramAssistantReply(env, chatId, userId, text) {
+  if (tgAiRateLimited(chatId)) return null;
+  let target = null, upcoming = [], overdue = [];
+  try { target = await notifyTarget(env, userId, "telegram"); } catch {}
+  try { upcoming = await telegramItems(env, userId, "upcoming", 15); } catch {}
+  try { overdue = await telegramItems(env, userId, "overdue", 15); } catch {}
+  const lang = (target && target.lang) || "ar";
+  const facts = {
+    user: { name: (target && target.full_name) || "", company: (target && target.org_name) || "" },
+    now_riyadh: new Date().toLocaleString("en-GB", { timeZone: "Asia/Riyadh" }),
+    upcoming_items: upcoming, overdue_items: overdue,
+    counts: { upcoming: Array.isArray(upcoming) ? upcoming.length : 0, overdue: Array.isArray(overdue) ? overdue.length : 0 },
+    dashboard_url: "https://appmails.net/app/dashboard.html",
+  };
+  const system = `أنت مساعد TheTracker داخل تلغرام، تخدم المستخدم ${facts.user.name || ""}${facts.user.company ? ` من شركة «${facts.user.company}»` : ""}.
+التراكر منصة لتتبع القضايا والمخالفات والعقود والمواعيد من ملفات إكسل، مع تقويم وتنبيهات.
+قواعدك:
+- أجب بـ${TG_LANG_NAMES[lang] || "العربية الفصحى"} دائماً، باختصار وودّ ومباشرة، والأرقام غربية (1234567890) والتواريخ بتوقيت الرياض.
+- اعتمد على الحقائق أدناه وحدها (مواعيده القادمة والمتأخرة وعدّها)؛ إن سُئلت عن شيء ليس فيها قل إنك لا تراه هنا ووجّهه إلى لوحة التحكم.
+- أنت للقراءة فقط: لا تعِد بتعديل أو حذف أو إضافة شيء؛ لأي تعديل وجّهه إلى لوحة التحكم: ${facts.dashboard_url}
+- لا تختلق أرقاماً أو قضايا أو تواريخ. لا تخرج عن مواضيع التراكر.
+الحقائق (JSON): ${JSON.stringify(facts).slice(0, 12000)}`;
+  return askAssistant(env, system, [{ role: "user", content: text }]);
+}
+
 /** POST /api/telegram/webhook — كل رسالة تُسجَّل ويُرَدّ عليها: ربط (/start الرمز)، قائمة أزرار، أو دعوة للربط */
 async function handleTelegramWebhook(request, env) {
   if (env.TELEGRAM_WEBHOOK_SECRET) {
@@ -246,10 +280,14 @@ async function handleTelegramWebhook(request, env) {
   if (!owner) { await askToLink(env, chatId, tgLang); return json({ ok: true }); }
   if (menu) { await runMenu(env, chatId, owner, menu); return json({ ok: true }); }
   if (text === "/start") { await greetLinked(env, chatId, owner, tgLang, tgName); return json({ ok: true }); }
+  // نص حر من مستخدم مربوط: المساعد الذكي يجيب من بياناته؛ وإن تعذّر، رسالة الحالة المعتادة
   let target = null;
   try { target = await notifyTarget(env, owner, "telegram"); } catch {}
   const lang = (target && target.lang) || tgLang;
-  try { await sendTelegram(env, chatId, channelText(lang).alreadyLinked((target && target.full_name) || tgName), menuKeyboard(lang)); } catch {}
+  let reply = null;
+  try { reply = await telegramAssistantReply(env, chatId, owner, text); } catch {}
+  if (!reply) reply = channelText(lang).alreadyLinked((target && target.full_name) || tgName);
+  try { await sendTelegram(env, chatId, reply, menuKeyboard(lang)); } catch {}
   return json({ ok: true });
 }
 

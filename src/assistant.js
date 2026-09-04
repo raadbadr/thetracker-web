@@ -220,6 +220,42 @@ export async function handleAssistantRequest(request, env) {
   }
 }
 
+// --- محرّك عام: تعليمات + محادثة ← نص الجواب (يستخدمه بوت تلغرام) -------------
+// نفس ترتيب الأفضلية: Claude إن وُجد المفتاح، وإلا Workers AI المجاني، وإلا null.
+// الحقائق تُوضع في التعليمات مباشرةً (بلا أدوات) فيعمل المساران بسلوك واحد.
+export async function askAssistant(env, system, messages) {
+  const convo = (messages || []).map((m) => ({ role: m.role === "assistant" ? "assistant" : "user", content: String(m.content || "").slice(0, ASSISTANT_MAX_CHARS) }))
+    .filter((m) => m.content.trim()).slice(-ASSISTANT_MAX_MESSAGES);
+  if (!convo.length) return null;
+  if (env.ANTHROPIC_API_KEY) {
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "Content-Type": "application/json" },
+        body: JSON.stringify({ model: ASSISTANT_MODEL, max_tokens: 700, system, messages: convo }),
+        cf: NO_CACHE,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const reply = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("\n").trim();
+        if (reply) return reply;
+      }
+    } catch (e) { /* نسقط إلى Workers AI */ }
+  }
+  if (env.AI) {
+    try {
+      const out = await env.AI.run(WORKERS_AI_MODEL, {
+        messages: [{ role: "system", content: system }].concat(convo),
+        max_tokens: 600,
+        temperature: 0.2,
+      });
+      const reply = String((out && (out.response || out.result)) || "").trim();
+      if (reply) return reply;
+    } catch (e) { console.error("[assistant] telegram workers-ai failed:", String((e && e.message) || e).slice(0, 200)); }
+  }
+  return null;
+}
+
 // --- مسار Workers AI المجاني -----------------------------------------------
 // نفس الأدوات بصيغة OpenAI-style function calling التي يفهمها Workers AI.
 const WORKERS_AI_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
