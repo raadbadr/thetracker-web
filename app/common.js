@@ -1515,6 +1515,13 @@
    * Platform admin
    * ============================================================ */
 
+  function platformAdmins() {
+    return run(function (client) { return client.rpc("platform_admins_list").then(unwrap); });
+  }
+  function setPlatformAdmin(email, admin) {
+    return run(function (client) { return client.rpc("platform_admin_set", { p_email: email, p_admin: !!admin }).then(unwrap); });
+  }
+
   function isPlatformAdmin() {
     return !!(app.profile && app.profile.is_platform_admin);
   }
@@ -1855,6 +1862,8 @@
   app.regenerateCalendarToken = regenerateCalendarToken;
   app.updateProfile = updateProfile;
   app.isPlatformAdmin = isPlatformAdmin;
+  app.platformAdmins = platformAdmins;
+  app.setPlatformAdmin = setPlatformAdmin;
   app.activityFeed = activityFeed;
   app.achievements = achievements;
   app.setMemberPerson = setMemberPerson;
