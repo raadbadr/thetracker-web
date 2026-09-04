@@ -840,6 +840,42 @@
       .platform-stats-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .donut-legend { font-size: 0.75rem; }
     }
+
+    /* ===== الجوال: نقطتا كسر 900 و600 — لا عرض يتجاوز الشاشة ولا اعتماد على المرور بالفأرة ===== */
+    @media (max-width: 900px) {
+      .container { max-width: 100%; padding: 1rem 0.75rem; }
+      .content { padding: 1.25rem 1rem; }
+      /* كل شبكة متعددة الأعمدة تصير عموداً واحداً */
+      .dash-grid, .dash-grid--single, .ind-grid, .svc-grid, .dash-grid--single .svc-grid,
+      .form-grid, .features-grid, .totals-row, .ach-row, .filters-row, .settings-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+      .stats-section .platform-stats-list,
+      .stats-section.stats-top .platform-stats-list,
+      .dash-side .platform-stats-list { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+      /* كل جدول يتمرر أفقياً داخل حاويته ولا يمدّ الصفحة */
+      .table-wrap, .rasi-wrap, .preview-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+      .content table { max-width: none; }
+      /* الحقول والأزرار بمقاس الإصبع، وخط 16 بكسل يمنع تكبير iOS التلقائي */
+      .waitlist-input, select.waitlist-input, textarea.waitlist-input { width: 100%; min-width: 0; font-size: 16px; }
+      .waitlist-btn, .chat-option-btn, .waitlist-input, select.waitlist-input { min-height: 44px; }
+      .toolbar, .filters-row, .waitlist-form, .form-actions, .row-actions, .chat-options { flex-wrap: wrap; }
+      img, canvas, svg, video { max-width: 100%; }
+      .drop-zone, .chat-shell, .import-flow { width: 100%; max-width: 100%; }
+    }
+    @media (max-width: 600px) {
+      .content { padding: 1rem 0.85rem; }
+      h1 { font-size: 1.6rem; }
+      h2 { font-size: 1.25rem; }
+      .stats-section .platform-stats-list,
+      .stats-section.stats-top .platform-stats-list,
+      .dash-side .platform-stats-list { grid-template-columns: minmax(0, 1fr) !important; }
+      /* الزر بعرض الشاشة: الإصبع لا يخطئه */
+      .form-actions .waitlist-btn, .form-actions .chat-option-btn,
+      .toolbar .waitlist-btn, .toolbar .chat-option-btn { width: 100%; }
+      .row-actions { gap: .4rem; }
+      .row-actions .chat-option-btn { flex: 1 1 auto; }
+    }
 </style>
 </head>
 <body class="has-site-header">
@@ -3582,6 +3618,7 @@
             return;
           }
           var html = "<h3>" + esc(T("caseBundleTitle").replace("{n}", caseNumber)) + "</h3>" +
+            '<div class="table-wrap">' +
             "<table><thead><tr>" +
             "<th>" + esc(T("colTitle")) + "</th><th>" + esc(T("fieldCategory")) + "</th>" +
             "<th>" + esc(T("colDue")) + "</th><th>" + esc(T("colAmount")) + "</th>" +
@@ -3594,7 +3631,7 @@
                     '<td class="cell-num">' + esc(String(r.attachments || 0)) + "</td>" +
                     '<td><button type="button" class="chat-option-btn" data-bundle-open="' + esc(r.item_id) + '">' + esc(T("actionEdit")) + "</button></td></tr>";
           });
-          html += "</tbody></table>";
+          html += "</tbody></table></div>";
           paintEl(box).html = html;
         }).catch(function () {
           paintEl(box).html = "<h3>" + esc(T("caseBundleTitle").replace("{n}", caseNumber)) + '</h3><p class="empty-note">' + esc(T("caseBundleEmpty")) + "</p>";

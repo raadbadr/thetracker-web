@@ -733,7 +733,43 @@
     .status-cancelled { color: var(--text-tertiary); font-weight: 600; }
     .empty-note { text-align: center; margin: 1rem 0 0; }
     .doc-form { margin-top: 1.25rem; }
-  </style>
+  
+    /* ===== الجوال: نقطتا كسر 900 و600 — لا عرض يتجاوز الشاشة ولا اعتماد على المرور بالفأرة ===== */
+    @media (max-width: 900px) {
+      .container { max-width: 100%; padding: 1rem 0.75rem; }
+      .content { padding: 1.25rem 1rem; }
+      /* كل شبكة متعددة الأعمدة تصير عموداً واحداً */
+      .dash-grid, .dash-grid--single, .ind-grid, .svc-grid, .dash-grid--single .svc-grid,
+      .form-grid, .features-grid, .totals-row, .ach-row, .filters-row, .settings-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+      .stats-section .platform-stats-list,
+      .stats-section.stats-top .platform-stats-list,
+      .dash-side .platform-stats-list { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+      /* كل جدول يتمرر أفقياً داخل حاويته ولا يمدّ الصفحة */
+      .table-wrap, .rasi-wrap, .preview-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+      .content table { max-width: none; }
+      /* الحقول والأزرار بمقاس الإصبع، وخط 16 بكسل يمنع تكبير iOS التلقائي */
+      .waitlist-input, select.waitlist-input, textarea.waitlist-input { width: 100%; min-width: 0; font-size: 16px; }
+      .waitlist-btn, .chat-option-btn, .waitlist-input, select.waitlist-input { min-height: 44px; }
+      .toolbar, .filters-row, .waitlist-form, .form-actions, .row-actions, .chat-options { flex-wrap: wrap; }
+      img, canvas, svg, video { max-width: 100%; }
+      .drop-zone, .chat-shell, .import-flow { width: 100%; max-width: 100%; }
+    }
+    @media (max-width: 600px) {
+      .content { padding: 1rem 0.85rem; }
+      h1 { font-size: 1.6rem; }
+      h2 { font-size: 1.25rem; }
+      .stats-section .platform-stats-list,
+      .stats-section.stats-top .platform-stats-list,
+      .dash-side .platform-stats-list { grid-template-columns: minmax(0, 1fr) !important; }
+      /* الزر بعرض الشاشة: الإصبع لا يخطئه */
+      .form-actions .waitlist-btn, .form-actions .chat-option-btn,
+      .toolbar .waitlist-btn, .toolbar .chat-option-btn { width: 100%; }
+      .row-actions { gap: .4rem; }
+      .row-actions .chat-option-btn { flex: 1 1 auto; }
+    }
+</style>
 </head>
 <body class="has-site-header">
   <header class="site-header">
