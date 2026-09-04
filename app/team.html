@@ -2717,8 +2717,11 @@
       }
       function openFile(att) {
         if (!app || !app.attachmentUrl) return;
-        app.attachmentUrl(att).then(function (url) { if (url) window.open(url, "_blank", "noopener"); })
-          .catch(function () { $("chatError").textContent = t("chatLoadError"); show("chatError", true); });
+        var w = window.open("about:blank", "_blank");
+        app.attachmentUrl(att).then(function (url) {
+          if (!url) { if (w) w.close(); return; }
+          if (w) w.location = url; else window.location.assign(url);
+        }).catch(function () { if (w) w.close(); $("chatError").textContent = t("chatLoadError"); show("chatError", true); });
       }
       function renderFiles() {
         var box = $("chatFiles");

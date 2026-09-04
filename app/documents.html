@@ -2798,21 +2798,28 @@
           e.preventDefault();
           var att = attachmentById((open || get).getAttribute(open ? "data-paper-open" : "data-paper-get"));
           if (!att) return;
-          /* العرض يفتح، والتنزيل يطلب رابطا يحمّل فعلا (Content-Disposition أو رابط درايف المباشر) */
+          /* النافذة تُفتح مع النقرة لا بعد الوعد: سفاري يحجب ما يُفتح لاحقا */
+          var win = open ? window.open("about:blank", "_blank") : null;
           app.attachmentUrl(att, open ? undefined : { download: att.name || true }).then(function (u) {
-            if (!u) return;
-            if (open) { window.open(u, "_blank", "noopener"); return; }
+            if (!u) { if (win) win.close(); return; }
+            if (open) { if (win) win.location = u; else window.location.assign(u); return; }
             var a = document.createElement("a");
-            a.href = u; a.download = att.name || "document";
+            a.href = u; a.download = att.name || "document"; a.rel = "noopener";
             document.body.appendChild(a); a.click(); a.remove();
-          }).catch(function () { setStatus(t("docFailed"), "error"); });
+          }).catch(function () { if (win) win.close(); setStatus(t("docFailed"), "error"); });
         });
         $("docsBody").addEventListener("click", function (e) {
           var o = e.target.closest("[data-open]"), d = e.target.closest("[data-del]");
           if (o) {
             e.preventDefault();
             var att = null; Object.keys(state.attachments).forEach(function (k) { state.attachments[k].forEach(function (a) { if (a.id === o.dataset.open) att = a; }); });
-            if (att) app.attachmentUrl(att).then(function (u) { if (u) window.open(u, "_blank", "noopener"); });
+            if (att) {
+              var w = window.open("about:blank", "_blank");
+              app.attachmentUrl(att).then(function (u) {
+                if (!u) { if (w) w.close(); return; }
+                if (w) w.location = u; else window.location.assign(u);
+              }).catch(function () { if (w) w.close(); });
+            }
           } else if (d) {
             if (!window.confirm(t("docDeleteConfirm"))) return;
             app.deleteItem(d.dataset.del).then(loadDocs).catch(function () { setStatus(t("docFailed"), "error"); });

@@ -3947,8 +3947,11 @@
             ev.preventDefault();
             var att = attachById(openBtn.dataset.attachOpen);
             if (!att) return;
-            app.attachmentUrl(att).then(function (url) { if (url) window.open(url, "_blank", "noopener"); })
-              .catch(function () { setMsg("attachMsg", T("attachFailed"), "error"); });
+            var w = window.open("about:blank", "_blank");
+            app.attachmentUrl(att).then(function (url) {
+              if (!url) { if (w) w.close(); return; }
+              if (w) w.location = url; else window.location.assign(url);
+            }).catch(function () { if (w) w.close(); setMsg("attachMsg", T("attachFailed"), "error"); });
           } else if (delBtn) {
             var target = attachById(delBtn.dataset.attachDel);
             if (!target) return;
