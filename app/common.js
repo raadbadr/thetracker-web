@@ -2149,6 +2149,8 @@
     ".app-sidebar a,.app-sidebar button{min-height:44px;font-size:1rem}",
     "html body.has-app-sidebar .container,html body.sidebar-off.has-app-sidebar .container{max-width:100%;padding-inline:1rem}",
     /* قواعد عامة لمحتوى كل الصفحات على الجوال: لا شيء أعرض من الشاشة، الجداول تتمرر داخل نفسها، النماذج تتكدس */
+    /* أي عنصر أعرض من الشاشة لا يوسّع نافذة التخطيط في متصفحات الجوال (وإلا اتسع الشريط الثابت معها وانزاح) */
+    "html{overflow-x:hidden}body{overflow-x:hidden;overflow-x:clip}",
     ".content{padding:1.1rem}",
     ".content table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}",
     ".content img,.content svg,.content canvas,.content video{max-width:100%}",
@@ -2591,10 +2593,11 @@
     /* ــ الجوال (≤900px): صف واحد ثابت 56px: ☰ ثم بطاقة الشركة تملأ الوسط ثم الجرس والخروج؛ الروابط والاسم في الدرج ــ */
     "@media(max-width:900px){.app-topbar{height:56px;padding:0 .75rem;gap:.5rem}",
     ".app-topnav,.app-username{display:none}",
-    ".app-userbox{flex:1 1 auto;min-width:0;gap:.5rem}",
-    ".app-orgbox{flex:1 1 auto;min-width:0;padding:0 .5rem}",
+    /* أساس المرونة صفر: حجم البطاقة من المساحة المتاحة لا من طول اسم الشركة، فلا يفيض الصف */
+    ".app-userbox{flex:1 1 0%;min-width:0;max-width:100%;gap:.5rem}",
+    ".app-orgbox{flex:1 1 0%;min-width:0;max-width:100%;padding:0 .5rem}",
     ".app-orglabel{display:none}",
-    ".app-orgselect{max-width:100%;width:100%;flex:1 1 auto;min-width:0}",
+    ".app-orgselect{flex:1 1 0%;width:0;min-width:0;max-width:100%}",
     ".app-sidebar-toggle{margin-inline-end:0}",
     "body.has-app-topbar{padding-top:calc(var(--site-header-h,61px) + 56px)}",
     "body.has-app-topbar .container{padding-top:1rem}",

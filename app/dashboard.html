@@ -862,6 +862,11 @@
       .toolbar, .filters-row, .waitlist-form, .form-actions, .row-actions, .chat-options { flex-wrap: wrap; }
       img, canvas, svg, video { max-width: 100%; }
       .drop-zone, .chat-shell, .import-flow { width: 100%; max-width: 100%; }
+      /* عنصر الشبكة يتقلص مع حاويته: بلا هذا يفرض النص أعرض من الشاشة */
+      .attach-actions, .attach-actions > *, .inline-actions, .invite-row { min-width: 0; }
+      .attach-actions { grid-template-columns: minmax(0, 1fr) !important; }
+      .attach-actions > * { width: 100%; }
+      .content input, .content select, .content textarea { max-width: 100%; }
     }
     @media (max-width: 600px) {
       .content { padding: 1rem 0.85rem; }
