@@ -2907,7 +2907,7 @@
       /* أنواع الحسابات تأتي من النواة المشتركة، والاسم يتبع النوع المختار. */
       window.__fillOrgTypes = function () {
         var sel = $("createOrgType");
-        if (!sel || !app.entityTypes) return;
+        if (!sel || !app || !app.entityTypes) return;
         var keep = sel.value;
         sel.innerHTML = app.entityTypes().map(function (t) {
           return '<option value="' + t.value + '">' + (t[l] || t.ar) + "</option>";
@@ -2918,13 +2918,12 @@
       };
       $("createOrgType").addEventListener("change", function () {
         var input = $("createOrgName");
-        if (!input) return;
+        if (!input || !app || !app.isPersonType) return;
         input.placeholder = T(app.isPersonType(this.value) ? "selfNamePlaceholder" : "newOrgPlaceholder");
         if (app.isPersonType(this.value) && !String(input.value || "").trim() && app.profile && app.profile.full_name) {
           input.value = app.profile.full_name;
         }
       });
-      window.__fillOrgTypes();
       $("signOutBtn").addEventListener("click", function () {
         var go = function () { window.location.href = "/login.html"; };
         if (window.trackerAuth && window.trackerAuth.signOut) window.trackerAuth.signOut().then(go, go);
