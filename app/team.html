@@ -605,21 +605,11 @@
       <p id="unassignedEmpty" data-i18n="unassignedEmpty" hidden>كل الأعمال مُسندة.</p>
     </div>
 
-    <!-- تواصل الفريق وتوجيه المهمات -->
-    <div class="content" id="chatCard" hidden>
+    <!-- الدردشة صارت شاشة كاملة -->
+    <div class="content" id="chatLinkCard" hidden>
       <h2 data-i18n="chatTitle">تواصل الفريق</h2>
-      <p data-i18n="chatIntro">اكتب للفريق كله أو وجّه رسالتك إلى عضو بعينه، واربطها بعمل ليعرف المقصود تماماً. الرسالة الموجهة تصل جرس تنبيهاته.</p>
-      <form class="invite-row" id="chatForm" novalidate>
-        <input type="text" class="waitlist-input" id="chatBody" placeholder="اكتب رسالتك" data-i18n-placeholder="chatPlaceholder" required autocomplete="off" maxlength="2000">
-        <select class="waitlist-input" id="chatTo" aria-label="إلى"></select>
-        <button type="submit" class="waitlist-btn" id="chatSendBtn" data-i18n="chatSend">إرسال</button>
-      </form>
-      <div class="invite-row" id="chatItemRow">
-        <select class="waitlist-input" id="chatItem" aria-label="العمل المرتبط"></select>
-      </div>
-      <p class="waitlist-msg" id="chatMsg" role="status" aria-live="polite" hidden></p>
-      <div class="user-list" id="chatList" hidden></div>
-      <p id="chatEmpty" data-i18n="chatEmpty" hidden>لا توجد رسائل بعد.</p>
+      <p data-i18n="chatIntro">محادثة عامة للفريق كله، ومحادثات خاصة بينك وبين كل عضو، حية بلا تحديث.</p>
+      <p><a href="/app/chat.html" class="back-btn" data-i18n="chatOpen">افتح الدردشة</a></p>
     </div>
 
     <div style="text-align: center; padding: 2rem;">
@@ -702,16 +692,8 @@
         unassign: "بلا صاحب",
         noDue: "بلا موعد",
         chatTitle: "تواصل الفريق",
-        chatIntro: "اكتب للفريق كله أو وجّه رسالتك إلى عضو بعينه، واربطها بعمل ليعرف المقصود تماماً. الرسالة الموجهة تصل جرس تنبيهاته.",
-        chatPlaceholder: "اكتب رسالتك",
-        chatSend: "إرسال",
-        chatEmpty: "لا توجد رسائل بعد.",
-        chatToAll: "إلى الفريق كله",
-        chatNoItem: "بلا عمل مرتبط",
-        chatSending: "جارٍ الإرسال...",
-        chatSent: "أُرسلت الرسالة.",
-        chatToPrefix: "إلى {name}",
-        chatDelete: "حذف",
+        chatIntro: "محادثة عامة للفريق كله، ومحادثات خاصة بينك وبين كل عضو، حية بلا تحديث.",
+        chatOpen: "افتح الدردشة",
         invitationsTitle: "الدعوات المعلقة",
         invitationsEmpty: "لا توجد دعوات معلقة.",
         invitedOn: "أُضيفت في {date}",
@@ -794,16 +776,8 @@
         unassign: "Unassigned",
         noDue: "No due date",
         chatTitle: "Team chat",
-        chatIntro: "Write to the whole team or address one member, and link a task so they know exactly what you mean. A directed message reaches their notification bell.",
-        chatPlaceholder: "Write your message",
-        chatSend: "Send",
-        chatEmpty: "No messages yet.",
-        chatToAll: "To the whole team",
-        chatNoItem: "No linked task",
-        chatSending: "Sending...",
-        chatSent: "Message sent.",
-        chatToPrefix: "to {name}",
-        chatDelete: "Delete",
+        chatIntro: "One conversation for the whole team, and a private one with each member, live without refreshing.",
+        chatOpen: "Open the chat",
         invitationsTitle: "Pending invitations",
         invitationsEmpty: "No pending invitations.",
         invitedOn: "added on {date}",
@@ -886,16 +860,8 @@
         unassign: "Non attribué",
         noDue: "Sans échéance",
         chatTitle: "Discussion d'équipe",
-        chatIntro: "Écrivez à toute l'équipe ou adressez-vous à un membre, et liez une tâche pour être précis. Un message adressé arrive dans sa cloche de notifications.",
-        chatPlaceholder: "Écrivez votre message",
-        chatSend: "Envoyer",
-        chatEmpty: "Aucun message pour le moment.",
-        chatToAll: "À toute l'équipe",
-        chatNoItem: "Aucune tâche liée",
-        chatSending: "Envoi en cours...",
-        chatSent: "Message envoyé.",
-        chatToPrefix: "à {name}",
-        chatDelete: "Supprimer",
+        chatIntro: "Une conversation pour toute l'équipe, et une conversation privée avec chaque membre, en direct sans actualiser.",
+        chatOpen: "Ouvrir la discussion",
         invitationsTitle: "Invitations en attente",
         invitationsEmpty: "Aucune invitation en attente.",
         invitedOn: "ajoutée le {date}",
@@ -978,16 +944,8 @@
         unassign: "بغیر ذمہ دار",
         noDue: "کوئی تاریخ نہیں",
         chatTitle: "ٹیم رابطہ",
-        chatIntro: "پوری ٹیم کو لکھیں یا کسی ایک رکن کو، اور کام کے ساتھ منسلک کریں۔ مخاطب پیغام اس کی اطلاعات کی گھنٹی تک پہنچتا ہے۔",
-        chatPlaceholder: "اپنا پیغام لکھیں",
-        chatSend: "بھیجیں",
-        chatEmpty: "ابھی کوئی پیغام نہیں۔",
-        chatToAll: "پوری ٹیم کو",
-        chatNoItem: "کوئی منسلک کام نہیں",
-        chatSending: "بھیجا جا رہا ہے...",
-        chatSent: "پیغام بھیج دیا گیا۔",
-        chatToPrefix: "بنام {name}",
-        chatDelete: "حذف کریں",
+        chatIntro: "پوری ٹیم کے لیے ایک گفتگو، اور ہر رکن کے ساتھ نجی گفتگو، بغیر ریفریش کے لائیو۔",
+        chatOpen: "چیٹ کھولیں",
         invitationsTitle: "زیرِ التوا دعوتیں",
         invitationsEmpty: "کوئی زیرِ التوا دعوت نہیں۔",
         invitedOn: "شامل کی گئی: {date}",
@@ -1138,7 +1096,7 @@
       var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
       var app = null;
-      var state = { loaded: false, error: null, canManage: false, members: [], invitations: [], limits: {}, work: [], messages: [] };
+      var state = { loaded: false, error: null, canManage: false, members: [], invitations: [], limits: {}, work: [] };
 
       function $(id) { return document.getElementById(id); }
 
@@ -1534,111 +1492,11 @@
         });
       }
 
-      /* ---------- تواصل الفريق ---------- */
-
-      function renderChatControls() {
-        var to = $("chatTo");
-        if (!to) return;
-        var keep = to.value;
-        var html = '<option value="">' + esc(t("chatToAll")) + "</option>";
-        var me = (app && app.user) ? app.user.id : null;
-        state.members.forEach(function (m) {
-          if (m.user_id === me) return;
-          html += '<option value="' + esc(m.user_id) + '">' + esc(memberName(m)) + "</option>";
-        });
-        to.innerHTML = html;
-        if (keep) to.value = keep;
-
-        var item = $("chatItem");
-        var keepItem = item.value;
-        var opts = '<option value="">' + esc(t("chatNoItem")) + "</option>";
-        state.work.forEach(function (it) {
-          if (it.status === "done" || it.status === "cancelled") return;
-          var label = (it.item_number ? it.item_number + " · " : "") + (it.title || "-");
-          opts += '<option value="' + esc(it.id) + '">' + esc(label) + "</option>";
-        });
-        item.innerHTML = opts;
-        if (keepItem) item.value = keepItem;
-      }
-
-      function itemLabel(id) {
-        for (var i = 0; i < state.work.length; i++) {
-          if (state.work[i].id === id) {
-            var it = state.work[i];
-            return (it.item_number ? it.item_number + " · " : "") + (it.title || "");
-          }
-        }
-        return "";
-      }
-
-      function renderChat() {
-        var card = $("chatCard");
-        if (!card) return;
-        show("chatCard", state.loaded);
-        if (!state.loaded) return;
-        renderChatControls();
-
-        var me = (app && app.user) ? app.user.id : null;
-        var list = $("chatList");
-        list.innerHTML = state.messages.map(function (msg) {
-          var author = nameOf(msg.author_id) || "-";
-          var head = esc(author);
-          if (msg.to_user_id) head += ' <span class="chat-option-btn" style="cursor:default">' +
-                                      esc(tf("chatToPrefix", { name: nameOf(msg.to_user_id) || "-" })) + "</span>";
-          var meta = [fmtDate(msg.created_at, { withTime: true })];
-          var linked = msg.item_id ? itemLabel(msg.item_id) : "";
-          if (linked) meta.push(linked);
-          var del = (msg.author_id === me || state.canManage)
-            ? '<button type="button" class="chat-option-btn" data-del-msg="' + esc(msg.id) + '">' + esc(t("chatDelete")) + "</button>"
-            : "";
-          return '<div class="user-row"><div>' +
-                   "<strong>" + head + "</strong>" +
-                   '<span style="display:block;color:var(--text-primary);margin:.35rem 0;overflow-wrap:anywhere">' + esc(msg.body || "") + "</span>" +
-                   "<span>" + esc(meta.join(" · ")) + "</span></div>" + del + "</div>";
-        }).join("");
-        list.hidden = !state.messages.length;
-        show("chatEmpty", !state.messages.length);
-      }
-
-      function onChatSubmit(ev) {
-        ev.preventDefault();
-        var input = $("chatBody");
-        var body = String(input.value || "").trim();
-        if (!body) return;
-        var btn = $("chatSendBtn");
-        btn.disabled = true;
-        setMsg("chatMsg", t("chatSending"));
-        app.sendTeamMessage(body, $("chatTo").value || null, $("chatItem").value || null).then(function () {
-          input.value = "";
-          setMsg("chatMsg", t("chatSent"), "success");
-          return loadMessages();
-        }).catch(function (err) {
-          setMsg("chatMsg", errorMessage(err), "error");
-        }).finally(function () { btn.disabled = false; });
-      }
-
-      function onChatListClick(ev) {
-        var btn = ev.target.closest("[data-del-msg]");
-        if (!btn) return;
-        btn.disabled = true;
-        app.deleteTeamMessage(btn.getAttribute("data-del-msg")).then(function () {
-          return loadMessages();
-        }).catch(function () { btn.disabled = false; });
-      }
-
       function loadWork() {
         return app.teamWorkItems().then(function (rows) {
           state.work = rows || [];
           renderWorkload();
-          renderChat();
         }).catch(function () { /* الأعمال ليست حرجة لعرض الفريق */ });
-      }
-
-      function loadMessages() {
-        return app.listTeamMessages(50).then(function (rows) {
-          state.messages = rows || [];
-          renderChat();
-        }).catch(function () { /* الرسائل ليست حرجة لعرض الفريق */ });
       }
 
       function render() {
@@ -1649,7 +1507,7 @@
         renderMembers();
         renderInvite();
         renderWorkload();
-        renderChat();
+        show("chatLinkCard", state.loaded);
       }
 
       function loadAll() {
@@ -1664,7 +1522,7 @@
           state.loaded = true;
           state.error = null;
           render();
-          return Promise.all([loadWork(), loadMessages()]);
+          return loadWork();
         }).catch(function (err) {
           state.error = err;
           render();
@@ -1675,7 +1533,7 @@
         show("teamCard", false);
         show("inviteCard", false);
         show("workloadCard", false);
-        show("chatCard", false);
+        show("chatLinkCard", false);
         show("noOrgCard", false);
         show("unavailableCard", true);
       }
@@ -1684,7 +1542,7 @@
         show("teamCard", false);
         show("inviteCard", false);
         show("workloadCard", false);
-        show("chatCard", false);
+        show("chatLinkCard", false);
         show("unavailableCard", false);
         show("noOrgCard", true);
       }
@@ -1697,8 +1555,6 @@
         $("membersGrid").addEventListener("change", onMembersChange);
         $("invitationsList").addEventListener("click", onInvitationsClick);
         $("unassignedList").addEventListener("change", onAssignChange);
-        $("chatForm").addEventListener("submit", onChatSubmit);
-        $("chatList").addEventListener("click", onChatListClick);
       /* البحث عن مستخدم مسجّل ثم دعوته بنقرة */
       function renderLookup(rows) {
         var box = $("lookupResult");

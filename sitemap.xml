@@ -10,9 +10,9 @@
     <xhtml:link rel="alternate" hreflang="fr" href="https://appmails.net/"/>
     <xhtml:link rel="alternate" hreflang="ur" href="https://appmails.net/"/>
   </url>
-  <url><loc>https://appmails.net/pricing.html</loc><lastmod>2026-09-03</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://appmails.net/login.html</loc><lastmod>2026-09-03</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://appmails.net/about.html</loc><lastmod>2026-09-03</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://appmails.net/privacy.html</loc><lastmod>2026-09-03</lastmod><changefreq>yearly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://appmails.net/terms.html</loc><lastmod>2026-09-03</lastmod><changefreq>yearly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://appmails.net/pricing</loc><lastmod>2026-09-03</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://appmails.net/login</loc><lastmod>2026-09-03</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://appmails.net/about</loc><lastmod>2026-09-03</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://appmails.net/privacy</loc><lastmod>2026-09-03</lastmod><changefreq>yearly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://appmails.net/terms</loc><lastmod>2026-09-03</lastmod><changefreq>yearly</changefreq><priority>0.5</priority></url>
 </urlset>

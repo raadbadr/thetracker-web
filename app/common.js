@@ -1209,6 +1209,9 @@
    * ============================================================ */
 
   var NAV_ITEMS = [
+    { href: "/app/dashboard.html", path: "dashboard",
+      icon: '<path d="M4 13h6V4H4v9zm0 7h6v-5H4v5zm9 0h7v-9h-7v9zm0-16v5h7V4h-7z"/>',
+      labels: { ar: "لوحة التحكم", en: "Dashboard", fr: "Tableau de bord", ur: "ڈیش بورڈ" } },
     { href: "/app/dashboard.html?type=cases", path: "type=cases",
       icon: '<path d="M20 6h-3V4a2 2 0 00-2-2H9a2 2 0 00-2 2v2H4a2 2 0 00-2 2v11a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2zM9 4h6v2H9V4zm11 15H4V8h16v11z"/><path d="M11 10h2v7h-2z"/>',
       labels: { ar: "القضايا", en: "Cases", fr: "Affaires", ur: "مقدمات" } },
@@ -1218,6 +1221,9 @@
     { href: "/app/team.html", path: "team",
       icon: '<path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>',
       labels: { ar: "الفريق", en: "Team", fr: "Équipe", ur: "ٹیم" } },
+    { href: "/app/chat.html", path: "chat",
+      icon: '<path d="M20 2H4a2 2 0 00-2 2v18l4-4h14a2 2 0 002-2V4a2 2 0 00-2-2zm0 14H5.17L4 17.17V4h16v12z"/><path d="M7 9h10v2H7zm0-3h10v2H7zm0 6h7v2H7z"/>',
+      labels: { ar: "الدردشة", en: "Chat", fr: "Discussion", ur: "چیٹ" } },
     { href: "/app/settings.html", path: "settings",
       icon: '<path d="M19.14 12.94a7.07 7.07 0 000-1.88l2.03-1.58a.5.5 0 00.12-.64l-1.92-3.32a.5.5 0 00-.61-.22l-2.39.96a7.03 7.03 0 00-1.62-.94l-.36-2.54a.5.5 0 00-.5-.42h-3.84a.5.5 0 00-.5.42l-.36 2.54c-.58.24-1.12.56-1.62.94l-2.39-.96a.5.5 0 00-.61.22L2.65 8.84a.5.5 0 00.12.64l2.03 1.58a7.07 7.07 0 000 1.88l-2.03 1.58a.5.5 0 00-.12.64l1.92 3.32c.13.22.39.3.61.22l2.39-.96c.5.38 1.04.7 1.62.94l.36 2.54c.04.24.25.42.5.42h3.84c.25 0 .46-.18.5-.42l.36-2.54c.58-.24 1.12-.56 1.62-.94l2.39.96c.22.08.48 0 .61-.22l1.92-3.32a.5.5 0 00-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1112 8.5a3.5 3.5 0 010 7z"/>',
       labels: { ar: "الإعدادات", en: "Settings", fr: "Paramètres", ur: "ترتیبات" } },
@@ -1352,6 +1358,7 @@
   app.listTeamMessages = listTeamMessages;
   app.sendTeamMessage = sendTeamMessage;
   app.deleteTeamMessage = deleteTeamMessage;
+  app.markChatRead = markChatRead;
   app.removeMember = removeMember;
   app.setMemberRole = setMemberRole;
   app.listRules = listRules;
@@ -1445,6 +1452,7 @@
     ".app-username{display:inline-flex;align-items:center;gap:.5rem;max-width:240px;padding:.5rem 1rem;border-radius:14px;",
     "background:var(--glass-border);color:var(--text-primary);font-size:.85rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
     ".app-iconbtn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;padding:0;border:1px solid var(--glass-border);",
+    "[dir=rtl] #topSignOut svg{transform:scaleX(-1)}",
     "border-radius:12px;background:transparent;color:var(--text-secondary);cursor:pointer;transition:all .25s ease}",
     ".app-iconbtn:hover{background:var(--glass-border);color:var(--text-primary)}",
     ".app-iconbtn svg{width:19px;height:19px;fill:currentColor}",
@@ -1514,6 +1522,12 @@
   function clearNotifications() {
     return run(function (client) {
       return client.from("notifications").delete().eq("user_id", app.user.id).eq("channel", "inapp").then(unwrap);
+    });
+  }
+
+  function markChatRead(peerId) {
+    return run(function (client) {
+      return client.rpc("mark_chat_read", { peer: peerId || null }).then(unwrap);
     });
   }
 
