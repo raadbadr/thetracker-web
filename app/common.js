@@ -1729,6 +1729,29 @@
     ".app-sidebar a,.app-sidebar button{width:auto;white-space:nowrap;padding:.55rem .75rem;font-size:.85rem}",
     "body.has-app-sidebar .container{padding-inline-start:1rem}}",
     ":root{--gap:1.5rem}",
+    /* ــ تناسق عناصر الإدخال في كل صفحات التطبيق ــ
+       المتصفح يفرض شكله على input[type=search] وعلى select فيخرجان بارتفاع
+       واستدارة مختلفين عن بقية الحقول والأزرار. هنا يُلغى ذلك مرة واحدة:
+       ارتفاع واحد 42 بكسل، استدارة واحدة 12 بكسل، وسهم واحد للقوائم. */
+    ":root{--field-h:42px;--field-r:12px}",
+    "body .waitlist-input,body select.waitlist-input,body input.waitlist-input,body textarea.waitlist-input,",
+    "body .waitlist-btn,body .chat-option-btn{-webkit-appearance:none;appearance:none;border-radius:var(--field-r)}",
+    "body .waitlist-input,body .waitlist-btn,body .chat-option-btn{min-height:var(--field-h);box-sizing:border-box}",
+    "body input.waitlist-input,body select.waitlist-input{height:var(--field-h);padding-block:0;line-height:normal}",
+    "body textarea.waitlist-input{min-height:calc(var(--field-h) * 2);height:auto;padding-block:.6rem}",
+    "body input[type=search].waitlist-input::-webkit-search-decoration,",
+    "body input[type=search].waitlist-input::-webkit-search-cancel-button{-webkit-appearance:none}",
+    "body input[type=date].waitlist-input,body input[type=datetime-local].waitlist-input,body input[type=month].waitlist-input{min-width:0}",
+    "body input[type=date].waitlist-input::-webkit-date-and-time-value{text-align:start}",
+    /* سهم القائمة: رسم واحد لكل القوائم، في نهاية السطر حسب اتجاه اللغة */
+    "body select.waitlist-input{background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.6 6 6.4 11 1.6' fill='none' stroke='%238A97A3' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\");",
+    "background-repeat:no-repeat;background-size:12px 8px;padding-inline-end:2.2rem}",
+    "[dir=rtl] body select.waitlist-input{background-position:left .85rem center}",
+    "[dir=ltr] body select.waitlist-input{background-position:right .85rem center}",
+    "body select.waitlist-input::-ms-expand{display:none}",
+    /* صف الأدوات: كل ما فيه على خط واحد بارتفاع واحد */
+    "body .toolbar,body .filters-row{align-items:center}",
+    "body .toolbar>*,body .filters-row>*{margin:0}",
     /* عنوان العنصر ووسمه: الوسم في سطر مستقل ولا يلتصق بالكلمة قبله */
     "body .item-title{display:block}",
     "body .item-cat{display:block;margin-top:.2rem;font-size:.78rem;color:var(--text-secondary);opacity:.85}",
