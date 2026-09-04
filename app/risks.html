@@ -700,7 +700,7 @@
     .doc-form { margin-top: 1.25rem; }
 
     /* سجل المخاطر: الخريطة الحرارية 5×5 وشارات الدرجة */
-    .heat-wrap { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 0.5rem; align-items: stretch; max-width: 520px; }
+    .heat-wrap { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 0.5rem; align-items: stretch; }
     .heat-ylab { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 0.72rem; color: var(--text-secondary); text-align: center; }
     .heat { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
     .heat-cell { aspect-ratio: 1.6; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; color: #fff; cursor: pointer; border: 2px solid transparent; transition: transform .15s ease; }
@@ -712,11 +712,18 @@
     .heat-axis { font-size: 0.72rem; color: var(--text-secondary); text-align: center; margin-top: 4px; }
     .rating { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 0.72rem; font-weight: 800; color: #fff; }
     .rating.low { background: #2fbf71; } .rating.moderate { background: #f2c94c; color: #1a1a1a; } .rating.high { background: #f2a33c; } .rating.critical { background: #e5484d; }
-    .risk-top { display: grid; grid-template-columns: 1fr; gap: 1.25rem; align-items: start; }
-    @media (min-width: 1000px) { .risk-top { grid-template-columns: minmax(0, 1fr) 560px; } }
-    .risk-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.7rem; }
-    .kpi { padding: 0.8rem 0.9rem; border-radius: 16px; background: var(--glass); border: 1px solid var(--glass-border); text-align: center; }
-    .kpi b { display: block; font-size: 1.3rem; font-variant-numeric: tabular-nums; }
+    .risk-top { display: grid; grid-template-columns: 1fr; gap: 1.25rem; align-items: start; margin-top: 1rem; }
+    @media (min-width: 1000px) { .risk-top { grid-template-columns: minmax(0, 1fr) 520px; } }
+    .risk-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.8rem; }
+    .kpi { padding: 1rem; border-radius: 18px; background: var(--glass); border: 1px solid var(--glass-border); text-align: center;
+      box-shadow: 4px 4px 10px var(--shadow-dark), -4px -4px 10px var(--shadow-light); }
+    .kpi b { display: block; font-size: 1.6rem; font-weight: 800; color: var(--primary); font-variant-numeric: tabular-nums; }
+    .heat-card { padding: 1rem 1.1rem 1.1rem; border-radius: 18px; background: var(--glass); border: 1px solid var(--glass-border);
+      box-shadow: 4px 4px 10px var(--shadow-dark), -4px -4px 10px var(--shadow-light); }
+    .heat-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.75rem; }
+    .cal-modes { display: inline-flex; padding: 0.2rem; border-radius: 12px; background: var(--glass-border); gap: 0.15rem; }
+    .cal-mode { padding: 0.35rem 0.8rem; border: 0; border-radius: 10px; background: transparent; color: var(--text-secondary); font: inherit; font-size: 0.8rem; font-weight: 700; cursor: pointer; -webkit-appearance: none; appearance: none; }
+    .cal-mode.is-active { background: var(--primary); color: #fff; }
     .kpi span { font-size: 0.72rem; color: var(--text-secondary); }
     .action-row { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) 150px auto auto; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem; }
     @media (max-width: 800px) { .action-row { grid-template-columns: 1fr; } }
@@ -761,33 +768,37 @@
     <div class="content" id="noOrgCard" hidden><p data-i18n="noOrg">أنشئ شركتك أولاً من لوحة التحكم ثم عد إلى هنا.</p></div>
 
     <div id="view" hidden>
-      <div class="content" id="registerCard">
+      <div class="content" id="overviewCard">
         <h2 data-i18n="regTitle">سجل المخاطر</h2>
-        <p data-i18n="regIntro">المخاطر القانونية على عملاء المكتب وقضاياه: احتمال × أثر، معالجة، ومهام مرتبطة بالتنبيهات.</p>
+        <p data-i18n="regIntro">ما الذي قد يضرّ عملاءك وقضاياك؟ سجّل الخطر، قدّر احتماله وأثره قبل المعالجة وبعدها، وحدّد الإجراءات وستتابعها التنبيهات.</p>
         <div class="risk-top">
-          <div>
-            <div class="risk-kpis" id="kpis"></div>
-            <div class="toolbar">
-              <input type="search" class="waitlist-input" id="search" placeholder="بحث" data-i18n-placeholder="search">
-              <select class="waitlist-input" id="statusFilter"></select>
-              <button type="button" class="chat-option-btn" id="csvBtn" data-i18n="exportCsv">تصدير CSV</button>
-              <button type="button" class="waitlist-btn" id="newBtn" data-i18n="newRisk">＋ خطر جديد</button>
-            </div>
-          </div>
-          <div>
-            <div class="chat-options" style="margin:0 0 .5rem">
-              <button type="button" class="cal-mode is-active" id="modeInherent" data-mode="inherent" data-i18n="inherent">الكامن</button>
-              <button type="button" class="cal-mode" id="modeResidual" data-mode="residual" data-i18n="residual">المتبقي</button>
-              <button type="button" class="chat-option-btn" id="clearCell" data-i18n="clearCell" hidden>إلغاء التحديد</button>
+          <div class="risk-kpis" id="kpis"></div>
+          <div class="heat-card">
+            <div class="heat-head">
+              <strong data-i18n="heatTitle">خريطة المخاطر</strong>
+              <div class="cal-modes">
+                <button type="button" class="cal-mode is-active" id="modeInherent" data-mode="inherent" data-i18n="inherent">قبل المعالجة</button>
+                <button type="button" class="cal-mode" id="modeResidual" data-mode="residual" data-i18n="residual">بعد المعالجة</button>
+              </div>
             </div>
             <div id="heat"></div>
+            <button type="button" class="chat-option-btn" id="clearCell" data-i18n="clearCell" hidden style="margin-top:.5rem">إلغاء التحديد</button>
           </div>
+        </div>
+      </div>
+
+      <div class="content" id="registerCard">
+        <div class="toolbar">
+          <input type="search" class="waitlist-input" id="search" placeholder="بحث" data-i18n-placeholder="search">
+          <select class="waitlist-input" id="statusFilter"></select>
+          <button type="button" class="chat-option-btn" id="csvBtn" data-i18n="exportCsv">تصدير CSV</button>
+          <button type="button" class="waitlist-btn" id="newBtn" data-i18n="newRisk">＋ خطر جديد</button>
         </div>
         <div class="table-wrap" id="listWrap" hidden>
           <table class="items-table"><thead><tr>
-            <th data-i18n="colCode">الرمز</th><th data-i18n="colTitle">الخطر</th><th data-i18n="colCategory">التصنيف</th><th data-i18n="colClient">العميل</th>
-            <th data-i18n="colCase">الدعوى</th><th data-i18n="colOwner">المسؤول</th><th data-i18n="colInherent">الكامن</th><th data-i18n="colResidual">المتبقي</th>
-            <th data-i18n="colStrategy">الاستراتيجية</th><th data-i18n="colStatus">الحالة</th><th data-i18n="colReview">المراجعة</th><th data-i18n="actions">الإجراءات</th>
+            <th data-i18n="colTitle">الخطر</th><th data-i18n="colCategory">التصنيف</th><th data-i18n="colClient">العميل</th>
+            <th data-i18n="colInherent">قبل المعالجة</th><th data-i18n="colResidual">بعد المعالجة</th>
+            <th data-i18n="colStatus">الحالة</th><th data-i18n="actions">الإجراءات</th>
           </tr></thead><tbody id="listBody"></tbody></table>
         </div>
         <p class="empty-note" id="listEmpty" data-i18n="regEmpty" hidden>لا مخاطر مسجلة بعد.</p>
@@ -861,11 +872,12 @@
         fCase: "القضية",
         title: "إدارة المخاطر",
         regTitle: "سجل المخاطر",
-        regIntro: "المخاطر القانونية على عملاء المكتب وقضاياه: احتمال × أثر، معالجة، ومهام مرتبطة بالتنبيهات.",
+        heatTitle: "خريطة المخاطر",
+        regIntro: "ما الذي قد يضرّ عملاءك وقضاياك؟ سجّل الخطر، قدّر احتماله وأثره قبل المعالجة وبعدها، وحدّد الإجراءات وستتابعها التنبيهات.",
         newRisk: "＋ خطر جديد",
         exportCsv: "تصدير CSV",
-        inherent: "الكامن",
-        residual: "المتبقي",
+        inherent: "قبل المعالجة",
+        residual: "بعد المعالجة",
         clearCell: "إلغاء التحديد",
         likelihood: "الاحتمال",
         impact: "الأثر",
@@ -875,8 +887,8 @@
         colClient: "العميل",
         colCase: "الدعوى",
         colOwner: "المسؤول",
-        colInherent: "الكامن",
-        colResidual: "المتبقي",
+        colInherent: "قبل المعالجة",
+        colResidual: "بعد المعالجة",
         colStrategy: "الاستراتيجية",
         colStatus: "الحالة",
         colReview: "المراجعة",
@@ -895,8 +907,8 @@
         fConsequences: "العواقب",
         fControls: "الضوابط الحالية",
         assessTitle: "التقييم",
-        fLikelihood: "الاحتمال (كامن)",
-        fImpact: "الأثر (كامن)",
+        fLikelihood: "الاحتمال قبل المعالجة",
+        fImpact: "الأثر قبل المعالجة",
         fResLikelihood: "الاحتمال بعد المعالجة",
         fResImpact: "الأثر بعد المعالجة",
         fStrategy: "الاستراتيجية",
@@ -1127,11 +1139,12 @@
         fCase: "Case",
         title: "Risk management",
         regTitle: "Risk register",
+        heatTitle: "Risk map",
         regIntro: "Legal risks across the firm's clients and cases: likelihood × impact, treatment, and actions tied to reminders.",
         newRisk: "＋ New risk",
         exportCsv: "Export CSV",
-        inherent: "Inherent",
-        residual: "Residual",
+        inherent: "Before treatment",
+        residual: "After treatment",
         clearCell: "Clear selection",
         likelihood: "Likelihood",
         impact: "Impact",
@@ -1141,8 +1154,8 @@
         colClient: "Client",
         colCase: "Case",
         colOwner: "Owner",
-        colInherent: "Inherent",
-        colResidual: "Residual",
+        colInherent: "Before",
+        colResidual: "After",
         colStrategy: "Strategy",
         colStatus: "Status",
         colReview: "Review",
@@ -1161,10 +1174,10 @@
         fConsequences: "Consequences",
         fControls: "Existing controls",
         assessTitle: "Assessment",
-        fLikelihood: "Likelihood (inherent)",
-        fImpact: "Impact (inherent)",
-        fResLikelihood: "Residual likelihood",
-        fResImpact: "Residual impact",
+        fLikelihood: "Likelihood before treatment",
+        fImpact: "Impact before treatment",
+        fResLikelihood: "Likelihood after treatment",
+        fResImpact: "Impact after treatment",
         fStrategy: "Strategy",
         fStatus: "Status",
         planTitle: "Treatment plan",
@@ -1393,11 +1406,12 @@
         fCase: "Affaire",
         title: "Gestion des risques",
         regTitle: "Registre des risques",
+        heatTitle: "Carte des risques",
         regIntro: "Risques juridiques des clients et dossiers : probabilité × impact, traitement et actions liées aux rappels.",
         newRisk: "＋ Nouveau risque",
         exportCsv: "Exporter CSV",
-        inherent: "Brut",
-        residual: "Résiduel",
+        inherent: "Avant traitement",
+        residual: "Après traitement",
         clearCell: "Effacer la sélection",
         likelihood: "Probabilité",
         impact: "Impact",
@@ -1407,8 +1421,8 @@
         colClient: "Client",
         colCase: "Dossier",
         colOwner: "Responsable",
-        colInherent: "Brut",
-        colResidual: "Résiduel",
+        colInherent: "Avant",
+        colResidual: "Après",
         colStrategy: "Stratégie",
         colStatus: "Statut",
         colReview: "Revue",
@@ -1427,10 +1441,10 @@
         fConsequences: "Conséquences",
         fControls: "Contrôles existants",
         assessTitle: "Évaluation",
-        fLikelihood: "Probabilité (brute)",
-        fImpact: "Impact (brut)",
-        fResLikelihood: "Probabilité résiduelle",
-        fResImpact: "Impact résiduel",
+        fLikelihood: "Probabilité avant traitement",
+        fImpact: "Impact avant traitement",
+        fResLikelihood: "Probabilité après traitement",
+        fResImpact: "Impact après traitement",
         fStrategy: "Stratégie",
         fStatus: "Statut",
         planTitle: "Plan de traitement",
@@ -1659,11 +1673,12 @@
         fCase: "مقدمہ",
         title: "خطرات کا انتظام",
         regTitle: "خطرات کا رجسٹر",
+        heatTitle: "خطرات کا نقشہ",
         regIntro: "کلائنٹس اور مقدمات پر قانونی خطرات: امکان × اثر، علاج اور یاد دہانیوں سے جڑی کارروائیاں۔",
         newRisk: "＋ نیا خطرہ",
         exportCsv: "CSV برآمد",
-        inherent: "اصل",
-        residual: "بقیہ",
+        inherent: "علاج سے پہلے",
+        residual: "علاج کے بعد",
         clearCell: "انتخاب ہٹائیں",
         likelihood: "امکان",
         impact: "اثر",
@@ -1673,8 +1688,8 @@
         colClient: "کلائنٹ",
         colCase: "مقدمہ",
         colOwner: "ذمہ دار",
-        colInherent: "اصل",
-        colResidual: "بقیہ",
+        colInherent: "پہلے",
+        colResidual: "بعد",
         colStrategy: "حکمت عملی",
         colStatus: "حالت",
         colReview: "جائزہ",
@@ -1693,10 +1708,10 @@
         fConsequences: "نتائج",
         fControls: "موجودہ کنٹرول",
         assessTitle: "تشخیص",
-        fLikelihood: "امکان (اصل)",
-        fImpact: "اثر (اصل)",
-        fResLikelihood: "بقیہ امکان",
-        fResImpact: "بقیہ اثر",
+        fLikelihood: "علاج سے پہلے امکان",
+        fImpact: "علاج سے پہلے اثر",
+        fResLikelihood: "علاج کے بعد امکان",
+        fResImpact: "علاج کے بعد اثر",
         fStrategy: "حکمت عملی",
         fStatus: "حالت",
         planTitle: "علاج کا منصوبہ",
@@ -2122,17 +2137,13 @@
         show("listWrap", rows.length > 0); show("listEmpty", rows.length === 0);
         rows.forEach(function (r) {
           var tr = document.createElement("tr");
-          tr.innerHTML = '<td dir="ltr">' + esc(r.code || "") + "</td>" +
-            '<td><span class="item-title">' + esc(r.title) + "</span></td>" +
+          var meta = [r.code, r.case_number ? t("colCase") + " " + r.case_number : "", r.owner_id ? name(r.owner_id) : "", r.review_at ? t("colReview") + " " + app.fmtDate(r.review_at) : ""].filter(Boolean).join(" · ");
+          tr.innerHTML = '<td><span class="item-title">' + esc(r.title) + '</span><span class="item-cat">' + esc(meta) + "</span></td>" +
             "<td>" + esc(t("cat_" + (r.category || "legal"))) + "</td>" +
             "<td>" + esc(r.client_name || "-") + "</td>" +
-            '<td dir="ltr">' + esc(r.case_number || "-") + "</td>" +
-            "<td>" + esc(name(r.owner_id)) + "</td>" +
             "<td>" + badge(r.likelihood, r.impact) + "</td>" +
             "<td>" + badge(r.res_likelihood, r.res_impact) + "</td>" +
-            "<td>" + esc(t("strat_" + r.strategy)) + "</td>" +
-            "<td>" + esc(t("rstatus_" + r.status)) + "</td>" +
-            "<td>" + (r.review_at ? esc(app.fmtDate(r.review_at)) : "-") + "</td>" +
+            "<td>" + esc(t("rstatus_" + r.status)) + " · " + esc(t("strat_" + r.strategy)) + "</td>" +
             '<td><div class="chat-options row-actions"><button type="button" class="chat-option-btn" data-edit="' + esc(r.id) + '">' + esc(t("edit")) + "</button></div></td>";
           body.appendChild(tr);
         });
@@ -2158,7 +2169,7 @@
         $("fStatus").innerHTML = STATUSES.map(function (s) { return '<option value="' + s + '"' + (d.status === s ? " selected" : "") + ">" + esc(t("rstatus_" + s)) + "</option>"; }).join("");
         show("deleteBtn", !!r);
         renderActions(); updateScore();
-        show("registerCard", false); show("editorCard", true);
+        show("registerCard", false); show("overviewCard", false); show("editorCard", true);
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
       function updateScore() {
@@ -2255,14 +2266,14 @@
           var d = readForm();
           if (!d.title) { $("fTitle").focus(); return; }
           $("saveBtn").disabled = true;
-          app.saveRisk(d).then(syncActionItems).then(load).then(function () { show("editorCard", false); show("registerCard", true); })
+          app.saveRisk(d).then(syncActionItems).then(load).then(function () { show("editorCard", false); show("registerCard", true); show("overviewCard", true); })
             .catch(function () { var m = $("msg"); m.textContent = t("saveFailed"); m.hidden = false; })
             .finally(function () { $("saveBtn").disabled = false; });
         });
-        $("cancelBtn").addEventListener("click", function () { show("editorCard", false); show("registerCard", true); });
+        $("cancelBtn").addEventListener("click", function () { show("editorCard", false); show("registerCard", true); show("overviewCard", true); });
         $("deleteBtn").addEventListener("click", function () {
           if (!state.draft.id || !window.confirm(t("deleteConfirm"))) return;
-          app.deleteRisk(state.draft.id).then(load).then(function () { show("editorCard", false); show("registerCard", true); });
+          app.deleteRisk(state.draft.id).then(load).then(function () { show("editorCard", false); show("registerCard", true); show("overviewCard", true); });
         });
       }
       window.__risksRefresh = renderAll;
