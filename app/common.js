@@ -844,6 +844,56 @@
     });
   }
 
+  /* أوراقنا الرسمية تكتب تاريخها هجرياً أو ميلادياً، وحقل التاريخ القياسي
+     في المتصفح ميلادي فقط. نقبل الصيغتين ونحوّل الهجري بتقويم أم القرى. */
+  function hijriPartsOf(date) {
+    var fmt = new Intl.DateTimeFormat("en-u-ca-islamic-umalqura-nu-latn",
+      { timeZone: "UTC", year: "numeric", month: "numeric", day: "numeric" });
+    var out = {};
+    fmt.formatToParts(date).forEach(function (part) {
+      if (part.type === "year" || part.type === "month" || part.type === "day") out[part.type] = parseInt(part.value, 10);
+    });
+    return out;
+  }
+
+  function hijriToGregorianISO(year, month, day) {
+    var approx = new Date(Date.UTC(622, 6, 16) + ((year - 1) * 354.367 + (month - 1) * 29.53 + (day - 1)) * 86400000);
+    for (var off = -40; off <= 40; off++) {
+      var candidate = new Date(approx.getTime() + off * 86400000);
+      var h = hijriPartsOf(candidate);
+      if (h.year === year && h.month === month && h.day === day) return candidate.toISOString().slice(0, 10);
+    }
+    return null;
+  }
+
+  /* يقبل 1447/05/10 و1447-05-10 و2026-12-01 و01/12/2026، ويعيد ISO ميلادياً */
+  function parseAnyDate(value) {
+    var text = String(value == null ? "" : value).trim();
+    if (!text) return null;
+    text = text.replace(/[\u0660-\u0669]/g, function (d) { return String(d.charCodeAt(0) - 0x0660); })
+               .replace(/[\u06F0-\u06F9]/g, function (d) { return String(d.charCodeAt(0) - 0x06F0); });
+    var ymd = text.match(/^(\d{3,4})[-\/.](\d{1,2})[-\/.](\d{1,2})$/);
+    var dmy = text.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{3,4})$/);
+    var year, month, day;
+    if (ymd) { year = +ymd[1]; month = +ymd[2]; day = +ymd[3]; }
+    else if (dmy) { day = +dmy[1]; month = +dmy[2]; year = +dmy[3]; }
+    else return null;
+    if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+    if (year >= 1300 && year < 1600) return hijriToGregorianISO(year, month, day);
+    if (year < 1900 || year > 2200) return null;
+    return year + "-" + String(month).padStart(2, "0") + "-" + String(day).padStart(2, "0");
+  }
+
+  /* التاريخ الميلادي مكتوباً بالهجري ليطمئن صاحبه أن ما فهمه النظام صحيح */
+  function gregorianToHijriText(iso) {
+    if (!iso) return "";
+    var d = new Date(iso + "T12:00:00Z");
+    if (isNaN(d.getTime())) return "";
+    var h = hijriPartsOf(d);
+    if (!h.year) return "";
+    return h.year + "/" + String(h.month).padStart(2, "0") + "/" + String(h.day).padStart(2, "0") + " هـ";
+  }
+
   /* ملفات PDF العربية كثيراً ما تُخرج نصاً مشوّهاً (أشكال عرض وحروف مفرّقة
      بترتيب بصري) لا يُقرأ: نكتشفه ونرسل صورة الصفحة ليقرأها نموذج الرؤية. */
   function textLooksMangled(text) {
@@ -2606,13 +2656,13 @@
 
   /* أين أنا الآن؟ اسم الشركة الحالية ظاهر دائما ويبدل من مكانه. */
   var REG_TEXT = {
-    ar: { fileFirst: "ارفع المستند الرسمي (سجل تجاري أو وثيقة عمل حر أو هوية) ليُقرأ منه كل شيء", reading: "جاري قراءة المستند…", readDone: "قُرئ المستند وعُبِّئ منه:", readNothing: "قُرئ المستند ولم تُستخرج بيانات، أكمل الحقول.", readFailed: "تعذرت قراءة المستند، أكمل الحقول يدوياً.", readName: "الاسم", readNumber: "الرقم", readExpiry: "تاريخ الانتهاء", commercial_register: "رقم السجل التجاري", id_document: "رقم الهوية الوطنية", license: "رقم الرخصة / الوثيقة", expiry: "تاريخ انتهاء المستند (إن وجد)", file: "ملف المستند (PDF أو صورة، اختياري)",
+    ar: { expiryHint: "1447/05/10 هجري أو 2026-12-01 ميلادي", expiryReads: "يفهمه النظام:", expiryBad: "لم أفهم التاريخ — اكتبه هكذا 1447/05/10 أو 2026-12-01.", expiryNone: "اتركه فارغاً إن كان المستند بلا تاريخ انتهاء (السجل التجاري الجديد لا ينتهي).", fileFirst: "ارفع المستند الرسمي (سجل تجاري أو وثيقة عمل حر أو هوية) ليُقرأ منه كل شيء", reading: "جاري قراءة المستند…", readDone: "قُرئ المستند وعُبِّئ منه:", readNothing: "قُرئ المستند ولم تُستخرج بيانات، أكمل الحقول.", readFailed: "تعذرت قراءة المستند، أكمل الحقول يدوياً.", readName: "الاسم", readNumber: "الرقم", readExpiry: "تاريخ الانتهاء", commercial_register: "رقم السجل التجاري", id_document: "رقم الهوية الوطنية", license: "رقم الرخصة / الوثيقة", expiry: "تاريخ انتهاء المستند (إن وجد)", file: "ملف المستند (PDF أو صورة، اختياري)",
           gate: "لا تُنشأ الجهة بلا مستندها الرسمي: الرقم وتاريخ الانتهاء إلزاميان، ويُسجَّل أول مستند في ملفها.", invalid: "الرقم غير صحيح.", expiryRequired: "تاريخ الانتهاء إلزامي.", fileFailed: "أُنشئت الجهة لكن تعذّر رفع الملف؛ أضفه من صفحة المستندات." },
-    en: { fileFirst: "Upload the official document (commercial register, freelance permit or ID) and it fills the fields", reading: "Reading the document…", readDone: "Read and filled in:", readNothing: "The document was read but nothing was extracted; fill the fields.", readFailed: "Could not read the document; fill the fields manually.", readName: "name", readNumber: "number", readExpiry: "expiry date", commercial_register: "Commercial register number", id_document: "National ID number", license: "License / permit number", expiry: "Document expiry date (if any)", file: "Document file (PDF or image, optional)",
+    en: { expiryHint: "1447/05/10 Hijri or 2026-12-01", expiryReads: "Understood as:", expiryBad: "Date not understood — write 1447/05/10 or 2026-12-01.", expiryNone: "Leave empty if the document has no expiry (the new commercial register never expires).", fileFirst: "Upload the official document (commercial register, freelance permit or ID) and it fills the fields", reading: "Reading the document…", readDone: "Read and filled in:", readNothing: "The document was read but nothing was extracted; fill the fields.", readFailed: "Could not read the document; fill the fields manually.", readName: "name", readNumber: "number", readExpiry: "expiry date", commercial_register: "Commercial register number", id_document: "National ID number", license: "License / permit number", expiry: "Document expiry date (if any)", file: "Document file (PDF or image, optional)",
           gate: "No entity without its official document: number and expiry are required, and it becomes the first paper on file.", invalid: "Invalid number.", expiryRequired: "Expiry date is required.", fileFailed: "Created, but the file could not be uploaded; add it from Documents." },
-    fr: { fileFirst: "Téléversez le document officiel (registre de commerce, permis d’indépendant ou pièce d’identité) : il remplit les champs", reading: "Lecture du document…", readDone: "Lu et rempli :", readNothing: "Document lu, rien n’a été extrait ; complétez les champs.", readFailed: "Lecture impossible ; complétez les champs à la main.", readName: "nom", readNumber: "numéro", readExpiry: "date d’expiration", commercial_register: "Numéro du registre de commerce", id_document: "Numéro de carte d’identité", license: "Numéro de licence / permis", expiry: "Date d’expiration du document (le cas échéant)", file: "Fichier du document (PDF ou image, facultatif)",
+    fr: { expiryHint: "1447/05/10 hégirien ou 2026-12-01", expiryReads: "Compris comme :", expiryBad: "Date non comprise — écrivez 1447/05/10 ou 2026-12-01.", expiryNone: "Laissez vide si le document n’expire pas (le nouveau registre de commerce n’expire jamais).", fileFirst: "Téléversez le document officiel (registre de commerce, permis d’indépendant ou pièce d’identité) : il remplit les champs", reading: "Lecture du document…", readDone: "Lu et rempli :", readNothing: "Document lu, rien n’a été extrait ; complétez les champs.", readFailed: "Lecture impossible ; complétez les champs à la main.", readName: "nom", readNumber: "numéro", readExpiry: "date d’expiration", commercial_register: "Numéro du registre de commerce", id_document: "Numéro de carte d’identité", license: "Numéro de licence / permis", expiry: "Date d’expiration du document (le cas échéant)", file: "Fichier du document (PDF ou image, facultatif)",
           gate: "Aucune entité sans son document officiel : numéro et date d’expiration obligatoires ; il devient la première pièce du dossier.", invalid: "Numéro invalide.", expiryRequired: "Date d’expiration obligatoire.", fileFailed: "Créée, mais le fichier n’a pu être envoyé ; ajoutez-le depuis Documents." },
-    ur: { fileFirst: "سرکاری دستاویز اپ لوڈ کریں (کمرشل رجسٹر، فری لانس اجازت نامہ یا شناخت) — خانے خود بھر جائیں گے", reading: "دستاویز پڑھی جا رہی ہے…", readDone: "پڑھ کر بھر دیا:", readNothing: "دستاویز پڑھی گئی مگر کچھ نہ ملا؛ خانے بھریں۔", readFailed: "دستاویز نہیں پڑھی جا سکی؛ خانے خود بھریں۔", readName: "نام", readNumber: "نمبر", readExpiry: "میعاد", commercial_register: "کمرشل رجسٹر نمبر", id_document: "قومی شناختی نمبر", license: "لائسنس / اجازت نامہ نمبر", expiry: "دستاویز کی میعاد (اگر ہو)", file: "دستاویز کی فائل (PDF یا تصویر، اختیاری)",
+    ur: { expiryHint: "1447/05/10 ہجری یا 2026-12-01", expiryReads: "سسٹم نے سمجھا:", expiryBad: "تاریخ سمجھ نہیں آئی — 1447/05/10 یا 2026-12-01 لکھیں۔", expiryNone: "اگر دستاویز کی میعاد نہیں تو خالی چھوڑیں (نیا کمرشل رجسٹر ختم نہیں ہوتا)۔", fileFirst: "سرکاری دستاویز اپ لوڈ کریں (کمرشل رجسٹر، فری لانس اجازت نامہ یا شناخت) — خانے خود بھر جائیں گے", reading: "دستاویز پڑھی جا رہی ہے…", readDone: "پڑھ کر بھر دیا:", readNothing: "دستاویز پڑھی گئی مگر کچھ نہ ملا؛ خانے بھریں۔", readFailed: "دستاویز نہیں پڑھی جا سکی؛ خانے خود بھریں۔", readName: "نام", readNumber: "نمبر", readExpiry: "میعاد", commercial_register: "کمرشل رجسٹر نمبر", id_document: "قومی شناختی نمبر", license: "لائسنس / اجازت نامہ نمبر", expiry: "دستاویز کی میعاد (اگر ہو)", file: "دستاویز کی فائل (PDF یا تصویر، اختیاری)",
           gate: "سرکاری دستاویز کے بغیر کوئی ادارہ نہیں: نمبر اور میعاد لازمی ہیں، اور یہ فائل کی پہلی دستاویز بنتی ہے۔", invalid: "نمبر غلط ہے۔", expiryRequired: "میعاد ختم ہونے کی تاریخ لازمی ہے۔", fileFailed: "بن گیا، مگر فائل اپ لوڈ نہ ہو سکی؛ دستاویزات سے شامل کریں۔" }
   };
 
@@ -2651,7 +2701,8 @@
         '<label id="newOrgRegLabel">' + escapeHtml(rt.commercial_register) +
           '<input type="text" id="newOrgReg" maxlength="40" dir="ltr" inputmode="numeric" autocomplete="off"></label>' +
         "<label>" + escapeHtml(rt.expiry) +
-          '<input type="date" id="newOrgExpiry" dir="ltr"></label>' +
+          '<input type="text" id="newOrgExpiry" dir="ltr" autocomplete="off" placeholder="' + escapeHtml(rt.expiryHint) + '"></label>' +
+        '<div id="newOrgExpiryEcho" style="font-size:.8rem;color:var(--text-secondary);margin:-.6rem 0 .8rem"></div>' +
 
         '<button type="button" id="newOrgSave">' + escapeHtml(t.save) + "</button>" +
         '<button type="button" id="newOrgCancelBtn" style="margin-top:.6rem;background:transparent;color:var(--text-secondary)">' + escapeHtml(t.cancel) + "</button>" +
@@ -2674,6 +2725,18 @@
         input.value = app.profile.full_name;
       }
     });
+    /* ما فهمه النظام من التاريخ يُعرض تحته: ميلادي وهجري معاً */
+    var expiryEl = document.getElementById("newOrgExpiry");
+    var expiryEcho = document.getElementById("newOrgExpiryEcho");
+    function showExpiry() {
+      if (!expiryEl || !expiryEcho) return;
+      var raw = String(expiryEl.value || "").trim();
+      if (!raw) { expiryEcho.textContent = rt.expiryNone; return; }
+      var iso = parseAnyDate(raw);
+      expiryEcho.textContent = iso ? (rt.expiryReads + " " + iso + " — " + gregorianToHijriText(iso)) : rt.expiryBad;
+    }
+    if (expiryEl) { expiryEl.addEventListener("input", showExpiry); showExpiry(); }
+
     /* الورقة تُقرأ فور اختيارها فتملأ النوع والاسم والرقم وتاريخ الانتهاء */
     var fileInput = document.getElementById("newOrgFile");
     var readMsg = document.getElementById("newOrgRead");
@@ -2694,7 +2757,12 @@
         var regEl = document.getElementById("newOrgReg");
         if (fields.number && regEl && !String(regEl.value || "").trim()) { regEl.value = String(fields.number).replace(/\s/g, ""); filled.push(rt.readNumber); }
         var expEl = document.getElementById("newOrgExpiry");
-        if (fields.expiry_date && expEl && !expEl.value) { expEl.value = String(fields.expiry_date).slice(0, 10); filled.push(rt.readExpiry); }
+        if (fields.expiry_date && expEl && !String(expEl.value || "").trim()) {
+          expEl.value = String(fields.expiry_date).slice(0, 10);
+          showExpiry();
+          filled.push(rt.readExpiry);
+        }
+        if (!fields.expiry_date) showExpiry();
         readMsg.textContent = filled.length ? rt.readDone + " " + filled.join("، ") : rt.readNothing;
       }).catch(function () { readMsg.textContent = rt.readFailed; });
     });
@@ -2705,7 +2773,9 @@
       if (!name) { input.focus(); return; }
       var type = typeSel ? typeSel.value : "company";
       var reg = String((document.getElementById("newOrgReg") || {}).value || "").replace(/\s/g, "");
-      var expiry = String((document.getElementById("newOrgExpiry") || {}).value || "");
+      var expiryRaw = String((document.getElementById("newOrgExpiry") || {}).value || "").trim();
+      var expiry = expiryRaw ? parseAnyDate(expiryRaw) : null;
+      if (expiryRaw && !expiry) { err.textContent = rt.expiryBad; document.getElementById("newOrgExpiry").focus(); return; }
       var fileEl = document.getElementById("newOrgFile");
       var file = fileEl && fileEl.files && fileEl.files[0];
       if (!registrationRule(type).pattern.test(reg)) { err.textContent = rt.invalid; document.getElementById("newOrgReg").focus(); return; }
