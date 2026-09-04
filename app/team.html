@@ -928,6 +928,7 @@
         unassign: "بلا صاحب",
         noDue: "بلا موعد",
         chatTitle: "تواصل الفريق",
+        chatTyping: "{name} يكتب الآن…",
         chatThreads: "المحادثات",
         chatTeam: "الفريق كله",
         chatTeamHint: "اكتب للكل",
@@ -1058,6 +1059,7 @@
         unassign: "Unassigned",
         noDue: "No due date",
         chatTitle: "Team chat",
+        chatTyping: "{name} is typing…",
         chatThreads: "Conversations",
         chatTeam: "Whole team",
         chatTeamHint: "Everyone",
@@ -1188,6 +1190,7 @@
         unassign: "Non attribué",
         noDue: "Sans échéance",
         chatTitle: "Discussion d'équipe",
+        chatTyping: "{name} écrit…",
         chatThreads: "Conversations",
         chatTeam: "Toute l'équipe",
         chatTeamHint: "À tous",
@@ -1318,6 +1321,7 @@
         unassign: "بغیر ذمہ دار",
         noDue: "کوئی تاریخ نہیں",
         chatTitle: "ٹیم رابطہ",
+        chatTyping: "{name} لکھ رہا ہے…",
         chatThreads: "گفتگوئیں",
         chatTeam: "پوری ٹیم",
         chatTeamHint: "سب کو",
@@ -2492,11 +2496,49 @@
       }
 
       /* البث الحي عبر Supabase Realtime؛ وإن تعذّر، استقصاء كل 15 ثانية. */
+      var TYPING_TTL = 3000;
+      var typingTimer = null, lastTypingSent = 0;
+
+      function showTyping(name) {
+        var el = $("typingLine");
+        if (!el) return;
+        el.textContent = t("chatTyping").split("{name}").join(name || "");
+        el.hidden = false;
+        if (typingTimer) clearTimeout(typingTimer);
+        typingTimer = setTimeout(function () { el.hidden = true; }, TYPING_TTL);
+      }
+
+      function broadcastTyping() {
+        if (!state.channel || !state.live) return;
+        var now = Date.now();
+        if (now - lastTypingSent < 1500) return;
+        lastTypingSent = now;
+        var meRow = state.members.filter(function (m) { return m.user_id === me(); })[0];
+        var name = (meRow && meRow.profiles && (meRow.profiles.full_name || meRow.profiles.email)) || (app.profile && app.profile.full_name) || "";
+        try {
+          state.channel.send({ type: "broadcast", event: "typing", payload: { from: me(), to: state.thread === TEAM ? null : state.thread, name: name } });
+        } catch (e) { /* غير حرج */ }
+      }
+
       function subscribe() {
         var client = app.client;
         if (!client || typeof client.channel !== "function") { startPolling(); return; }
         var orgId = app.org.id;
+        /* سياسات الخصوصية تُطبَّق على قناة البث أيضاً، فلا بد من رمز جلسة المستخدم
+           وإلا وصلت الحالة "متصل" بلا أي رسالة من الطرف الآخر. */
+        var setAuth = function (session) {
+          try { if (session && session.access_token && client.realtime && client.realtime.setAuth) client.realtime.setAuth(session.access_token); } catch (e) { /* ignore */ }
+        };
+        try { client.auth.getSession().then(function (r) { setAuth(r && r.data && r.data.session); }); } catch (e) { /* ignore */ }
+        try { client.auth.onAuthStateChange(function (_e, session) { setAuth(session); }); } catch (e) { /* ignore */ }
+        startPolling();   /* شبكة أمان دائمة كل 15 ثانية حتى مع البث الحي */
         state.channel = client.channel("team_messages:" + orgId)
+          .on("broadcast", { event: "typing" }, function (msg) {
+            var p = (msg && msg.payload) || {};
+            if (!p.from || p.from === me()) return;
+            var mine = state.thread === TEAM ? p.to === null : (p.to === me() && p.from === state.thread);
+            if (mine) showTyping(p.name);
+          })
           .on("postgres_changes", { event: "INSERT", schema: "public", table: "team_messages", filter: "org_id=eq." + orgId }, function (payload) {
             var msg = payload.new;
             if (!msg) return;
@@ -2513,7 +2555,6 @@
           })
           .subscribe(function (status) {
             state.live = status === "SUBSCRIBED";
-            if (state.live) stopPolling(); else startPolling();
             render();
           });
       }
@@ -2565,7 +2606,17 @@
         $("chatInput").addEventListener("keydown", function (ev) {
           if (ev.key === "Enter" && !ev.shiftKey) { ev.preventDefault(); send(); }
         });
-        $("chatInput").addEventListener("input", function () { autosize(this); });
+        $("chatInput").addEventListener("input", function () { autosize(this); if (this.value.trim()) broadcastTyping(); });
+        (function () {
+          var msgs = $("messages");
+          if (msgs && !$("typingLine")) {
+            var line = document.createElement("div");
+            line.id = "typingLine";
+            line.className = "inline-hint";
+            line.hidden = true;
+            msgs.parentNode.insertBefore(line, msgs.nextSibling);
+          }
+        })();
         $("messages").addEventListener("click", function (ev) {
           var b = ev.target.closest("[data-del]");
           if (!b) return;
@@ -2581,7 +2632,11 @@
         app.ready.then(function (res) {
           if (app.unavailable || (res && res.unavailable)) {  return; }
           if (!app.org) {  return; }
-          try { var p = new URLSearchParams(window.location.search).get("with"); if (p) state.thread = p; } catch (e) { /* ignore */ }
+          try {
+            var qs = new URLSearchParams(window.location.search);
+            var p = qs.get("with") || qs.get("chat");
+            if (p) state.thread = p;
+          } catch (e) { /* ignore */ }
           return load().then(function () {
             subscribe();
             if (app.markChatRead) app.markChatRead(state.thread === TEAM ? null : state.thread).catch(function () {});
