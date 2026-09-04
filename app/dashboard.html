@@ -867,6 +867,10 @@
       .attach-actions { grid-template-columns: minmax(0, 1fr) !important; }
       .attach-actions > * { width: 100%; }
       .content input, .content select, .content textarea { max-width: 100%; }
+      /* الخط الزمني: شريط طويل بطبعه، يتمرر داخل حاويته ولا يمد الصفحة */
+      #timelineCard, .tlx, .tlx-title, .tlx-ends { max-width: 100%; overflow-x: hidden; }
+      .tlx-scroll { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .cal-grid, .cal-cell { min-width: 0; }
     }
     @media (max-width: 600px) {
       .content { padding: 1rem 0.85rem; }
