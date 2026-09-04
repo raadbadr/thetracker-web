@@ -765,6 +765,95 @@
     });
   }
 
+  /* ---------- قراءة المستندات: الورقة تُقرأ في المتصفح ثم يحللها الخادم ----------
+     كل ما يمكن استخراجه من المستند يُملأ تلقائياً، والإدخال اليدوي للمراجعة فقط. */
+  var PDF_SRC = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+  var PDF_WORKER = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+  function fileToImageData(file) {
+    return new Promise(function (resolve, reject) {
+      var r = new FileReader();
+      r.onload = function () { resolve(String(r.result)); };
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    }).then(function (dataUrl) {
+      /* صور الجوال الكبيرة تفشل قراءتها: تُصغَّر إلى 1800 بكسل */
+      return new Promise(function (resolve) {
+        var img = new Image();
+        img.onload = function () {
+          var MAX = 1800, w = img.width, h = img.height;
+          if (w <= MAX && h <= MAX) { resolve(dataUrl); return; }
+          var k = Math.min(MAX / w, MAX / h);
+          var c = document.createElement("canvas");
+          c.width = Math.round(w * k); c.height = Math.round(h * k);
+          c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+          resolve(c.toDataURL("image/jpeg", 0.85));
+        };
+        img.onerror = function () { resolve(dataUrl); };
+        img.src = dataUrl;
+      });
+    });
+  }
+
+  function pdfRead(file) {
+    return loadScriptOnce(PDF_SRC, function () { return !!window.pdfjsLib; }).then(function () {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDF_WORKER;
+      return file.arrayBuffer();
+    }).then(function (buf) {
+      return window.pdfjsLib.getDocument({ data: buf }).promise;
+    }).then(function (pdf) {
+      var pages = Math.min(pdf.numPages, 4), chain = Promise.resolve(), text = "";
+      for (var i = 1; i <= pages; i++) {
+        (function (n) {
+          chain = chain.then(function () { return pdf.getPage(n); })
+            .then(function (page) { return page.getTextContent(); })
+            .then(function (tc) { text += tc.items.map(function (it) { return it.str; }).join(" ") + "\n"; });
+        })(i);
+      }
+      return chain.then(function () { return { text: text.trim(), pdf: pdf }; });
+    });
+  }
+
+  function pdfPageImage(pdf, n) {
+    return pdf.getPage(n).then(function (page) {
+      var base = page.getViewport({ scale: 1 });
+      var scale = Math.min(2, 1800 / Math.max(base.width, base.height));
+      var vp = page.getViewport({ scale: scale });
+      var c = document.createElement("canvas");
+      c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+      var ctx = c.getContext("2d"); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, c.width, c.height);
+      return page.render({ canvasContext: ctx, viewport: vp }).promise.then(function () { return c.toDataURL("image/jpeg", 0.85); });
+    });
+  }
+
+  function analyzeDocument(payload) {
+    var auth = window.trackerAuth;
+    var session = auth && auth.getSession ? auth.getSession() : Promise.resolve(null);
+    return Promise.resolve(session).then(function (sess) {
+      var headers = { "Content-Type": "application/json" };
+      var jwt = sess && sess.access_token;
+      if (jwt) headers.Authorization = "Bearer " + jwt;
+      return fetch("/api/documents/analyze", { method: "POST", headers: headers, body: JSON.stringify(payload) });
+    }).then(function (r) {
+      return r.json().then(function (d) {
+        if (!r.ok) throw new Error(d.error || "analyze_failed");
+        return d.fields;
+      });
+    });
+  }
+
+  /* يعيد حقول المستند: نوعه، الجهة التي يفتحها، الاسم، الرقم، تاريخ الانتهاء */
+  function readDocumentFile(file) {
+    if (!file) return Promise.reject(new Error("no_file"));
+    var isPdf = /\.pdf$/i.test(file.name || "") || file.type === "application/pdf";
+    if (!isPdf) return fileToImageData(file).then(function (img) { return analyzeDocument({ image: img }); });
+    return pdfRead(file).then(function (r) {
+      if (r.text && r.text.length >= 40) return analyzeDocument({ text: r.text });
+      /* PDF ممسوح ضوئياً: تُقرأ صورة صفحته الأولى */
+      return pdfPageImage(r.pdf, 1).then(function (img) { return analyzeDocument({ image: img }); });
+    });
+  }
+
   /* ---------- Google Drive: اختيار ملف من درايف المستخدم وربطه بالعنصر ----------
      يعمل عبر Google Picker بصلاحية drive.file (غير حساسة): المستخدم يختار الملف
      بنفسه، ونخزن رابطه واسمه فقط؛ الملف يبقى في درايفه. */
@@ -2236,6 +2325,7 @@
   app.driveOAuthAvailable = driveOAuthAvailable;
   app.storageMode = storageMode;
   app.connectDrive = driveAccessToken;
+  app.readDocumentFile = readDocumentFile;
   app.pickFromDrive = pickFromDrive;
   app.driveDownload = driveDownload;
   app.attachDriveFiles = attachDriveFiles;
@@ -2494,13 +2584,13 @@
 
   /* أين أنا الآن؟ اسم الشركة الحالية ظاهر دائما ويبدل من مكانه. */
   var REG_TEXT = {
-    ar: { commercial_register: "رقم السجل التجاري", id_document: "رقم الهوية الوطنية", license: "رقم الرخصة / الوثيقة", expiry: "تاريخ انتهاء المستند", file: "ملف المستند (PDF أو صورة، اختياري)",
+    ar: { fileFirst: "ارفع المستند الرسمي (سجل تجاري أو وثيقة عمل حر أو هوية) ليُقرأ منه كل شيء", reading: "جاري قراءة المستند…", readDone: "قُرئ المستند وعُبِّئ منه:", readNothing: "قُرئ المستند ولم تُستخرج بيانات، أكمل الحقول.", readFailed: "تعذرت قراءة المستند، أكمل الحقول يدوياً.", readName: "الاسم", readNumber: "الرقم", readExpiry: "تاريخ الانتهاء", commercial_register: "رقم السجل التجاري", id_document: "رقم الهوية الوطنية", license: "رقم الرخصة / الوثيقة", expiry: "تاريخ انتهاء المستند", file: "ملف المستند (PDF أو صورة، اختياري)",
           gate: "لا تُنشأ الجهة بلا مستندها الرسمي: الرقم وتاريخ الانتهاء إلزاميان، ويُسجَّل أول مستند في ملفها.", invalid: "الرقم غير صحيح.", expiryRequired: "تاريخ الانتهاء إلزامي.", fileFailed: "أُنشئت الجهة لكن تعذّر رفع الملف؛ أضفه من صفحة المستندات." },
-    en: { commercial_register: "Commercial register number", id_document: "National ID number", license: "License / permit number", expiry: "Document expiry date", file: "Document file (PDF or image, optional)",
+    en: { fileFirst: "Upload the official document (commercial register, freelance permit or ID) and it fills the fields", reading: "Reading the document…", readDone: "Read and filled in:", readNothing: "The document was read but nothing was extracted; fill the fields.", readFailed: "Could not read the document; fill the fields manually.", readName: "name", readNumber: "number", readExpiry: "expiry date", commercial_register: "Commercial register number", id_document: "National ID number", license: "License / permit number", expiry: "Document expiry date", file: "Document file (PDF or image, optional)",
           gate: "No entity without its official document: number and expiry are required, and it becomes the first paper on file.", invalid: "Invalid number.", expiryRequired: "Expiry date is required.", fileFailed: "Created, but the file could not be uploaded; add it from Documents." },
-    fr: { commercial_register: "Numéro du registre de commerce", id_document: "Numéro de carte d’identité", license: "Numéro de licence / permis", expiry: "Date d’expiration du document", file: "Fichier du document (PDF ou image, facultatif)",
+    fr: { fileFirst: "Téléversez le document officiel (registre de commerce, permis d’indépendant ou pièce d’identité) : il remplit les champs", reading: "Lecture du document…", readDone: "Lu et rempli :", readNothing: "Document lu, rien n’a été extrait ; complétez les champs.", readFailed: "Lecture impossible ; complétez les champs à la main.", readName: "nom", readNumber: "numéro", readExpiry: "date d’expiration", commercial_register: "Numéro du registre de commerce", id_document: "Numéro de carte d’identité", license: "Numéro de licence / permis", expiry: "Date d’expiration du document", file: "Fichier du document (PDF ou image, facultatif)",
           gate: "Aucune entité sans son document officiel : numéro et date d’expiration obligatoires ; il devient la première pièce du dossier.", invalid: "Numéro invalide.", expiryRequired: "Date d’expiration obligatoire.", fileFailed: "Créée, mais le fichier n’a pu être envoyé ; ajoutez-le depuis Documents." },
-    ur: { commercial_register: "کمرشل رجسٹر نمبر", id_document: "قومی شناختی نمبر", license: "لائسنس / اجازت نامہ نمبر", expiry: "دستاویز کی میعاد ختم", file: "دستاویز کی فائل (PDF یا تصویر، اختیاری)",
+    ur: { fileFirst: "سرکاری دستاویز اپ لوڈ کریں (کمرشل رجسٹر، فری لانس اجازت نامہ یا شناخت) — خانے خود بھر جائیں گے", reading: "دستاویز پڑھی جا رہی ہے…", readDone: "پڑھ کر بھر دیا:", readNothing: "دستاویز پڑھی گئی مگر کچھ نہ ملا؛ خانے بھریں۔", readFailed: "دستاویز نہیں پڑھی جا سکی؛ خانے خود بھریں۔", readName: "نام", readNumber: "نمبر", readExpiry: "میعاد", commercial_register: "کمرشل رجسٹر نمبر", id_document: "قومی شناختی نمبر", license: "لائسنس / اجازت نامہ نمبر", expiry: "دستاویز کی میعاد ختم", file: "دستاویز کی فائل (PDF یا تصویر، اختیاری)",
           gate: "سرکاری دستاویز کے بغیر کوئی ادارہ نہیں: نمبر اور میعاد لازمی ہیں، اور یہ فائل کی پہلی دستاویز بنتی ہے۔", invalid: "نمبر غلط ہے۔", expiryRequired: "میعاد ختم ہونے کی تاریخ لازمی ہے۔", fileFailed: "بن گیا، مگر فائل اپ لوڈ نہ ہو سکی؛ دستاویزات سے شامل کریں۔" }
   };
 
@@ -2526,6 +2616,9 @@
     gate.innerHTML =
       '<div class="app-gate-card" role="dialog" aria-modal="true">' +
         "<h2>" + escapeHtml(t.title) + "</h2><p>" + escapeHtml(t.hint) + "</p>" +
+        "<label>" + escapeHtml(rt.fileFirst) +
+          '<input type="file" id="newOrgFile" accept=".pdf,image/*"></label>' +
+        '<div id="newOrgRead" style="font-size:.85rem;color:var(--text-secondary);margin:-.4rem 0 .8rem"></div>' +
         "<label>" + escapeHtml(t.type) +
           '<select id="newOrgType">' + ENTITY_TYPES.map(function (e) {
             return '<option value="' + e.value + '">' + escapeHtml(e[lang()] || e.ar) + "</option>";
@@ -2537,8 +2630,7 @@
           '<input type="text" id="newOrgReg" maxlength="40" dir="ltr" inputmode="numeric" autocomplete="off"></label>' +
         "<label>" + escapeHtml(rt.expiry) +
           '<input type="date" id="newOrgExpiry" dir="ltr"></label>' +
-        "<label>" + escapeHtml(rt.file) +
-          '<input type="file" id="newOrgFile" accept=".pdf,image/*"></label>' +
+
         '<button type="button" id="newOrgSave">' + escapeHtml(t.save) + "</button>" +
         '<button type="button" id="newOrgCancelBtn" style="margin-top:.6rem;background:transparent;color:var(--text-secondary)">' + escapeHtml(t.cancel) + "</button>" +
         '<div class="app-gate-msg" id="newOrgErr"></div>' +
@@ -2560,6 +2652,31 @@
         input.value = app.profile.full_name;
       }
     });
+    /* الورقة تُقرأ فور اختيارها فتملأ النوع والاسم والرقم وتاريخ الانتهاء */
+    var fileInput = document.getElementById("newOrgFile");
+    var readMsg = document.getElementById("newOrgRead");
+    if (fileInput) fileInput.addEventListener("change", function () {
+      var f = this.files && this.files[0];
+      if (!f || !readMsg) return;
+      readMsg.textContent = rt.reading;
+      readDocumentFile(f).then(function (fields) {
+        if (!fields) throw new Error("empty");
+        var filled = [];
+        if (fields.entity_hint && typeSel) {
+          typeSel.value = entityTypeValue(fields.entity_hint);
+          syncRegLabel();
+          nameLabel.childNodes[0].nodeValue = isPersonType(typeSel.value) ? t.nameSelf : t.name;
+          filled.push(entityLabel(typeSel.value));
+        }
+        if (fields.party && input && !String(input.value || "").trim()) { input.value = fields.party; filled.push(rt.readName); }
+        var regEl = document.getElementById("newOrgReg");
+        if (fields.number && regEl && !String(regEl.value || "").trim()) { regEl.value = String(fields.number).replace(/\s/g, ""); filled.push(rt.readNumber); }
+        var expEl = document.getElementById("newOrgExpiry");
+        if (fields.expiry_date && expEl && !expEl.value) { expEl.value = String(fields.expiry_date).slice(0, 10); filled.push(rt.readExpiry); }
+        readMsg.textContent = filled.length ? rt.readDone + " " + filled.join("، ") : rt.readNothing;
+      }).catch(function () { readMsg.textContent = rt.readFailed; });
+    });
+
     document.getElementById("newOrgSave").addEventListener("click", function () {
       var name = String(input.value || "").trim();
       var err = document.getElementById("newOrgErr");

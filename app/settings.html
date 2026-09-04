@@ -468,6 +468,9 @@
     .rule-check { display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; white-space: nowrap; }
     .rule-check input { accent-color: var(--primary); }
     .rule-check input:disabled + span { opacity: 0.5; }
+    .storage-switch { white-space: normal; margin: 0.5rem 0 0.25rem; }
+    .storage-bar { height: 8px; border-radius: 4px; background: var(--glass-border); overflow: hidden; margin: 0 0 1rem; }
+    .storage-bar i { display: block; height: 100%; width: 0; background: var(--primary); transition: width 0.3s; }
     .rules-table .chat-options { margin-top: 0; flex-wrap: nowrap; }
     .plan-limits { list-style: none; margin-bottom: 1.5rem; }
     .plan-limits li {
@@ -740,6 +743,17 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         <ul class="plan-limits" id="upgradeHistory"></ul>
       </div>
 
+      <!-- التخزين: حصة المنصة، وخيار Google Drive الخاص بالمستخدم -->
+      <div class="content" id="storageCard">
+        <h2 data-i18n="storageTitle">التخزين</h2>
+        <ul class="plan-limits" id="storageSummary"></ul>
+        <div class="storage-bar" aria-hidden="true"><i id="storageBarFill"></i></div>
+        <label class="rule-check storage-switch"><input type="checkbox" id="storageDriveToggle"><span data-i18n="storageDrive">حفظ ملفاتي في Google Drive الخاص بي</span></label>
+        <p class="channel-status" id="storageDriveStatus"></p>
+        <p data-i18n="storageDriveHint">مجلد TheTracker داخل درايفك، يُشارك للقراءة مع فريق الشركة، ولا يُحتسب من حصة الباقة. تخزين المنصة يبقى ملك الشركة.</p>
+        <p class="waitlist-msg" id="storageMsg" style="display:none" role="status" aria-live="polite"></p>
+      </div>
+
       <!-- إدارة الشركة الحالية -->
       <div class="content" id="orgProfileCard">
         <h2 data-i18n="orgProfileTitle">بيانات المنشأة</h2>
@@ -789,12 +803,8 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
             <input type="url" class="waitlist-input" id="opWebsite" maxlength="160" dir="ltr">
           </div>
           <div class="settings-field">
-            <label for="opCity" data-i18n="opCity">المدينة</label>
-            <input type="text" class="waitlist-input" id="opCity" maxlength="80">
-          </div>
-          <div class="settings-field">
-            <label for="opStreet" data-i18n="opStreet">العنوان الوطني</label>
-            <input type="text" class="waitlist-input" id="opStreet" maxlength="200" placeholder="الحي، الشارع، رقم المبنى، الرمز البريدي">
+            <label for="opShortAddress" data-i18n="opShortAddress">العنوان الوطني المختصر</label>
+            <input type="text" class="waitlist-input" id="opShortAddress" maxlength="8" dir="ltr" placeholder="RRRD2929" autocapitalize="characters" spellcheck="false">
           </div>
           <div class="settings-field">
             <label for="opBank" data-i18n="opBank">البنك</label>
@@ -954,6 +964,15 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         regenerateConfirm: "سيتوقف الرابط القديم عن العمل. هل تريد المتابعة؟",
         calendarRegenerated: "تم توليد رابط جديد.",
         subscriptionTitle: "الاشتراك",
+        storageTitle: "التخزين",
+        storageUsage: "المستخدم من تخزين المنصة",
+        storageDrive: "حفظ ملفاتي في Google Drive الخاص بي",
+        storageDriveHint: "مجلد TheTracker داخل درايفك، يُشارك للقراءة مع فريق الشركة، ولا يُحتسب من حصة الباقة. تخزين المنصة يبقى ملك الشركة.",
+        storageDriveOn: "مفعّل — ملفاتك الجديدة تُحفظ في Google Drive.",
+        storageDriveOff: "غير مفعّل — الملفات في تخزين المنصة.",
+        storageDriveUnavailable: "Google Drive غير متاح على المنصة حالياً.",
+        storageDriveDenied: "لم يُمنح الإذن، فبقي التخزين على المنصة.",
+        storageFull: "المساحة المجانية للأساسيات تكاد تكتمل: فعّل Google Drive مجاناً أو رقِّ الباقة.",
         currentPlanLabel: "الباقة الحالية",
         expiresLabel: "تاريخ الانتهاء",
         noExpiry: "بلا تاريخ انتهاء",
@@ -982,8 +1001,8 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         opPhone: "هاتف المنشأة",
         opEmail: "بريد المنشأة",
         opWebsite: "الموقع الإلكتروني",
-        opCity: "المدينة",
-        opStreet: "العنوان الوطني",
+        opShortAddress: "العنوان الوطني المختصر",
+        opBadShortAddress: "العنوان المختصر 4 أحرف لاتينية ثم 4 أرقام، مثل RRRD2929.",
         opBank: "البنك",
         opIban: "الآيبان",
         opAccountName: "اسم صاحب الحساب",
@@ -1119,6 +1138,15 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         regenerateConfirm: "The old link will stop working. Continue?",
         calendarRegenerated: "A new link was generated.",
         subscriptionTitle: "Subscription",
+        storageTitle: "Storage",
+        storageUsage: "Platform storage used",
+        storageDrive: "Save my files to my own Google Drive",
+        storageDriveHint: "A TheTracker folder in your Drive, shared read-only with your team, not counted against the plan quota. Platform storage stays the company's.",
+        storageDriveOn: "On — new files are saved to Google Drive.",
+        storageDriveOff: "Off — files stay in platform storage.",
+        storageDriveUnavailable: "Google Drive is not available on the platform yet.",
+        storageDriveDenied: "Permission was not granted; storage stays on the platform.",
+        storageFull: "The free space for essentials is almost full: enable Google Drive for free or upgrade the plan.",
         currentPlanLabel: "Current plan",
         expiresLabel: "Expires on",
         noExpiry: "No expiry date",
@@ -1147,8 +1175,8 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         opPhone: "Organization phone",
         opEmail: "Organization email",
         opWebsite: "Website",
-        opCity: "City",
-        opStreet: "National address",
+        opShortAddress: "Short national address",
+        opBadShortAddress: "The short address is 4 letters then 4 digits, e.g. RRRD2929.",
         opBank: "Bank",
         opIban: "IBAN",
         opAccountName: "Account holder",
@@ -1284,6 +1312,15 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         regenerateConfirm: "L'ancien lien cessera de fonctionner. Continuer ?",
         calendarRegenerated: "Un nouveau lien a été généré.",
         subscriptionTitle: "Abonnement",
+        storageTitle: "Stockage",
+        storageUsage: "Stockage plateforme utilisé",
+        storageDrive: "Enregistrer mes fichiers dans mon Google Drive",
+        storageDriveHint: "Un dossier TheTracker dans votre Drive, partagé en lecture avec votre équipe, hors quota du forfait. Le stockage plateforme reste à l'entreprise.",
+        storageDriveOn: "Activé — les nouveaux fichiers vont dans Google Drive.",
+        storageDriveOff: "Désactivé — les fichiers restent sur la plateforme.",
+        storageDriveUnavailable: "Google Drive n'est pas encore disponible sur la plateforme.",
+        storageDriveDenied: "Autorisation refusée ; le stockage reste sur la plateforme.",
+        storageFull: "L'espace gratuit pour l'essentiel est presque plein : activez Google Drive gratuitement ou changez de forfait.",
         currentPlanLabel: "Forfait actuel",
         expiresLabel: "Date d'expiration",
         noExpiry: "Sans date d'expiration",
@@ -1312,8 +1349,8 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         opPhone: "Téléphone",
         opEmail: "E-mail",
         opWebsite: "Site web",
-        opCity: "Ville",
-        opStreet: "Adresse nationale",
+        opShortAddress: "Adresse nationale courte",
+        opBadShortAddress: "L'adresse courte : 4 lettres puis 4 chiffres, ex. RRRD2929.",
         opBank: "Banque",
         opIban: "IBAN",
         opAccountName: "Titulaire du compte",
@@ -1449,6 +1486,15 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         regenerateConfirm: "پرانا لنک کام کرنا بند کر دے گا۔ کیا آپ جاری رکھنا چاہتے ہیں؟",
         calendarRegenerated: "نیا لنک بن گیا۔",
         subscriptionTitle: "سبسکرپشن",
+        storageTitle: "اسٹوریج",
+        storageUsage: "پلیٹ فارم اسٹوریج استعمال شدہ",
+        storageDrive: "میری فائلیں میرے Google Drive میں محفوظ کریں",
+        storageDriveHint: "آپ کے Drive میں TheTracker فولڈر، ٹیم کے ساتھ صرف پڑھنے کے لیے شیئر، پیکج کوٹے میں شمار نہیں۔ پلیٹ فارم اسٹوریج کمپنی کی ملکیت رہتی ہے۔",
+        storageDriveOn: "فعال — نئی فائلیں Google Drive میں محفوظ ہوتی ہیں۔",
+        storageDriveOff: "غیر فعال — فائلیں پلیٹ فارم اسٹوریج میں رہتی ہیں۔",
+        storageDriveUnavailable: "Google Drive ابھی پلیٹ فارم پر دستیاب نہیں۔",
+        storageDriveDenied: "اجازت نہیں ملی، اسٹوریج پلیٹ فارم پر رہا۔",
+        storageFull: "بنیادی دستاویزات کی مفت جگہ تقریباً بھر گئی: Google Drive مفت فعال کریں یا پیکج اپ گریڈ کریں۔",
         currentPlanLabel: "موجودہ پلان",
         expiresLabel: "ختم ہونے کی تاریخ",
         noExpiry: "ختم ہونے کی کوئی تاریخ نہیں",
@@ -1477,8 +1523,8 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         opPhone: "ادارے کا فون",
         opEmail: "ادارے کا ای میل",
         opWebsite: "ویب سائٹ",
-        opCity: "شہر",
-        opStreet: "قومی پتہ",
+        opShortAddress: "مختصر قومی پتہ",
+        opBadShortAddress: "مختصر پتہ 4 حروف پھر 4 ہندسے، مثلاً RRRD2929۔",
         opBank: "بینک",
         opIban: "آئی بین",
         opAccountName: "اکاؤنٹ ہولڈر",
@@ -2249,6 +2295,57 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         });
       }
 
+      /* ---------- التخزين: حصة المنصة وخيار درايف ---------- */
+
+      function fmtMb(mb) {
+        if (mb >= 1024) return (mb / 1024).toFixed(1) + " GB";
+        return (mb < 10 ? mb.toFixed(1) : String(Math.round(mb))) + " MB";
+      }
+
+      function renderStorage() {
+        var list = el("storageSummary");
+        if (!list) return Promise.resolve();
+        renderDriveSwitch();
+        if (!app.org || typeof app.storageUsed !== "function") { list.innerHTML = ""; return Promise.resolve(); }
+        var capMb = state.limits ? state.limits.storage_mb : null;
+        return app.storageUsed().then(function (used) {
+          var usedMb = (Number(used) || 0) / 1048576;
+          var capText = (capMb === null || capMb === undefined) ? t("unlimited") : fmtMb(Number(capMb));
+          list.innerHTML = "<li><span>" + esc(t("storageUsage")) + "</span><span dir=\"ltr\">" + esc(fmtMb(usedMb) + " / " + capText) + "</span></li>";
+          var pct = capMb ? Math.min(100, Math.round(usedMb / Number(capMb) * 100)) : 0;
+          var fill = el("storageBarFill");
+          if (fill) fill.style.width = pct + "%";
+          if (pct >= 90) setMsg("storageMsg", t("storageFull"), "error"); else show("storageMsg", false);
+        }).catch(function () { list.innerHTML = ""; });
+      }
+
+      function renderDriveSwitch() {
+        var box = el("storageDriveToggle"), status = el("storageDriveStatus");
+        if (!box || !status) return;
+        var available = !!(app.driveOAuthAvailable && app.driveOAuthAvailable());
+        var on = !!(app.profile && app.profile.storage_mode === "drive");
+        box.checked = on && available;
+        box.disabled = !available;
+        status.textContent = !available ? t("storageDriveUnavailable") : (on ? t("storageDriveOn") : t("storageDriveOff"));
+      }
+
+      /* التفويض يُطلب بنقرة المستخدم نفسها، ولا يُحفظ الخيار إلا بعد الإذن */
+      function onDriveToggle() {
+        var box = el("storageDriveToggle");
+        show("storageMsg", false);
+        if (!box.checked) {
+          return app.updateProfile({ storage_mode: "platform" }).then(renderDriveSwitch)
+            .catch(function () { box.checked = true; setMsg("storageMsg", t("genericError"), "error"); });
+        }
+        box.disabled = true;
+        return app.connectDrive().then(function () { return app.updateProfile({ storage_mode: "drive" }); })
+          .then(function () { box.disabled = false; renderDriveSwitch(); })
+          .catch(function () {
+            box.checked = false; box.disabled = false; renderDriveSwitch();
+            setMsg("storageMsg", t("storageDriveDenied"), "error");
+          });
+      }
+
       function currentPlan() {
         for (var i = 0; i < state.plans.length; i++) if (state.plans[i].code === state.planCode) return state.plans[i];
         return null;
@@ -2396,8 +2493,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
           Object.keys(OP_FIELDS).forEach(function (id) {
             var node = el(id); if (node) node.value = (p && p[OP_FIELDS[id]]) || "";
           });
-          if (el("opCity")) el("opCity").value = addr.city || "";
-          if (el("opStreet")) el("opStreet").value = addr.street || "";
+          if (el("opShortAddress")) el("opShortAddress").value = addr.short || "";
           var canEdit = ["owner", "admin"].indexOf(app.role ? app.role() : "") !== -1;
           el("orgProfileForm").querySelectorAll("input,select,button").forEach(function (n) { n.disabled = !canEdit; });
           if (!canEdit) setMsg("opMsg", t("opAdminOnly"), "");
@@ -2427,8 +2523,9 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         if (iban && !/^SA\d{22}$/.test(iban)) { setMsg("opMsg", t("opBadIban"), "error"); return; }
         var vat = String(el("opVat").value || "").replace(/\s+/g, "");
         if (vat && !/^3\d{13}3$/.test(vat)) { setMsg("opMsg", t("opBadVat"), "error"); return; }
-        var row = { entity_type: el("opEntityType").value,
-          national_address: { city: String(el("opCity").value || "").trim(), street: String(el("opStreet").value || "").trim() } };
+        var shortAddr = String(el("opShortAddress").value || "").replace(/\s+/g, "").toUpperCase();
+        if (shortAddr && !/^[A-Z]{4}\d{4}$/.test(shortAddr)) { setMsg("opMsg", t("opBadShortAddress"), "error"); return; }
+        var row = { entity_type: el("opEntityType").value, national_address: shortAddr ? { short: shortAddr } : {} };
         Object.keys(OP_FIELDS).forEach(function (id) { row[OP_FIELDS[id]] = String(el(id).value || "").trim(); });
         if (app.isPersonType && app.isPersonType(row.entity_type)) {
           COMMERCIAL_ONLY.forEach(function (id) { row[OP_FIELDS[id]] = ""; });
@@ -2464,6 +2561,8 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
           el("rulesWrap").addEventListener("click", onRuleAction);
           el("copyUrlBtn").addEventListener("click", copyCalendarUrl);
           el("upgradeBtn").addEventListener("click", submitUpgrade);
+          el("storageDriveToggle").addEventListener("change", onDriveToggle);
+          document.addEventListener("tracker:drive", renderDriveSwitch);
 
           if (app.org && el("orgNameInput")) el("orgNameInput").value = app.org.name || "";
           el("orgSaveBtn").addEventListener("click", function () {
@@ -2490,6 +2589,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
 
           /* Plan limits first: they decide which channels the rules and cards may offer. */
           return loadSubscription().then(function () {
+            renderStorage();
             return Promise.all([
               loadConfig().then(function () { return reloadLinks(); }).then(linkFromBotToken),
               loadRules(),
@@ -2510,7 +2610,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
 <!-- رمز QR لربط تيليجرام من الجوال (qrcode-generator من cdnjs — مسموح في CSP) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="/app.js?v=4" defer></script>
-<script src="/app/common.js?v=17" defer></script>
+<script src="/app/common.js?v=18" defer></script>
 <script src="/brand-logo.js?v=4" defer></script>
 </body>
 </html>
