@@ -733,6 +733,10 @@
     .status-cancelled { color: var(--text-tertiary); font-weight: 600; }
     .empty-note { text-align: center; margin: 1rem 0 0; }
     .doc-form { margin-top: 1.25rem; }
+    /* اسم الملف وزر تنزيله على سطر واحد */
+    .file-row { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin-bottom: .35rem; }
+    .file-row:last-child { margin-bottom: 0; }
+    .file-row .file-get { padding: .25rem .7rem; min-height: 32px; font-size: .8rem; }
   
     /* ===== الجوال: نقطتا كسر 900 و600 — لا عرض يتجاوز الشاشة ولا اعتماد على المرور بالفأرة ===== */
     @media (max-width: 900px) {
@@ -2642,7 +2646,12 @@
             '<td data-tr>' + esc((app.clientDisplayName ? app.clientDisplayName(it) : it.client_name) || "-") + "</td>" +
             "<td>" + (it.due_at ? esc(app.fmtDate(it.due_at)) : "-") + "</td>" +
             '<td><span class="' + cls + '">' + esc(leftText) + "</span></td>" +
-            "<td>" + files.map(function (a) { return '<a href="#" data-open="' + esc(a.id) + '">' + esc(a.name) + "</a>"; }).join("<br>") + "</td>" +
+            "<td>" + (files.length
+              ? files.map(function (a) {
+                  return '<span class="file-row"><a href="#" data-open="' + esc(a.id) + '">' + esc(a.name) + "</a>" +
+                         '<button type="button" class="chat-option-btn file-get" data-get="' + esc(a.id) + '" title="' + esc(t("pDownload")) + '">' + esc(t("pDownload")) + "</button></span>";
+                }).join("")
+              : "-") + "</td>" +
             '<td><div class="chat-options row-actions">' +
               '<button type="button" class="chat-option-btn is-danger" data-del="' + esc(it.id) + '">' + esc(t("delete")) + "</button>" +
             "</div></td>";
@@ -2809,6 +2818,19 @@
           }).catch(function () { if (win) win.close(); setStatus(t("docFailed"), "error"); });
         });
         $("docsBody").addEventListener("click", function (e) {
+          var g = e.target.closest("[data-get]");
+          if (g) {
+            e.preventDefault();
+            var gatt = attachmentById(g.dataset.get);
+            if (!gatt) return;
+            app.attachmentUrl(gatt, { download: gatt.name || true }).then(function (u) {
+              if (!u) return;
+              var link = document.createElement("a");
+              link.href = u; link.download = gatt.name || "document"; link.rel = "noopener";
+              document.body.appendChild(link); link.click(); link.remove();
+            }).catch(function () { setStatus(t("docFailed"), "error"); });
+            return;
+          }
           var o = e.target.closest("[data-open]"), d = e.target.closest("[data-del]");
           if (o) {
             e.preventDefault();
