@@ -2099,12 +2099,13 @@
             var isLate = it.due_at && new Date(it.due_at).getTime() < now;
             var meta = [it.item_number || "", it.due_at ? fmtDate(it.due_at) : t("noDue")].filter(Boolean).join(" · ");
             return '<div class="wl-card' + (isLate ? " is-late" : "") + '" data-item="' + esc(it.id) + '">' +
-                     "<b>" + esc(it.title || "-") + "</b><span>" + esc(meta) + "</span>" +
+                     '<b data-tr>' + esc(it.title || "-") + "</b><span>" + esc(meta) + "</span>" +
                      memberDots(it.id, it.assignee_id || "") +
                    "</div>";
           }).join("");
           return '<div class="wl-col" data-col="' + esc(c.id) + '">' + head + '<div class="wl-list">' + (list || '<div class="wl-empty">' + esc(t("unassignedEmpty")) + "</div>") + "</div></div>";
         }).join("");
+        if (app.translateNodes) app.translateNodes($("wlBoard"));
       }
 
       function assignTo(itemId, userId) {
@@ -2668,7 +2669,7 @@
           var del = (isMine || canManage) ? '<button type="button" class="chat-msg-del" data-del="' + esc(m.id) + '">' + esc(t("chatDelete")) + "</button>" : "";
           html += '<div class="chat-msg ' + (isMine ? "is-mine" : "is-theirs") + '">' +
                     (!isMine && state.thread === TEAM ? '<span class="chat-msg-author">' + esc(nameOf(m.author_id)) + "</span>" : "") +
-                    (m.attachments ? fileBubble(m.attachments, isMine) : '<div class="chat-bubble">' + esc(m.body || "") + "</div>") +
+                    (m.attachments ? fileBubble(m.attachments, isMine) : '<div class="chat-bubble" data-tr>' + esc(m.body || "") + "</div>") +
                     '<div class="chat-msg-meta"><span>' + esc(timeLabel(m.created_at)) + "</span>" + del + "</div>" +
                   "</div>";
         });
@@ -2676,6 +2677,7 @@
         var atBottom = (box.scrollHeight - box.scrollTop - box.clientHeight) < 40;
         lastMsgsHtml = html;
         box.innerHTML = html;
+        if (app.translateNodes) app.translateNodes(box);
         if (atBottom) box.scrollTop = box.scrollHeight;
       }
 

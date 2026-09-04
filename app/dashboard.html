@@ -3597,7 +3597,7 @@
           tr.innerHTML =
             '<td class="cell-num">' + esc(f.number || "-") + "</td>" +
             '<td class="cell-num">' + esc(shortDate(f.date)) + "</td>" +
-            "<td>" + esc(f.client || "-") + "</td>" +
+            '<td data-tr>' + esc(f.client || "-") + "</td>" +
             "<td>" + esc(f.issuer || "-") + "</td>" +
             '<td class="cell-num">' + money(item.amount) + "</td>" +
             "<td>" + esc(f.vtype || "-") + "</td>" +
@@ -3662,6 +3662,12 @@
         }
       });
 
+      function translateView() {
+        if (!app.translateNodes) return;
+        var root = document.getElementById("dashboard");
+        if (root) app.translateNodes(root);
+      }
+
       function renderList() {
         renderChart();
         renderCasesChart();
@@ -3695,7 +3701,7 @@
           var sk = statusKeyOf(item);
           var tr = document.createElement("tr");
           tr.innerHTML =
-            '<td><span class="item-title">' + esc(item.title) + "</span>" +
+            '<td><span class="item-title" data-tr>' + esc(item.title) + "</span>" +
               (item.category ? '<span class="item-cat">' + esc(item.category) + "</span>" : "") + "</td>" +
             "<td>" + esc(trackerName(item)) + "</td>" +
             '<td class="col-due">' + (item.due_at ? esc(app.fmtDate(item.due_at, { withTime: true })) : esc(T("noDue"))) + "</td>" +
@@ -3708,6 +3714,7 @@
             "</div></td>";
           body.appendChild(tr);
         });
+        translateView();
       }
 
       /* جدولا القائمة والمخالفات يتشاركان الأزرار نفسها، فالمستمع على المستند */

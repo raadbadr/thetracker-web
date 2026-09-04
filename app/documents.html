@@ -2625,9 +2625,9 @@
           var tr = document.createElement("tr");
           tr.innerHTML =
             "<td>" + esc(kindLabel(d.document_kind)) + "</td>" +
-            '<td><span class="item-title">' + esc(it.title) + "</span></td>" +
+            '<td><span class="item-title" data-tr>' + esc(it.title) + "</span></td>" +
             '<td dir="ltr">' + esc(d.number || "-") + "</td>" +
-            "<td>" + esc((app.clientDisplayName ? app.clientDisplayName(it) : it.client_name) || "-") + "</td>" +
+            '<td data-tr>' + esc((app.clientDisplayName ? app.clientDisplayName(it) : it.client_name) || "-") + "</td>" +
             "<td>" + (it.due_at ? esc(app.fmtDate(it.due_at)) : "-") + "</td>" +
             '<td><span class="' + cls + '">' + esc(leftText) + "</span></td>" +
             "<td>" + files.map(function (a) { return '<a href="#" data-open="' + esc(a.id) + '">' + esc(a.name) + "</a>"; }).join("<br>") + "</td>" +
@@ -2636,6 +2636,7 @@
             "</div></td>";
           body.appendChild(tr);
         });
+        if (app.translateNodes) app.translateNodes($("listCard"));
       }
       /* ---------- الأوراق الرسمية: ما تحتاجه كل منشأة، وما ينقصها ---------- */
       var PAPER_STATE = { missing: { key: "pMissing", cls: "status-overdue" }, expired: { key: "pExpired", cls: "status-overdue" },
