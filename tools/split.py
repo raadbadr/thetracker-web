@@ -56,7 +56,12 @@ def split_text(text, kind):
             if cands: cut = cands[-1]; break
             cands = [p for p in pts if want < p <= start + LIMIT - 1]
             if cands: cut = cands[0]; break
-        if cut is None: raise SystemExit("no safe cut point after line %d" % start)
+        if cut is None:
+            # لا أسطر فارغة (كائن ترجمات ضخم مثلا): القطع عند حد سطر كافٍ للمطابقة البايتية لأن التجميع بلا فاصل؛
+            # نفضّل سطرا ينتهي بفاصلة أو قوس إغلاق ليبقى الجزء مقروءا
+            for k in range(want, start + 200, -1):
+                if lines[k - 1].rstrip().endswith((",", "}", "};", ";")): cut = k; break
+            if cut is None: cut = want
         parts.append("".join(lines[start:cut])); start = cut
     parts.append("".join(lines[start:]))
     assert "".join(parts) == text
