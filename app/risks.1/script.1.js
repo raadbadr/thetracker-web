@@ -1,6 +1,6 @@
     const translations = {
       ar: {
-        exportXlsx: "تصدير إكسل",
+        exportXlsx: "إكسل",
         colLikelihood: "الاحتمال",
         colImpact: "الأثر",
         colResLikelihood: "الاحتمال بعد المعالجة",
@@ -11,7 +11,8 @@
         heatTitle: "خريطة المخاطر",
         regIntro: "ما الذي قد يضر عملاءك وقضاياك؟ سجل الخطر، قدر احتماله وأثره قبل المعالجة وبعدها، وحدد الإجراءات وستتابعها التنبيهات.",
         newRisk: "＋ خطر جديد",
-        exportCsv: "تصدير CSV",
+        exportCsv: "CSV",
+        exportBtn: "تصدير",
         inherent: "قبل المعالجة",
         residual: "بعد المعالجة",
         clearCell: "إلغاء التحديد",
@@ -272,7 +273,7 @@
         dark: "داكن"
       },
       en: {
-        exportXlsx: "Export Excel",
+        exportXlsx: "Excel",
         colLikelihood: "Likelihood",
         colImpact: "Impact",
         colResLikelihood: "Residual likelihood",
@@ -283,7 +284,8 @@
         heatTitle: "Risk map",
         regIntro: "Legal risks across the firm's clients and cases: likelihood × impact, treatment, and actions tied to reminders.",
         newRisk: "＋ New risk",
-        exportCsv: "Export CSV",
+        exportCsv: "CSV",
+        exportBtn: "Export",
         inherent: "Before treatment",
         residual: "After treatment",
         clearCell: "Clear selection",
@@ -544,7 +546,7 @@
         dark: "Dark"
       },
       fr: {
-        exportXlsx: "Exporter Excel",
+        exportXlsx: "Excel",
         colLikelihood: "Probabilité",
         colImpact: "Impact",
         colResLikelihood: "Probabilité résiduelle",
@@ -555,7 +557,8 @@
         heatTitle: "Carte des risques",
         regIntro: "Risques juridiques des clients et dossiers : probabilité × impact, traitement et actions liées aux rappels.",
         newRisk: "＋ Nouveau risque",
-        exportCsv: "Exporter CSV",
+        exportCsv: "CSV",
+        exportBtn: "Exporter",
         inherent: "Avant traitement",
         residual: "Après traitement",
         clearCell: "Effacer la sélection",
@@ -827,7 +830,8 @@
         heatTitle: "خطرات کا نقشہ",
         regIntro: "کلائنٹس اور مقدمات پر قانونی خطرات: امکان × اثر، علاج اور یاد دہانیوں سے جڑی کارروائیاں۔",
         newRisk: "＋ نیا خطرہ",
-        exportCsv: "CSV برآمد",
+        exportCsv: "CSV",
+        exportBtn: "برآمد",
         inherent: "علاج سے پہلے",
         residual: "علاج کے بعد",
         clearCell: "انتخاب ہٹائیں",

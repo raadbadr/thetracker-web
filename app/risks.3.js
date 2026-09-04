@@ -88,7 +88,10 @@
             "<td>" + badge(r.likelihood, r.impact) + "</td>" +
             "<td>" + badge(r.res_likelihood, r.res_impact) + "</td>" +
             "<td>" + esc(t("rstatus_" + r.status)) + " · " + esc(t("strat_" + r.strategy)) + "</td>" +
-            '<td><div class="chat-options row-actions"><button type="button" class="chat-option-btn" data-edit="' + esc(r.id) + '">' + esc(t("edit")) + "</button></div></td>";
+            '<td><div class="chat-options row-actions">' +
+              '<button type="button" class="icon-btn" data-edit="' + esc(r.id) + '" title="' + esc(t("edit")) + '" aria-label="' + esc(t("edit")) + '">' +
+                '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>' +
+                "<span>" + esc(t("edit")) + "</span></button></div></td>";
           body.appendChild(tr);
         });
         /* النص الحر يُعرض بلغة القارئ متى توفرت الترجمة المشتركة */
@@ -209,8 +212,18 @@
 
       function wire() {
         $("newBtn").addEventListener("click", function () { openEditor(null); });
-        $("csvBtn").addEventListener("click", exportCsv);
-        $("xlsxBtn").addEventListener("click", exportXlsx);
+        /* زر واحد للتصدير، والنوع يُختار بعده */
+        var exportBtn = $("exportBtn"), exportMenu = $("exportMenu");
+        function closeExport() { exportMenu.hidden = true; exportBtn.setAttribute("aria-expanded", "false"); }
+        exportBtn.addEventListener("click", function (ev) {
+          ev.stopPropagation();
+          exportMenu.hidden = !exportMenu.hidden;
+          exportBtn.setAttribute("aria-expanded", exportMenu.hidden ? "false" : "true");
+        });
+        document.addEventListener("click", closeExport);
+        exportMenu.addEventListener("click", function (ev) { ev.stopPropagation(); });
+        $("csvBtn").addEventListener("click", function () { closeExport(); exportCsv(); });
+        $("xlsxBtn").addEventListener("click", function () { closeExport(); exportXlsx(); });
         $("search").addEventListener("input", function () { state.search = this.value.trim(); renderList(); });
         $("statusFilter").addEventListener("change", function () { state.status = this.value; renderList(); });
         document.addEventListener("click", function (e) {

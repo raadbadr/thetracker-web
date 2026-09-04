@@ -55,7 +55,10 @@
             "<td>" + esc(name(p.owner_id)) + "</td>" +
             "<td>" + esc(String((p.steps || []).length)) + "</td>" +
             '<td><span class="status-pill ' + esc(p.status) + '">' + esc(t("status_" + p.status)) + "</span></td>" +
-            '<td><div class="chat-options row-actions"><button type="button" class="chat-option-btn" data-edit="' + esc(p.id) + '">' + esc(t("edit")) + "</button></div></td>";
+            '<td><div class="chat-options row-actions">' +
+              '<button type="button" class="icon-btn" data-edit="' + esc(p.id) + '" title="' + esc(t("edit")) + '" aria-label="' + esc(t("edit")) + '">' +
+                '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>' +
+                "<span>" + esc(t("edit")) + "</span></button></div></td>";
           body.appendChild(tr);
         });
         /* النص الحر يُعرض بلغة القارئ متى توفرت الترجمة المشتركة */
@@ -88,7 +91,8 @@
             '<div class="step-tools">' +
               '<button type="button" class="st-tool" data-up="' + i + '" title="' + esc(t("moveUp")) + '">↑</button>' +
               '<button type="button" class="st-tool" data-down="' + i + '" title="' + esc(t("moveDown")) + '">↓</button>' +
-              '<button type="button" class="st-tool" data-del="' + i + '" title="' + esc(t("delete")) + '">✕</button></div>' +
+              '<button type="button" class="st-tool is-danger" data-del="' + i + '" title="' + esc(t("delete")) + '" aria-label="' + esc(t("delete")) + '">' +
+                '<svg viewBox="0 0 24 24" aria-hidden="true" style="width:15px;height:15px;fill:currentColor"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button></div>' +
             '<div class="sgrid">' +
               '<label><span class="mini-label">' + esc(t("stepType")) + '</span><select class="waitlist-input" data-f="type" data-i="' + i + '">' +
                 '<option value="task"' + (st.type !== "decision" ? " selected" : "") + ">" + esc(t("typeTask")) + "</option>" +
@@ -191,7 +195,9 @@
           var st = state.draft.steps;
           if (up) { var i = Number(up.dataset.up); if (i > 0) { var x = st[i]; st[i] = st[i - 1]; st[i - 1] = x; renderSteps(); } }
           else if (dn) { var j = Number(dn.dataset.down); if (j < st.length - 1) { var y = st[j]; st[j] = st[j + 1]; st[j + 1] = y; renderSteps(); } }
-          else if (del) { if (st.length > 1) { st.splice(Number(del.dataset.del), 1); renderSteps(); } }
+          else if (del) {
+            if (st.length > 1 && window.confirm(t("confirmDeleteStep"))) { st.splice(Number(del.dataset.del), 1); renderSteps(); }
+          }
         });
         $("form").addEventListener("submit", function (e) {
           e.preventDefault();
