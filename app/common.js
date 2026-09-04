@@ -1454,6 +1454,7 @@
     "border-radius:12px;background:transparent;color:var(--text-secondary);cursor:pointer;transition:all .25s ease}",
     ".app-iconbtn:hover{background:var(--glass-border);color:var(--text-primary)}",
     ".app-iconbtn svg{width:19px;height:19px;fill:currentColor}",
+    "html[dir=\"rtl\"] #topSignOut svg{transform:scaleX(-1)}",
     ".app-bell-badge{position:absolute;inset-block-start:-6px;inset-inline-end:-6px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;",
     "background:#e5484d;color:#fff;font-size:.68rem;font-weight:700;display:flex;align-items:center;justify-content:center}",
     ".app-bell-panel{position:absolute;inset-block-start:46px;inset-inline-end:0;width:300px;max-height:60vh;overflow-y:auto;padding:.5rem;",
