@@ -963,6 +963,8 @@
   <script>
     const translations = {
       ar: {
+        orgCreatedFromDoc: "أُنشئت «{name}» من السجل.",
+        orgProfileFilled: "حُدّثت بيانات المنشأة من المستند.",
         exportXlsx: "تصدير إكسل",
         templateBtn: "تنزيل القالب",
         importTitle: "استيراد من Excel",
@@ -1258,6 +1260,8 @@
         dark: "داكن"
       },
       en: {
+        orgCreatedFromDoc: "“{name}” created from the register.",
+        orgProfileFilled: "Organization details filled from the document.",
         exportXlsx: "Export Excel",
         templateBtn: "Download template",
         importTitle: "Import from Excel",
@@ -1553,6 +1557,8 @@
         dark: "Dark"
       },
       fr: {
+        orgCreatedFromDoc: "« {name} » créée depuis le registre.",
+        orgProfileFilled: "Informations de l'entité remplies depuis le document.",
         exportXlsx: "Exporter Excel",
         templateBtn: "Télécharger le modèle",
         importTitle: "Importer depuis Excel",
@@ -1848,6 +1854,8 @@
         dark: "Sombre"
       },
       ur: {
+        orgCreatedFromDoc: "«{name}» رجسٹر سے بنائی گئی۔",
+        orgProfileFilled: "ادارے کی تفصیلات دستاویز سے بھر دی گئیں۔",
         exportXlsx: "ایکسل ایکسپورٹ",
         templateBtn: "ٹیمپلیٹ ڈاؤن لوڈ",
         importTitle: "Excel سے درآمد",
@@ -2393,11 +2401,57 @@
           fillForm(fields);
           setStatus(t("docReady"), "success");
           show("docForm", true);
+          return applyToOrg(fields);
         }).catch(function (err) {
           var why = errorText(err && err.message);
           setStatus(t("docFailed") + (why ? " — " + why : ""), "error");
         });
       }
+
+      /* ---------- الورقة الرسمية تبني المنشأة بنفسها ---------- */
+      /* السجل التجاري يعني شركة، ووثيقة العمل الحر تعني عملا حرا: لا سؤال ولا خطوة. */
+      var ORG_FROM_DOC = {
+        commercial_register: { entity: "company", field: "cr_number" },
+        articles_of_association: { entity: "company", field: null },
+        vat_certificate: { entity: null, field: "vat_number" },
+        license: { entity: "freelance", field: "license_number" }
+      };
+
+      function applyToOrg(f) {
+        var map = f && ORG_FROM_DOC[f.kind];
+        if (!map) return null;
+        var name = String((f.party || "") || "").trim();
+        var number = String(f.number || "").trim();
+
+        /* لا شركة بعد؟ الورقة نفسها تنشئها. */
+        if (!app.org) {
+          if (!name || !map.entity) return null;
+          return app.createOrg(name, map.entity, map.entity === "company" ? number : "", f.expiry_date || null)
+            .then(function (org) {
+              toast(fmtOne("orgCreatedFromDoc", org.name), "success");
+              return saveProfileFields(f, map, name, number);
+            })
+            .catch(function () { return null; });
+        }
+        return saveProfileFields(f, map, name, number);
+      }
+
+      /* تُملأ الحقول الفارغة فقط: ما أدخله المستخدم لا يُمس */
+      function saveProfileFields(f, map, name, number) {
+        return app.orgProfile().then(function (current) {
+          var have = current || {};
+          var patch = {};
+          if (map.field && number && !have[map.field]) patch[map.field] = number;
+          if (name && !have.legal_name) patch.legal_name = name;
+          if (!Object.keys(patch).length) return null;
+          return app.saveOrgProfile(patch).then(function () {
+            toast(t("orgProfileFilled"), "success");
+            return loadPapers();
+          });
+        }).catch(function () { return null; });
+      }
+
+      function fmtOne(key, value) { return String(t(key)).replace("{name}", value == null ? "" : value); }
 
       function fillForm(f) {
         var wanted = state.wantedKind; state.wantedKind = null;
