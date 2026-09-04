@@ -2530,7 +2530,10 @@
             "</div></div>" +
           "</div>" +
           '<div class="tlx-ends"><span>' + esc(tlxFmtDate(minMs)) + "</span>" +
-            '<span class="tlx-strip-nav">'<button type="button" class="tlx-nav-btn" id="tlxPrev" aria-label="' + esc(T("tlPrev")) + '"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M14.5 5.5 8 12l6.5 6.5"/></svg></button><button type="button" class="tlx-nav-btn" id="tlxNext" aria-label="' + esc(T("tlNext")) + '"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M9.5 5.5 16 12l-6.5 6.5"/></svg></button>'</span>' +
+            '<span class="tlx-strip-nav">' +
+              '<button type="button" class="tlx-nav-btn" id="tlxPrev" aria-label="' + esc(T("tlPrev")) + '"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M14.5 5.5 8 12l6.5 6.5"/></svg></button>' +
+              '<button type="button" class="tlx-nav-btn" id="tlxNext" aria-label="' + esc(T("tlNext")) + '"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M9.5 5.5 16 12l-6.5 6.5"/></svg></button>' +
+            '</span>' +
             "<span>" + esc(tlxFmtDate(maxMs)) + "</span></div>" +
         "</div>";
         if (!events.length) html += '<p class="empty-note">' + esc(T("timelineEmpty")) + "</p>";
