@@ -2276,9 +2276,11 @@
 
       function shortMoney(n) {
         var v = Number(n) || 0;
-        if (v >= 1000000) return (v / 1000000).toFixed(v >= 10000000 ? 0 : 1).replace(/\.0$/, "") + "M";
-        if (v >= 1000) return Math.round(v / 1000) + "K";
-        return String(Math.round(v));
+        var t;
+        if (v >= 1000000) t = (v / 1000000).toFixed(v >= 10000000 ? 0 : 1).replace(/\.0$/, "") + "M";
+        else if (v >= 1000) t = Math.round(v / 1000) + "K";
+        else t = String(Math.round(v));
+        return t + ' <span class="sar-symbol" aria-label="ريال سعودي"></span>';
       }
 
       function courtBreakdown(items) {
@@ -2380,8 +2382,8 @@
             '<div class="ind-card"><h3>' + esc(T("clientsTitle").replace("{n}", String(donut.total))) + "</h3>" + donut.html + "</div>" +
           "</div>" +
           '<div class="ind-totals">' +
-            '<div class="ind-total"><b>' + esc(shortMoney(totalAmount)) + "</b><span>" + esc(T("caseAmount")) + "</span></div>" +
-            '<div class="ind-total"><b>' + esc(shortMoney(doneAmount)) + "</b><span>" + esc(T("caseDoneAmount")) + "</span></div>" +
+            '<div class="ind-total"><b>' + shortMoney(totalAmount) + "</b><span>" + esc(T("caseAmount")) + "</span></div>" +
+            '<div class="ind-total"><b>' + shortMoney(doneAmount) + "</b><span>" + esc(T("caseDoneAmount")) + "</span></div>" +
           "</div>";
       }
 
@@ -2418,8 +2420,8 @@
             '<div class="ind-card"><h3>' + esc(T("courtsTitle").replace("{n}", String(courtTotal))) + "</h3>" + donut + "</div>" +
           "</div>" +
           '<div class="ind-totals">' +
-            '<div class="ind-total"><b>' + esc(shortMoney(totalAmount)) + "</b><span>" + esc(T("totalAmount")) + "</span></div>" +
-            '<div class="ind-total"><b>' + esc(shortMoney(cancelledAmount)) + "</b><span>" + esc(T("cancelledAmount")) + "</span></div>" +
+            '<div class="ind-total"><b>' + shortMoney(totalAmount) + "</b><span>" + esc(T("totalAmount")) + "</span></div>" +
+            '<div class="ind-total"><b>' + shortMoney(cancelledAmount) + "</b><span>" + esc(T("cancelledAmount")) + "</span></div>" +
           "</div>";
       }
 
