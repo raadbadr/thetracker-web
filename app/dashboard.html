@@ -509,7 +509,7 @@
     .case-bundle th, .case-bundle td { padding: 0.6rem 0.75rem; text-align: start; font-size: 0.85rem; border-bottom: 1px solid var(--glass-border); }
 
     /* الخط الزمني للإنجازات — نسخة شريط باركينزي (Liquid Glass) */
-    .tlx { --timeline-fill-pct: 100%; position: relative; isolation: isolate; margin-top: 0.75rem; padding: 3.4rem 1.2rem 1.2rem; border-radius: 16px;
+    .tlx { --timeline-fill-pct: 100%; position: relative; isolation: isolate; margin-top: 0.75rem; padding: 1.2rem 1.2rem 1rem; border-radius: 16px;
       backdrop-filter: blur(22px) saturate(1.65); -webkit-backdrop-filter: blur(22px) saturate(1.65);
       background: linear-gradient(165deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.07) 42%, rgba(255,255,255,0.04) 100%);
       border: 1px solid rgba(255,255,255,0.28);
@@ -517,8 +517,8 @@
     [data-theme="light"] .tlx { background: linear-gradient(165deg, rgba(255,255,255,0.78) 0%, rgba(255,255,255,0.48) 45%, rgba(255,255,255,0.38) 100%);
       border: 1px solid rgba(255,255,255,0.72); box-shadow: 0 12px 40px rgba(0,80,140,0.1), inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(0,60,100,0.06); }
     .tlx-nav-row { display: flex; align-items: center; gap: 0.6rem; }
-    .tlx-title { margin: -2.4rem 0 1.4rem; font-weight: 700; color: var(--text-primary); font-size: 1rem; }
-    .tlx-scroll { flex: 1 1 auto; min-width: 0; overflow-x: auto; overflow-y: visible; padding: 2.6rem 0 1.6rem; scrollbar-width: thin; }
+    .tlx-title { margin: 0 0 0.5rem; font-weight: 700; color: var(--text-primary); font-size: 1rem; }
+    .tlx-scroll { flex: 1 1 auto; min-width: 0; overflow-x: auto; overflow-y: visible; padding: 2.4rem 0 1.4rem; scrollbar-width: thin; }
     .tlx-scroll .tlx-range-wrap { min-width: max(100%, calc(var(--tlx-days, 30) * 56px)); }
     .tlx-day-tick { position: absolute; top: calc(50% - 5px); width: 1px; height: 10px; background: rgba(255,255,255,0.18); transform: translateX(-50%); pointer-events: none; z-index: 1; }
     [data-theme="light"] .tlx-day-tick { background: rgba(0,60,100,0.15); }
