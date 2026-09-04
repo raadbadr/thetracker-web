@@ -1479,6 +1479,7 @@
     ".app-menu-panel a{display:block;padding:.6rem .75rem;border-radius:10px;color:var(--text-secondary);font-size:.9rem;font-weight:600;text-decoration:none}",
     ".app-menu-panel a:hover{background:var(--glass-border);color:var(--text-primary)}",
     "body.has-app-topbar{padding-top:112px}",
+    "body.has-app-topbar .container>.header{display:none}",   /* العناوين الكبيرة (لوحة التحكم/القضايا…) لا داعي لها: الموقع واضح من الشريطين */
     "body.has-app-topbar .container{padding-top:2rem}",
     "body.has-app-topbar .app-sidebar{inset-block-start:112px}",
     "@media(max-width:900px){.app-topbar{position:static;height:auto;flex-wrap:wrap;padding:.5rem .75rem;gap:.5rem}",
