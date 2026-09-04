@@ -62,24 +62,24 @@ function riyadhIso(year, month, day, hour, minute) {
   return `${year}-${pad(month)}-${pad(day)}T${pad(hour)}:${pad(minute)}:00+03:00`;
 }
 function extractTimeOfDay(text, defaultHour, defaultMinute) {
-  let match = text.match(/الساعة\s*(\d{1,2})(?::(\d{2}))?\s*(ص|صباحا|صباحاً|م|مساء|مساءً|am|pm)?/i);
+  let match = text.match(/الساعة\s*(\d{1,2})(?::(\d{2}))?\s*(ص|صباحا|صباحا|م|مساء|مساء|am|pm)?/i);
   if (match) return timeOfDayFromMatch(match[1], match[2], match[3]);
   match = text.match(/\b(\d{1,2}):(\d{2})\b/);
   if (match) return timeOfDayFromMatch(match[1], match[2], null);
-  match = text.match(/\b(\d{1,2})\s*(ص|صباحا|صباحاً|م|مساء|مساءً|am|pm)\b/i);
+  match = text.match(/\b(\d{1,2})\s*(ص|صباحا|صباحا|م|مساء|مساء|am|pm)\b/i);
   if (match) return timeOfDayFromMatch(match[1], null, match[2]);
   return { hour: defaultHour, minute: defaultMinute };
 }
 function timeOfDayFromMatch(hourText, minuteText, meridiemMark) {
   let hour = Number(hourText) || 0; const minute = Number(minuteText) || 0; meridiemMark = (meridiemMark || "").toLowerCase();
-  if (/^(م|مساء|مساءً|pm)$/.test(meridiemMark) && hour < 12) hour += 12;
-  if (/^(ص|صباحا|صباحاً|am)$/.test(meridiemMark) && hour === 12) hour = 0;
+  if (/^(م|مساء|مساء|pm)$/.test(meridiemMark) && hour < 12) hour += 12;
+  if (/^(ص|صباحا|صباحا|am)$/.test(meridiemMark) && hour === 12) hour = 0;
   return { hour, minute };
 }
 function extractDueDate(text) {
   const now = riyadhNowParts();
   if (/بعد\s*غد/.test(text)) return addDaysInRiyadh(now, 2);
-  if (/غدا|غداً|بكرة|بكره/.test(text)) return addDaysInRiyadh(now, 1);
+  if (/غدا|غدا|بكرة|بكره/.test(text)) return addDaysInRiyadh(now, 1);
   const daysAfterMatch = text.match(/بعد\s*(\d{1,3})\s*(?:يوم|أيام|ايام)/);
   if (daysAfterMatch) return addDaysInRiyadh(now, Number(daysAfterMatch[1]));
   const isoDateMatch = text.match(/\b(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})\b/);
@@ -133,7 +133,7 @@ function firstJson(text) {
 
 /* يستخرج نية واحدة من الرسالة (ومحتوى المرفق إن وجد) */
 export async function extractIntent(env, text, ctx) {
-  /* نمط واضح بلا مرفق يحتاج قراءة: تاريخ محلول ونوع معروف — لا حاجة للنموذج إطلاقاً */
+  /* نمط واضح بلا مرفق يحتاج قراءة: تاريخ محلول ونوع معروف — لا حاجة للنموذج إطلاقا */
   if (!ctx || !ctx.attachment) {
     const quick = heuristicIntent(text);
     if (quick && (quick.action === "done" || quick.action === "search" || (quick.action === "add" && quick.confident))) return quick;
@@ -178,7 +178,7 @@ export function fmtWhen(iso, lang, userTimeZone, userHour12) {
     return `${weekday} ${by.day}-${by.month}-${by.year} ${timePart}`;
   } catch { return String(iso); }
 }
-/* المبلغ القياسي: خانتان عشريتان ثابتتان دائماً + فاصلة آلاف — نفس معيار
+/* المبلغ القياسي: خانتان عشريتان ثابتتان دائما + فاصلة آلاف — نفس معيار
    باركينزي (formatAmountWestern) ونفس app.fmtAmount في الموقع. */
 function money(n) {
   const v = Number(n);

@@ -1317,7 +1317,7 @@
             setStatus($("orgsStatus"), "");
             const snapshot = orgs;
             return loadOwners(snapshot).then(() => {
-              /* الملاك أولا: البطاقات تُرسم مرة واحدة بأسمائهم لا بشرطة ثم اسم */
+              /* الملاك أولا: البطاقات ترسم مرة واحدة بأسمائهم لا بشرطة ثم اسم */
               if (orgs === snapshot) { renderOrgs(); renderActivateOptions(); }
               return loadCounts(snapshot);
             }).catch(() => { renderOrgs(); renderActivateOptions(); });

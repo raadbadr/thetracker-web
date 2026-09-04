@@ -38,7 +38,7 @@ const NO_CACHE = { cacheTtl: 0, cacheEverything: false };
 
 // --- Route handlers ---
 
-/** إعدادات العميل العامة — مفتاح anon عام بطبيعته (RLS هي الحماية)، لكنه لا يُكتب في الملفات. */
+/** إعدادات العميل العامة — مفتاح anon عام بطبيعته (RLS هي الحماية)، لكنه لا يكتب في الملفات. */
 /* قالب الاستيراد: تنزيل حقيقي عبر رابط عادي (Content-Disposition)، لا Blob ولا
    نقرة مبرمجة — تلك هشة في Safari. رؤوس الأعمدة بلغة الصفحة، عبر ?lang=. */
 const IMPORT_TEMPLATE_HEADERS = {
@@ -70,12 +70,12 @@ function handleConfig(env) {
   return json({
     supabaseUrl: env.SUPABASE_URL,
     supabaseAnonKey: env.SUPABASE_ANON_KEY,
-    // معرّف عميل جوجل معلومة عامة (يظهر في المتصفح) ويلزم زر الدخول بجوجل
+    // معرف عميل جوجل معلومة عامة (يظهر في المتصفح) ويلزم زر الدخول بجوجل
     googleClientId: env.GOOGLE_CLIENT_ID || null,
-    // مفتاح Google Picker (عام ومقيّد بالنطاق) لربط ملفات جوجل درايف بالعناصر
+    // مفتاح Google Picker (عام ومقيد بالنطاق) لربط ملفات جوجل درايف بالعناصر
     googleApiKey: env.GOOGLE_API_KEY || null,
     // التحويل المباشر إلى جوجل يظهر اسم نطاقنا، لكنه يحتاج تسجيل عنوان العودة
-    // /login في مشروع جوجل. حتى يُسجَّل، يبقى مسار سوبابيس القياسي هو العامل.
+    // /login في مشروع جوجل. حتى يسجل، يبقى مسار سوبابيس القياسي هو العامل.
     googleDirect: String(env.GOOGLE_DIRECT_LOGIN || "") === "on",
     // معلومات عامة لربط القنوات (لا أسرار)
     telegramBot: env.TELEGRAM_BOT_USERNAME || null,
@@ -84,7 +84,7 @@ function handleConfig(env) {
   });
 }
 
-/** أرقام المنصة — دالة SQL مجمّعة (SECURITY DEFINER) تعيد أعداداً فقط، بلا بيانات شركات. */
+/** أرقام المنصة — دالة SQL مجمعة (SECURITY DEFINER) تعيد أعدادا فقط، بلا بيانات شركات. */
 async function handleStats(env) {
   if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) return json({});
   const res = await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/platform_stats`, {
@@ -113,7 +113,7 @@ async function handleContact(request, env) {
   return json({ ok: res.ok }, res.status);
 }
 
-// --- تحقق جلسة المستخدم (JWT سوبابيس) لمسارات تخص حساباً بعينه ---
+// --- تحقق جلسة المستخدم (JWT سوبابيس) لمسارات تخص حسابا بعينه ---
 async function authedUser(request, env) {
   const auth = request.headers.get("authorization") || "";
   if (!auth.startsWith("Bearer ") || !env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) return null;
@@ -253,7 +253,7 @@ async function handleNotifyTest(request, env) {
   }
 }
 
-/** لغة الرد على من لم يُربط بعد: لغة تطبيق تلغرام عنده إن كانت من لغاتنا */
+/** لغة الرد على من لم يربط بعد: لغة تطبيق تلغرام عنده إن كانت من لغاتنا */
 function telegramLang(code) {
   const c = String(code || "").slice(0, 2).toLowerCase();
   return ["ar", "en", "fr", "ur"].includes(c) ? c : "ar";
@@ -268,14 +268,14 @@ function targetDisplayName(target, lang, fallbackName) {
   return fullName || fullNameEn || fallbackName || "";
 }
 
-// --- رمز ربط موقّع (HMAC بسر الـ Worker): زر داخل البوت يفتح الإعدادات فتربط الجلسة المحادثة بلا أي كتابة ---
+// --- رمز ربط موقع (HMAC بسر الـ Worker): زر داخل البوت يفتح الإعدادات فتربط الجلسة المحادثة بلا أي كتابة ---
 async function hmacHex(secret, data) {
   const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(data));
   return [...new Uint8Array(sig)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 async function makeLinkToken(env, chatId) {
-  const exp = Math.floor(Date.now() / 1000) + 60 * 60 * 24; // صالح يوماً
+  const exp = Math.floor(Date.now() / 1000) + 60 * 60 * 24; // صالح يوما
   const body = `${chatId}.${exp}`;
   return `${body}.${await hmacHex(env.WORKER_SECRET, body)}`;
 }
@@ -297,7 +297,7 @@ async function greetLinked(env, chatId, userId, fallbackLang, fallbackName) {
   return lang;
 }
 
-/** رسالة "اربط حسابك" لمن لم يُربط: زر يفتح الموقع (ربط تلقائي) */
+/** رسالة "اربط حسابك" لمن لم يربط: زر يفتح الموقع (ربط تلقائي) */
 async function askToLink(env, chatId, lang) {
   const b = botText(lang);
   let extra = {};
@@ -306,7 +306,7 @@ async function askToLink(env, chatId, lang) {
     extra = urlButton(b.linkBtn, `https://appmails.net/app/settings?tglink=${encodeURIComponent(token)}`);
   }
   try { await sendTelegram(env, chatId, b.linkIntro, extra); } catch {}
-  // الطريق الثاني: مشاركة رقم الجوال المسجَّل في الملف الشخصي (زر واحد)
+  // الطريق الثاني: مشاركة رقم الجوال المسجل في الملف الشخصي (زر واحد)
   try { await sendTelegram(env, chatId, b.phoneHint, contactKeyboard(lang)); } catch {}
 }
 
@@ -357,12 +357,12 @@ async function telegramAssistantReply(env, chatId, userId, text, attachment) {
   const system = `أنت مساعد TheTracker داخل تلغرام، تخدم المستخدم ${facts.user.name || ""}${facts.user.company ? ` من شركة «${facts.user.company}»` : ""}.
 التراكر منصة لتتبع القضايا والمخالفات والعقود والمواعيد من ملفات إكسل، مع تقويم وتنبيهات.
 قواعدك:
-- أجب بـ${TG_LANG_NAMES[lang] || "العربية الفصحى"} دائماً، باختصار وودّ ومباشرة، والأرقام غربية (1234567890) والتواريخ بتوقيت الرياض.
-- اعتمد على الحقائق أدناه وحدها (مواعيده القادمة والمتأخرة وعدّها)؛ إن سُئلت عن شيء ليس فيها قل إنك لا تراه هنا ووجّهه إلى لوحة التحكم.
-- التسجيل والإنجاز والإسناد تتم عبر أزرار تأكيد يعرضها النظام تلقائياً حين يكتب المستخدم طلبه صراحةً (مثل: «سجّل جلسة القضية 4521 الأحد 10 صباحاً»). لا تقل أبداً إنك تنتظر تفعيل أدوات أو أنك ستسجّل الطلب للمتابعة — إن بدا أنه يريد تسجيل شيء فاطلب منه كتابته بهذه الصيغة في سطر واحد، أو أجب من الحقائق.
-- لا تعِد بتعديل أو حذف شيء بنفسك؛ لأي تعديل يدوي وجّهه إلى لوحة التحكم: ${facts.dashboard_url}
-- لا تختلق أرقاماً أو قضايا أو تواريخ. لا تخرج عن مواضيع التراكر.
-- إن وُجد "attachment" في الحقائق فهو محتوى ملف/صورة أرسله المستخدم الآن: افهم المطلوب من رسالته، وإلا فلخّصه واستخرج منه المواعيد والأرقام والأطراف المهمة، واذكر ما يمكنه فعله به في التراكر (الاستيراد من ${facts.import_url} إن كان جدولاً). لا تقل إنك لا تستطيع قراءة الملفات — المحتوى أمامك.
+- أجب بـ${TG_LANG_NAMES[lang] || "العربية الفصحى"} دائما، باختصار وود ومباشرة، والأرقام غربية (1234567890) والتواريخ بتوقيت الرياض.
+- اعتمد على الحقائق أدناه وحدها (مواعيده القادمة والمتأخرة وعدها)؛ إن سئلت عن شيء ليس فيها قل إنك لا تراه هنا ووجهه إلى لوحة التحكم.
+- التسجيل والإنجاز والإسناد تتم عبر أزرار تأكيد يعرضها النظام تلقائيا حين يكتب المستخدم طلبه صراحة (مثل: «سجل جلسة القضية 4521 الأحد 10 صباحا»). لا تقل أبدا إنك تنتظر تفعيل أدوات أو أنك ستسجل الطلب للمتابعة — إن بدا أنه يريد تسجيل شيء فاطلب منه كتابته بهذه الصيغة في سطر واحد، أو أجب من الحقائق.
+- لا تعد بتعديل أو حذف شيء بنفسك؛ لأي تعديل يدوي وجهه إلى لوحة التحكم: ${facts.dashboard_url}
+- لا تختلق أرقاما أو قضايا أو تواريخ. لا تخرج عن مواضيع التراكر.
+- إن وجد "attachment" في الحقائق فهو محتوى ملف/صورة أرسله المستخدم الآن: افهم المطلوب من رسالته، وإلا فلخصه واستخرج منه المواعيد والأرقام والأطراف المهمة، واذكر ما يمكنه فعله به في التراكر (الاستيراد من ${facts.import_url} إن كان جدولا). لا تقل إنك لا تستطيع قراءة الملفات — المحتوى أمامك.
 الحقائق (JSON): ${JSON.stringify(facts).slice(0, 20000)}`;
   return askAssistant(env, system, [{ role: "user", content: text }]);
 }
@@ -375,7 +375,7 @@ async function transcribeTelegramVoice(env, media) {
   return String((out && out.text) || "").trim() || null;
 }
 
-/** مستند أو صورة ← نص: تحويل Markdown (PDF/إكسل/CSV/صور…)؛ وللصور محاولة قراءة بصرية أولاً */
+/** مستند أو صورة ← نص: تحويل Markdown (PDF/إكسل/CSV/صور…)؛ وللصور محاولة قراءة بصرية أولا */
 async function readTelegramDocument(env, media, name, mime) {
   if (!env.AI) return null;
   const { bytes } = await fetchTelegramFile(env, media.file_id);
@@ -397,7 +397,7 @@ async function readTelegramDocument(env, media, name, mime) {
   return String(data || "").trim() || null;
 }
 
-/** الرسالة (نص/صوت/ملف) ← نيّة ← بحث فوري، أو عرض فعل بزرّي تأكيد، أو جواب المساعد */
+/** الرسالة (نص/صوت/ملف) ← نية ← بحث فوري، أو عرض فعل بزري تأكيد، أو جواب المساعد */
 async function smartReply(env, chatId, userId, text, lang, tgName, attachment, prefix, userTimeZone) {
   const b = botText(lang);
   let intent = { action: "question" };
@@ -426,7 +426,7 @@ async function smartReply(env, chatId, userId, text, lang, tgName, attachment, p
   try { await sendTelegram(env, chatId, pre + reply, menuKeyboard(lang)); } catch {}
 }
 
-/** POST /api/telegram/webhook — كل رسالة تُسجَّل ويُرَدّ عليها: ربط (/start الرمز)، قائمة أزرار، أو دعوة للربط */
+/** POST /api/telegram/webhook — كل رسالة تسجل ويرد عليها: ربط (/start الرمز)، قائمة أزرار، أو دعوة للربط */
 async function handleTelegramWebhook(request, env) {
   if (env.TELEGRAM_WEBHOOK_SECRET) {
     const got = request.headers.get("x-telegram-bot-api-secret-token") || "";
@@ -454,7 +454,7 @@ async function handleTelegramWebhook(request, env) {
     } catch { return null; }
   };
 
-  // 1) الربط بالرمز — يصل تلقائياً من رمز QR/الرابط العميق (/start الرمز) أو مكتوباً
+  // 1) الربط بالرمز — يصل تلقائيا من رمز QR/الرابط العميق (/start الرمز) أو مكتوبا
   const m = text.match(/^\/start\s+([A-Za-z0-9]{4,12})$/) || text.match(/^([A-Za-z0-9]{6,12})$/);
   if (m) {
     userId = await linkChannelByCode(env, "telegram", m[1], chatId);
@@ -465,7 +465,7 @@ async function handleTelegramWebhook(request, env) {
     return json({ ok: true });
   }
 
-  // 2) مشاركة جهة الاتصال (رقم صاحب المحادثة نفسه): الربط بالرقم المسجَّل في الملف الشخصي
+  // 2) مشاركة جهة الاتصال (رقم صاحب المحادثة نفسه): الربط بالرقم المسجل في الملف الشخصي
   const contact = msg && msg.contact;
   if (contact && contact.phone_number && (!contact.user_id || String(contact.user_id) === String(from.id))) {
     userId = null;
@@ -477,13 +477,13 @@ async function handleTelegramWebhook(request, env) {
     return json({ ok: true });
   }
 
-  // 3) رسالة عادية أو زر أو وسائط: سجّلها واعرف صاحب المحادثة (إن كانت مربوطة)
+  // 3) رسالة عادية أو زر أو وسائط: سجلها واعرف صاحب المحادثة (إن كانت مربوطة)
   const voice = msg.voice || msg.audio || msg.video_note || null;
   const photo = Array.isArray(msg.photo) && msg.photo.length ? msg.photo[msg.photo.length - 1] : null;
   const doc = msg.document || null;
   const caption = String((msg && msg.caption) || "").trim();
   const mediaLabel = voice ? "[voice]" : doc ? `[file: ${doc.file_name || doc.mime_type || "document"}]` : photo ? "[photo]" : "";
-  if (mediaLabel && !text) { /* يُسجَّل نوع الوسيط مع تعليقه */ }
+  if (mediaLabel && !text) { /* يسجل نوع الوسيط مع تعليقه */ }
   const logBody = mediaLabel ? `${mediaLabel} ${caption}`.trim() : text;
   const owner = await (async () => {
     if (!env.WORKER_SECRET) return null;
@@ -517,7 +517,7 @@ async function handleTelegramWebhook(request, env) {
       await smartReply(env, chatId, owner, transcript, lang, targetDisplayName(target, lang, tgName), null, b.voiceHeard + "«" + transcript + "»\n\n", userTimeZone);
       return json({ ok: true });
     }
-    // 3-ب) إكسل أو CSV: يُقرأ بمنطق صفحة الاستيراد، ويُعرض ملخصه بزرّي حفظ/إلغاء
+    // 3-ب) إكسل أو CSV: يقرأ بمنطق صفحة الاستيراد، ويعرض ملخصه بزري حفظ/إلغاء
     if (doc && ALLOWED_EXT.includes(fileExt(doc.file_name))) {
       let parsed = null;
       try { const { bytes } = await fetchTelegramFile(env, doc.file_id); parsed = parseWorkbook(bytes, doc.file_name || "file.xlsx"); }
@@ -530,7 +530,7 @@ async function handleTelegramWebhook(request, env) {
       try { await sendTelegram(env, chatId, summary, confirmButtons(lang)); } catch {}
       return json({ ok: true });
     }
-    // 3-ج) مستند أو صورة: نقرأه ثم نجيب عن تعليقه (أو نلخّصه)
+    // 3-ج) مستند أو صورة: نقرأه ثم نجيب عن تعليقه (أو نلخصه)
     const media = doc || photo;
     const name = (doc && doc.file_name) || (photo ? "photo.jpg" : "file");
     const mime = (doc && doc.mime_type) || (photo ? "image/jpeg" : "application/octet-stream");
@@ -630,7 +630,7 @@ async function handleTelegramCallback(env, cq) {
   return json({ ok: true });
 }
 
-/** POST /api/intent { text } — سطر الإدخال الذكي في الموقع: نفس مستخرِج النيّة الذي يستخدمه البوت */
+/** POST /api/intent { text } — سطر الإدخال الذكي في الموقع: نفس مستخرج النية الذي يستخدمه البوت */
 async function handleIntent(request, env) {
   const user = await authedUser(request, env);
   if (!user) return json({ error: "unauthorized" }, 401);
@@ -642,7 +642,7 @@ async function handleIntent(request, env) {
   try { return json(await extractIntent(env, text, null)); } catch { return json({ action: "none" }); }
 }
 
-/** POST /api/telegram/link { token } — المستخدم المسجَّل يربط محادثة البوت بضغطة الزر الذي أرسله البوت */
+/** POST /api/telegram/link { token } — المستخدم المسجل يربط محادثة البوت بضغطة الزر الذي أرسله البوت */
 async function handleTelegramLink(request, env) {
   const user = await authedUser(request, env);
   if (!user) return json({ error: "unauthorized" }, 401);
@@ -697,7 +697,7 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // HTTPS إلزامي — الطلبات على http تُحوَّل دائماً (بدل الاعتماد على إعداد اللوحة)
+    // HTTPS إلزامي — الطلبات على http تحول دائما (بدل الاعتماد على إعداد اللوحة)
     if (url.protocol === "http:") {
       url.protocol = "https:";
       return Response.redirect(url.toString(), 301);
@@ -710,7 +710,7 @@ export default {
       return handleCalendar(cal[1], env);
     }
 
-    // إثبات ملكية النطاق لجوجل — يُقدَّم من الـ Worker لأن طبقة الأصول تحوّل
+    // إثبات ملكية النطاق لجوجل — يقدم من الـ Worker لأن طبقة الأصول تحول
     // /x.html إلى /x، وجوجل تطلب الملف على مساره الحرفي بامتداده.
     if (env.GOOGLE_SITE_VERIFICATION_FILE && path === "/" + env.GOOGLE_SITE_VERIFICATION_FILE) {
       return new Response("google-site-verification: " + env.GOOGLE_SITE_VERIFICATION_FILE, {
@@ -742,7 +742,7 @@ export default {
         return handleImportTemplate(url);
       }
       if (path === "/api/documents/analyze" && request.method === "POST") {
-        /* قراءة المستندات تستهلك حصة الذكاء، فتلزمها جلسة مستخدم وحدّ معدل كالنيّة */
+        /* قراءة المستندات تستهلك حصة الذكاء، فتلزمها جلسة مستخدم وحد معدل كالنية */
         const docUser = await authedUser(request, env);
         if (!docUser) return json({ error: "unauthorized" }, 401);
         if (tgAiRateLimited("doc:" + docUser.id)) return json({ error: "rate_limited" }, 429);

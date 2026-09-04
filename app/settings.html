@@ -765,7 +765,8 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         <div class="storage-bar" aria-hidden="true"><i id="storageBarFill"></i></div>
         <label class="rule-check storage-switch"><input type="checkbox" id="storageDriveToggle"><span data-i18n="storageDrive">حفظ ملفاتي في Google Drive الخاص بي</span></label>
         <p class="channel-status" id="storageDriveStatus"></p>
-        <p data-i18n="storageDriveHint">مجلد TheTracker داخل درايفك، يُشارك للقراءة مع فريق الشركة، ولا يُحتسب من حصة الباقة. تخزين المنصة يبقى ملك الشركة.</p>
+        <p class="channel-status" id="storageDriveFolder" hidden><span data-i18n="storageDriveFolder">المجلد في درايفك:</span> <a id="storageDriveFolderLink" href="#" target="_blank" rel="noopener" dir="ltr"></a></p>
+        <p data-i18n="storageDriveHint">مجلد TheTracker داخل درايفك، يشارك للقراءة مع فريق الشركة، ولا يحتسب من حصة الباقة. تخزين المنصة يبقى ملك الشركة.</p>
         <p class="waitlist-msg" id="storageMsg" style="display:none" role="status" aria-live="polite"></p>
       </div>
 
@@ -908,7 +909,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         fullNameEnPlaceholder: "Full name in English",
         phoneLabel: "رقم الجوال",
         phonePlaceholder: "+9665xxxxxxx",
-        phoneInvalid: "أدخل رقم جوال صحيحاً، مثل ‎+9665xxxxxxx‎.",
+        phoneInvalid: "أدخل رقم جوال صحيحا، مثل ‎+9665xxxxxxx‎.",
         emailLabel: "البريد الإلكتروني",
         langLabel: "لغة الواجهة",
         tzLabel: "المنطقة الزمنية",
@@ -990,12 +991,13 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         storageTitle: "التخزين",
         storageUsage: "المستخدم من تخزين المنصة",
         storageDrive: "حفظ ملفاتي في Google Drive الخاص بي",
-        storageDriveHint: "مجلد TheTracker داخل درايفك، يُشارك للقراءة مع فريق الشركة، ولا يُحتسب من حصة الباقة. تخزين المنصة يبقى ملك الشركة.",
-        storageDriveOn: "مفعّل — ملفاتك الجديدة تُحفظ في Google Drive.",
-        storageDriveOff: "غير مفعّل — الملفات في تخزين المنصة.",
-        storageDriveUnavailable: "Google Drive غير متاح على المنصة حالياً.",
-        storageDriveDenied: "لم يُمنح الإذن، فبقي التخزين على المنصة.",
-        storageFull: "المساحة المجانية للأساسيات تكاد تكتمل: فعّل Google Drive مجاناً أو رقِّ الباقة.",
+        storageDriveFolder: "المجلد في درايفك:",
+        storageDriveHint: "عند التفعيل ينشئ TheTracker مجلدا باسم «TheTracker / اسم شركتك» داخل Google Drive الخاص بك، ويحفظ فيه كل ملف ترفعه (مرفقات القضايا والمخالفات، المستندات، ملفات الدردشة) كملف عادي تراه وتفتحه من درايفك، ويحتفظ الموقع برابطه فقط. يشارك المجلد للقراءة مع أعضاء شركتك، ولا يحتسب من حصة الباقة.",
+        storageDriveOn: "فعال: ملفاتك الجديدة تحفظ في مجلد TheTracker داخل درايفك.",
+        storageDriveOff: "غير فعال: الملفات تحفظ في تخزين المنصة.",
+        storageDriveUnavailable: "Google Drive غير متاح على المنصة حاليا.",
+        storageDriveDenied: "لم يمنح الإذن، فبقي التخزين على المنصة.",
+        storageFull: "المساحة المجانية للأساسيات تكاد تكتمل: فعل Google Drive مجانا أو رق الباقة.",
         currentPlanLabel: "الباقة الحالية",
         expiresLabel: "تاريخ الانتهاء",
         noExpiry: "بلا تاريخ انتهاء",
@@ -1029,7 +1031,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         opBank: "البنك",
         opIban: "الآيبان",
         opAccountName: "اسم صاحب الحساب",
-        opSaved: "حُفظت بيانات المنشأة.",
+        opSaved: "حفظت بيانات المنشأة.",
         opAdminOnly: "التعديل للمالك والمشرف فقط.",
         opBadIban: "الآيبان يبدأ بـ SA ويتكون من 24 خانة.",
         opBadVat: "الرقم الضريبي 15 رقما يبدأ وينتهي بالرقم 3.",
@@ -1172,9 +1174,10 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         storageTitle: "Storage",
         storageUsage: "Platform storage used",
         storageDrive: "Save my files to my own Google Drive",
-        storageDriveHint: "A TheTracker folder in your Drive, shared read-only with your team, not counted against the plan quota. Platform storage stays the company's.",
-        storageDriveOn: "On — new files are saved to Google Drive.",
-        storageDriveOff: "Off — files stay in platform storage.",
+        storageDriveFolder: "Folder in your Drive:",
+        storageDriveHint: "When enabled, TheTracker creates a folder named \"TheTracker / your company\" in your own Google Drive and saves every file you upload there (case and violation attachments, documents, chat files) as a normal file you can open from Drive; the platform keeps only its link. The folder is shared read-only with your team and is not counted against the plan quota.",
+        storageDriveOn: "On: new files are saved in the TheTracker folder in your Drive.",
+        storageDriveOff: "Off: files stay in platform storage.",
         storageDriveUnavailable: "Google Drive is not available on the platform yet.",
         storageDriveDenied: "Permission was not granted; storage stays on the platform.",
         storageFull: "The free space for essentials is almost full: enable Google Drive for free or upgrade the plan.",
@@ -1354,9 +1357,10 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         storageTitle: "Stockage",
         storageUsage: "Stockage plateforme utilisé",
         storageDrive: "Enregistrer mes fichiers dans mon Google Drive",
-        storageDriveHint: "Un dossier TheTracker dans votre Drive, partagé en lecture avec votre équipe, hors quota du forfait. Le stockage plateforme reste à l'entreprise.",
-        storageDriveOn: "Activé — les nouveaux fichiers vont dans Google Drive.",
-        storageDriveOff: "Désactivé — les fichiers restent sur la plateforme.",
+        storageDriveFolder: "Dossier dans votre Drive :",
+        storageDriveHint: "Une fois activé, TheTracker crée un dossier « TheTracker / votre société » dans votre Google Drive et y enregistre chaque fichier téléversé (pièces des dossiers et infractions, documents, fichiers du chat) comme un fichier normal ; la plateforme n'en garde que le lien. Le dossier est partagé en lecture avec votre équipe et hors quota du forfait.",
+        storageDriveOn: "Activé : les nouveaux fichiers vont dans le dossier TheTracker de votre Drive.",
+        storageDriveOff: "Désactivé : les fichiers restent sur la plateforme.",
         storageDriveUnavailable: "Google Drive n'est pas encore disponible sur la plateforme.",
         storageDriveDenied: "Autorisation refusée ; le stockage reste sur la plateforme.",
         storageFull: "L'espace gratuit pour l'essentiel est presque plein : activez Google Drive gratuitement ou changez de forfait.",
@@ -1454,7 +1458,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         fullNameEnPlaceholder: "انگریزی میں پورا نام",
         phoneLabel: "موبائل نمبر",
         phonePlaceholder: "+9665xxxxxxx",
-        phoneInvalid: "درست موبائل نمبر درج کریں، مثلاً +9665xxxxxxx۔",
+        phoneInvalid: "درست موبائل نمبر درج کریں، مثلا +9665xxxxxxx۔",
         emailLabel: "ای میل ایڈریس",
         langLabel: "انٹرفیس کی زبان",
         tzLabel: "ٹائم زون",
@@ -1536,12 +1540,13 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         storageTitle: "اسٹوریج",
         storageUsage: "پلیٹ فارم اسٹوریج استعمال شدہ",
         storageDrive: "میری فائلیں میرے Google Drive میں محفوظ کریں",
-        storageDriveHint: "آپ کے Drive میں TheTracker فولڈر، ٹیم کے ساتھ صرف پڑھنے کے لیے شیئر، پیکج کوٹے میں شمار نہیں۔ پلیٹ فارم اسٹوریج کمپنی کی ملکیت رہتی ہے۔",
-        storageDriveOn: "فعال — نئی فائلیں Google Drive میں محفوظ ہوتی ہیں۔",
-        storageDriveOff: "غیر فعال — فائلیں پلیٹ فارم اسٹوریج میں رہتی ہیں۔",
+        storageDriveFolder: "آپ کے Drive میں فولڈر:",
+        storageDriveHint: "فعال کرنے پر TheTracker آپ کے Google Drive میں «TheTracker / آپ کی کمپنی» نام کا فولڈر بناتا ہے اور ہر اپلوڈ فائل (مقدمات اور خلاف ورزیوں کے منسلکات، دستاویزات، چیٹ فائلیں) وہاں عام فائل کی طرح محفوظ کرتا ہے؛ پلیٹ فارم صرف لنک رکھتا ہے۔ فولڈر ٹیم کے ساتھ صرف پڑھنے کے لیے شیئر ہوتا ہے اور پیکج کوٹے میں شمار نہیں۔",
+        storageDriveOn: "فعال: نئی فائلیں آپ کے Drive کے TheTracker فولڈر میں محفوظ ہوتی ہیں۔",
+        storageDriveOff: "غیر فعال: فائلیں پلیٹ فارم اسٹوریج میں رہتی ہیں۔",
         storageDriveUnavailable: "Google Drive ابھی پلیٹ فارم پر دستیاب نہیں۔",
         storageDriveDenied: "اجازت نہیں ملی، اسٹوریج پلیٹ فارم پر رہا۔",
-        storageFull: "بنیادی دستاویزات کی مفت جگہ تقریباً بھر گئی: Google Drive مفت فعال کریں یا پیکج اپ گریڈ کریں۔",
+        storageFull: "بنیادی دستاویزات کی مفت جگہ تقریبا بھر گئی: Google Drive مفت فعال کریں یا پیکج اپ گریڈ کریں۔",
         currentPlanLabel: "موجودہ پلان",
         expiresLabel: "ختم ہونے کی تاریخ",
         noExpiry: "ختم ہونے کی کوئی تاریخ نہیں",
@@ -1571,7 +1576,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         opEmail: "ادارے کا ای میل",
         opWebsite: "ویب سائٹ",
         opShortAddress: "مختصر قومی پتہ",
-        opBadShortAddress: "مختصر پتہ 4 حروف پھر 4 ہندسے، مثلاً RRRD2929۔",
+        opBadShortAddress: "مختصر پتہ 4 حروف پھر 4 ہندسے، مثلا RRRD2929۔",
         opBank: "بینک",
         opIban: "آئی بین",
         opAccountName: "اکاؤنٹ ہولڈر",
@@ -1846,7 +1851,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         el("profileTimeFormat").value = p.time_format === "12" ? "12" : "24";
       }
 
-      /* نفس نمط رقم الجوال في بوابة إكمال الملف الشخصي (mountProfileGate في common.js) — إلزامي دائماً. */
+      /* نفس نمط رقم الجوال في بوابة إكمال الملف الشخصي (mountProfileGate في common.js) — إلزامي دائما. */
       var PHONE_RX = /^\+[1-9]\d{7,14}$/;
 
       function saveProfile(ev) {
@@ -1915,7 +1920,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
           state.linksLoaded = true;
           renderChannels();
         }).catch(function (err) {
-          state.linksLoaded = true;      /* حتى مع الفشل تُرسم البطاقات مرة واحدة */
+          state.linksLoaded = true;      /* حتى مع الفشل ترسم البطاقات مرة واحدة */
           renderChannels();
           toast(errorMessage(err), "error");
         });
@@ -2052,7 +2057,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
       }
 
       function renderChannels() {
-        /* القنوات بيانات: لا تُرسم قبل وصول حدود الباقة وروابط المستخدم */
+        /* القنوات بيانات: لا ترسم قبل وصول حدود الباقة وروابط المستخدم */
         if (!state.loaded || !state.limits || !state.linksLoaded) return;
         /* لا نعرض إلا القنوات التي تسمح بها الباقة (حاليا تيليغرام وحده). */
         var allowed = allowedChannels();
@@ -2395,9 +2400,12 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         box.checked = on && available;
         box.disabled = !available;
         status.textContent = !available ? t("storageDriveUnavailable") : (on ? t("storageDriveOn") : t("storageDriveOff"));
+        var folderRow = el("storageDriveFolder"), link = el("storageDriveFolderLink");
+        var f = on && app.driveFolderCached ? app.driveFolderCached() : null;
+        if (folderRow && link) { folderRow.hidden = !f; if (f) { link.href = f.url; link.textContent = f.path; } }
       }
 
-      /* التفويض يُطلب بنقرة المستخدم نفسها، ولا يُحفظ الخيار إلا بعد الإذن */
+      /* التفويض يطلب بنقرة المستخدم نفسها، ولا يحفظ الخيار إلا بعد الإذن */
       function onDriveToggle() {
         var box = el("storageDriveToggle");
         show("storageMsg", false);
@@ -2406,7 +2414,9 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
             .catch(function () { box.checked = true; setMsg("storageMsg", t("genericError"), "error"); });
         }
         box.disabled = true;
+        /* بالإذن نفسه ينشأ المجلد فورا في درايفه ليرى أين تذهب ملفاته */
         return app.connectDrive().then(function () { return app.updateProfile({ storage_mode: "drive" }); })
+          .then(function () { return app.driveFolder ? app.driveFolder().catch(function () { return null; }) : null; })
           .then(function () { box.disabled = false; renderDriveSwitch(); })
           .catch(function () {
             box.checked = false; box.disabled = false; renderDriveSwitch();
@@ -2565,10 +2575,10 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
           var canEdit = ["owner", "admin"].indexOf(app.role ? app.role() : "") !== -1;
           el("orgProfileForm").querySelectorAll("input,select,button").forEach(function (n) { n.disabled = !canEdit; });
           if (!canEdit) setMsg("opMsg", t("opAdminOnly"), "");
-        }).catch(function () { /* بطاقة اختيارية: لا تُعطل بقية الإعدادات */ });
+        }).catch(function () { /* بطاقة اختيارية: لا تعطل بقية الإعدادات */ });
       }
 
-      /* الحساب الفردي: شخص يرتب أوراقه، فلا تُعرض عليه حقول المنشآت التجارية. */
+      /* الحساب الفردي: شخص يرتب أوراقه، فلا تعرض عليه حقول المنشآت التجارية. */
       var COMMERCIAL_ONLY = ["opCr", "opVat", "opUnified", "opLicense"];
       function applyEntityType() {
         var sel = el("opEntityType");

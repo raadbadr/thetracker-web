@@ -7,7 +7,7 @@
  */
 
 const TEXT_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
-/* Llama 4 Scout: متعدد اللغات أصلاً (عربية/إنجليزية) ويقبل الصورة في الرسائل — اختير بعد اختبار فعلي على صورة سجل تجاري ثنائي اللغة */
+/* Llama 4 Scout: متعدد اللغات أصلا (عربية/إنجليزية) ويقبل الصورة في الرسائل — اختير بعد اختبار فعلي على صورة سجل تجاري ثنائي اللغة */
 const VISION_MODEL = "@cf/meta/llama-4-scout-17b-16e-instruct";
 const MAX_TEXT = 12000;
 
@@ -126,7 +126,7 @@ function clean(out) {
     party: str(source.party),
     issue_date: date(source.issue_date, source.issue_date_calendar),
     expiry_date: date(source.expiry_date, source.expiry_date_calendar) || plusOneYear(date(source.issue_date, source.issue_date_calendar)),
-    /* لا تاريخ انتهاء في الورقة: يُفترض سنة من الإصدار (قاعدة المهندس رعد) ويُعلَم أنه مفترض */
+    /* لا تاريخ انتهاء في الورقة: يفترض سنة من الإصدار (قاعدة المهندس رعد) ويعلم أنه مفترض */
     expiry_assumed: !date(source.expiry_date, source.expiry_date_calendar) && !!date(source.issue_date, source.issue_date_calendar),
     amount: num(source.amount),
     case_number: str(source.case_number),
@@ -139,8 +139,8 @@ function clean(out) {
 }
 
 /* قواعد حتمية للمستندات السعودية الشائعة: تعمل قبل النموذج وبعده، ولا تخترع شيئا */
-/* بعض ملفات PDF العربية تُخرج نصها بأشكال العرض (Presentation Forms) وحروفاً
-   مفرّقة بمسافات، فلا يطابقها أي تعبير. نعيدها إلى حروفها الأساسية ونلصق
+/* بعض ملفات PDF العربية تخرج نصها بأشكال العرض (Presentation Forms) وحروفا
+   مفرقة بمسافات، فلا يطابقها أي تعبير. نعيدها إلى حروفها الأساسية ونلصق
    الحروف المفردة قبل أي مطابقة. الأرقام والتواريخ لا تتأثر بهذا الخلل. */
 function arabicPresentationToBase(text) {
   return String(text || "").replace(/[\uFB50-\uFDFF\uFE70-\uFEFF]/g, function (ch) {
@@ -155,22 +155,22 @@ function arabicPresentationToBase(text) {
 }
 
 function joinSpacedArabic(text) {
-  /* «ا ل س ج ل» → «السجل»: تُلصق الحروف المفردة المتتابعة */
+  /* «ا ل س ج ل» → «السجل»: تلصق الحروف المفردة المتتابعة */
   return String(text || "").replace(/(?:[\u0600-\u06FF]\s){2,}[\u0600-\u06FF]/g, function (run) {
     return run.replace(/\s+/g, "");
   });
 }
 
-/* أشكال العرض العربية (U+FB50–FEFF) في ملفات PDF الرسمية تُقرأ تماماً بعد التطبيع NFKC؛
-   المشوّه فعلاً هو النص المفرّق حروفاً (كل حرف كلمة). */
+/* أشكال العرض العربية (U+FB50–FEFF) في ملفات PDF الرسمية تقرأ تماما بعد التطبيع NFKC؛
+   المشوه فعلا هو النص المفرق حروفا (كل حرف كلمة). */
 export function normalizeArabicText(text) {
   const base = String(text || "").normalize("NFKC").replace(/[\u200B-\u200F\u202A-\u202E\u2066-\u2069\u0640]/g, "");
   return base.split(/\r?\n/).map(repairVisualOrder).join("\n");
 }
 
-/* بعض ملفات PDF الرسمية تُخرج العربية بترتيب بصري: كل حرف كلمة مستقلة، والحروف والكلمات معكوسة.
-   لكل سطر: تُلصق الحروف المفردة، ثم تُقارن نسخة معكوسة (ترتيب الرموز معكوس، وحروف الرموز العربية معكوسة،
-   والمقاطع اللاتينية/الرقمية تبقى بترتيبها) بالأصل بمقياس كلمات عربية شائعة، وتُختار الأقرأ. */
+/* بعض ملفات PDF الرسمية تخرج العربية بترتيب بصري: كل حرف كلمة مستقلة، والحروف والكلمات معكوسة.
+   لكل سطر: تلصق الحروف المفردة، ثم تقارن نسخة معكوسة (ترتيب الرموز معكوس، وحروف الرموز العربية معكوسة،
+   والمقاطع اللاتينية/الرقمية تبقى بترتيبها) بالأصل بمقياس كلمات عربية شائعة، وتختار الأقرأ. */
 const AR_LETTER = "[\u0621-\u064A\u0671-\u06D3]";
 const AR_COMMON = ["السجل","التجاري","تجاري","شركة","رقم","تاريخ","الاسم","اسم","المنشأة","وزارة","التجارة","الوطني","الموحد","انتهاء","الانتهاء","إصدار","الإصدار","شهادة","المملكة","العربية","السعودية","النشاط","المدينة","الرياض","جدة","محدودة","مسؤولية","ذات","مؤسسة","الرقم","الضريبي","الهوية","الجواز","وثيقة","العمل","الحر","رخصة","الرخصة","عقد","الطرف","المحكمة","الدعوى","القضية","المدعي","عليه","الحكم","الغرفة","التأمينات","الزكاة","صاحب","صالحة","حتى","في","من","إلى","على","بتاريخ","المعتمد","المصدر","الجهة","نوع","الكيان","التسجيل","الموقع","العنوان","بلدية","أمانة","مخالفة","المخالفة","غرامة","الفاتورة","ريال"];
 function arabicScore(line) {
@@ -191,7 +191,7 @@ function joinSingles(line) {
 }
 function reverseVisual(line) {
   const tokens = line.trim().split(/\s+/).filter(Boolean).reverse();
-  /* المقاطع اللاتينية/الرقمية المتتالية تعود إلى ترتيبها الأصلي، والحروف العربية تُعكس داخل كل رمز */
+  /* المقاطع اللاتينية/الرقمية المتتالية تعود إلى ترتيبها الأصلي، والحروف العربية تعكس داخل كل رمز */
   const out = []; let latin = [];
   const flush = () => { if (latin.length) { out.push(...latin.reverse()); latin = []; } };
   for (const tok of tokens) {
@@ -202,7 +202,7 @@ function reverseVisual(line) {
   flush();
   return out.join(" ");
 }
-/* سطر مفكّك حروفاً (كل حرف عنصر نصي): المسافة الواحدة بين حرفين عربيين فاصل رسم لا فاصل كلمة،
+/* سطر مفكك حروفا (كل حرف عنصر نصي): المسافة الواحدة بين حرفين عربيين فاصل رسم لا فاصل كلمة،
    والمسافتان أو أكثر فاصل كلمة حقيقي. */
 function looksGlyphSplit(line) {
   const tokens = line.trim().split(/\s+/).filter(Boolean);
@@ -242,7 +242,7 @@ function findAfter(text, labels, pattern) {
   const labelMatch = text.match(labelRegex);
   return labelMatch ? labelMatch[1].trim() : null;
 }
-/* جدول الأوراق الرسمية المعروفة: كل نوع بكلماته ومسمّيات رقمه وجهته. يُفحص بالترتيب. */
+/* جدول الأوراق الرسمية المعروفة: كل نوع بكلماته ومسميات رقمه وجهته. يفحص بالترتيب. */
 const wordBoundaryAr = (pattern) => "(?<![\\u0600-\\u06FF])(?:" + pattern + ")(?![\\u0600-\\u06FF])";
 const KIND_RULES = [
   { kind: "commercial_register", entity: "company", test: /السجل\s*التجاري|سجل\s*تجاري|رقم\s*السجل|شهادة\s*(?:ال)?سجل|commercial\s*regist|(?=[\s\S]*سجل)(?=[\s\S]*\b[1247]\d{9}\b)/i, issuer: "وزارة التجارة",
@@ -350,7 +350,7 @@ export function rulesExtract(rawText) {
   }
   if (out.kind === "commercial_register" && !out.party) {
     /* السجل الجديد يكتب اسم الشركة بلا تسمية: أول «شركة/مؤسسة …» ليست وصف شكل قانوني */
-    /* أوصاف الشكل القانوني ليست اسماً، حتى إن جاءت حروفها مشوّهة («تاذ» بدل «ذات») */
+    /* أوصاف الشكل القانوني ليست اسما، حتى إن جاءت حروفها مشوهة («تاذ» بدل «ذات») */
     const legalForm = /ذات|تاذ|مسؤولي|مسئولي|محدود|محدةدو|مساهمة|الشخص|شخص|مهنية|توصية|تضامن|قابضة|أجنبية|فردية|واحد|اوحد/;
     const re = /(?:^|\s)((?:شركة|مؤسسة)\s+[^\d:،,()\n]{2,60}?)(?=\s+(?:\d|:|الرقم|رقم|تاريخ|نوع|حالة|صفات|\S*(?:شهاد|هادة|سجل)\S*|$))/g;
     let m;
@@ -360,7 +360,7 @@ export function rulesExtract(rawText) {
     }
   }
 
-  /* أوراق المحاكم: رقم الدعوى واسم المحكمة والدائرة تُقرأ مباشرة */
+  /* أوراق المحاكم: رقم الدعوى واسم المحكمة والدائرة تقرأ مباشرة */
   if (["hearing_notice", "case_filing", "court_ruling"].includes(out.kind)) {
     out.case_number = findAfter(text, ["رقم\\s*(?:ال)?دعوى", "رقم\\s*القضية", "رقم\\s*القيد", "case\\s*(?:No\\.?|number)?"], "\\d{3,20}(?:\\/\\d{2,4})?") || (out.kind !== "court_ruling" ? out.number : null);
     const court = text.match(/(?:المحكمة|محكمة)\s*[^\n:،,]{2,45}/);
@@ -374,7 +374,7 @@ export function rulesExtract(rawText) {
   const issueDateInfo = findDate(text, ["تاريخ\\s*(?:ال)?إصدار", "تاريخ\\s*(?:ال)?اصدار", "تاريخ\\s*التسجيل", "تاريخ\\s*(?:ال)?بداية", "تاريخ\\s*(?:ال)?تحرير", "تاريخ\\s*العقد", "صدر\\s*(?:في|بتاريخ)", "حرر\\s*(?:في|بتاريخ)", "issue\\s*date", "issued\\s*on", "registration\\s*date", "date"]);
   if (expiryDateInfo) { out.expiry_date = expiryDateInfo.raw; out.expiry_date_calendar = expiryDateInfo.year < 1700 ? "hijri" : "gregorian"; }
   if (issueDateInfo) { out.issue_date = issueDateInfo.raw; out.issue_date_calendar = issueDateInfo.year < 1700 ? "hijri" : "gregorian"; }
-  /* تسمية التاريخ مشوّهة أو غائبة: إن كان في الورقة تاريخ واحد فهو تاريخ إصدارها (السجل الجديد بلا انتهاء) */
+  /* تسمية التاريخ مشوهة أو غائبة: إن كان في الورقة تاريخ واحد فهو تاريخ إصدارها (السجل الجديد بلا انتهاء) */
   if (!out.issue_date && !out.expiry_date) {
     const all = (westernize(text).match(/\b(?:\d{4}[\/\-.]\d{1,2}[\/\-.]\d{1,2}|\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{4})\b/g) || []);
     const uniq = all.filter((d, i) => all.indexOf(d) === i);
@@ -433,7 +433,7 @@ export async function handleDocumentAnalyze(request, env) {
   if (!body) return new Response(JSON.stringify({ error: "invalid_body" }), { status: 400, headers });
 
   let text = normalizeArabicText(String(body.text || "")).slice(0, MAX_TEXT);
-  /* نص PDF عربي مشوّه (أشكال عرض أو حروف مفرّقة) لا يُفهم: تُقرأ صورة الصفحة بدله */
+  /* نص PDF عربي مشوه (أشكال عرض أو حروف مفرقة) لا يفهم: تقرأ صورة الصفحة بدله */
   const mangled = text.trim() ? looksMangledArabic(text) : false;
   try {
     if ((!text.trim() || mangled) && body.image) text = (await readImage(env, body.image)).slice(0, MAX_TEXT);

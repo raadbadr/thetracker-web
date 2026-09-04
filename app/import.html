@@ -547,7 +547,7 @@
       color: var(--btn-ink);
     }
   </style>
-  <!-- دُمج الاستيراد داخل صفحة المستندات (2026-09-04)؛ هذا المسار يبقى ليحوّل الروابط القديمة -->
+  <!-- دمج الاستيراد داخل صفحة المستندات (2026-09-04)؛ هذا المسار يبقى ليحول الروابط القديمة -->
   <meta http-equiv="refresh" content="0; url=/app/documents.html#importFlow">
   <script>window.location.replace("/app/documents.html#importFlow");</script>
 </head>
@@ -1848,7 +1848,7 @@
       async function runImport() {
         if (state.busy) return;
         const m = state.mapping;
-        /* في وضع المخالفات يُبنى العنوان من رقم المخالفة، فلا يلزم عمود عنوان */
+        /* في وضع المخالفات يبنى العنوان من رقم المخالفة، فلا يلزم عمود عنوان */
         var needsTitle = state.mode !== "violations";
         if ((needsTitle && m.title < 0) || m.due < 0) {
           setMsg(els.importProgress, t(needsTitle ? "mappingRequired" : "mappingRequiredDue"), "error"); return;

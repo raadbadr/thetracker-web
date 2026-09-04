@@ -163,7 +163,7 @@
 
   /* الصيغة القياسية الواحدة لكل عرض تاريخ في المنصة، مطابقة لمعيار تطبيق
      باركينزي بالضبط (dd-MM-yyyy / HH:mm / dd-MM-yyyy HH:mm): ميلادي، 24 ساعة،
-     أرقام غربية دائماً، بلا اختلاف بين اللغات. المنطقة الزمنية قابلة للاختيار
+     أرقام غربية دائما، بلا اختلاف بين اللغات. المنطقة الزمنية قابلة للاختيار
      من كل مستخدم عبر الإعدادات (profile.tz)، وتوقيت الرياض هو الافتراضي فقط
      حين لا يختار المستخدم غيره. */
   function fmtDate(iso, opts) {
@@ -193,10 +193,10 @@
     return withTime ? (datePart + " " + timePart) : datePart;
   }
 
-  /* المبلغ القياسي: فاصلة آلاف وخانتان عشريتان ثابتتان دائماً، أرقام غربية —
+  /* المبلغ القياسي: فاصلة آلاف وخانتان عشريتان ثابتتان دائما، أرقام غربية —
      نفس formatAmountWestern في تطبيق باركينزي (en_US_POSIX، خانتان لا أكثر
-     ولا أقل). لا يُستخدم للعروض المصغّرة (K/M) في لوحات المؤشرات؛ تلك عرض
-     مكثّف متعمّد لمساحة ضيقة، ليست الصيغة القياسية للمبلغ الدقيق. */
+     ولا أقل). لا يستخدم للعروض المصغرة (K/M) في لوحات المؤشرات؛ تلك عرض
+     مكثف متعمد لمساحة ضيقة، ليست الصيغة القياسية للمبلغ الدقيق. */
   function fmtAmount(n) {
     var v = Number(n);
     if (!isFinite(v)) v = 0;
@@ -418,7 +418,7 @@
   }
 
   function loadOrgs(client, user) {
-    /* كل جهة هو عضو نشط فيها: التي يملكها والتي دُعي إليها سواء، ومعها نوعها */
+    /* كل جهة هو عضو نشط فيها: التي يملكها والتي دعي إليها سواء، ومعها نوعها */
     return client.from("org_members")
       .select("org_id, role, status, organizations(id,name,name_en,plan_code,plan_expires_at,org_profiles(entity_type))")
       .eq("user_id", user.id)
@@ -524,7 +524,7 @@
   }
 
   /* لا جهة بلا مستندها الرسمي: الدالة create_org_registered في القاعدة هي الطريق الوحيد،
-     تتحقق من الرقم (سجل تجاري / رخصة / هوية بحسب النوع) وتاريخ الانتهاء وتسجّله مستنداً أولاً. */
+     تتحقق من الرقم (سجل تجاري / رخصة / هوية بحسب النوع) وتاريخ الانتهاء وتسجله مستندا أولا. */
   function createOrg(name, entityType, regNumber, regExpiry, nameEn) {
     return run(function (client) {
       var clean = String(name || "").trim();
@@ -622,7 +622,7 @@
   function loadServices(client, org) {
     if (!org) return Promise.resolve(null);
     return client.rpc("my_services", { p_org: org.id }).then(unwrap)
-      /* مصفوفة فارغة تعني أن عضويته لم تُقرأ (شركة حُذفت، أو معرّف قديم في المتصفح):
+      /* مصفوفة فارغة تعني أن عضويته لم تقرأ (شركة حذفت، أو معرف قديم في المتصفح):
          لا نخفي القائمة كلها في هذه الحال، فالإخفاء الكامل يعطل المنصة على صاحبها. */
       .then(function (list) { return (Array.isArray(list) && list.length) ? list : null; })
       .catch(function () { return null; });
@@ -768,8 +768,8 @@
     });
   }
 
-  /* ---------- قراءة المستندات: الورقة تُقرأ في المتصفح ثم يحللها الخادم ----------
-     كل ما يمكن استخراجه من المستند يُملأ تلقائياً، والإدخال اليدوي للمراجعة فقط. */
+  /* ---------- قراءة المستندات: الورقة تقرأ في المتصفح ثم يحللها الخادم ----------
+     كل ما يمكن استخراجه من المستند يملأ تلقائيا، والإدخال اليدوي للمراجعة فقط. */
   var PDF_SRC = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
   var PDF_WORKER = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
@@ -780,7 +780,7 @@
       r.onerror = reject;
       r.readAsDataURL(file);
     }).then(function (dataUrl) {
-      /* صور الجوال الكبيرة تفشل قراءتها: تُصغَّر إلى 1800 بكسل */
+      /* صور الجوال الكبيرة تفشل قراءتها: تصغر إلى 1800 بكسل */
       return new Promise(function (resolve) {
         var img = new Image();
         img.onload = function () {
@@ -845,8 +845,8 @@
     });
   }
 
-  /* أوراقنا الرسمية تكتب تاريخها هجرياً أو ميلادياً، وحقل التاريخ القياسي
-     في المتصفح ميلادي فقط. نقبل الصيغتين ونحوّل الهجري بتقويم أم القرى. */
+  /* أوراقنا الرسمية تكتب تاريخها هجريا أو ميلاديا، وحقل التاريخ القياسي
+     في المتصفح ميلادي فقط. نقبل الصيغتين ونحول الهجري بتقويم أم القرى. */
   function hijriPartsOf(date) {
     var fmt = new Intl.DateTimeFormat("en-u-ca-islamic-umalqura-nu-latn",
       { timeZone: "UTC", year: "numeric", month: "numeric", day: "numeric" });
@@ -867,7 +867,7 @@
     return null;
   }
 
-  /* يقبل 1447/05/10 و1447-05-10 و2026-12-01 و01/12/2026، ويعيد ISO ميلادياً */
+  /* يقبل 1447/05/10 و1447-05-10 و2026-12-01 و01/12/2026، ويعيد ISO ميلاديا */
   function parseAnyDate(value) {
     var text = String(value == null ? "" : value).trim();
     if (!text) return null;
@@ -885,7 +885,7 @@
     return year + "-" + String(month).padStart(2, "0") + "-" + String(day).padStart(2, "0");
   }
 
-  /* التاريخ الميلادي مكتوباً بالهجري ليطمئن صاحبه أن ما فهمه النظام صحيح */
+  /* التاريخ الميلادي مكتوبا بالهجري ليطمئن صاحبه أن ما فهمه النظام صحيح */
   function gregorianToHijriText(iso) {
     if (!iso) return "";
     var d = new Date(iso + "T12:00:00Z");
@@ -895,8 +895,8 @@
     return h.year + "/" + String(h.month).padStart(2, "0") + "/" + String(h.day).padStart(2, "0") + " هـ";
   }
 
-  /* ملفات PDF العربية كثيراً ما تُخرج نصاً مشوّهاً (أشكال عرض وحروف مفرّقة
-     بترتيب بصري) لا يُقرأ: نكتشفه ونرسل صورة الصفحة ليقرأها نموذج الرؤية. */
+  /* ملفات PDF العربية كثيرا ما تخرج نصا مشوها (أشكال عرض وحروف مفرقة
+     بترتيب بصري) لا يقرأ: نكتشفه ونرسل صورة الصفحة ليقرأها نموذج الرؤية. */
   function textLooksMangled(text) {
     var value = String(text || "");
     var singles = (value.match(/(?:^|\s)[\u0600-\u06FF](?=\s|$)/g) || []).length;
@@ -912,7 +912,7 @@
     return pdfRead(file).then(function (r) {
       var text = String(r.text || "").normalize("NFKC");
       if (text.length >= 40 && !textLooksMangled(text)) return analyzeDocument({ text: text });
-      /* نص ناقص أو مفكّك: تُرسل صورة الصفحة معه ليختار الخادم أوضحهما */
+      /* نص ناقص أو مفكك: ترسل صورة الصفحة معه ليختار الخادم أوضحهما */
       return pdfPageImage(r.pdf, 1).then(function (img) {
         return analyzeDocument(text.length >= 40 ? { text: text, image: img } : { image: img });
       });
@@ -989,8 +989,8 @@
     });
   }
 
-  /* ملف درايف المختار يُنزَّل مؤقتا في المتصفح ليقرأه المحلل، ولا يُرفع لتخزيننا.
-     ملفات جوجل (مستند/جدول) تُصدَّر PDF أو XLSX لأنها لا تنزل كما هي. */
+  /* ملف درايف المختار ينزل مؤقتا في المتصفح ليقرأه المحلل، ولا يرفع لتخزيننا.
+     ملفات جوجل (مستند/جدول) تصدر PDF أو XLSX لأنها لا تنزل كما هي. */
   var GOOGLE_EXPORT = {
     "application/vnd.google-apps.document": ["application/pdf", ".pdf"],
     "application/vnd.google-apps.presentation": ["application/pdf", ".pdf"],
@@ -1027,7 +1027,7 @@
   var DRIVE_FOLDER_MIME = "application/vnd.google-apps.folder";
   var DRIVE_ROOT_NAME = "TheTracker";
   var DRIVE_FALLBACK_TEXT = {
-    ar: "لم يتم الحفظ في Google Drive، فحُفظ الملف في تخزين المنصة.",
+    ar: "لم يتم الحفظ في Google Drive، فحفظ الملف في تخزين المنصة.",
     en: "Google Drive was unavailable, so the file was saved to platform storage.",
     fr: "Google Drive indisponible : le fichier a été enregistré sur la plateforme.",
     ur: "Google Drive دستیاب نہیں تھا، فائل پلیٹ فارم اسٹوریج میں محفوظ ہو گئی۔"
@@ -1035,7 +1035,7 @@
 
   function driveOAuthAvailable() { return !!driveConfig.clientId; }
 
-  /* وضع التخزين الفعّال: درايف فقط إن اختاره المستخدم في ملفه وكان عميل جوجل مضبوطاً */
+  /* وضع التخزين الفعال: درايف فقط إن اختاره المستخدم في ملفه وكان عميل جوجل مضبوطا */
   function storageMode() {
     var mode = app.profile && app.profile.storage_mode;
     return mode === "drive" && driveOAuthAvailable() ? "drive" : "platform";
@@ -1075,7 +1075,7 @@
       });
   }
 
-  /* مجلد «TheTracker/اسم الشركة» في درايف المستخدم، مع تخزين معرّفه محلياً */
+  /* مجلد «TheTracker/اسم الشركة» في درايف المستخدم، مع تخزين معرفه محليا */
   function driveFolderFor(token, orgId, orgName, fresh) {
     var key = "tracker_drive_folder:" + orgId;
     var cached = !fresh && localStorage.getItem(key);
@@ -1099,7 +1099,7 @@
     });
   }
 
-  /* مشاركة الملف (قراءة) مع أعضاء الشركة الفعّالين — بلا رسائل بريد، وبلا إيقاف الرفع عند الفشل */
+  /* مشاركة الملف (قراءة) مع أعضاء الشركة الفعالين — بلا رسائل بريد، وبلا إيقاف الرفع عند الفشل */
   function driveShareWithTeam(token, fileId) {
     return listMembers().then(function (members) {
       var emails = [];
@@ -1125,7 +1125,7 @@
       return driveFolderFor(token, orgId, orgName).then(function (folderId) {
         return driveUploadFile(token, file, folderId).catch(function (err) {
           if (err && err.status !== 404) throw err;
-          /* المجلد المخزَّن محلياً حُذف من درايف: أعد إيجاده مرة واحدة */
+          /* المجلد المخزن محليا حذف من درايف: أعد إيجاده مرة واحدة */
           return driveFolderFor(token, orgId, orgName, true).then(function (fid) { return driveUploadFile(token, file, fid); });
         });
       }).then(function (f) {
@@ -1753,7 +1753,7 @@
   /* سطر الإدخال الذكي: النص ← نية (عنوان/نوع/موعد/عميل/رقم دعوى/اسم المنفذ) عبر ال Worker بجلسة المستخدم */
   /* ============================================================
    * إدخال سريع بلا ذكاء اصطناعي: أنماط معروفة (تاريخ، وقت، رقم قضية أو
-   * مخالفة، مبلغ) تُحل فوراً في المتصفح. لا شبكة ولا انتظار إن كفت القواعد.
+   * مخالفة، مبلغ) تحل فورا في المتصفح. لا شبكة ولا انتظار إن كفت القواعد.
    * ============================================================ */
   var QUICK_ADD_WEEKDAYS = { "الاحد": 0, "الأحد": 0, "الاثنين": 1, "الإثنين": 1, "الثلاثاء": 2, "الاربعاء": 3, "الأربعاء": 3, "الخميس": 4, "الجمعة": 5, "السبت": 6 };
   var QUICK_ADD_KIND_PATTERNS = { violation: /مخالفة|مخالفه|غرامة|fine|violation/i, session: /جلسة|جلسه|نظر الدعوى|hearing|session|قضية|دعوى/i };
@@ -1779,26 +1779,26 @@
     return { year: shifted.getUTCFullYear(), month: shifted.getUTCMonth() + 1, day: shifted.getUTCDate() };
   }
 
-  /* الوقت يُلتقط فقط قريباً من "الساعة" أو ملاصقاً لمؤشر ص/م أو بصيغة HH:MM — أرقام
-     أخرى في النص (رقم القضية مثلاً) لا تُخلط بوقت الجلسة أبداً */
+  /* الوقت يلتقط فقط قريبا من "الساعة" أو ملاصقا لمؤشر ص/م أو بصيغة HH:MM — أرقام
+     أخرى في النص (رقم القضية مثلا) لا تخلط بوقت الجلسة أبدا */
   function timeOfDayFromMatch(hourText, minuteText, meridiemMark) {
     var hour = Number(hourText) || 0, minute = Number(minuteText) || 0;
     meridiemMark = (meridiemMark || "").toLowerCase();
-    if (/^(م|مساء|مساءً|pm)$/.test(meridiemMark) && hour < 12) hour += 12;
-    if (/^(ص|صباحا|صباحاً|am)$/.test(meridiemMark) && hour === 12) hour = 0;
+    if (/^(م|مساء|مساء|pm)$/.test(meridiemMark) && hour < 12) hour += 12;
+    if (/^(ص|صباحا|صباحا|am)$/.test(meridiemMark) && hour === 12) hour = 0;
     return { hour: hour, minute: minute };
   }
   function extractTimeOfDay(text, defaultHour, defaultMinute) {
-    var match = text.match(/الساعة\s*(\d{1,2})(?::(\d{2}))?\s*(ص|صباحا|صباحاً|م|مساء|مساءً|am|pm)?/i);
+    var match = text.match(/الساعة\s*(\d{1,2})(?::(\d{2}))?\s*(ص|صباحا|صباحا|م|مساء|مساء|am|pm)?/i);
     if (match) return timeOfDayFromMatch(match[1], match[2], match[3]);
     match = text.match(/\b(\d{1,2}):(\d{2})\b/);
     if (match) return timeOfDayFromMatch(match[1], match[2], null);
-    match = text.match(/\b(\d{1,2})\s*(ص|صباحا|صباحاً|م|مساء|مساءً|am|pm)\b/i);
+    match = text.match(/\b(\d{1,2})\s*(ص|صباحا|صباحا|م|مساء|مساء|am|pm)\b/i);
     if (match) return timeOfDayFromMatch(match[1], null, match[2]);
     return { hour: defaultHour, minute: defaultMinute };
   }
   function extractDueDate(text, referenceNow) {
-    if (/غدا|غداً|بكرة|بكره/.test(text) && !/بعد\s*غد/.test(text)) return addDaysInRiyadh(referenceNow, 1);
+    if (/غدا|غدا|بكرة|بكره/.test(text) && !/بعد\s*غد/.test(text)) return addDaysInRiyadh(referenceNow, 1);
     if (/بعد\s*غد/.test(text)) return addDaysInRiyadh(referenceNow, 2);
     var daysAfterMatch = text.match(/بعد\s*(\d{1,3})\s*(?:يوم|أيام|ايام)/);
     if (daysAfterMatch) return addDaysInRiyadh(referenceNow, Number(daysAfterMatch[1]));
@@ -1820,7 +1820,7 @@
     return null;
   }
 
-  /* يعيد عنصراً كاملاً إن وثقت القواعد من نوعه وموعده، وإلا null لتذهب للنموذج اللغوي */
+  /* يعيد عنصرا كاملا إن وثقت القواعد من نوعه وموعده، وإلا null لتذهب للنموذج اللغوي */
   function quickParseFast(text) {
     var trimmedText = String(text || "").trim();
     if (!trimmedText || !QUICK_ADD_TRIGGER_WORDS.test(trimmedText)) return null;
@@ -2149,7 +2149,7 @@
     ".app-sidebar a,.app-sidebar button{min-height:44px;font-size:1rem}",
     "html body.has-app-sidebar .container,html body.sidebar-off.has-app-sidebar .container{max-width:100%;padding-inline:1rem}",
     /* قواعد عامة لمحتوى كل الصفحات على الجوال: لا شيء أعرض من الشاشة، الجداول تتمرر داخل نفسها، النماذج تتكدس */
-    /* أي عنصر أعرض من الشاشة لا يوسّع نافذة التخطيط في متصفحات الجوال (وإلا اتسع الشريط الثابت معها وانزاح) */
+    /* أي عنصر أعرض من الشاشة لا يوسع نافذة التخطيط في متصفحات الجوال (وإلا اتسع الشريط الثابت معها وانزاح) */
     "html{overflow-x:hidden}body{overflow-x:hidden;overflow-x:clip}",
     ".content{padding:1.1rem}",
     ".content table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}",
@@ -2162,7 +2162,7 @@
     ":root{--gap:1.5rem}",
     /* ــ تناسق عناصر الإدخال في كل صفحات التطبيق ــ
        المتصفح يفرض شكله على input[type=search] وعلى select فيخرجان بارتفاع
-       واستدارة مختلفين عن بقية الحقول والأزرار. هنا يُلغى ذلك مرة واحدة:
+       واستدارة مختلفين عن بقية الحقول والأزرار. هنا يلغى ذلك مرة واحدة:
        ارتفاع واحد 42 بكسل، استدارة واحدة 12 بكسل، وسهم واحد للقوائم. */
     ":root{--field-h:42px;--field-r:12px}",
     "body .waitlist-input,body select.waitlist-input,body input.waitlist-input,body textarea.waitlist-input,",
@@ -2243,7 +2243,7 @@
     if (remember) { try { localStorage.setItem(SIDEBAR_KEY, on ? "on" : "off"); } catch (e) { /* التخزين محجوب */ } }
   }
 
-  /* الجوال: زر ☰ يفتح الدرج بدل طيّ الشريط، والدرج يُغلق بالطبقة أو برابط أو بـ Escape أو بالعودة إلى مقاس المكتب */
+  /* الجوال: زر ☰ يفتح الدرج بدل طي الشريط، والدرج يغلق بالطبقة أو برابط أو بـ Escape أو بالعودة إلى مقاس المكتب */
   var MOBILE_SHELL = "(max-width:900px)";
   function isMobileShell() { return !!(window.matchMedia && window.matchMedia(MOBILE_SHELL).matches); }
   function setDrawer(open) {
@@ -2275,8 +2275,8 @@
   }
 
   function serviceAllowed(key) {
-    if (!key || key === "dashboard") return true; /* مقصد الحارس لا يُحجب */
-    if (!app || !Array.isArray(app.services)) return true; /* غير معروف بعد: لا نخفي شيئاً */
+    if (!key || key === "dashboard") return true; /* مقصد الحارس لا يحجب */
+    if (!app || !Array.isArray(app.services)) return true; /* غير معروف بعد: لا نخفي شيئا */
     return app.services.indexOf(key) !== -1;
   }
 
@@ -2299,7 +2299,7 @@
   function renderSidebar() {
     var nav = document.getElementById("appSidebar");
     if (!nav) return;
-    /* القائمة بيانات: لا تُرسم قبل أن تُعرف خدمات الاشتراك، فلا تتغير أمام المستخدم */
+    /* القائمة بيانات: لا ترسم قبل أن تعرف خدمات الاشتراك، فلا تتغير أمام المستخدم */
     if (!sidebarReady) return;
     enforceServiceAccess();
     var here = String(window.location.pathname || "");
@@ -2438,7 +2438,7 @@
     return true;
   }
 
-  /* اسم الطرف أو العميل: بالإنجليزية في الواجهتين الإنجليزية والفرنسية إن وُجد */
+  /* اسم الطرف أو العميل: بالإنجليزية في الواجهتين الإنجليزية والفرنسية إن وجد */
   function clientDisplayName(row) {
     if (!row) return "";
     var wantEn = ["en", "fr"].indexOf(lang()) !== -1;
@@ -2475,6 +2475,16 @@
   app.driveOAuthAvailable = driveOAuthAvailable;
   app.storageMode = storageMode;
   app.connectDrive = driveAccessToken;
+  /* مجلد درايف الخاص بالشركة الحالية: ينشأ إن لم يوجد، ويعاد معرفه ورابطه لعرضه في الإعدادات */
+  app.driveFolder = function () {
+    var orgId = requireOrg();
+    var orgName = (app.org && app.org.name) || "";
+    return driveAccessToken().then(function (token) { return driveFolderFor(token, orgId, orgName); })
+      .then(function (id) { return { id: id, url: "https://drive.google.com/drive/folders/" + id, path: DRIVE_ROOT_NAME + "/" + (orgName || "Company") }; });
+  };
+  app.driveFolderCached = function () {
+    try { var id = localStorage.getItem("tracker_drive_folder:" + requireOrg()); return id ? { id: id, url: "https://drive.google.com/drive/folders/" + id, path: DRIVE_ROOT_NAME + "/" + ((app.org && app.org.name) || "Company") } : null; } catch (e) { return null; }
+  };
   app.readDocumentFile = readDocumentFile;
   app.pickFromDrive = pickFromDrive;
   app.driveDownload = driveDownload;
@@ -2747,8 +2757,8 @@
 
   /* أين أنا الآن؟ اسم الشركة الحالية ظاهر دائما ويبدل من مكانه. */
   var REG_TEXT = {
-    ar: { readExpiryAssumed: "تاريخ متابعة مفترض", expiryAssumed: "مفترض: سنة من تاريخ الإصدار، عدّله إن كان لديك تاريخ آخر", expiryHint: "1447/05/10 هجري أو 2026-12-01 ميلادي", expiryReads: "يفهمه النظام:", expiryBad: "لم أفهم التاريخ — اكتبه هكذا 1447/05/10 أو 2026-12-01.", expiryNone: "اتركه فارغاً إن كان المستند بلا تاريخ انتهاء (السجل التجاري الجديد لا ينتهي).", fileFirst: "ارفع المستند الرسمي (سجل تجاري أو وثيقة عمل حر أو هوية) ليُقرأ منه كل شيء", reading: "جاري قراءة المستند…", readDone: "قُرئ المستند وعُبِّئ منه:", readNothing: "قُرئ المستند ولم تُستخرج بيانات، أكمل الحقول.", readFailed: "تعذرت قراءة المستند، أكمل الحقول يدوياً.", readName: "الاسم", readNumber: "الرقم", readExpiry: "تاريخ الانتهاء", commercial_register: "رقم السجل التجاري", id_document: "رقم الهوية الوطنية", license: "رقم الرخصة / الوثيقة", expiry: "تاريخ انتهاء المستند (إن وجد)", file: "ملف المستند (PDF أو صورة، اختياري)",
-          gate: "لا تُنشأ الجهة بلا مستندها الرسمي: الرقم وتاريخ الانتهاء إلزاميان، ويُسجَّل أول مستند في ملفها.", invalid: "الرقم غير صحيح.", expiryRequired: "تاريخ الانتهاء إلزامي.", fileFailed: "أُنشئت الجهة لكن تعذّر رفع الملف؛ أضفه من صفحة المستندات." },
+    ar: { readExpiryAssumed: "تاريخ متابعة مفترض", expiryAssumed: "مفترض: سنة من تاريخ الإصدار، عدله إن كان لديك تاريخ آخر", expiryHint: "1447/05/10 هجري أو 2026-12-01 ميلادي", expiryReads: "يفهمه النظام:", expiryBad: "لم أفهم التاريخ — اكتبه هكذا 1447/05/10 أو 2026-12-01.", expiryNone: "اتركه فارغا إن كان المستند بلا تاريخ انتهاء (السجل التجاري الجديد لا ينتهي).", fileFirst: "ارفع المستند الرسمي (سجل تجاري أو وثيقة عمل حر أو هوية) ليقرأ منه كل شيء", reading: "جاري قراءة المستند…", readDone: "قرئ المستند وعبئ منه:", readNothing: "قرئ المستند ولم تستخرج بيانات، أكمل الحقول.", readFailed: "تعذرت قراءة المستند، أكمل الحقول يدويا.", readName: "الاسم", readNumber: "الرقم", readExpiry: "تاريخ الانتهاء", commercial_register: "رقم السجل التجاري", id_document: "رقم الهوية الوطنية", license: "رقم الرخصة / الوثيقة", expiry: "تاريخ انتهاء المستند (إن وجد)", file: "ملف المستند (PDF أو صورة، اختياري)",
+          gate: "لا تنشأ الجهة بلا مستندها الرسمي: الرقم وتاريخ الانتهاء إلزاميان، ويسجل أول مستند في ملفها.", invalid: "الرقم غير صحيح.", expiryRequired: "تاريخ الانتهاء إلزامي.", fileFailed: "أنشئت الجهة لكن تعذر رفع الملف؛ أضفه من صفحة المستندات." },
     en: { readExpiryAssumed: "assumed follow-up date", expiryAssumed: "assumed: one year from the issue date — change it if you know the real one", expiryHint: "1447/05/10 Hijri or 2026-12-01", expiryReads: "Understood as:", expiryBad: "Date not understood — write 1447/05/10 or 2026-12-01.", expiryNone: "Leave empty if the document has no expiry (the new commercial register never expires).", fileFirst: "Upload the official document (commercial register, freelance permit or ID) and it fills the fields", reading: "Reading the document…", readDone: "Read and filled in:", readNothing: "The document was read but nothing was extracted; fill the fields.", readFailed: "Could not read the document; fill the fields manually.", readName: "name", readNumber: "number", readExpiry: "expiry date", commercial_register: "Commercial register number", id_document: "National ID number", license: "License / permit number", expiry: "Document expiry date (if any)", file: "Document file (PDF or image, optional)",
           gate: "No entity without its official document: number and expiry are required, and it becomes the first paper on file.", invalid: "Invalid number.", expiryRequired: "Expiry date is required.", fileFailed: "Created, but the file could not be uploaded; add it from Documents." },
     fr: { readExpiryAssumed: "date de suivi supposée", expiryAssumed: "supposée : un an après l’émission — modifiez-la si vous connaissez la vraie", expiryHint: "1447/05/10 hégirien ou 2026-12-01", expiryReads: "Compris comme :", expiryBad: "Date non comprise — écrivez 1447/05/10 ou 2026-12-01.", expiryNone: "Laissez vide si le document n’expire pas (le nouveau registre de commerce n’expire jamais).", fileFirst: "Téléversez le document officiel (registre de commerce, permis d’indépendant ou pièce d’identité) : il remplit les champs", reading: "Lecture du document…", readDone: "Lu et rempli :", readNothing: "Document lu, rien n’a été extrait ; complétez les champs.", readFailed: "Lecture impossible ; complétez les champs à la main.", readName: "nom", readNumber: "numéro", readExpiry: "date d’expiration", commercial_register: "Numéro du registre de commerce", id_document: "Numéro de carte d’identité", license: "Numéro de licence / permis", expiry: "Date d’expiration du document (le cas échéant)", file: "Fichier du document (PDF ou image, facultatif)",
@@ -2820,7 +2830,7 @@
         input.dataset.prefill = "1"; /* قيمة مقترحة: يستبدلها اسم المستند */
       }
     });
-    /* ما فهمه النظام من التاريخ يُعرض تحته: ميلادي وهجري معاً */
+    /* ما فهمه النظام من التاريخ يعرض تحته: ميلادي وهجري معا */
     var expiryEl = document.getElementById("newOrgExpiry");
     var expiryEcho = document.getElementById("newOrgExpiryEcho");
     function showExpiry() {
@@ -2832,7 +2842,7 @@
       expiryEcho.textContent = iso ? (rt.expiryReads + " " + iso + " — " + gregorianToHijriText(iso) + assumed) : rt.expiryBad;
     }
     if (expiryEl) {
-      /* يكتب الأرقام فقط والشرطات تُضاف وحدها: 14470512 ← 1447/05/12 */
+      /* يكتب الأرقام فقط والشرطات تضاف وحدها: 14470512 ← 1447/05/12 */
       expiryEl.addEventListener("input", function () {
         this.dataset.assumed = "";
         var digits = String(this.value || "").replace(/[^\d]/g, "").slice(0, 8);
@@ -2844,7 +2854,7 @@
       showExpiry();
     }
 
-    /* الورقة تُقرأ فور اختيارها فتملأ النوع والاسم والرقم وتاريخ الانتهاء */
+    /* الورقة تقرأ فور اختيارها فتملأ النوع والاسم والرقم وتاريخ الانتهاء */
     if (input) input.addEventListener("input", function () { delete this.dataset.prefill; });
     var fileInput = document.getElementById("newOrgFile");
     var readMsg = document.getElementById("newOrgRead");
@@ -2872,7 +2882,7 @@
         var expEl = document.getElementById("newOrgExpiry");
         if (fields.expiry_date && expEl && !String(expEl.value || "").trim()) {
           expEl.value = String(fields.expiry_date).slice(0, 10);
-          /* تاريخ مفترض (سنة من الإصدار) يُقال صراحةً ليصححه صاحبه */
+          /* تاريخ مفترض (سنة من الإصدار) يقال صراحة ليصححه صاحبه */
           expEl.dataset.assumed = fields.expiry_assumed ? "1" : "";
           showExpiry();
           filled.push(fields.expiry_assumed ? rt.readExpiryAssumed : rt.readExpiry);
@@ -2899,7 +2909,7 @@
       var btn = this;
       btn.disabled = true;
       createOrg(name, type, reg, expiry, nameEn).then(function (org) {
-        /* الملف نفسه يُرفع مرفقاً على مستند التسجيل الذي أنشأته القاعدة */
+        /* الملف نفسه يرفع مرفقا على مستند التسجيل الذي أنشأته القاعدة */
         if (file && org && org.item_id) {
           return uploadAttachment(org.item_id, file).catch(function () { err.textContent = rt.fileFailed; return null; });
         }
@@ -2914,7 +2924,7 @@
     });
   }
 
-  /* الاسم المعروض للجهة: بالإنجليزية في الواجهتين الإنجليزية والفرنسية إن وُجد */
+  /* الاسم المعروض للجهة: بالإنجليزية في الواجهتين الإنجليزية والفرنسية إن وجد */
   function orgDisplayName(o) {
     if (!o) return "";
     var wantEn = ["en", "fr"].indexOf(lang()) !== -1;
