@@ -196,6 +196,14 @@ function rulesExtract(rawText) {
     if (!out.issuer && rule.issuer) out.issuer = rule.issuer;
     if (rule.amount) { const m = text.match(rule.amount); if (m) out.amount = Number(m[1].replace(/,/g, "")) || null; }
   }
+  /* أوراق المحاكم: رقم الدعوى واسم المحكمة والدائرة تُقرأ مباشرة */
+  if (["hearing_notice", "case_filing", "court_ruling"].includes(out.kind)) {
+    out.case_number = findAfter(text, ["رقم\\s*(?:ال)?دعوى", "رقم\\s*القضية", "رقم\\s*القيد", "case\\s*(?:No\\.?|number)?"], "\\d{3,20}(?:\\/\\d{2,4})?") || (out.kind !== "court_ruling" ? out.number : null);
+    const court = text.match(/(?:المحكمة|محكمة)\s*[^\n:،,]{2,45}/);
+    if (court) out.court = court[0].trim();
+    const circuit = text.match(/الدائرة\s*[^\n:،,]{2,30}/);
+    if (circuit) out.court = (out.court ? out.court + " — " : "") + circuit[0].trim();
+  }
   /* رقم عام: "رقم ...: 123456" إن لم تجده القاعدة */
   if (!out.number) { const g = text.match(/رقم\s*[^:：\n]{0,25}[:：]\s*([0-9]{5,20})/); if (g) out.number = g[1]; }
   const exp = findDate(text, ["تاريخ\\s*(?:ال)?انتهاء", "ينتهي\\s*(?:في|بتاريخ)", "صالح(?:ة)?\\s*حتى", "تاريخ\\s*نهاية", "الانتهاء", "تاريخ\\s*(?:ال)?جلسة", "موعد\\s*(?:ال)?جلسة", "تاريخ\\s*(?:ال)?استحقاق", "تاريخ\\s*(?:ال)?سداد", "expir(?:y|es|ation)\\s*(?:date)?", "valid\\s*(?:until|to)", "due\\s*date", "hearing\\s*date"]);
