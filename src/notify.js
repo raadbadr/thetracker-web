@@ -28,7 +28,7 @@ export async function rpc(env, name, args) {
 }
 
 const TEXT = {
-  ar: { reminder: (t, due, tr) => `⏰ تذكير من TheTracker\n${t}\nالاستحقاق: ${due}${tr ? `\nالمتتبع: ${tr}` : ""}\nhttps://appmails.net/app/dashboard.html`,
+  ar: { reminder: (t, due, tr) => `⏰ تذكير من TheTracker\n${t}\nالاستحقاق: ${due}${tr ? `\nالسجل: ${tr}` : ""}\nhttps://appmails.net/app/dashboard.html`,
         linked: "✅ تم ربط حسابك بـ TheTracker بنجاح. ستصلك التنبيهات هنا.",
         badCode: "الرمز غير صحيح أو منتهٍ. افتح الإعدادات في TheTracker وانسخ الرمز الجديد.",
         test: "✅ رسالة تجريبية من TheTracker: هذه القناة تعمل." },
