@@ -501,28 +501,69 @@
     .case-bundle table { width: 100%; border-collapse: collapse; }
     .case-bundle th, .case-bundle td { padding: 0.6rem 0.75rem; text-align: start; font-size: 0.85rem; border-bottom: 1px solid var(--glass-border); }
 
-    /* الخط الزمني للإنجازات — أفقي */
-    .timeline {
-      display: flex; gap: 0; margin: 0; padding: 1.6rem 0 0.4rem; list-style: none;
-      overflow-x: auto; scrollbar-width: thin; position: relative;
-    }
-    .timeline::before {
-      content: ""; position: absolute; inset-inline: 0; inset-block-start: 1.85rem;
-      height: 2px; background: var(--glass-border);
-    }
-    .tl-item { position: relative; flex: 0 0 190px; padding: 1.4rem 0.9rem 0 0.9rem; }
-    .tl-dot {
-      position: absolute; inset-block-start: 0.25rem; inset-inline-start: 0.9rem;
-      width: 13px; height: 13px; border-radius: 50%; background: var(--primary);
-      box-shadow: 0 0 0 4px var(--glass);
-    }
-    .tl-item[data-kind="item_done"] .tl-dot { background: #2fbf71; }
-    .tl-item[data-kind="import"] .tl-dot { background: #f2a33c; }
-    .tl-item[data-kind="attachment"] .tl-dot { background: #7b6cf6; }
-    .tl-item[data-kind="member"] .tl-dot { background: #46b3e6; }
-    .tl-item[data-kind="subscription"] .tl-dot { background: #e5484d; }
-    .tl-title { display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-primary); line-height: 1.4; }
-    .tl-meta { font-size: 0.74rem; color: var(--text-secondary); }
+    /* الخط الزمني للإنجازات — نسخة شريط باركينزي (Liquid Glass) */
+    .tlx { --timeline-fill-pct: 100%; position: relative; isolation: isolate; margin-top: 0.75rem; padding: 3.4rem 1.2rem 2.2rem; border-radius: 16px;
+      backdrop-filter: blur(22px) saturate(1.65); -webkit-backdrop-filter: blur(22px) saturate(1.65);
+      background: linear-gradient(165deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.07) 42%, rgba(255,255,255,0.04) 100%);
+      border: 1px solid rgba(255,255,255,0.28);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.32), inset 0 -1px 0 rgba(0,0,0,0.12); }
+    [data-theme="light"] .tlx { background: linear-gradient(165deg, rgba(255,255,255,0.78) 0%, rgba(255,255,255,0.48) 45%, rgba(255,255,255,0.38) 100%);
+      border: 1px solid rgba(255,255,255,0.72); box-shadow: 0 12px 40px rgba(0,80,140,0.1), inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(0,60,100,0.06); }
+    .tlx-nav-row { display: flex; align-items: center; gap: 0.6rem; }
+    .tlx-nav-btn { flex: 0 0 auto; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; padding: 0; border-radius: 50%;
+      background: transparent; border: 1px solid rgba(255,255,255,0.35); color: var(--text-secondary); cursor: pointer;
+      -webkit-appearance: none; appearance: none; transition: color .15s ease, border-color .15s ease, transform .12s ease, opacity .15s ease; }
+    .tlx-nav-btn:hover:not(:disabled) { color: #4fc3f7; border-color: rgba(79,195,247,0.75); transform: scale(1.08); }
+    .tlx-nav-btn:disabled { opacity: 0.3; cursor: default; }
+    [data-theme="light"] .tlx-nav-btn { border-color: rgba(0,60,100,0.3); color: rgba(0,60,100,0.75); }
+    .tlx[dir="rtl"] .tlx-nav-btn svg { transform: scaleX(-1); }
+    .tlx-range-wrap { position: relative; flex: 1 1 auto; min-width: 0; height: 20px; z-index: 0; user-select: none; -webkit-user-select: none; }
+    .tlx-range-wrap::before { content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%); height: 14px; border-radius: 999px;
+      width: var(--timeline-fill-pct, 100%); max-width: 100%; pointer-events: none; z-index: 0; transition: width .14s cubic-bezier(.25,.8,.25,1);
+      background: linear-gradient(90deg, rgba(0,160,220,0.45) 0%, rgba(80,160,230,0.3) 55%, rgba(130,190,240,0.18) 100%); }
+    .tlx[dir="rtl"] .tlx-range-wrap::before { left: auto; right: 0; }
+    .tlx-range-wrap::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); height: 14px; border-radius: 999px;
+      pointer-events: none; z-index: -1; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.22);
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.15), inset 0 -1px 1px rgba(255,255,255,0.12); }
+    [data-theme="light"] .tlx-range-wrap::after { background: rgba(0,60,100,0.06); border: 1px solid rgba(255,255,255,0.85); }
+    .tlx input[type="range"] { position: relative; z-index: 1; width: 100%; height: 20px; margin: 0; padding: 0; display: block; border-radius: 999px;
+      -webkit-appearance: none; appearance: none; background: transparent; cursor: default; touch-action: none; }
+    .tlx input[type="range"]:focus { outline: none; }
+    .tlx[dir="rtl"] input[type="range"] { direction: rtl; }
+    .tlx input[type="range"]::-webkit-slider-runnable-track { height: 20px; border-radius: 999px; background: transparent; border: none; }
+    .tlx input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 36px; height: 20px; margin-top: 0; border-radius: 10px;
+      background: linear-gradient(180deg, #ffffff 0%, #f0f4f8 100%); border: none; box-shadow: 0 2px 12px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.4) inset; }
+    .tlx input[type="range"]::-moz-range-track { height: 20px; border-radius: 999px; background: transparent; border: none; }
+    .tlx input[type="range"]::-moz-range-thumb { width: 36px; height: 20px; border: none; border-radius: 10px;
+      background: linear-gradient(180deg, #ffffff 0%, #f0f4f8 100%); box-shadow: 0 2px 12px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.4) inset; }
+    .tlx-ends { display: flex; justify-content: space-between; margin-top: 0.5rem; padding-inline: calc(34px + 0.6rem); font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.02em; }
+    .tlx-today { position: absolute; left: 0; top: 0; bottom: 0; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 10; opacity: 0; transition: opacity .18s ease; }
+    .tlx-today.is-at-today { opacity: 1; }
+    .tlx-today-label { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); white-space: nowrap; font-size: 0.46rem; font-weight: 800; line-height: 1; color: rgba(0,100,180,0.9); letter-spacing: 0.06em; text-transform: uppercase; }
+    .tlx-ms { position: absolute; left: 0; top: 0; bottom: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; z-index: 2; }
+    .tlx-ms-tick { width: 3px; height: 26px; border-radius: 2px; opacity: 0.5; transition: opacity .16s ease, transform .16s ease;
+      background: linear-gradient(180deg, #ffd180 0%, #ff9100 45%, #e65100 100%); box-shadow: 0 0 10px rgba(255,145,0,0.5), 0 0 3px rgba(255,180,80,0.8), inset 0 1px 0 rgba(255,255,255,0.45); }
+    .tlx-ms.is-active .tlx-ms-tick { opacity: 1; transform: scaleY(1.35); }
+    .tlx-ms-label { position: absolute; bottom: calc(50% + 30px); left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 0.72rem; font-weight: 700; line-height: 1; color: #ffb347; letter-spacing: 0.03em; text-shadow: 0 1px 3px rgba(0,0,0,0.55); opacity: 0; transition: opacity .16s ease; }
+    .tlx-ms-date { position: absolute; bottom: calc(50% + 16px); left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 0.58rem; font-weight: 600; line-height: 1; color: rgba(255,179,71,0.7); opacity: 0; transition: opacity .16s ease; }
+    .tlx-ms.is-active .tlx-ms-label, .tlx-ms.is-active .tlx-ms-date { opacity: 1; }
+    [data-theme="light"] .tlx-ms-label { color: #c2410c; text-shadow: 0 1px 0 rgba(255,255,255,0.9); }
+    [data-theme="light"] .tlx-ms-date { color: rgba(194,65,12,0.65); }
+    /* ألوان الأنواع كما في معالم باركينزي: أخضر، أزرق، ذهبي، بنفسجي */
+    .tlx-ms[data-kind="item_done"] .tlx-ms-tick { background: linear-gradient(180deg, #b9f6ca 0%, #69f0ae 45%, #2e7d32 100%); box-shadow: 0 0 10px rgba(105,240,174,0.5), 0 0 3px rgba(185,246,202,0.8), inset 0 1px 0 rgba(255,255,255,0.45); }
+    .tlx-ms[data-kind="item_done"] .tlx-ms-label { color: #69f0ae; }
+    .tlx-ms[data-kind="import"] .tlx-ms-tick { background: linear-gradient(180deg, #bbdefb 0%, #42a5f5 45%, #1565c0 100%); box-shadow: 0 0 10px rgba(66,165,245,0.5), 0 0 3px rgba(187,222,251,0.8), inset 0 1px 0 rgba(255,255,255,0.45); }
+    .tlx-ms[data-kind="import"] .tlx-ms-label { color: #64b5f6; }
+    .tlx-ms[data-kind="attachment"] .tlx-ms-tick { background: linear-gradient(180deg, #fff8dc 0%, #ffd700 45%, #b8860b 100%); box-shadow: 0 0 12px rgba(255,215,0,0.65), 0 0 4px rgba(255,248,220,0.9), inset 0 1px 0 rgba(255,255,255,0.55); }
+    .tlx-ms[data-kind="attachment"] .tlx-ms-label { color: #ffd700; }
+    .tlx-ms[data-kind="member"] .tlx-ms-tick { background: linear-gradient(180deg, #e1bee7 0%, #ab47bc 45%, #6a1b9a 100%); box-shadow: 0 0 10px rgba(171,71,188,0.5), inset 0 1px 0 rgba(255,255,255,0.45); }
+    .tlx-ms[data-kind="member"] .tlx-ms-label { color: #ce93d8; }
+    .tlx-ms[data-kind="subscription"] .tlx-ms-tick { background: linear-gradient(180deg, #ffcdd2 0%, #ef5350 45%, #b71c1c 100%); box-shadow: 0 0 10px rgba(239,83,80,0.5), inset 0 1px 0 rgba(255,255,255,0.45); }
+    .tlx-ms[data-kind="subscription"] .tlx-ms-label { color: #ef9a9a; }
+    .tlx-month-tick { position: absolute; top: calc(50% - 7px); width: 1px; height: 14px; background: rgba(255,255,255,0.22); transform: translateX(-50%); pointer-events: none; z-index: 1; }
+    [data-theme="light"] .tlx-month-tick { background: rgba(0,60,100,0.18); }
+    .tlx-month-label { position: absolute; top: calc(50% + 13px); transform: translateX(-50%); white-space: nowrap; font-size: 0.58rem; font-weight: 600; line-height: 1; color: var(--text-secondary); opacity: 0.75; pointer-events: none; z-index: 1; }
+    @media (max-width: 768px) { .tlx-month-label { display: none; } .tlx input[type="range"]::-webkit-slider-thumb { width: 26px; height: 16px; border-radius: 8px; } }
     .ach-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.7rem; margin-bottom: 0.5rem; }
     .ach-card { padding: 0.8rem 0.9rem; border-radius: 16px; background: var(--glass); border: 1px solid var(--glass-border); text-align: center; }
     .ach-card b { display: block; font-size: 1.3rem; color: var(--primary); font-variant-numeric: tabular-nums; }
@@ -1081,6 +1122,9 @@
         statDone: "مكتملة",
         tabList: "القائمة",
         timelineTitle: "إنجازاتك",
+        tlNow: "الان",
+        tlPrev: "المعلم السابق",
+        tlNext: "المعلم التالي",
         timelineEmpty: "لا نشاط بعد — ابدأ باستيراد ملف أو إضافة موعد.",
         tlCreated: "أُضيف عنصر",
         tlDone: "أُنجز",
@@ -1288,6 +1332,9 @@
         statDone: "Done",
         tabList: "List",
         timelineTitle: "Your progress",
+        tlNow: "NOW",
+        tlPrev: "Previous milestone",
+        tlNext: "Next milestone",
         timelineEmpty: "No activity yet — import a file or add an appointment.",
         tlCreated: "Item added",
         tlDone: "Completed",
@@ -1495,6 +1542,9 @@
         statDone: "Terminés",
         tabList: "Liste",
         timelineTitle: "Vos réalisations",
+        tlNow: "MAINTENANT",
+        tlPrev: "Jalon précédent",
+        tlNext: "Jalon suivant",
         timelineEmpty: "Aucune activité — importez un fichier ou ajoutez un rendez-vous.",
         tlCreated: "Élément ajouté",
         tlDone: "Terminé",
@@ -1702,6 +1752,9 @@
         statDone: "مکمل",
         tabList: "فہرست",
         timelineTitle: "آپ کی کارکردگی",
+        tlNow: "اب",
+        tlPrev: "پچھلا سنگ میل",
+        tlNext: "اگلا سنگ میل",
         timelineEmpty: "ابھی کوئی سرگرمی نہیں — فائل درآمد کریں یا وقت شامل کریں۔",
         tlCreated: "آئٹم شامل",
         tlDone: "مکمل",
@@ -1938,9 +1991,10 @@
       document.getElementById("langDropdown").classList.toggle("show");
       document.getElementById("themeDropdown").classList.remove("show");
     });
+    // زر المظهر يبدّل الثيم مباشرةً بضغطة واحدة بلا قائمة (طلب المهندس رعد)
     document.getElementById("themeMenuBtn").addEventListener("click", e => {
       e.stopPropagation();
-      document.getElementById("themeDropdown").classList.toggle("show");
+      setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
       document.getElementById("langDropdown").classList.remove("show");
     });
     document.addEventListener("click", () => {
@@ -2375,9 +2429,31 @@
         return app.fmtDate(iso);
       }
 
+      /* شريط باركينزي: المسار زمني، المعالم علامات ملوّنة، والمقبض يقف على "الان" */
+      var TLX_STEPS = 10000;
+      var TLX_THUMB_W = 36;
+
+      function tlxLeft(ratio, isRtl) {
+        var r = isRtl ? 1 - ratio : ratio;
+        return "calc(" + (TLX_THUMB_W / 2) + "px + (100% - " + TLX_THUMB_W + "px) * " + r + ")";
+      }
+
+      function tlxFmtDate(ms) {
+        var lo = app.lang();
+        var loc = lo === "ur" ? "ur-PK" : lo;
+        return new Date(ms).toLocaleDateString(loc, { year: "numeric", month: "short", day: "numeric", numberingSystem: "latn" });
+      }
+
+      function tlxShortDate(ms) {
+        var lo = app.lang();
+        var loc = lo === "ur" ? "ur-PK" : lo;
+        return new Date(ms).toLocaleDateString(loc, { month: "short", day: "numeric", numberingSystem: "latn" });
+      }
+
       function renderTimeline(rows, stats) {
         var card = document.getElementById("timelineCard");
         if (!card) return;
+        var isRtl = (document.documentElement.getAttribute("dir") || "rtl") === "rtl";
         var html = "<h2>" + esc(T("timelineTitle")) + "</h2>";
         if (stats) {
           html += '<div class="ach-row">' +
@@ -2387,21 +2463,91 @@
             '<div class="ach-card"><b>' + esc(String(stats.imports_total || 0)) + "</b><span>" + esc(T("achImports")) + "</span></div>" +
             "</div>";
         }
-        if (!rows || !rows.length) {
-          card.innerHTML = html + '<p class="empty-note">' + esc(T("timelineEmpty")) + "</p>";
-          return;
-        }
-        html += '<ul class="timeline">';
-        rows.slice(0, 12).forEach(function (r) {
-          var kindKey = TL_KINDS[r.kind] || "tlCreated";
-          var meta = r.meta || {};
-          var extra = meta.item_number || meta.rows || meta.role || meta.status || "";
-          html += '<li class="tl-item" data-kind="' + esc(r.kind) + '"><span class="tl-dot"></span>' +
-                  '<span class="tl-title">' + esc(T(kindKey)) + (r.title ? " — " + esc(r.title) : "") + "</span>" +
-                  '<span class="tl-meta">' + esc(relativeDay(r.at)) + (extra ? " · " + esc(String(extra)) : "") + "</span></li>";
+        var events = (rows || []).map(function (r) {
+          var ms = new Date(r.at).getTime();
+          return isNaN(ms) ? null : { ms: ms, kind: r.kind, title: r.title || "", meta: r.meta || {} };
+        }).filter(Boolean).sort(function (a, b) { return a.ms - b.ms; });
+
+        var todayMs = Date.now();
+        var minMs = events.length ? Math.min(events[0].ms, todayMs - 30 * 86400000) : todayMs - 180 * 86400000;
+        minMs = Math.min(minMs, todayMs - 30 * 86400000);
+        var spanMs = Math.max(1, todayMs - minMs);
+        var ratioOf = function (ms) { return Math.max(0, Math.min(1, (ms - minMs) / spanMs)); };
+
+        var ms = "";
+        events.forEach(function (ev, i) {
+          var label = T(TL_KINDS[ev.kind] || "tlCreated") + (ev.title ? " — " + ev.title : "");
+          ms += '<div class="tlx-ms" data-kind="' + esc(ev.kind) + '" data-step="' + Math.round(ratioOf(ev.ms) * TLX_STEPS) + '" style="left:' + tlxLeft(ratioOf(ev.ms), isRtl) + '">' +
+                '<span class="tlx-ms-label">' + esc(label.length > 42 ? label.slice(0, 40) + "…" : label) + "</span>" +
+                '<span class="tlx-ms-date">' + esc(tlxShortDate(ev.ms)) + "</span>" +
+                '<span class="tlx-ms-tick" aria-hidden="true"></span></div>';
         });
-        html += "</ul>";
+
+        /* فواصل الأشهر وأسماؤها */
+        var months = "";
+        var d = new Date(minMs); d = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+        var lo = app.lang(); var loc = lo === "ur" ? "ur-PK" : lo;
+        while (d.getTime() < todayMs) {
+          var r0 = ratioOf(d.getTime());
+          var next = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+          var r1 = ratioOf(Math.min(next.getTime(), todayMs));
+          months += '<span class="tlx-month-tick" style="left:' + tlxLeft(r0, isRtl) + '"></span>';
+          if (r1 - r0 >= 0.09) {
+            months += '<span class="tlx-month-label" style="left:' + tlxLeft((r0 + r1) / 2, isRtl) + '">' +
+                      esc(d.toLocaleDateString(loc, { month: "short", numberingSystem: "latn" })) + "</span>";
+          }
+          d = next;
+        }
+
+        html += '<div class="tlx" id="tlx" dir="' + (isRtl ? "rtl" : "ltr") + '" style="--timeline-fill-pct:100%">' +
+          '<div class="tlx-nav-row">' +
+            '<button type="button" class="tlx-nav-btn" id="tlxPrev" aria-label="' + esc(T("tlPrev")) + '"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M14.5 5.5 8 12l6.5 6.5"/></svg></button>' +
+            '<div class="tlx-range-wrap">' + ms + months +
+              '<input type="range" id="tlxSlider" min="0" max="' + TLX_STEPS + '" value="' + TLX_STEPS + '" step="1" aria-label="' + esc(T("timelineTitle")) + '">' +
+              '<div class="tlx-today is-at-today" id="tlxToday" style="left:' + tlxLeft(1, isRtl) + '"><span class="tlx-today-label">' + esc(T("tlNow")) + "</span></div>" +
+            "</div>" +
+            '<button type="button" class="tlx-nav-btn" id="tlxNext" aria-label="' + esc(T("tlNext")) + '" disabled><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M9.5 5.5 16 12l-6.5 6.5"/></svg></button>' +
+          "</div>" +
+          '<div class="tlx-ends"><span>' + esc(tlxFmtDate(minMs)) + "</span><span>" + esc(tlxFmtDate(todayMs)) + "</span></div>" +
+        "</div>";
+        if (!events.length) html += '<p class="empty-note">' + esc(T("timelineEmpty")) + "</p>";
         card.innerHTML = html;
+        wireTimeline();
+      }
+
+      function wireTimeline() {
+        var bar = document.getElementById("tlx"), slider = document.getElementById("tlxSlider");
+        if (!bar || !slider) return;
+        var marks = [].slice.call(bar.querySelectorAll(".tlx-ms"));
+        var stops = marks.map(function (m) { return Number(m.dataset.step); }).concat([TLX_STEPS]);
+        stops = stops.filter(function (v, i, a) { return a.indexOf(v) === i; }).sort(function (a, b) { return a - b; });
+        var today = document.getElementById("tlxToday"), prev = document.getElementById("tlxPrev"), next = document.getElementById("tlxNext");
+        var SNAP = Math.round(TLX_STEPS * 0.015);
+
+        function apply(pos) {
+          var p = Number(pos);
+          bar.style.setProperty("--timeline-fill-pct", Math.max(0, Math.min(100, (p / TLX_STEPS) * 100)) + "%");
+          if (today) today.classList.toggle("is-at-today", p === TLX_STEPS);
+          var best = -1, active = null;
+          marks.forEach(function (m) { var st = Number(m.dataset.step); if (st <= p && st > best) { best = st; active = m; } });
+          marks.forEach(function (m) { m.classList.toggle("is-active", m === active); });
+          if (prev) prev.disabled = !stops.some(function (st) { return st < p; });
+          if (next) next.disabled = !stops.some(function (st) { return st > p; });
+        }
+        slider.addEventListener("input", function () {
+          var v = Number(this.value);
+          for (var i = 0; i < stops.length; i++) if (Math.abs(v - stops[i]) <= SNAP) { v = stops[i]; this.value = String(v); break; }
+          apply(v);
+        });
+        if (prev) prev.addEventListener("click", function () {
+          var p = Number(slider.value);
+          for (var i = stops.length - 1; i >= 0; i--) if (stops[i] < p) { slider.value = String(stops[i]); apply(stops[i]); return; }
+        });
+        if (next) next.addEventListener("click", function () {
+          var p = Number(slider.value);
+          for (var i = 0; i < stops.length; i++) if (stops[i] > p) { slider.value = String(stops[i]); apply(stops[i]); return; }
+        });
+        apply(TLX_STEPS);
       }
 
       function loadTimeline() {

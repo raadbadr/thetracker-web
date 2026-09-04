@@ -3459,9 +3459,10 @@
     const themeMenuBtn = document.getElementById("themeMenuBtn");
     const themeDropdown = document.getElementById("themeDropdown");
     
+    // زر المظهر يبدّل الثيم مباشرةً بضغطة واحدة بلا قائمة (طلب المهندس رعد)
     themeMenuBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      themeDropdown.classList.toggle("show");
+      setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
       langDropdown.classList.remove("show");
     });
 

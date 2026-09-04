@@ -1034,9 +1034,10 @@
       document.getElementById("langDropdown").classList.toggle("show");
       document.getElementById("themeDropdown").classList.remove("show");
     });
+    // زر المظهر يبدّل الثيم مباشرةً بضغطة واحدة بلا قائمة (طلب المهندس رعد)
     document.getElementById("themeMenuBtn").addEventListener("click", e => {
       e.stopPropagation();
-      document.getElementById("themeDropdown").classList.toggle("show");
+      setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
       document.getElementById("langDropdown").classList.remove("show");
     });
     document.addEventListener("click", () => {
