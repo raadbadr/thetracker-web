@@ -741,6 +741,79 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
       </div>
 
       <!-- إدارة الشركة الحالية -->
+      <div class="content" id="orgProfileCard">
+        <h2 data-i18n="orgProfileTitle">بيانات المنشأة</h2>
+        <p class="waitlist-note" data-i18n="orgProfileNote">هذه البيانات تظهر على الفواتير والتقارير والخطابات، وتحدد الأوراق الرسمية المتوقعة منك.</p>
+        <form id="orgProfileForm" novalidate>
+          <div class="settings-field">
+            <label for="opEntityType" data-i18n="opEntityType">نوع المنشأة</label>
+            <select class="waitlist-input" id="opEntityType">
+              <option value="company" data-i18n="opTypeCompany">شركة</option>
+              <option value="establishment" data-i18n="opTypeEstablishment">مؤسسة فردية</option>
+              <option value="freelance" data-i18n="opTypeFreelance">عمل حر</option>
+              <option value="nonprofit" data-i18n="opTypeNonprofit">جمعية أو منظمة غير ربحية</option>
+              <option value="government" data-i18n="opTypeGovernment">جهة حكومية</option>
+            </select>
+          </div>
+          <div class="settings-field">
+            <label for="opLegalName" data-i18n="opLegalName">الاسم النظامي</label>
+            <input type="text" class="waitlist-input" id="opLegalName" maxlength="200" autocomplete="organization">
+          </div>
+          <div class="settings-field">
+            <label for="opCr" data-i18n="opCr">رقم السجل التجاري</label>
+            <input type="text" class="waitlist-input" id="opCr" maxlength="20" dir="ltr" inputmode="numeric">
+          </div>
+          <div class="settings-field">
+            <label for="opVat" data-i18n="opVat">الرقم الضريبي</label>
+            <input type="text" class="waitlist-input" id="opVat" maxlength="20" dir="ltr" inputmode="numeric">
+          </div>
+          <div class="settings-field">
+            <label for="opUnified" data-i18n="opUnified">الرقم الموحد</label>
+            <input type="text" class="waitlist-input" id="opUnified" maxlength="20" dir="ltr" inputmode="numeric">
+          </div>
+          <div class="settings-field">
+            <label for="opLicense" data-i18n="opLicense">رقم الترخيص المهني</label>
+            <input type="text" class="waitlist-input" id="opLicense" maxlength="40" dir="ltr">
+          </div>
+          <div class="settings-field">
+            <label for="opPhone" data-i18n="opPhone">هاتف المنشأة</label>
+            <input type="tel" class="waitlist-input" id="opPhone" maxlength="24" dir="ltr">
+          </div>
+          <div class="settings-field">
+            <label for="opEmail" data-i18n="opEmail">بريد المنشأة</label>
+            <input type="email" class="waitlist-input" id="opEmail" maxlength="120" dir="ltr">
+          </div>
+          <div class="settings-field">
+            <label for="opWebsite" data-i18n="opWebsite">الموقع الإلكتروني</label>
+            <input type="url" class="waitlist-input" id="opWebsite" maxlength="160" dir="ltr">
+          </div>
+          <div class="settings-field">
+            <label for="opCity" data-i18n="opCity">المدينة</label>
+            <input type="text" class="waitlist-input" id="opCity" maxlength="80">
+          </div>
+          <div class="settings-field">
+            <label for="opStreet" data-i18n="opStreet">العنوان الوطني</label>
+            <input type="text" class="waitlist-input" id="opStreet" maxlength="200" placeholder="الحي، الشارع، رقم المبنى، الرمز البريدي">
+          </div>
+          <div class="settings-field">
+            <label for="opBank" data-i18n="opBank">البنك</label>
+            <input type="text" class="waitlist-input" id="opBank" maxlength="80">
+          </div>
+          <div class="settings-field">
+            <label for="opIban" data-i18n="opIban">الآيبان</label>
+            <input type="text" class="waitlist-input" id="opIban" maxlength="34" dir="ltr" placeholder="SA0000000000000000000000">
+          </div>
+          <div class="settings-field">
+            <label for="opAccountName" data-i18n="opAccountName">اسم صاحب الحساب</label>
+            <input type="text" class="waitlist-input" id="opAccountName" maxlength="160">
+          </div>
+          <div class="settings-actions">
+            <button type="submit" class="waitlist-btn" id="opSaveBtn" data-i18n="saveBtn">حفظ</button>
+            <p class="waitlist-msg" id="opMsg" style="display:none;margin:0" role="status" aria-live="polite"></p>
+          </div>
+        </form>
+      </div>
+
       <div class="content" id="orgCard">
         <h2 data-i18n="orgCardTitle">الشركة</h2>
         <div class="invite-row">
@@ -890,6 +963,31 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         unlimited: "غير محدود",
         upgradeBtn: "طلب ترقية",
         save: "حفظ",
+        orgProfileTitle: "بيانات المنشأة",
+        orgProfileNote: "هذه البيانات تظهر على الفواتير والتقارير والخطابات، وتحدد الأوراق الرسمية المتوقعة منك.",
+        opEntityType: "نوع المنشأة",
+        opTypeCompany: "شركة",
+        opTypeEstablishment: "مؤسسة فردية",
+        opTypeFreelance: "عمل حر",
+        opTypeNonprofit: "جمعية أو منظمة غير ربحية",
+        opTypeGovernment: "جهة حكومية",
+        opLegalName: "الاسم النظامي",
+        opCr: "رقم السجل التجاري",
+        opVat: "الرقم الضريبي",
+        opUnified: "الرقم الموحد",
+        opLicense: "رقم الترخيص المهني",
+        opPhone: "هاتف المنشأة",
+        opEmail: "بريد المنشأة",
+        opWebsite: "الموقع الإلكتروني",
+        opCity: "المدينة",
+        opStreet: "العنوان الوطني",
+        opBank: "البنك",
+        opIban: "الآيبان",
+        opAccountName: "اسم صاحب الحساب",
+        opSaved: "حُفظت بيانات المنشأة.",
+        opAdminOnly: "التعديل للمالك والمشرف فقط.",
+        opBadIban: "الآيبان يبدأ بـ SA ويتكون من 24 خانة.",
+        opBadVat: "الرقم الضريبي 15 رقما يبدأ وينتهي بالرقم 3.",
         orgCardTitle: "الشركة",
         orgSaved: "تم حفظ اسم الشركة.",
         deleteOrgBtn: "حذف الشركة",
@@ -1028,6 +1126,31 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         unlimited: "Unlimited",
         upgradeBtn: "Request an upgrade",
         save: "Save",
+        orgProfileTitle: "Organization details",
+        orgProfileNote: "These details appear on invoices, reports and letters, and decide which official papers are expected from you.",
+        opEntityType: "Entity type",
+        opTypeCompany: "Company",
+        opTypeEstablishment: "Sole establishment",
+        opTypeFreelance: "Freelance",
+        opTypeNonprofit: "Non-profit",
+        opTypeGovernment: "Government body",
+        opLegalName: "Legal name",
+        opCr: "Commercial register number",
+        opVat: "VAT number",
+        opUnified: "Unified number",
+        opLicense: "Professional licence number",
+        opPhone: "Organization phone",
+        opEmail: "Organization email",
+        opWebsite: "Website",
+        opCity: "City",
+        opStreet: "National address",
+        opBank: "Bank",
+        opIban: "IBAN",
+        opAccountName: "Account holder",
+        opSaved: "Organization details saved.",
+        opAdminOnly: "Only the owner and admins can edit.",
+        opBadIban: "A Saudi IBAN starts with SA and is 24 characters.",
+        opBadVat: "A VAT number is 15 digits starting and ending with 3.",
         orgCardTitle: "Company",
         orgSaved: "Company name saved.",
         deleteOrgBtn: "Delete company",
@@ -1166,6 +1289,31 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         unlimited: "Illimité",
         upgradeBtn: "Demander une mise à niveau",
         save: "Enregistrer",
+        orgProfileTitle: "Informations de l'entité",
+        orgProfileNote: "Ces informations figurent sur les factures, rapports et courriers, et déterminent les documents officiels attendus.",
+        opEntityType: "Type d'entité",
+        opTypeCompany: "Société",
+        opTypeEstablishment: "Établissement individuel",
+        opTypeFreelance: "Travail indépendant",
+        opTypeNonprofit: "Association",
+        opTypeGovernment: "Organisme public",
+        opLegalName: "Raison sociale",
+        opCr: "Numéro de registre de commerce",
+        opVat: "Numéro de TVA",
+        opUnified: "Numéro unifié",
+        opLicense: "Numéro de licence professionnelle",
+        opPhone: "Téléphone",
+        opEmail: "E-mail",
+        opWebsite: "Site web",
+        opCity: "Ville",
+        opStreet: "Adresse nationale",
+        opBank: "Banque",
+        opIban: "IBAN",
+        opAccountName: "Titulaire du compte",
+        opSaved: "Informations enregistrées.",
+        opAdminOnly: "Seuls le propriétaire et les administrateurs peuvent modifier.",
+        opBadIban: "Un IBAN saoudien commence par SA et compte 24 caractères.",
+        opBadVat: "Le numéro de TVA comporte 15 chiffres commençant et finissant par 3.",
         orgCardTitle: "Entreprise",
         orgSaved: "Nom de l'entreprise enregistré.",
         deleteOrgBtn: "Supprimer l'entreprise",
@@ -1304,6 +1452,31 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         unlimited: "لامحدود",
         upgradeBtn: "اپ گریڈ کی درخواست",
         save: "محفوظ کریں",
+        orgProfileTitle: "ادارے کی تفصیلات",
+        orgProfileNote: "یہ تفصیلات انوائسز، رپورٹس اور خطوط پر ظاہر ہوتی ہیں اور طے کرتی ہیں کہ آپ سے کون سے سرکاری کاغذات متوقع ہیں۔",
+        opEntityType: "ادارے کی قسم",
+        opTypeCompany: "کمپنی",
+        opTypeEstablishment: "انفرادی ادارہ",
+        opTypeFreelance: "فری لانس",
+        opTypeNonprofit: "غیر منافع بخش ادارہ",
+        opTypeGovernment: "سرکاری ادارہ",
+        opLegalName: "قانونی نام",
+        opCr: "تجارتی رجسٹر نمبر",
+        opVat: "ٹیکس نمبر",
+        opUnified: "متحدہ نمبر",
+        opLicense: "پیشہ ورانہ لائسنس نمبر",
+        opPhone: "ادارے کا فون",
+        opEmail: "ادارے کا ای میل",
+        opWebsite: "ویب سائٹ",
+        opCity: "شہر",
+        opStreet: "قومی پتہ",
+        opBank: "بینک",
+        opIban: "آئی بین",
+        opAccountName: "اکاؤنٹ ہولڈر",
+        opSaved: "ادارے کی تفصیلات محفوظ ہو گئیں۔",
+        opAdminOnly: "صرف مالک اور منتظم ترمیم کر سکتے ہیں۔",
+        opBadIban: "سعودی آئی بین SA سے شروع ہوتا ہے اور 24 حروف کا ہوتا ہے۔",
+        opBadVat: "ٹیکس نمبر 15 ہندسوں کا ہے جو 3 سے شروع اور ختم ہوتا ہے۔",
         orgCardTitle: "کمپنی",
         orgSaved: "کمپنی کا نام محفوظ ہو گیا۔",
         deleteOrgBtn: "کمپنی حذف کریں",
@@ -2198,6 +2371,47 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
       }
       window.__settingsRerender = rerender;
 
+
+      /* ---------- بطاقة المنشأة: بيانات تخدم كل القطاعات ---------- */
+      var OP_FIELDS = { opLegalName: "legal_name", opCr: "cr_number", opVat: "vat_number", opUnified: "unified_number",
+        opLicense: "license_number", opPhone: "phone", opEmail: "email", opWebsite: "website",
+        opBank: "bank_name", opIban: "iban", opAccountName: "account_name" };
+
+      function fillOrgProfile() {
+        return app.orgProfile().then(function (p) {
+          state.orgProfile = p || null;
+          var addr = (p && p.national_address) || {};
+          if (el("opEntityType")) el("opEntityType").value = (p && p.entity_type) || "company";
+          Object.keys(OP_FIELDS).forEach(function (id) {
+            var node = el(id); if (node) node.value = (p && p[OP_FIELDS[id]]) || "";
+          });
+          if (el("opCity")) el("opCity").value = addr.city || "";
+          if (el("opStreet")) el("opStreet").value = addr.street || "";
+          var canEdit = ["owner", "admin"].indexOf(app.role ? app.role() : "") !== -1;
+          el("orgProfileForm").querySelectorAll("input,select,button").forEach(function (n) { n.disabled = !canEdit; });
+          if (!canEdit) setMsg("opMsg", t("opAdminOnly"), "");
+        }).catch(function () { /* بطاقة اختيارية: لا تُعطل بقية الإعدادات */ });
+      }
+
+      function saveOrgProfile(ev) {
+        if (ev) ev.preventDefault();
+        var iban = String(el("opIban").value || "").replace(/\s+/g, "").toUpperCase();
+        if (iban && !/^SA\d{22}$/.test(iban)) { setMsg("opMsg", t("opBadIban"), "error"); return; }
+        var vat = String(el("opVat").value || "").replace(/\s+/g, "");
+        if (vat && !/^3\d{13}3$/.test(vat)) { setMsg("opMsg", t("opBadVat"), "error"); return; }
+        var row = { entity_type: el("opEntityType").value,
+          national_address: { city: String(el("opCity").value || "").trim(), street: String(el("opStreet").value || "").trim() } };
+        Object.keys(OP_FIELDS).forEach(function (id) { row[OP_FIELDS[id]] = String(el(id).value || "").trim(); });
+        row.iban = iban; row.vat_number = vat;
+        el("opSaveBtn").disabled = true;
+        app.saveOrgProfile(row).then(function (saved) {
+          state.orgProfile = saved;
+          setMsg("opMsg", t("opSaved"), "success");
+        }).catch(function () {
+          setMsg("opMsg", t("genericError"), "error");
+        }).finally(function () { el("opSaveBtn").disabled = false; });
+      }
+
       function boot() {
         app = window.trackerApp;
         if (!app || !app.ready) { showUnavailable(); return; }
@@ -2207,9 +2421,11 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
           show("settingsMain", true);
           state.loaded = true;
           fillProfile();
+          fillOrgProfile();
           renderChannels();
 
           el("profileForm").addEventListener("submit", saveProfile);
+          el("orgProfileForm").addEventListener("submit", saveOrgProfile);
           el("channelsGrid").addEventListener("click", onChannelAction);
           el("channelsGrid").addEventListener("click", onChannelToggle);
           el("channelsGrid").addEventListener("submit", onSmsSubmit);
@@ -2262,7 +2478,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
 <!-- رمز QR لربط تيليجرام من الجوال (qrcode-generator من cdnjs — مسموح في CSP) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="/app.js?v=4" defer></script>
-<script src="/app/common.js?v=6" defer></script>
+<script src="/app/common.js?v=7" defer></script>
 <script src="/brand-logo.js?v=4" defer></script>
 </body>
 </html>

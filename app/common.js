@@ -512,6 +512,44 @@
     });
   }
 
+  /* ---------- بطاقة المنشأة وأوراقها الرسمية (نواة مشتركة لكل قطاع) ---------- */
+
+  var ORG_PROFILE_FIELDS = ["entity_type", "legal_name", "cr_number", "vat_number", "unified_number",
+    "license_number", "national_address", "phone", "email", "website", "iban", "bank_name", "account_name", "notes"];
+
+  function orgProfile() {
+    return run(function (client) {
+      var orgId = requireOrg();
+      return client.from("org_profiles").select("*").eq("org_id", orgId).maybeSingle().then(unwrap);
+    });
+  }
+
+  function saveOrgProfile(row) {
+    return run(function (client) {
+      var orgId = requireOrg();
+      var r = row || {};
+      var clean = { org_id: orgId, updated_by: app.user.id };
+      ORG_PROFILE_FIELDS.forEach(function (k) {
+        if (!Object.prototype.hasOwnProperty.call(r, k)) return;
+        var v = r[k];
+        if (k === "national_address") clean[k] = v && typeof v === "object" ? v : {};
+        else clean[k] = (v === "" || v == null) ? null : String(v).trim();
+      });
+      if (!clean.entity_type) clean.entity_type = "company";
+      return client.from("org_profiles").upsert(clean, { onConflict: "org_id" }).select("*").single().then(unwrap);
+    });
+  }
+
+  /* حالة الأوراق الرسمية: ما هو محفوظ، وما ينتهي قريبا، وما ينقص */
+  function orgDocumentsStatus() {
+    return run(function (client) {
+      var orgId = requireOrg();
+      return client.rpc("org_documents_status", { p_org: orgId }).then(unwrap).then(function (d) {
+        return d || { papers: [], extra: [] };
+      });
+    });
+  }
+
   /* ---------- مكتبة الإجراءات وسجل المخاطر ---------- */
 
   function listProcesses() {
@@ -1796,6 +1834,9 @@
   app.isPlatformAdmin = isPlatformAdmin;
   app.activityFeed = activityFeed;
   app.achievements = achievements;
+  app.orgProfile = orgProfile;
+  app.saveOrgProfile = saveOrgProfile;
+  app.orgDocumentsStatus = orgDocumentsStatus;
   app.listProcesses = listProcesses;
   app.saveProcess = saveProcess;
   app.deleteProcess = deleteProcess;

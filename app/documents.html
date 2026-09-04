@@ -768,7 +768,27 @@
         </form>
       </div>
 
-      <!-- (2) المستندات المحفوظة -->
+      <!-- (2) الأوراق الرسمية المتوقعة من كل منشأة -->
+      <div class="content" id="papersCard" hidden>
+        <h2 data-i18n="papersTitle">الأوراق الرسمية</h2>
+        <p class="waitlist-note" id="papersNote" data-i18n="papersNote">الأوراق التي تحتاجها كل منشأة. الناقص يظهر هنا، والمنتهي قريبا يصلك تذكيره على تيليغرام.</p>
+        <div class="platform-stats-list" id="papersStats"></div>
+        <div class="table-wrap">
+          <table class="items-table">
+            <thead><tr>
+              <th data-i18n="docKind">نوع المستند</th>
+              <th data-i18n="docNumber">الرقم</th>
+              <th data-i18n="docExpiry">الانتهاء</th>
+              <th data-i18n="docLeft">المتبقي</th>
+              <th data-i18n="papersState">الحالة</th>
+              <th data-i18n="actions">الإجراءات</th>
+            </tr></thead>
+            <tbody id="papersBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- (3) المستندات المحفوظة -->
       <div class="content" id="listCard">
         <h2 data-i18n="docListTitle">مستندات الشركة</h2>
         <div class="waitlist-form filters-row">
@@ -849,6 +869,23 @@
         docSaved: "حفظ المستند وأضيف للمتابعة والتنبيه.",
         docFileFailed: "حفظت البيانات لكن تعذر رفع الملف.",
         docStorageLimit: "حفظت البيانات لكن مساحة التخزين في باقتك ممتلئة.",
+        papersTitle: "الأوراق الرسمية",
+        papersNote: "الأوراق التي تحتاجها كل منشأة. الناقص يظهر هنا، والمنتهي قريبا يصلك تذكيره على تيليغرام.",
+        papersState: "الحالة",
+        pMissing: "ناقص",
+        pValid: "سارٍ",
+        pExpiring: "ينتهي قريبا",
+        pExpired: "منتهٍ",
+        pStored: "محفوظ بلا تاريخ",
+        pRequired: "مطلوب",
+        pOptional: "اختياري",
+        pAdd: "أضف",
+        pOpen: "افتح",
+        pStatValid: "سارية",
+        pStatExpiring: "تنتهي قريبا",
+        pStatExpired: "منتهية",
+        pStatMissing: "ناقصة",
+        docReplace: "استبدل",
         docExpired: "منته",
         docDays: "يوما",
         docDeleteConfirm: "حذف المستند وملفاته نهائيا؟",
@@ -1033,6 +1070,23 @@
         docSaved: "Saved and added to tracking and reminders.",
         docFileFailed: "Data saved, but the file could not be uploaded.",
         docStorageLimit: "Data saved, but your plan storage is full.",
+        papersTitle: "Official papers",
+        papersNote: "The papers every organization needs. Missing ones show here, and expiring ones reach you on Telegram.",
+        papersState: "State",
+        pMissing: "Missing",
+        pValid: "Valid",
+        pExpiring: "Expiring",
+        pExpired: "Expired",
+        pStored: "Stored, no date",
+        pRequired: "Required",
+        pOptional: "Optional",
+        pAdd: "Add",
+        pOpen: "Open",
+        pStatValid: "Valid",
+        pStatExpiring: "Expiring",
+        pStatExpired: "Expired",
+        pStatMissing: "Missing",
+        docReplace: "Replace",
         docExpired: "Expired",
         docDays: "days",
         docDeleteConfirm: "Delete this document and its files permanently?",
@@ -1217,6 +1271,23 @@
         docSaved: "Enregistré et ajouté au suivi.",
         docFileFailed: "Données enregistrées, mais le fichier n’a pas pu être téléversé.",
         docStorageLimit: "Données enregistrées, mais le stockage de votre forfait est plein.",
+        papersTitle: "Documents officiels",
+        papersNote: "Les documents dont chaque entité a besoin. Les manquants apparaissent ici, et les échéances vous parviennent sur Telegram.",
+        papersState: "État",
+        pMissing: "Manquant",
+        pValid: "Valide",
+        pExpiring: "Bientôt expiré",
+        pExpired: "Expiré",
+        pStored: "Enregistré, sans date",
+        pRequired: "Obligatoire",
+        pOptional: "Facultatif",
+        pAdd: "Ajouter",
+        pOpen: "Ouvrir",
+        pStatValid: "Valides",
+        pStatExpiring: "Bientôt expirés",
+        pStatExpired: "Expirés",
+        pStatMissing: "Manquants",
+        docReplace: "Remplacer",
         docExpired: "Expiré",
         docDays: "jours",
         docDeleteConfirm: "Supprimer ce document et ses fichiers ?",
@@ -1401,6 +1472,23 @@
         docSaved: "محفوظ ہو کر ٹریکنگ میں شامل ہو گئی۔",
         docFileFailed: "ڈیٹا محفوظ ہوا مگر فائل اپ لوڈ نہیں ہو سکی۔",
         docStorageLimit: "ڈیٹا محفوظ ہوا مگر پیکج کی اسٹوریج بھر گئی۔",
+        papersTitle: "سرکاری کاغذات",
+        papersNote: "ہر ادارے کو درکار کاغذات۔ غائب یہاں دکھتے ہیں، اور ختم ہونے والوں کی یاد دہانی ٹیلیگرام پر آتی ہے۔",
+        papersState: "حالت",
+        pMissing: "غائب",
+        pValid: "مؤثر",
+        pExpiring: "جلد ختم",
+        pExpired: "ختم شدہ",
+        pStored: "محفوظ، تاریخ کے بغیر",
+        pRequired: "لازمی",
+        pOptional: "اختیاری",
+        pAdd: "شامل کریں",
+        pOpen: "کھولیں",
+        pStatValid: "مؤثر",
+        pStatExpiring: "جلد ختم",
+        pStatExpired: "ختم شدہ",
+        pStatMissing: "غائب",
+        docReplace: "تبدیل کریں",
         docExpired: "ختم",
         docDays: "دن",
         docDeleteConfirm: "دستاویز اور فائلیں مستقل حذف کریں؟",
@@ -1669,7 +1757,7 @@
     (function () {
       "use strict";
       var app = null;
-      var state = { items: [], attachments: {}, file: null, fields: null, tracker: null, kind: "", search: "" };
+      var state = { items: [], attachments: {}, file: null, fields: null, tracker: null, kind: "", search: "", papers: null, pendingKind: null, wantedKind: null };
       var PDF_SRC = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
       var PDF_WORKER = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
       var KINDS = ["commercial_register","articles_of_association","bylaws","chamber_certificate","gosi_certificate","zakat_certificate","saudization_certificate","vat_certificate","license","lease_contract","contract","case_filing","court_ruling","hearing_notice","violation","invoice","power_of_attorney","id_document","other"];
@@ -1754,6 +1842,8 @@
       function handleFile(file) {
         if (!file) return;
         state.file = file;
+        var wantedKind = state.pendingKind; state.pendingKind = null;
+        state.wantedKind = wantedKind;
         show("docForm", false);
         setStatus(t("docReading"));
         var isPdf = /pdf$/i.test(file.name) || file.type === "application/pdf";
@@ -1781,8 +1871,10 @@
       }
 
       function fillForm(f) {
-        $("fKind").value = KINDS.indexOf(f.kind) !== -1 ? f.kind : "other";
-        $("fTitle").value = f.title || (f.number ? kindLabel(f.kind) + " " + f.number : kindLabel(f.kind));
+        var wanted = state.wantedKind; state.wantedKind = null;
+        var kind = (wanted && KINDS.indexOf(wanted) !== -1) ? wanted : (KINDS.indexOf(f.kind) !== -1 ? f.kind : "other");
+        $("fKind").value = kind;
+        $("fTitle").value = f.title || (f.number ? kindLabel(kind) + " " + f.number : kindLabel(kind));
         $("fNumber").value = f.number || "";
         $("fIssuer").value = f.issuer || "";
         $("fParty").value = f.party || "";
@@ -1801,7 +1893,14 @@
           var names = Object.keys(TRACKER_NAME).map(function (k) { return TRACKER_NAME[k]; });
           var found = (list || []).filter(function (tr) { return names.indexOf(tr.name) !== -1; })[0];
           if (found) { state.tracker = found; return found; }
-          return app.createTracker({ name: TRACKER_NAME[lang()] || TRACKER_NAME.ar }).then(function (tr) { state.tracker = tr; return tr; });
+          return app.createTracker({ name: TRACKER_NAME[lang()] || TRACKER_NAME.ar }).then(function (tr) {
+            state.tracker = tr;
+            /* انتهاء الترخيص يجب أن ينبه قبل شهر وقبل أسبوع، لا قبل يوم واحد */
+            return Promise.all([
+              app.saveRule({ tracker_id: tr.id, offset_minutes: 43200, channels: ["telegram"], target: "all" }),
+              app.saveRule({ tracker_id: tr.id, offset_minutes: 10080, channels: ["telegram"], target: "all" })
+            ]).catch(function () { return null; }).then(function () { return tr; });
+          });
         });
       }
 
@@ -1845,7 +1944,7 @@
           setStatus(t("docSaved"), "success");
           show("docForm", false);
           state.file = null; $("docFile").value = "";
-          return loadDocs();
+          return Promise.all([loadDocs(), loadPapers()]);
         }).catch(function () { setStatus(t("docFailed"), "error"); })
           .finally(function () { btn.disabled = false; });
       }
@@ -1887,6 +1986,56 @@
           body.appendChild(tr);
         });
       }
+      /* ---------- الأوراق الرسمية: ما تحتاجه كل منشأة، وما ينقصها ---------- */
+      var PAPER_STATE = { missing: { key: "pMissing", cls: "status-overdue" }, expired: { key: "pExpired", cls: "status-overdue" },
+        expiring: { key: "pExpiring", cls: "status-open" }, valid: { key: "pValid", cls: "status-done" },
+        stored: { key: "pStored", cls: "" } };
+
+      function renderPapers() {
+        var data = state.papers;
+        if (!data || !data.papers || !data.papers.length) { show("papersCard", false); return; }
+        show("papersCard", true);
+        var counts = { valid: 0, expiring: 0, expired: 0, missing: 0 };
+        data.papers.forEach(function (p) {
+          if (p.state === "missing") { if (p.required) counts.missing += 1; }
+          else if (p.state === "expired") counts.expired += 1;
+          else if (p.state === "expiring") counts.expiring += 1;
+          else counts.valid += 1;
+        });
+        $("papersStats").innerHTML = [
+          ["pStatValid", counts.valid, ""], ["pStatExpiring", counts.expiring, "status-open"],
+          ["pStatExpired", counts.expired, "status-overdue"], ["pStatMissing", counts.missing, "status-overdue"]
+        ].map(function (c) {
+          return '<div class="platform-stat-card"><div class="platform-stat-value ' + c[2] + '">' + c[1] +
+                 '</div><div class="platform-stat-label">' + esc(t(c[0])) + "</div></div>";
+        }).join("");
+
+        var body = $("papersBody"); body.innerHTML = "";
+        data.papers.forEach(function (p) {
+          var st = PAPER_STATE[p.state] || PAPER_STATE.stored;
+          var left = p.days_left == null ? "-" : (p.days_left < 0 ? t("docExpired") : (p.days_left + " " + t("docDays")));
+          var tr = document.createElement("tr");
+          tr.innerHTML =
+            "<td>" + esc(kindLabel(p.kind)) + '<span class="item-cat">' + esc(t(p.required ? "pRequired" : "pOptional")) + "</span></td>" +
+            '<td dir="ltr">' + esc(p.number || "-") + "</td>" +
+            "<td>" + (p.expires_at ? esc(app.fmtDate(p.expires_at)) : "-") + "</td>" +
+            '<td><span class="' + st.cls + '">' + esc(p.state === "missing" ? "-" : left) + "</span></td>" +
+            '<td><span class="' + st.cls + '">' + esc(t(st.key)) + "</span></td>" +
+            '<td><div class="chat-options row-actions">' +
+              '<button type="button" class="chat-option-btn" data-paper-add="' + esc(p.kind) + '">' +
+                esc(t(p.state === "missing" ? "pAdd" : "docReplace")) + "</button>" +
+            "</div></td>";
+          body.appendChild(tr);
+        });
+      }
+
+      function loadPapers() {
+        return app.orgDocumentsStatus().then(function (d) {
+          state.papers = d && d.papers ? d : null;
+          renderPapers();
+        }).catch(function () { show("papersCard", false); });
+      }
+
       function loadDocs() {
         return Promise.all([app.listItems({}), app.listAttachments(null)]).then(function (res) {
           state.items = (res[0] || []).filter(function (it) { return it.data && it.data.document_kind; });
@@ -1913,6 +2062,13 @@
         $("docCancelBtn").addEventListener("click", function () { show("docForm", false); state.file = null; $("docFile").value = ""; setStatus(""); });
         $("filterKind").addEventListener("change", function () { state.kind = this.value; render(); });
         $("filterSearch").addEventListener("input", function () { state.search = this.value.trim(); render(); });
+        $("papersBody").addEventListener("click", function (e) {
+          var btn = e.target.closest("[data-paper-add]");
+          if (!btn) return;
+          e.preventDefault();
+          state.pendingKind = btn.getAttribute("data-paper-add");
+          $("docFile").click();
+        });
         $("docsBody").addEventListener("click", function (e) {
           var o = e.target.closest("[data-open]"), d = e.target.closest("[data-del]");
           if (o) {
@@ -1937,7 +2093,7 @@
           if (!app.org) { show("noOrgCard", true); return; }
           renderKindSelects(); wire();
           show("docsView", true);
-          return loadDocs();
+          return Promise.all([loadDocs(), loadPapers()]);
         }).catch(function () { show("loadingCard", false); show("unavailableCard", true); });
       }
       if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
@@ -1945,7 +2101,7 @@
   </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 <script src="/app.js?v=4" defer></script>
-<script src="/app/common.js?v=6" defer></script>
+<script src="/app/common.js?v=7" defer></script>
 <script src="/brand-logo.js?v=4" defer></script>
 </body>
 </html>
