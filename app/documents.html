@@ -875,6 +875,7 @@
             <label class="form-field"><span data-i18n="docNumber">رقم المستند</span><input type="text" class="waitlist-input" id="fNumber" maxlength="120" dir="ltr"></label>
             <label class="form-field"><span data-i18n="docIssuer">الجهة المصدرة</span><input type="text" class="waitlist-input" id="fIssuer" maxlength="200" dir="auto"></label>
             <label class="form-field"><span data-i18n="docParty">الشركة / صاحب المستند</span><input type="text" class="waitlist-input" id="fParty" maxlength="200" dir="auto"></label>
+            <label class="form-field"><span data-i18n="docPartyEn">الاسم بالإنجليزية</span><input type="text" class="waitlist-input" id="fPartyEn" maxlength="200" dir="ltr"></label>
             <label class="form-field"><span data-i18n="docIssueDate">تاريخ الإصدار</span><input type="date" class="waitlist-input" id="fIssue" dir="ltr"></label>
             <label class="form-field"><span data-i18n="docExpiry">تاريخ الانتهاء / الاستحقاق</span><input type="date" class="waitlist-input" id="fExpiry" dir="ltr"></label>
             <label class="form-field"><span data-i18n="docAmount">المبلغ (<span class="sar-symbol" aria-label="ريال سعودي"></span>)</span><input type="number" class="waitlist-input" id="fAmount" step="0.01" dir="ltr"></label>
@@ -1076,6 +1077,7 @@
         docNumber: "رقم المستند",
         docIssuer: "الجهة المصدرة",
         docParty: "الشركة / صاحب المستند",
+        docPartyEn: "الاسم بالإنجليزية",
         docIssueDate: "تاريخ الإصدار",
         docExpiry: "تاريخ الانتهاء / الاستحقاق",
         docAmount: "المبلغ (<span class=\"sar-symbol\" aria-label=\"ريال سعودي\"></span>)",
@@ -1373,6 +1375,7 @@
         docNumber: "Document number",
         docIssuer: "Issuer",
         docParty: "Company / holder",
+        docPartyEn: "Name in English",
         docIssueDate: "Issue date",
         docExpiry: "Expiry / due date",
         docAmount: "Amount (<span class=\"sar-symbol\" aria-label=\"ريال سعودي\"></span>)",
@@ -1670,6 +1673,7 @@
         docNumber: "Numéro",
         docIssuer: "Émetteur",
         docParty: "Entreprise / titulaire",
+        docPartyEn: "Nom en anglais",
         docIssueDate: "Date d'émission",
         docExpiry: "Expiration / échéance",
         docAmount: "Montant (<span class=\"sar-symbol\" aria-label=\"ريال سعودي\"></span>)",
@@ -1967,6 +1971,7 @@
         docNumber: "دستاویز نمبر",
         docIssuer: "جاری کنندہ",
         docParty: "کمپنی / مالک",
+        docPartyEn: "نام انگریزی میں",
         docIssueDate: "اجرا کی تاریخ",
         docExpiry: "میعاد / مقررہ تاریخ",
         docAmount: "رقم (<span class=\"sar-symbol\" aria-label=\"ريال سعودي\"></span>)",
@@ -2425,12 +2430,13 @@
         var map = f && ORG_FROM_DOC[f.kind];
         if (!map) return null;
         var name = String((f.party || "") || "").trim();
+        var nameEn = String(f.party_en || "").trim();
         var number = String(f.number || "").trim();
 
         /* لا شركة بعد؟ الورقة نفسها تنشئها. */
         if (!app.org) {
-          if (!name || !map.entity) return null;
-          return app.createOrg(name, map.entity, map.entity === "company" ? number : "", f.expiry_date || null)
+          if ((!name && !nameEn) || !map.entity) return null;
+          return app.createOrg(name, map.entity, map.entity === "company" ? number : "", f.expiry_date || null, nameEn)
             .then(function (org) {
               toast(fmtOne("orgCreatedFromDoc", org.name), "success");
               return saveProfileFields(f, map, name, number);
@@ -2447,6 +2453,7 @@
           var patch = {};
           if (map.field && number && !have[map.field]) patch[map.field] = number;
           if (name && !have.legal_name) patch.legal_name = name;
+          if (nameEn && !have.legal_name_en) patch.legal_name_en = nameEn;
           if (!Object.keys(patch).length) return null;
           return app.saveOrgProfile(patch).then(function () {
             toast(t("orgProfileFilled"), "success");
@@ -2465,6 +2472,7 @@
         $("fNumber").value = f.number || "";
         $("fIssuer").value = f.issuer || "";
         $("fParty").value = f.party || "";
+        $("fPartyEn").value = f.party_en || "";
         $("fIssue").value = f.issue_date || "";
         $("fExpiry").value = f.expiry_date || "";
         $("fAmount").value = f.amount != null ? f.amount : "";
@@ -2508,6 +2516,7 @@
             category: kindLabel(kind),
             amount: amount,
             client_name: String($("fParty").value || "").trim() || null,
+            client_name_en: String($("fPartyEn").value || "").trim() || null,
             case_number: String($("fCase").value || "").trim() || null,
             data: {
               document_kind: kind,
@@ -2569,7 +2578,7 @@
             "<td>" + esc(kindLabel(d.document_kind)) + "</td>" +
             '<td><span class="item-title">' + esc(it.title) + "</span></td>" +
             '<td dir="ltr">' + esc(d.number || "-") + "</td>" +
-            "<td>" + esc(it.client_name || "-") + "</td>" +
+            "<td>" + esc((app.clientDisplayName ? app.clientDisplayName(it) : it.client_name) || "-") + "</td>" +
             "<td>" + (it.due_at ? esc(app.fmtDate(it.due_at)) : "-") + "</td>" +
             '<td><span class="' + cls + '">' + esc(leftText) + "</span></td>" +
             "<td>" + files.map(function (a) { return '<a href="#" data-open="' + esc(a.id) + '">' + esc(a.name) + "</a>"; }).join("<br>") + "</td>" +

@@ -977,6 +977,7 @@
               <label class="form-field"><span data-i18n="fieldStatus">الحالة</span><select class="waitlist-input" id="editStatus"></select></label>
               <label class="form-field"><span data-i18n="fieldAmount">المبلغ</span><input type="number" step="0.01" min="0" class="waitlist-input" id="editAmount" dir="ltr"></label>
               <label class="form-field"><span data-i18n="fieldClient">الجهة أو العميل</span><input type="text" class="waitlist-input" id="editClient" maxlength="160" dir="auto"></label>
+              <label class="form-field"><span data-i18n="fieldClientEn">الجهة أو العميل بالإنجليزية</span><input type="text" class="waitlist-input" id="editClientEn" maxlength="160" dir="ltr"></label>
               <label class="form-field"><span data-i18n="fieldCaseNumber">رقم الملف</span><input type="text" class="waitlist-input" id="editCaseNumber" maxlength="120" dir="ltr"></label>
             </div>
             <div class="waitlist-form form-actions">
@@ -1024,6 +1025,7 @@
                 <label class="form-field"><span data-i18n="fieldAssignee">المسؤول</span><select class="waitlist-input" id="addAssignee"></select></label>
                 <label class="form-field"><span data-i18n="fieldAmount">المبلغ</span><input type="number" step="0.01" min="0" class="waitlist-input" id="addAmount" dir="ltr"></label>
                 <label class="form-field"><span data-i18n="fieldClient">الجهة أو العميل</span><input type="text" class="waitlist-input" id="addClient" maxlength="160" dir="auto"></label>
+                <label class="form-field"><span data-i18n="fieldClientEn">الجهة أو العميل بالإنجليزية</span><input type="text" class="waitlist-input" id="addClientEn" maxlength="160" dir="ltr"></label>
                 <label class="form-field"><span data-i18n="fieldCaseNumber">رقم الملف</span><input type="text" class="waitlist-input" id="addCaseNumber" maxlength="120" dir="ltr"></label>
               </div>
               <div class="waitlist-form form-actions">
@@ -1290,6 +1292,7 @@
         expActionPay: "تعليم كمدفوع",
         fieldAmount: "المبلغ",
         fieldClient: "الجهة أو العميل",
+        fieldClientEn: "الجهة أو العميل بالإنجليزية",
         fieldCaseNumber: "رقم الملف",
         viewViolations: "لوحة المخالفات",
         servicesTitle: "الخدمات",
@@ -1528,6 +1531,7 @@
         expActionPay: "Mark as paid",
         fieldAmount: "Amount",
         fieldClient: "Party or client",
+        fieldClientEn: "Party or client in English",
         fieldCaseNumber: "File number",
         viewViolations: "Violations dashboard",
         servicesTitle: "Services",
@@ -1766,6 +1770,7 @@
         expActionPay: "Marquer payé",
         fieldAmount: "Montant",
         fieldClient: "Partie ou client",
+        fieldClientEn: "Partie ou client en anglais",
         fieldCaseNumber: "Numéro de dossier",
         viewViolations: "Tableau des infractions",
         servicesTitle: "Services",
@@ -2004,6 +2009,7 @@
         expActionPay: "ادا شدہ نشان زد کریں",
         fieldAmount: "رقم",
         fieldClient: "فریق یا کلائنٹ",
+        fieldClientEn: "فریق یا کلائنٹ انگریزی میں",
         fieldCaseNumber: "فائل نمبر",
         viewViolations: "خلاف ورزیاں ڈیش بورڈ",
         servicesTitle: "خدمات",
@@ -3322,7 +3328,7 @@
           issuer: dataOf(item, ["location", "جهة اصدار المخالفة", "جهة الإصدار"]),
           vtype: dataOf(item, ["نوع المخالفة", "violation_type"]),
           objection: dataOf(item, ["حالة التظلم", "التظلم امام الامانة", "objection"]),
-          client: item.client_name || dataOf(item, ["الشركة", "client"]),
+          client: (app.clientDisplayName ? app.clientDisplayName(item) : item.client_name) || dataOf(item, ["الشركة", "client"]),
           caseNumber: item.case_number || dataOf(item, ["رقم الدعوى", "رقم القضية"])
         };
       }
@@ -3344,7 +3350,10 @@
         var sel = $("clientFilter");
         if (!sel) return;
         var names = {};
-        items.forEach(function (it) { if (it.client_name) names[it.client_name] = true; });
+        items.forEach(function (it) {
+          var shown = (app.clientDisplayName ? app.clientDisplayName(it) : it.client_name) || "";
+          if (shown) names[shown] = true;
+        });
         var list = Object.keys(names).sort();
         var current = state.clientFilter || "";
         paintEl(sel).html = '<option value="">' + esc(T("allClients")) + "</option>" +
@@ -3526,7 +3535,9 @@
 
       function renderViolations() {
         var items = state.items.filter(function (it) {
-          return !state.clientFilter || it.client_name === state.clientFilter;
+          if (!state.clientFilter) return true;
+          var shown = (app.clientDisplayName ? app.clientDisplayName(it) : it.client_name) || "";
+          return shown === state.clientFilter || it.client_name === state.clientFilter || it.client_name_en === state.clientFilter;
         });
         renderClientFilter(state.items);
         renderTotals(items);
@@ -3715,6 +3726,7 @@
           assignee_id: $("addAssignee").value || null,
           amount: numOrNull($("addAmount").value),
           client_name: $("addClient").value.trim() || null,
+          client_name_en: $("addClientEn").value.trim() || null,
           case_number: $("addCaseNumber").value.trim() || null,
           status: "open"
         };
@@ -3727,6 +3739,7 @@
             $("addCategory").value = "";
             $("addAmount").value = "";
             $("addClient").value = "";
+            $("addClientEn").value = "";
             $("addCaseNumber").value = "";
             return refresh();
           });
@@ -3773,6 +3786,7 @@
         $("editStatus").value = STATUS_KEYS[item.status] && item.status !== "overdue" ? item.status : "open";
         $("editAmount").value = item.amount != null ? item.amount : "";
         $("editClient").value = item.client_name || "";
+        $("editClientEn").value = item.client_name_en || "";
         $("editCaseNumber").value = item.case_number || "";
         clearMsg("editMsg");
         show("editPanel");
@@ -3903,6 +3917,7 @@
           assignee_id: $("editAssignee").value || null,
           amount: numOrNull($("editAmount").value),
           client_name: $("editClient").value.trim() || null,
+          client_name_en: $("editClientEn").value.trim() || null,
           case_number: $("editCaseNumber").value.trim() || null,
           status: $("editStatus").value || "open"
         };

@@ -36,7 +36,7 @@
   var ORG_KEY = "tracker_org";
   var LANG_KEY = "tracker_lang";
   var TIME_ZONE = "Asia/Riyadh";
-  var ITEM_COLUMNS = "id,item_number,title,category,due_at,status,assignee_id,amount,client_name,case_number,data,tracker_id,trackers(name)";
+  var ITEM_COLUMNS = "id,item_number,title,category,due_at,status,assignee_id,amount,client_name,client_name_en,case_number,data,tracker_id,trackers(name)";
   var INSERT_CHUNK = 200;
 
   /* Fallback strings (used only when the page has no `translations` object or lacks the key). */
@@ -2133,11 +2133,30 @@
     ".app-sidebar svg{width:20px;height:20px;flex:0 0 auto;fill:currentColor}",
     ".app-sidebar-spacer{flex:1 1 auto}",
     "body.has-app-sidebar .container{max-width:1400px;padding-inline-start:calc(240px + 2rem)}",
-    "@media(max-width:900px){.app-sidebar{position:static;inset:auto;width:auto;flex-direction:row;overflow-x:auto;",
-    "border-inline-end:0;border-bottom:1px solid var(--glass-border);padding:.6rem;gap:.4rem}",
-    ".app-sidebar-title,.app-sidebar-spacer{display:none}",
-    ".app-sidebar a,.app-sidebar button{width:auto;white-space:nowrap;padding:.55rem .75rem;font-size:.85rem}",
-    "body.has-app-sidebar .container{padding-inline-start:1rem}}",
+    /* ــ الجوال (≤900px): الشريط الجانبي درج ينزلق من جانب البداية، بطبقة تعتيم، ويحمل روابط القائمة العلوية واسم المستخدم ــ */
+    ".app-drawer-head,.app-drawer-nav{display:none}",
+    ".app-drawer-backdrop{position:fixed;inset:0;z-index:68;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .25s ease}",
+    "@media(max-width:900px){html body.has-app-sidebar .app-sidebar,html body.sidebar-off .app-sidebar{display:flex;position:fixed;inset-block:0;inset-inline-start:0;",
+    "width:min(84vw,320px);max-width:100vw;padding:1rem 1rem calc(1rem + env(safe-area-inset-bottom));z-index:70;border-inline-end:1px solid var(--glass-border);",
+    "background:var(--bg-mid,#1a2933);transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1);box-shadow:none}",
+    "html[dir=rtl] body.has-app-sidebar .app-sidebar{transform:translateX(100%)}",
+    "html body.drawer-open .app-sidebar,html[dir=rtl] body.drawer-open .app-sidebar{transform:none;box-shadow:0 18px 40px var(--shadow-dark)}",
+    "html body.drawer-open .app-drawer-backdrop{opacity:1;pointer-events:auto}",
+    "html body.drawer-open{overflow:hidden}",
+    ".app-drawer-head{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.25rem .25rem 1rem;color:var(--text-primary);font-weight:700;font-size:.95rem}",
+    ".app-drawer-head span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
+    ".app-drawer-nav{display:flex;flex-direction:column;gap:.25rem;margin-bottom:.75rem;padding-bottom:.75rem;border-bottom:1px solid var(--glass-border)}",
+    ".app-sidebar a,.app-sidebar button{min-height:44px;font-size:1rem}",
+    "html body.has-app-sidebar .container,html body.sidebar-off.has-app-sidebar .container{max-width:100%;padding-inline:1rem}",
+    /* قواعد عامة لمحتوى كل الصفحات على الجوال: لا شيء أعرض من الشاشة، الجداول تتمرر داخل نفسها، النماذج تتكدس */
+    ".content{padding:1.1rem}",
+    ".content table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}",
+    ".content img,.content svg,.content canvas,.content video{max-width:100%}",
+    ".content .waitlist-form,.content .chat-options{flex-wrap:wrap}",
+    ".content .waitlist-form{flex-direction:column;align-items:stretch}.content .waitlist-form>*{width:100%;max-width:100%;box-sizing:border-box}",
+    ".content pre,.content code{white-space:pre-wrap;word-break:break-word}}",
+    "@media(max-width:600px){.waitlist-input,.content select,.content textarea,.content input:not([type=checkbox]):not([type=radio]){font-size:16px}",
+    ".waitlist-btn,.chat-option-btn,.app-iconbtn{min-height:44px}.app-iconbtn{min-width:44px}}",
     ":root{--gap:1.5rem}",
     /* ــ تناسق عناصر الإدخال في كل صفحات التطبيق ــ
        المتصفح يفرض شكله على input[type=search] وعلى select فيخرجان بارتفاع
@@ -2222,6 +2241,37 @@
     if (remember) { try { localStorage.setItem(SIDEBAR_KEY, on ? "on" : "off"); } catch (e) { /* التخزين محجوب */ } }
   }
 
+  /* الجوال: زر ☰ يفتح الدرج بدل طيّ الشريط، والدرج يُغلق بالطبقة أو برابط أو بـ Escape أو بالعودة إلى مقاس المكتب */
+  var MOBILE_SHELL = "(max-width:900px)";
+  function isMobileShell() { return !!(window.matchMedia && window.matchMedia(MOBILE_SHELL).matches); }
+  function setDrawer(open) {
+    document.body.classList.toggle("drawer-open", !!open);
+    var nav = document.getElementById("appSidebar");
+    if (nav && open) nav.setAttribute("aria-hidden", "false");
+    var btn = document.getElementById("topSidebarToggle");
+    if (btn) btn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  function topnavLinksHtml() {
+    var here = String(window.location.pathname || "");
+    var nav = "";
+    TOPNAV.forEach(function (item) {
+      if (item.service && !serviceAllowed(item.service)) return;
+      var label = escapeHtml(sidebarLabel(item.labels));
+      var inApp = item.href.indexOf("/app/") === 0;
+      var active = inApp && here.indexOf(item.href) === 0 ? "is-active" : "";
+      var target = inApp ? "" : ' target="_blank" rel="noopener"';
+      nav += '<a class="' + active + '" href="' + item.href + '"' + target + ">" + label + "</a>";
+    });
+    return nav;
+  }
+  var DRAWER_CLOSE_LABELS = { ar: "إغلاق القائمة", en: "Close menu", fr: "Fermer le menu", ur: "مینو بند کریں" };
+  function drawerHeadHtml() {
+    return '<div class="app-drawer-head"><span>' + escapeHtml(userDisplayName()) + "</span>" +
+      '<button type="button" class="app-iconbtn" data-drawer-close aria-label="' + escapeHtml(sidebarLabel(DRAWER_CLOSE_LABELS)) + '">' +
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.3 5.71 12 12.01l-6.3-6.3-1.41 1.41 6.3 6.3-6.3 6.3 1.41 1.41 6.3-6.3 6.3 6.3 1.41-1.41-6.3-6.3 6.3-6.3z"/></svg></button></div>' +
+      '<div class="app-drawer-nav">' + topnavLinksHtml() + "</div>";
+  }
+
   function serviceAllowed(key) {
     if (!key || key === "dashboard") return true; /* مقصد الحارس لا يُحجب */
     if (!app || !Array.isArray(app.services)) return true; /* غير معروف بعد: لا نخفي شيئاً */
@@ -2251,7 +2301,7 @@
     if (!sidebarReady) return;
     enforceServiceAccess();
     var here = String(window.location.pathname || "");
-    var html = '<div class="app-sidebar-title">' + escapeHtml(sidebarLabel({ ar: "الخدمات", en: "Services", fr: "Services", ur: "خدمات" })) + "</div>";
+    var html = drawerHeadHtml() + '<div class="app-sidebar-title">' + escapeHtml(sidebarLabel({ ar: "الخدمات", en: "Services", fr: "Services", ur: "خدمات" })) + "</div>";
     NAV_ITEMS.forEach(function (item) {
       if (item.adminOnly && !nav.dataset.admin) return;
       if (!serviceAllowed(item.service)) return;
@@ -2288,6 +2338,20 @@
     nav.setAttribute("aria-label", sidebarLabel({ ar: "قائمة الخدمات", en: "Services menu", fr: "Menu des services", ur: "خدمات کا مینو" }));
     document.body.insertBefore(nav, document.body.firstChild);
     document.body.classList.add("has-app-sidebar");
+    var backdrop = document.createElement("div");
+    backdrop.className = "app-drawer-backdrop";
+    backdrop.id = "appDrawerBackdrop";
+    document.body.insertBefore(backdrop, nav.nextSibling);
+    backdrop.addEventListener("click", function () { setDrawer(false); });
+    nav.addEventListener("click", function (ev) {
+      if (ev.target.closest("a") || ev.target.closest("[data-drawer-close]")) setDrawer(false);
+    });
+    document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") setDrawer(false); });
+    if (window.matchMedia) {
+      var mq = window.matchMedia(MOBILE_SHELL);
+      var onChange = function () { if (!mq.matches) setDrawer(false); };
+      if (mq.addEventListener) mq.addEventListener("change", onChange); else if (mq.addListener) mq.addListener(onChange);
+    }
 
     /* روابط الأعلى صارت مكررة مع القائمة الجانبية. */
     var quick = document.getElementById("quickLinks");
@@ -2372,6 +2436,14 @@
     return true;
   }
 
+  /* اسم الطرف أو العميل: بالإنجليزية في الواجهتين الإنجليزية والفرنسية إن وُجد */
+  function clientDisplayName(row) {
+    if (!row) return "";
+    var wantEn = ["en", "fr"].indexOf(lang()) !== -1;
+    return (wantEn ? (row.client_name_en || row.client_name) : (row.client_name || row.client_name_en)) || "";
+  }
+
+  app.clientDisplayName = clientDisplayName;
   app.orgDisplayName = orgDisplayName;
   app.paint = paint;
   app.exportXlsx = exportXlsx;
@@ -2477,7 +2549,6 @@
     ".app-orgselect option{color:#12212b;background:#fff}",
     "body select,body .waitlist-input select,body select.waitlist-input{-webkit-appearance:none;appearance:none;background-image:none}",
     "body select::-ms-expand{display:none}",
-    "@media(max-width:900px){.app-orgselect{max-width:130px}}",
     ".app-username{display:inline-flex;align-items:center;gap:.5rem;max-width:240px;height:40px;box-sizing:border-box;padding:0 1rem;border-radius:14px;",
     "background:var(--glass-border);color:var(--text-primary);font-size:.85rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
     ".app-iconbtn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;box-sizing:border-box;padding:0;border:1px solid var(--glass-border);",
@@ -2517,10 +2588,17 @@
     "body.has-app-topbar .container>.header{display:none}",   /* العناوين الكبيرة (لوحة التحكم/القضايا…) لا داعي لها: الموقع واضح من الشريطين */
     "body.has-app-topbar .container{padding-top:2rem}",
     "body.has-app-topbar .app-sidebar{inset-block-start:calc(var(--site-header-h,61px) + 64px)}",
-    "@media(max-width:900px){.app-topbar{position:static;height:auto;flex-wrap:wrap;padding:.5rem .75rem;gap:.5rem}",
-    ".app-topnav{overflow-x:auto}",
-    "body.has-app-topbar{padding-top:52px}.app-username{max-width:150px}",
-    ".app-bell-panel,.app-menu-panel{inset-block-start:auto;inset-inline-end:auto;position:fixed;inset-inline:1rem;width:auto}}"
+    /* ــ الجوال (≤900px): صف واحد ثابت 56px: ☰ ثم بطاقة الشركة تملأ الوسط ثم الجرس والخروج؛ الروابط والاسم في الدرج ــ */
+    "@media(max-width:900px){.app-topbar{height:56px;padding:0 .75rem;gap:.5rem}",
+    ".app-topnav,.app-username{display:none}",
+    ".app-userbox{flex:1 1 auto;min-width:0;gap:.5rem}",
+    ".app-orgbox{flex:1 1 auto;min-width:0;padding:0 .5rem}",
+    ".app-orglabel{display:none}",
+    ".app-orgselect{max-width:100%;width:100%;flex:1 1 auto;min-width:0}",
+    ".app-sidebar-toggle{margin-inline-end:0}",
+    "body.has-app-topbar{padding-top:calc(var(--site-header-h,61px) + 56px)}",
+    "body.has-app-topbar .container{padding-top:1rem}",
+    ".app-bell-panel,.app-menu-panel{position:fixed;inset-block-start:calc(var(--site-header-h,61px) + 60px);inset-inline:.75rem;width:auto;max-height:70vh}}"
   ].join("");
 
   /* الاسم بلغة الواجهة: الإنجليزي حين تكون اللغة en/fr وهو موجود، وإلا العربي —
@@ -2863,16 +2941,7 @@
   function renderTopbar() {
     var bar = document.getElementById("appTopbar");
     if (!bar) return;
-    var here = String(window.location.pathname || "");
-    var nav = "";
-    TOPNAV.forEach(function (item) {
-      if (item.service && !serviceAllowed(item.service)) return;
-      var label = escapeHtml(sidebarLabel(item.labels));
-      var inApp = item.href.indexOf("/app/") === 0;
-      var active = inApp && here.indexOf(item.href) === 0 ? "is-active" : "";
-      var target = inApp ? "" : ' target="_blank" rel="noopener"';
-      nav += '<a class="' + active + '" href="' + item.href + '"' + target + ">" + label + "</a>";
-    });
+    var nav = topnavLinksHtml();
 
     var html =
       '<button type="button" class="app-iconbtn app-sidebar-toggle" id="topSidebarToggle" aria-controls="appSidebar" ' +
@@ -2902,6 +2971,7 @@
       applySidebarVisibility(sidebarVisible());
       toggle.addEventListener("click", function (ev) {
         ev.stopPropagation();
+        if (isMobileShell()) { setDrawer(!document.body.classList.contains("drawer-open")); return; }
         applySidebarVisibility(!sidebarVisible(), true);
       });
     }
