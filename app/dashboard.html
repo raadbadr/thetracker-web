@@ -456,9 +456,6 @@
 
     /* لوحة المعلومات: عمود رئيسي للخدمات والقائمة، وعمود جانبي للتقويم والأرقام */
     .dash-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; align-items: start; margin-bottom: 1.5rem; }
-    /* رابط التقويم بطاقة مستقلة بالمسافة نفسها التي بين بطاقات اللوحة */
-    #icsCard { margin-top: 1.5rem; margin-bottom: 1.5rem; }
-    #icsCard .ics-form { justify-content: flex-start; }
     @media (min-width: 1150px) { .dash-grid { grid-template-columns: minmax(0, 1fr) minmax(320px, 400px); } }
     .dash-main, .dash-side { min-width: 0; }
     .dash-side { display: grid; gap: 1.5rem; align-content: start; }
@@ -748,7 +745,6 @@
     .cal-more { font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem; font-variant-numeric: tabular-nums; }
 
     /* ICS card */
-    .ics-form .waitlist-input { direction: ltr; text-align: left; font-variant-numeric: tabular-nums; }
 
     @media (max-width: 768px) {
       .container { padding: 1rem; margin: 0 auto; }
@@ -1065,17 +1061,6 @@
         </div>
       </div>
 
-      <div class="content" id="icsCard">
-        <h2 data-i18n="icsTitle">رابط التقويم (ICS)</h2>
-        <p data-i18n="icsHint">أضف هذا الرابط إلى تقويم Apple أو Google أو Outlook بوصفه اشتراكاً في تقويم عبر الرابط، لتظهر مواعيد عناصرك تلقائياً وتتحدث دورياً.</p>
-        <form class="waitlist-form ics-form" id="icsForm" novalidate>
-          <input type="text" class="waitlist-input" id="icsUrl" readonly aria-label="ICS">
-          <button type="button" class="waitlist-btn" id="icsCopyBtn" data-i18n="copy">نسخ الرابط</button>
-          <button type="button" class="chat-option-btn" id="icsRegenBtn" data-i18n="regenerate">إعادة توليد الرابط</button>
-        </form>
-        <p class="waitlist-msg" id="icsMsg" hidden role="status" aria-live="polite"></p>
-        <p class="login-note" data-i18n="icsSecret">هذا الرابط خاص بك، لا تشاركه مع الآخرين.</p>
-      </div>
     </div>
   </div>
 
@@ -2755,7 +2740,7 @@
           });
           renderSelects();
         }).catch(function (err) { fail(err); }).then(function () {
-          return Promise.all([loadStats(), loadItems(), loadCalendar(), loadIcs()]);
+          return Promise.all([loadStats(), loadItems(), loadCalendar()]);
         });
       }
 
@@ -3602,40 +3587,6 @@
         var now = new Date();
         state.month = calendarIsHijri() ? startOfHijriMonth(now) : startOfMonth(now);
         loadCalendar();
-      });
-
-      /* ---------- ICS link ---------- */
-
-      function loadIcs() {
-        return app.calendarUrl().then(function (url) {
-          $("icsUrl").value = url || "";
-        }).catch(function (err) { fail(err, "icsMsg"); });
-      }
-
-      $("icsCopyBtn").addEventListener("click", function () {
-        var input = $("icsUrl");
-        if (!input.value) return;
-        var done = function () { setMsg("icsMsg", T("copied"), "success"); };
-        var fallback = function () {
-          try {
-            input.focus();
-            input.select();
-            document.execCommand("copy");
-            done();
-          } catch (e) { setMsg("icsMsg", T("genericError"), "error"); }
-        };
-        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(input.value).then(done, fallback);
-        else fallback();
-      });
-
-      $("icsRegenBtn").addEventListener("click", function () {
-        if (!window.confirm(T("confirmRegenerate"))) return;
-        guard(function () {
-          return app.regenerateCalendarToken().then(function () { return app.calendarUrl(); }).then(function (url) {
-            $("icsUrl").value = url || "";
-            setMsg("icsMsg", T("regenerated"), "success");
-          });
-        }).catch(function (err) { fail(err, "icsMsg"); });
       });
 
       /* ---------- language change hook (called from setLang) ---------- */
