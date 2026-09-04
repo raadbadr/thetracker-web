@@ -1661,9 +1661,24 @@
           var s = document.createElement("script"); s.src = src; s.onload = resolve; s.onerror = reject; document.head.appendChild(s);
         });
       }
+      /* الصور تُصغَّر إلى 1800px كحد أقصى قبل الإرسال: صور الجوال الكبيرة كانت تُفشل القراءة */
       function fileToBase64(file) {
         return new Promise(function (resolve, reject) {
           var r = new FileReader(); r.onload = function () { resolve(String(r.result)); }; r.onerror = reject; r.readAsDataURL(file);
+        }).then(function (dataUrl) {
+          return new Promise(function (resolve) {
+            var img = new Image();
+            img.onload = function () {
+              var MAX = 1800, w = img.width, h = img.height;
+              if (w <= MAX && h <= MAX) { resolve(dataUrl); return; }
+              var k = Math.min(MAX / w, MAX / h);
+              var c = document.createElement("canvas"); c.width = Math.round(w * k); c.height = Math.round(h * k);
+              c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+              resolve(c.toDataURL("image/jpeg", 0.85));
+            };
+            img.onerror = function () { resolve(dataUrl); };
+            img.src = dataUrl;
+          });
         });
       }
       function pdfToText(file) {
@@ -1684,15 +1699,20 @@
           return chain.then(function () { return { text: text.trim(), pdf: pdf }; });
         });
       }
-      function pdfFirstPageImage(pdf) {
-        return pdf.getPage(1).then(function (page) {
-          var vp = page.getViewport({ scale: 1.6 });
-          var canvas = document.createElement("canvas"); canvas.width = vp.width; canvas.height = vp.height;
-          return page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise.then(function () {
-            return canvas.toDataURL("image/jpeg", 0.85);
-          });
+      function pdfPageImage(pdf, n) {
+        return pdf.getPage(n).then(function (page) {
+          var base = page.getViewport({ scale: 1 });
+          var scale = Math.min(2, 1800 / Math.max(base.width, base.height));
+          var vp = page.getViewport({ scale: scale });
+          var canvas = document.createElement("canvas"); canvas.width = Math.round(vp.width); canvas.height = Math.round(vp.height);
+          var ctx = canvas.getContext("2d"); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+          return page.render({ canvasContext: ctx, viewport: vp }).promise.then(function () { return canvas.toDataURL("image/jpeg", 0.85); });
         });
       }
+      function pdfFirstPageImage(pdf) { return pdfPageImage(pdf, 1); }
+      var ERROR_TEXT = { ar: { ai_unavailable: "خدمة القراءة غير متاحة الآن.", no_text: "لم يُقرأ نص من الملف. جرّب صورة أوضح.", image_read_failed: "تعذّرت قراءة الصورة.", extract_failed: "قُرئ النص لكن تعذّر فهم المستند." },
+                         en: { ai_unavailable: "Reading service unavailable.", no_text: "No text could be read. Try a clearer image.", image_read_failed: "Could not read the image.", extract_failed: "Text was read but the document could not be understood." } };
+      function errorText(code) { var d = ERROR_TEXT[lang()] || ERROR_TEXT.ar; return d[code] || (ERROR_TEXT.ar[code]) || ""; }
 
       function analyze(payload) {
         return fetch("/api/documents/analyze", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
@@ -1705,11 +1725,16 @@
         show("docForm", false);
         setStatus(t("docReading"));
         var isPdf = /pdf$/i.test(file.name) || file.type === "application/pdf";
+        /* PDF نصي → النص؛ PDF ممسوح أو صورة → OCR للصفحة الأولى، وإن لم تكفِ فالثانية */
         var work = isPdf
           ? pdfToText(file).then(function (r) {
               if (r.text.length >= 60) return analyze({ text: r.text });
               setStatus(t("docOcr"));
-              return pdfFirstPageImage(r.pdf).then(function (img) { return analyze({ image: img }); });
+              return pdfFirstPageImage(r.pdf).then(function (img) { return analyze({ image: img }); })
+                .catch(function (e) {
+                  if (r.pdf.numPages < 2) throw e;
+                  return pdfPageImage(r.pdf, 2).then(function (img) { return analyze({ image: img }); });
+                });
             })
           : fileToBase64(file).then(function (img) { setStatus(t("docOcr")); return analyze({ image: img }); });
         work.then(function (fields) {
@@ -1717,7 +1742,10 @@
           fillForm(fields);
           setStatus(t("docReady"), "success");
           show("docForm", true);
-        }).catch(function () { setStatus(t("docFailed"), "error"); });
+        }).catch(function (err) {
+          var why = errorText(err && err.message);
+          setStatus(t("docFailed") + (why ? " — " + why : ""), "error");
+        });
       }
 
       function fillForm(f) {

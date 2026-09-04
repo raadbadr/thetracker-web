@@ -115,14 +115,68 @@ function clean(out) {
   };
 }
 
+/* قواعد حتمية للمستندات السعودية الشائعة: تعمل قبل النموذج وبعده، ولا تخترع شيئاً */
+const AR_DIGITS = { "٠":"0","١":"1","٢":"2","٣":"3","٤":"4","٥":"5","٦":"6","٧":"7","٨":"8","٩":"9","۰":"0","۱":"1","۲":"2","۳":"3","۴":"4","۵":"5","۶":"6","۷":"7","۸":"8","۹":"9" };
+function westernize(t) { return String(t || "").replace(/[٠-٩۰-۹]/g, (d) => AR_DIGITS[d] || d); }
+function findDate(text, labels) {
+  const re = new RegExp("(?:" + labels.join("|") + ")[^0-9]{0,40}(\\d{4}[\\/\\-.]\\d{1,2}[\\/\\-.]\\d{1,2}|\\d{1,2}[\\/\\-.]\\d{1,2}[\\/\\-.]\\d{4})", "i");
+  const m = text.match(re);
+  if (!m) return null;
+  let d = m[1].replace(/[\/.]/g, "-").split("-").map((x) => x.padStart(2, "0"));
+  if (d[0].length === 4) return { raw: `${d[0]}-${d[1]}-${d[2]}`, year: Number(d[0]) };
+  return { raw: `${d[2]}-${d[1]}-${d[0]}`, year: Number(d[2]) };
+}
+function findAfter(text, labels, pattern) {
+  const re = new RegExp("(?:" + labels.join("|") + ")\\s*[:：\\-]?\\s*(" + pattern + ")", "i");
+  const m = text.match(re);
+  return m ? m[1].trim() : null;
+}
+function rulesExtract(rawText) {
+  const text = westernize(rawText).replace(/[\u200f\u200e]/g, "");
+  const has = (re) => re.test(text);
+  const out = {};
+  if (has(/السجل\s*التجاري|سجل\s*تجاري|commercial\s*regist/i)) {
+    out.kind = "commercial_register";
+    out.issuer = "وزارة التجارة";
+    out.number = findAfter(text, ["رقم\\s*السجل\\s*التجاري", "رقم\\s*السجل", "السجل\\s*التجاري\\s*رقم", "C\\.?R\\.?\\s*(?:No\\.?|number)?"], "\\d{10}") || (text.match(/\b[1247]\d{9}\b/) || [])[0] || null;
+    out.party = findAfter(text, ["اسم\\s*المنشأة", "الاسم\\s*التجاري", "اسم\\s*الشركة", "اسم\\s*التاجر", "الاسم"], "[^\\n:]{3,80}");
+  } else if (has(/شهادة\s*(?:تسجيل\s*)?(?:في\s*)?ضريبة|الرقم\s*الضريبي|VAT/i)) {
+    out.kind = "vat_certificate"; out.issuer = "هيئة الزكاة والضريبة والجمارك";
+    out.number = findAfter(text, ["الرقم\\s*الضريبي", "رقم\\s*التسجيل\\s*الضريبي", "VAT\\s*(?:No\\.?|number)?"], "3\\d{14}") || (text.match(/\b3\d{14}\b/) || [])[0] || null;
+    out.party = findAfter(text, ["اسم\\s*المكلف", "اسم\\s*المنشأة", "الاسم\\s*التجاري", "اسم\\s*الشركة"], "[^\\n:]{3,80}");
+  } else if (has(/رخصة|ترخيص|licen[cs]e/i)) {
+    out.kind = "license";
+    out.number = findAfter(text, ["رقم\\s*الرخصة", "رقم\\s*الترخيص", "Licen[cs]e\\s*(?:No\\.?|number)?"], "[A-Za-z0-9\\-\\/]{4,30}");
+    out.party = findAfter(text, ["اسم\\s*المنشأة", "الاسم\\s*التجاري", "اسم\\s*الشركة", "اسم\\s*المرخص\\s*له"], "[^\\n:]{3,80}");
+  }
+  const exp = findDate(text, ["تاريخ\\s*(?:ال)?انتهاء", "ينتهي\\s*(?:في|بتاريخ)", "صالح(?:ة)?\\s*حتى", "تاريخ\\s*نهاية", "الانتهاء", "expir(?:y|es|ation)\\s*(?:date)?", "valid\\s*(?:until|to)"]);
+  const iss = findDate(text, ["تاريخ\\s*(?:ال)?إصدار", "تاريخ\\s*(?:ال)?اصدار", "تاريخ\\s*التسجيل", "تاريخ\\s*(?:ال)?بداية", "صدر\\s*(?:في|بتاريخ)", "issue\\s*date", "issued\\s*on", "registration\\s*date"]);
+  if (exp) { out.expiry_date = exp.raw; out.expiry_date_calendar = exp.year < 1700 ? "hijri" : "gregorian"; }
+  if (iss) { out.issue_date = iss.raw; out.issue_date_calendar = iss.year < 1700 ? "hijri" : "gregorian"; }
+  return out;
+}
+function mergeRules(model, rules) {
+  const m = model && typeof model === "object" ? { ...model } : {};
+  for (const k of Object.keys(rules)) {
+    const bad = m[k] == null || m[k] === "" || (k === "kind" && m[k] === "other");
+    if (bad) m[k] = rules[k];
+  }
+  if (rules.kind && m.kind !== rules.kind && (m.kind === "other" || m.kind == null)) m.kind = rules.kind;
+  if (!m.title && rules.kind) {
+    const names = { commercial_register: "السجل التجاري", vat_certificate: "الشهادة الضريبية", license: "الرخصة" };
+    m.title = (names[rules.kind] || "مستند") + (rules.party ? " — " + rules.party : rules.number ? " " + rules.number : "");
+  }
+  return m;
+}
+
 async function readImage(env, base64) {
   const bin = atob(String(base64 || "").replace(/^data:[^,]+,/, ""));
   const bytes = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
   const res = await env.AI.run(VISION_MODEL, {
-    prompt: "اكتب كل النص الظاهر في هذه الوثيقة كما هو، سطراً سطراً، بلا شرح.",
+    prompt: "This is a scanned Arabic/English official document. Transcribe ALL visible text exactly, line by line, keeping labels and their values together (e.g. 'رقم السجل التجاري: 1010123456', 'تاريخ الانتهاء: 1447-05-10'). Digits must be Western. No commentary.",
     image: Array.from(bytes),
-    max_tokens: 1500,
+    max_tokens: 2000,
   });
   return String((res && (res.response || res.description)) || "").trim();
 }
@@ -141,18 +195,20 @@ export async function handleDocumentAnalyze(request, env) {
   } catch (e) {
     return new Response(JSON.stringify({ error: "image_read_failed" }), { status: 502, headers });
   }
-  if (!text.trim()) return new Response(JSON.stringify({ error: "no_text" }), { status: 422, headers });
+  if (text.trim().length < 12) return new Response(JSON.stringify({ error: "no_text" }), { status: 422, headers });
 
+  const rules = rulesExtract(text);
+  let parsed = null;
   try {
     const out = await env.AI.run(TEXT_MODEL, {
       messages: [{ role: "user", content: extractionPrompt(text) }],
       max_tokens: 700,
       temperature: 0.1,
     });
-    const parsed = parseJson(out && (out.response || out.result));
-    if (!parsed) return new Response(JSON.stringify({ error: "extract_failed" }), { status: 502, headers });
-    return new Response(JSON.stringify({ fields: clean(parsed), text_chars: text.length }), { headers });
-  } catch (e) {
-    return new Response(JSON.stringify({ error: "extract_failed" }), { status: 502, headers });
-  }
+    parsed = parseJson(out && (out.response || out.result));
+  } catch (e) { parsed = null; }
+  /* النموذج قد يخطئ أو يفشل؛ القواعد الحتمية تُكمل أو تصحّح، ولا نفشل ما دامت وجدت شيئاً */
+  const merged = mergeRules(parsed, rules);
+  if (!parsed && !rules.kind) return new Response(JSON.stringify({ error: "extract_failed" }), { status: 502, headers });
+  return new Response(JSON.stringify({ fields: clean(merged), text_chars: text.length, rules: Object.keys(rules) }), { headers });
 }
