@@ -2194,7 +2194,7 @@
         rows.forEach(function (r) {
           var tr = document.createElement("tr");
           var meta = [r.code, r.case_number ? t("colCase") + " " + r.case_number : "", r.owner_id ? name(r.owner_id) : "", r.review_at ? t("colReview") + " " + app.fmtDate(r.review_at) : ""].filter(Boolean).join(" · ");
-          tr.innerHTML = '<td><span class="item-title">' + esc(r.title) + '</span><span class="item-cat">' + esc(meta) + "</span></td>" +
+          tr.innerHTML = '<td><span class="item-title" data-tr>' + esc(r.title) + '</span><span class="item-cat">' + esc(meta) + "</span></td>" +
             "<td>" + esc(t("cat_" + (r.category || "legal"))) + "</td>" +
             "<td>" + esc(r.client_name || "-") + "</td>" +
             "<td>" + badge(r.likelihood, r.impact) + "</td>" +
@@ -2203,6 +2203,8 @@
             '<td><div class="chat-options row-actions"><button type="button" class="chat-option-btn" data-edit="' + esc(r.id) + '">' + esc(t("edit")) + "</button></div></td>";
           body.appendChild(tr);
         });
+        /* النص الحر يُعرض بلغة القارئ متى توفرت الترجمة المشتركة */
+        if (app && app.translateNodes) app.translateNodes(body);
       }
       function renderAll() { renderKpis(); renderHeat(); renderList(); }
 

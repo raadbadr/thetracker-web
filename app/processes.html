@@ -764,6 +764,16 @@
     .sgrid > label, .raci-grid > label, .quick-add > label, .form-grid > label { min-width: 0; display: block; }
     .sgrid .waitlist-input, .raci-grid .waitlist-input, .quick-add .waitlist-input,
     .form-grid .waitlist-input, .heat-tools .waitlist-input { width: 100%; min-width: 0; max-width: 100%; }
+
+    /* توزيع الأدوار بالسحب: يُسحب اسم العضو ويُسقط على خانة الدور في الخطوة */
+    .member-strip { display: flex; flex-wrap: wrap; gap: .4rem; margin: .6rem 0 .2rem; align-items: center; }
+    .member-strip .ms-hint { font-size: .72rem; color: var(--text-secondary); margin-inline-end: .3rem; }
+    .m-chip { display: inline-flex; align-items: center; gap: .35rem; padding: .35rem .7rem; border-radius: 999px;
+      border: 1px solid var(--glass-border); background: var(--glass); color: var(--text-primary);
+      font-size: .8rem; font-weight: 600; cursor: grab; user-select: none; min-height: 34px; }
+    .m-chip:active { cursor: grabbing; }
+    .m-chip.is-dragging { opacity: .5; }
+    .raci-grid label.drop-on { outline: 2px dashed var(--primary); outline-offset: 3px; border-radius: 10px; }
 </style>
 </head>
 <body class="has-site-header">
@@ -835,6 +845,7 @@
           <label class="form-field" style="display:block;margin-top:.75rem"><span data-i18n="fDescription">الوصف</span><textarea class="waitlist-input" id="fDescription" rows="2" maxlength="1000"></textarea></label>
 
           <h3 style="margin:1.25rem 0 .5rem" data-i18n="stepsTitle">الخطوات</h3>
+          <div class="member-strip" id="memberStrip" hidden></div>
           <div class="steps-list" id="steps"></div>
           <button type="button" class="add-step" id="addStep" data-i18n="addStep">＋ خطوة</button>
 
@@ -905,6 +916,7 @@
         fDescription: "الوصف",
         stepsTitle: "الخطوات",
         addStep: "＋ خطوة",
+        dragHint: "اسحب اسم العضو إلى دوره في الخطوة",
         stepType: "النوع",
         typeTask: "مهمة",
         typeDecision: "قرار (نعم/لا)",
@@ -1141,6 +1153,7 @@
         fDescription: "Description",
         stepsTitle: "Steps",
         addStep: "＋ Step",
+        dragHint: "Drag a member onto their role in the step",
         stepType: "Type",
         typeTask: "Task",
         typeDecision: "Decision (yes/no)",
@@ -1377,6 +1390,7 @@
         fDescription: "Description",
         stepsTitle: "Étapes",
         addStep: "＋ Étape",
+        dragHint: "Glissez un membre sur son rôle dans l’étape",
         stepType: "Type",
         typeTask: "Tâche",
         typeDecision: "Décision (oui/non)",
@@ -1613,6 +1627,7 @@
         fDescription: "تفصیل",
         stepsTitle: "مراحل",
         addStep: "＋ مرحلہ",
+        dragHint: "رکن کو مرحلے میں اس کے کردار پر کھینچیں",
         stepType: "قسم",
         typeTask: "کام",
         typeDecision: "فیصلہ (ہاں/نہیں)",
@@ -1970,7 +1985,7 @@
         rows.forEach(function (p) {
           var tr = document.createElement("tr");
           tr.innerHTML = '<td dir="ltr">' + esc(p.code || "") + "</td>" +
-            '<td><a href="#" class="item-title" data-open="' + esc(p.id) + '">' + esc(p.name) + "</a></td>" +
+            '<td><a href="#" class="item-title" data-tr data-open="' + esc(p.id) + '">' + esc(p.name) + "</a></td>" +
             "<td>" + esc(t("area_" + (p.area || "other"))) + "</td>" +
             "<td>" + esc(name(p.owner_id)) + "</td>" +
             "<td>" + esc(String((p.steps || []).length)) + "</td>" +
@@ -1978,7 +1993,54 @@
             '<td><div class="chat-options row-actions"><button type="button" class="chat-option-btn" data-edit="' + esc(p.id) + '">' + esc(t("edit")) + "</button></div></td>";
           body.appendChild(tr);
         });
+        /* النص الحر يُعرض بلغة القارئ متى توفرت الترجمة المشتركة */
+        if (app && app.translateNodes) app.translateNodes(body);
       }
+
+      /* السحب والإفلات: اسم العضو من الشريط إلى خانة الدور، والقائمة تبقى بديلاً */
+      (function wireRoleDnd() {
+        var dragged = null;
+        document.addEventListener("dragstart", function (ev) {
+          var chip = ev.target.closest && ev.target.closest(".m-chip");
+          if (!chip) return;
+          dragged = chip.dataset.member || "";
+          chip.classList.add("is-dragging");
+          try { ev.dataTransfer.setData("text/plain", dragged); ev.dataTransfer.effectAllowed = "copy"; } catch (e) { /* بعض المتصفحات */ }
+        });
+        document.addEventListener("dragend", function (ev) {
+          var chip = ev.target.closest && ev.target.closest(".m-chip");
+          if (chip) chip.classList.remove("is-dragging");
+          dragged = null;
+          document.querySelectorAll(".drop-on").forEach(function (el) { el.classList.remove("drop-on"); });
+        });
+        function slotOf(target) {
+          var label = target.closest && target.closest(".raci-grid label");
+          if (!label) return null;
+          var sel = label.querySelector("select[data-f]");
+          return sel && ["R", "A", "C", "I"].indexOf(sel.dataset.f) !== -1 ? { label: label, sel: sel } : null;
+        }
+        document.addEventListener("dragover", function (ev) {
+          var slot = slotOf(ev.target);
+          if (!slot) return;
+          ev.preventDefault();
+          try { ev.dataTransfer.dropEffect = "copy"; } catch (e) { /* تجاهل */ }
+          slot.label.classList.add("drop-on");
+        });
+        document.addEventListener("dragleave", function (ev) {
+          var slot = slotOf(ev.target);
+          if (slot) slot.label.classList.remove("drop-on");
+        });
+        document.addEventListener("drop", function (ev) {
+          var slot = slotOf(ev.target);
+          if (!slot) return;
+          ev.preventDefault();
+          var id = dragged || (ev.dataTransfer && ev.dataTransfer.getData("text/plain")) || "";
+          slot.label.classList.remove("drop-on");
+          if (!id) return;
+          slot.sel.value = id;
+          slot.sel.dispatchEvent(new Event("change", { bubbles: true }));
+        });
+      })();
 
       /* ---------- المحرر ---------- */
       function openEditor(p) {
@@ -1996,7 +2058,20 @@
         show("listCard", false); show("detailCard", false); show("editorCard", true);
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
+      function renderMemberStrip() {
+        var strip = $("memberStrip");
+        if (!strip) return;
+        var list = state.members || [];
+        strip.hidden = list.length === 0;
+        if (!list.length) { strip.innerHTML = ""; return; }
+        strip.innerHTML = '<span class="ms-hint">' + esc(t("dragHint")) + "</span>" +
+          list.map(function (m) {
+            return '<span class="m-chip" draggable="true" data-member="' + esc(m.user_id) + '">' + esc(state.names[m.user_id] || "") + "</span>";
+          }).join("");
+      }
+
       function renderSteps() {
+        renderMemberStrip();
         var box = $("steps"); box.innerHTML = "";
         state.draft.steps.forEach(function (st, i) {
           var row = document.createElement("div"); row.className = "step-row";
