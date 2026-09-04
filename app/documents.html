@@ -652,6 +652,31 @@
     .drop-actions { display: flex; flex-wrap: wrap; gap: .6rem; justify-content: center; align-items: center; }
     .drop-zone p { margin-bottom: 0.75rem; }
     .drop-zone .platform-stat-label { max-width: none; margin-bottom: 0.5rem; }
+
+    /* خطوات الاستيراد داخل بطاقة الرفع نفسها: عنوان أخف من عنوان البطاقة،
+       وفاصل رفيع بدل تكرار شكل البطاقة داخل نفسها */
+    .import-flow { margin-top: 1.25rem; }
+    .import-flow > * + * { margin-top: 1.1rem; padding-top: 1.1rem; border-top: 1px solid var(--glass-border); }
+    .import-step h3 { margin: 0 0 .75rem; font-size: 1.05rem; font-weight: 700; color: var(--text-primary); }
+    .import-details summary { cursor: pointer; font-weight: 600; color: var(--primary); padding: .3rem 0; }
+    .import-details[open] summary { margin-bottom: .75rem; }
+
+    /* معاينة الملف الخام: صغيرة، مكثفة، تتمرر داخل حدودها ولا تكسر البطاقة.
+       العمود الأول يبقى ظاهراً أثناء التمرير الأفقي. */
+    .preview-wrap { max-height: 260px; overflow-y: auto; border: 1px solid var(--glass-border); border-radius: 12px; }
+    .preview-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    .preview-table th, .preview-table td {
+      padding: .45rem .6rem; text-align: start; white-space: nowrap;
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .preview-table th {
+      color: var(--text-secondary); font-weight: 600; background: var(--glass);
+      position: sticky; top: 0; z-index: 1;
+    }
+    .preview-table th:first-child, .preview-table td:first-child {
+      position: sticky; inset-inline-start: 0; background: var(--bg-mid); z-index: 2;
+    }
+    .preview-table th:first-child { z-index: 3; }
     .field-label {
       display: block;
       font-size: 0.85rem;
@@ -759,6 +784,86 @@
         <p class="waitlist-msg" id="docStatus" role="status" aria-live="polite" hidden></p>
         <p class="waitlist-msg" id="fileStatus" role="status" aria-live="polite" hidden></p>
 
+        <!-- جدول مستورد: يظهر في هذه البطاقة نفسها، لا في قسم منفصل أسفل الصفحة -->
+        <div id="importFlow" class="import-flow" hidden>
+          <div id="headerPicker" class="import-step" hidden>
+            <p class="waitlist-msg warning" id="headerPickerMsg" data-i18n="headerPickerMsg">لم نجد صف العناوين بثقة — اختر الصف الصحيح.</p>
+            <div class="waitlist-form">
+              <select class="waitlist-input" id="headerRowSelect"></select>
+            </div>
+          </div>
+
+          <!-- ماذا تستورد: حقولنا نحن هي الواجهة، لا فوضى الملف -->
+          <div class="import-step" id="step3">
+            <h3 data-i18n="step3Title">ماذا تستورد</h3>
+            <div class="waitlist-form" id="modeRow">
+              <label class="form-field" style="flex:1 1 220px">
+                <span data-i18n="sheetKind">نوع الورقة</span>
+                <select class="waitlist-input" id="importMode">
+                  <option value="general" data-i18n="sheetKindGeneral">عام (مواعيد وعقود)</option>
+                  <option value="violations" data-i18n="sheetKindViolations">مخالفات</option>
+                </select>
+              </label>
+              <label class="form-field" id="graceField" hidden style="flex:0 1 200px">
+                <span data-i18n="graceDays">مهلة السداد (أيام)</span>
+                <input type="number" class="waitlist-input" id="graceDays" value="30" min="1" max="365" dir="ltr">
+              </label>
+            </div>
+            <div class="features-grid stats-block" id="mappingGrid"></div>
+            <details class="import-details">
+              <summary data-i18n="moreFieldsToggle">تفاصيل إضافية</summary>
+              <div class="features-grid stats-block" id="optionalMappingGrid"></div>
+            </details>
+            <p data-i18n="mappingHint">الأعمدة غير المربوطة تحفظ كبيانات إضافية مع كل عنصر.</p>
+            <p data-i18n="statusHint">في عمود الحالة تعتبر القيم done أو منجز أو completed منجزة، وما عداها يبقى مفتوحا.</p>
+            <p class="waitlist-msg" id="mappingStats" role="status" aria-live="polite" hidden></p>
+            <p class="waitlist-msg warning" id="unmatchedHint" hidden></p>
+          </div>
+
+          <!-- الملف كما هو: معاينة صغيرة ثانوية، مطوية بشكل افتراضي -->
+          <details class="import-details">
+            <summary data-i18n="rawPreviewToggle">عرض الملف كما هو</summary>
+            <div class="import-step" id="step2">
+              <div class="field stats-block" id="sheetRow" hidden>
+                <label class="field-label" for="sheetSelect" data-i18n="sheetLabel">الورقة</label>
+                <select class="waitlist-input" id="sheetSelect"></select>
+              </div>
+              <p id="previewNote"></p>
+              <div class="table-wrap preview-wrap"><table class="preview-table" id="previewTable"></table></div>
+              <p class="inline-hint" id="previewMoreCols" hidden></p>
+            </div>
+          </details>
+
+          <!-- السجل -->
+          <div class="import-step" id="step4">
+            <h3 data-i18n="step4Title">السجل</h3>
+            <div class="features-grid">
+              <div class="field">
+                <label class="field-label" for="trackerSelect" data-i18n="trackerLabel">أضف العناصر إلى</label>
+                <select class="waitlist-input" id="trackerSelect"></select>
+              </div>
+              <div class="field" id="trackerNameField">
+                <label class="field-label" for="trackerName" data-i18n="trackerNamePlaceholder">اسم السجل الجديد</label>
+                <input type="text" class="waitlist-input" id="trackerName" placeholder="اسم السجل الجديد" maxlength="120" autocomplete="off">
+              </div>
+            </div>
+          </div>
+
+          <!-- التحقق من الباقة + الاستيراد -->
+          <div class="import-step" id="step5">
+            <h3 data-i18n="step5Title">التحقق من الباقة والاستيراد</h3>
+            <div class="platform-stats-list stats-block" id="planStats"></div>
+            <p class="waitlist-msg" id="planMsg" role="status" aria-live="polite" hidden></p>
+            <div class="inline-actions" id="planUpgrade" hidden>
+              <a href="/pricing.html" class="chat-option-btn" data-i18n="upgradePlan">ترقية الباقة</a>
+            </div>
+            <div class="step-actions">
+              <button type="button" class="waitlist-btn" id="importBtn" data-i18n="importBtn">بدء الاستيراد</button>
+              <p class="waitlist-msg" id="importProgress" role="status" aria-live="polite" hidden></p>
+            </div>
+          </div>
+        </div>
+
         <form id="docForm" class="doc-form" hidden novalidate>
           <div class="form-grid">
             <label class="form-field"><span data-i18n="docKind">نوع المستند</span><select class="waitlist-input" id="fKind"></select></label>
@@ -824,72 +929,6 @@
         </div>
         <p class="empty-note" id="docsEmpty" data-i18n="docsEmpty" hidden>لا مستندات بعد.</p>
       </div>
-      <!-- (4) خطوات الاستيراد تظهر تلقائيا حين يكون المرفوع جدولا -->
-    <div id="importFlow" hidden>
-        <!-- Step 1: file -->
-      <!-- Step 2: preview -->
-        <div class="content" id="step2" hidden>
-          <h2 data-i18n="step2Title">2. معاينة البيانات</h2>
-          <div class="field stats-block" id="sheetRow" hidden>
-            <label class="field-label" for="sheetSelect" data-i18n="sheetLabel">الورقة</label>
-            <select class="waitlist-input" id="sheetSelect"></select>
-          </div>
-          <p id="previewNote"></p>
-          <div class="preview-wrap"><table class="preview-table" id="previewTable"></table></div>
-        </div>
-
-        <!-- Step 3: mapping -->
-        <div class="content" id="step3" hidden>
-          <h2 data-i18n="step3Title">3. ربط الأعمدة</h2>
-          <div class="waitlist-form" id="modeRow">
-            <label class="form-field" style="flex:1 1 220px">
-              <span data-i18n="sheetKind">نوع الورقة</span>
-              <select class="waitlist-input" id="importMode">
-                <option value="general" data-i18n="sheetKindGeneral">عام (مواعيد وعقود)</option>
-                <option value="violations" data-i18n="sheetKindViolations">مخالفات</option>
-              </select>
-            </label>
-            <label class="form-field" id="graceField" hidden style="flex:0 1 200px">
-              <span data-i18n="graceDays">مهلة السداد (أيام)</span>
-              <input type="number" class="waitlist-input" id="graceDays" value="30" min="1" max="365" dir="ltr">
-            </label>
-          </div>
-          <div class="features-grid stats-block" id="mappingGrid"></div>
-          <p data-i18n="mappingHint">الأعمدة غير المربوطة تحفظ كبيانات إضافية مع كل عنصر.</p>
-          <p data-i18n="statusHint">في عمود الحالة تعتبر القيم done أو منجز أو completed منجزة، وما عداها يبقى مفتوحا.</p>
-          <p class="waitlist-msg" id="mappingStats" role="status" aria-live="polite" hidden></p>
-          <p class="waitlist-msg warning" id="unmatchedHint" hidden></p>
-        </div>
-
-        <!-- Step 4: tracker -->
-        <div class="content" id="step4" hidden>
-          <h2 data-i18n="step4Title">4. السجل</h2>
-          <div class="features-grid">
-            <div class="field">
-              <label class="field-label" for="trackerSelect" data-i18n="trackerLabel">أضف العناصر إلى</label>
-              <select class="waitlist-input" id="trackerSelect"></select>
-            </div>
-            <div class="field" id="trackerNameField">
-              <label class="field-label" for="trackerName" data-i18n="trackerNamePlaceholder">اسم السجل الجديد</label>
-              <input type="text" class="waitlist-input" id="trackerName" placeholder="اسم السجل الجديد" maxlength="120" autocomplete="off">
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 5: plan check + import -->
-        <div class="content" id="step5" hidden>
-          <h2 data-i18n="step5Title">5. التحقق من الباقة</h2>
-          <div class="platform-stats-list stats-block" id="planStats"></div>
-          <p class="waitlist-msg" id="planMsg" role="status" aria-live="polite" hidden></p>
-          <div class="inline-actions" id="planUpgrade" hidden>
-            <a href="/pricing.html" class="chat-option-btn" data-i18n="upgradePlan">ترقية الباقة</a>
-          </div>
-          <div class="step-actions">
-            <button type="button" class="waitlist-btn" id="importBtn" data-i18n="importBtn">بدء الاستيراد</button>
-            <p class="waitlist-msg" id="importProgress" role="status" aria-live="polite" hidden></p>
-          </div>
-        </div>
-
         <!-- Summary -->
         <div class="content" id="summaryCard" hidden>
           <h2 data-i18n="summaryTitle">اكتمل الاستيراد</h2>
@@ -902,7 +941,6 @@
             <button type="button" class="chat-option-btn" id="importAnotherBtn" data-i18n="importAnother">استيراد ملف آخر</button>
           </div>
         </div>
-      </div>
 
     </div>
   </div>
@@ -943,11 +981,15 @@
         unsupportedType: "نوع الملف غير مدعوم، اختر ملفا بصيغة xlsx أو xls أو csv.",
         emptySheet: "لا تحتوي هذه الورقة على بيانات.",
         fileLoaded: "تمت قراءة الملف: {name} ({rows} صفا، {cols} عمودا).",
-        step2Title: "2. معاينة البيانات",
+        rawPreviewToggle: "عرض الملف كما هو",
         sheetLabel: "الورقة",
         previewNote: "تعرض أول {shown} صفا من أصل {total}.",
         columnN: "عمود",
-        step3Title: "3. ربط الأعمدة",
+        step3Title: "ماذا تستورد",
+        moreFieldsToggle: "تفاصيل إضافية",
+        headerPickerMsg: "لم نجد صف العناوين بثقة — اختر الصف الصحيح.",
+        headerRowOption: "الصف {n} — {preview}",
+        previewMoreCols: "+{n} أعمدة أخرى",
         mapTitle: "العنوان",
         mapDue: "تاريخ الاستحقاق",
         mapCategory: "التصنيف",
@@ -972,12 +1014,12 @@
         skippedRows: "صفوف ستتجاهل لعدم وجود عنوان أو تاريخ صالح: {n}",
         unmatchedAssignees: "صفوف ببريد مسؤول غير موجود في الفريق: {n}",
         unmatchedHint: "لم يعثر على هذه العناوين بين أعضاء الفريق، وستستورد عناصرها بدون مسؤول: {list}",
-        step4Title: "4. السجل",
+        step4Title: "السجل",
         trackerLabel: "أضف العناصر إلى",
         newTracker: "سجل جديد",
         trackerNamePlaceholder: "اسم السجل الجديد",
         trackerNameRequired: "أدخل اسم السجل الجديد.",
-        step5Title: "5. التحقق من الباقة",
+        step5Title: "التحقق من الباقة والاستيراد",
         importsThisMonth: "عمليات الاستيراد هذا الشهر",
         itemsUsage: "العناصر المستخدمة",
         rowsToImport: "الصفوف التي ستستورد",
@@ -1234,11 +1276,15 @@
         unsupportedType: "Unsupported file type. Choose an xlsx, xls or csv file.",
         emptySheet: "This sheet contains no data.",
         fileLoaded: "File read: {name} ({rows} rows, {cols} columns).",
-        step2Title: "2. Preview the data",
+        rawPreviewToggle: "Show the raw file",
         sheetLabel: "Sheet",
         previewNote: "Showing the first {shown} of {total} rows.",
         columnN: "Column",
-        step3Title: "3. Map the columns",
+        step3Title: "What are you importing",
+        moreFieldsToggle: "Additional details",
+        headerPickerMsg: "We could not confidently find the header row — pick the right one.",
+        headerRowOption: "Row {n} — {preview}",
+        previewMoreCols: "+{n} more columns",
         mapTitle: "Title",
         mapDue: "Due date",
         mapCategory: "Category",
@@ -1263,12 +1309,12 @@
         skippedRows: "Rows that will be skipped (missing title or valid date): {n}",
         unmatchedAssignees: "Rows whose assignee email is not a team member: {n}",
         unmatchedHint: "These addresses were not found among the team members; their items will be imported without an assignee: {list}",
-        step4Title: "4. Tracker",
+        step4Title: "Tracker",
         trackerLabel: "Add the items to",
         newTracker: "New tracker",
         trackerNamePlaceholder: "Name of the new tracker",
         trackerNameRequired: "Enter a name for the new tracker.",
-        step5Title: "5. Plan check",
+        step5Title: "Plan check and import",
         importsThisMonth: "Imports this month",
         itemsUsage: "Items in use",
         rowsToImport: "Rows to import",
@@ -1525,11 +1571,15 @@
         unsupportedType: "Type de fichier non pris en charge. Choisissez un fichier xlsx, xls ou csv.",
         emptySheet: "Cette feuille ne contient aucune donnée.",
         fileLoaded: "Fichier lu : {name} ({rows} lignes, {cols} colonnes).",
-        step2Title: "2. Aperçu des données",
+        rawPreviewToggle: "Afficher le fichier brut",
         sheetLabel: "Feuille",
         previewNote: "Affichage des {shown} premières lignes sur {total}.",
         columnN: "Colonne",
-        step3Title: "3. Associer les colonnes",
+        step3Title: "Que voulez-vous importer",
+        moreFieldsToggle: "Détails supplémentaires",
+        headerPickerMsg: "Nous n'avons pas trouvé la ligne d'en-tête avec certitude — choisissez la bonne.",
+        headerRowOption: "Ligne {n} — {preview}",
+        previewMoreCols: "+{n} colonnes de plus",
         mapTitle: "Titre",
         mapDue: "Date d'échéance",
         mapCategory: "Catégorie",
@@ -1554,12 +1604,12 @@
         skippedRows: "Lignes ignorées (titre ou date valide manquant) : {n}",
         unmatchedAssignees: "Lignes dont l'e-mail du responsable n'appartient pas à l'équipe : {n}",
         unmatchedHint: "Ces adresses n'ont pas été trouvées parmi les membres de l'équipe ; leurs éléments seront importés sans responsable : {list}",
-        step4Title: "4. Suivi",
+        step4Title: "Suivi",
         trackerLabel: "Ajouter les éléments à",
         newTracker: "Nouveau suivi",
         trackerNamePlaceholder: "Nom du nouveau suivi",
         trackerNameRequired: "Saisissez un nom pour le nouveau suivi.",
-        step5Title: "5. Vérification du forfait",
+        step5Title: "Vérification du forfait et import",
         importsThisMonth: "Importations ce mois-ci",
         itemsUsage: "Éléments utilisés",
         rowsToImport: "Lignes à importer",
@@ -1816,11 +1866,15 @@
         unsupportedType: "فائل کی قسم معاون نہیں۔ xlsx، xls یا csv فائل منتخب کریں۔",
         emptySheet: "اس شیٹ میں کوئی ڈیٹا نہیں ہے۔",
         fileLoaded: "فائل پڑھ لی گئی: {name} ({rows} قطاریں، {cols} کالم)۔",
-        step2Title: "2. ڈیٹا کا جائزہ",
+        rawPreviewToggle: "خام فائل دکھائیں",
         sheetLabel: "شیٹ",
         previewNote: "کل {total} میں سے پہلی {shown} قطاریں دکھائی جا رہی ہیں۔",
         columnN: "کالم",
-        step3Title: "3. کالمز کو جوڑیں",
+        step3Title: "کیا درآمد کر رہے ہیں",
+        moreFieldsToggle: "اضافی تفصیلات",
+        headerPickerMsg: "ہمیں یقین سے ہیڈر کی قطار نہیں ملی — درست قطار منتخب کریں۔",
+        headerRowOption: "قطار {n} — {preview}",
+        previewMoreCols: "+{n} مزید کالم",
         mapTitle: "عنوان",
         mapDue: "مقررہ تاریخ",
         mapCategory: "زمرہ",
@@ -1845,12 +1899,12 @@
         skippedRows: "نظر انداز ہونے والی قطاریں (عنوان یا درست تاریخ نہیں): {n}",
         unmatchedAssignees: "ایسی قطاریں جن کے ذمہ دار کا ای میل ٹیم میں نہیں: {n}",
         unmatchedHint: "یہ ای میل پتے ٹیم کے اراکین میں نہیں ملے؛ ان کے آئٹمز بغیر ذمہ دار کے درآمد ہوں گے: {list}",
-        step4Title: "4. ٹریکر",
+        step4Title: "ٹریکر",
         trackerLabel: "آئٹمز شامل کریں",
         newTracker: "نیا ٹریکر",
         trackerNamePlaceholder: "نئے ٹریکر کا نام",
         trackerNameRequired: "نئے ٹریکر کا نام درج کریں۔",
-        step5Title: "5. پلان کی جانچ",
+        step5Title: "پلان کی جانچ اور درآمد",
         importsThisMonth: "اس ماہ کی درآمدات",
         itemsUsage: "استعمال شدہ آئٹمز",
         rowsToImport: "درآمد ہونے والی قطاریں",
@@ -3506,7 +3560,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
 <script src="/app.js?v=4" defer></script>
-<script src="/app/common.js?v=13" defer></script>
+<script src="/app/common.js?v=14" defer></script>
 <script src="/brand-logo.js?v=4" defer></script>
 </body>
 </html>
