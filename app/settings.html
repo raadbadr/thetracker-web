@@ -440,7 +440,7 @@
     .feature-card.is-linked.is-collapsed h3 { margin: 0; font-size: 0.95rem; }
     .feature-card.is-linked.is-collapsed .channel-status { margin: 0; }
     .feature-card.is-linked.is-collapsed .channel-body { display: none; }
-    /* رمز QR لرابط الربط: أسود على أبيض دائماً حتى تقرأه كاميرا الجوال في الثيمين */
+    /* رمز QR لرابط الربط: أسود على أبيض دائما حتى تقرأه كاميرا الجوال في الثيمين */
     .channel-qr { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; margin: 0.75rem 0 0.5rem; }
     .channel-qr-img { width: 168px; height: 168px; padding: 10px; border-radius: 14px; background: #fff; box-shadow: 0 4px 16px var(--shadow-dark); }
     .channel-qr-img svg { display: block; width: 100%; height: 100%; }
@@ -487,9 +487,9 @@
       h2 { font-size: 1.5rem; }
     }
 
-    /* ===== نظام الأزرار الموحّد (شكل واحد + تباين مقروء) ===== */
+    /* ===== نظام الأزرار الموحد (شكل واحد + تباين مقروء) ===== */
     /* كل الأزرار بزوايا واحدة ووزن خط واحد وارتفاع واحد؛ الحد الشفاف في الزر
-       الممتلئ يجعل ارتفاعه مطابقاً للزر المحدَّد صاحب الإطار 1.5px. */
+       الممتلئ يجعل ارتفاعه مطابقا للزر المحدد صاحب الإطار 1.5px. */
     .waitlist-btn, .chat-option-btn {
       display: inline-flex;
       align-items: center;
@@ -513,7 +513,7 @@
     .waitlist-btn:focus-visible,
     .chat-option-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
     /* الوضع الداكن: الأبيض فوق الأزرق الفاتح تباينه 3:1 فقط (دون معيار AA)،
-       فحبر الزر الممتلئ داكن (5.5:1)، والزر المحدَّد يأخذ الأزرق الأفتح (4.9:1). */
+       فحبر الزر الممتلئ داكن (5.5:1)، والزر المحدد يأخذ الأزرق الأفتح (4.9:1). */
     .waitlist-btn, .back-btn, .content a.back-btn { color: var(--btn-ink); }
     [data-theme="dark"] .chat-option-btn:not(.is-danger),
     [data-theme="dark"] .content a.chat-option-btn:not(.is-danger) {
@@ -569,12 +569,12 @@
     </div>
 
     <div class="content" id="loadingCard">
-      <p class="waitlist-msg" role="status" aria-live="polite" data-i18n="loading">جارٍ التحميل...</p>
+      <p class="waitlist-msg" role="status" aria-live="polite" data-i18n="loading">جاري التحميل...</p>
     </div>
 
     <div class="content" id="unavailableCard" style="display:none">
       <h2 data-i18n="serviceUnavailableTitle">الخدمة قيد التجهيز</h2>
-      <p data-i18n="serviceUnavailableText">نعمل حالياً على تجهيز الخدمة، حاول مرة أخرى لاحقاً.</p>
+      <p data-i18n="serviceUnavailableText">نعمل حاليا على تجهيز الخدمة، حاول مرة أخرى لاحقا.</p>
     </div>
 
     <div id="settingsMain" style="display:none">
@@ -630,7 +630,7 @@
       <!-- (2) Notification channels -->
       <div class="content" id="channelsCard">
         <h2 data-i18n="channelsTitle">قنوات التنبيه</h2>
-        <p data-i18n="channelsIntro">اربط القنوات التي تريد استقبال التذكيرات عبرها. البريد الإلكتروني مفعّل دائماً.</p>
+        <p data-i18n="channelsIntro">اربط القنوات التي تريد استقبال التذكيرات عبرها. البريد الإلكتروني مفعل دائما.</p>
         <div class="features-grid" id="channelsGrid">
 
           <div class="feature-card" id="emailCard">
@@ -675,7 +675,7 @@
       <!-- (3) Reminder rules -->
       <div class="content" id="rulesCard">
         <h2 data-i18n="rulesTitle">قواعد التذكير</h2>
-        <p data-i18n="rulesIntro">حدّد لكل سجل موعد التذكير والقنوات والمستلمين.</p>
+        <p data-i18n="rulesIntro">حدد لكل سجل موعد التذكير والقنوات والمستلمين.</p>
         <div id="rulesWrap"></div>
       </div>
 
@@ -715,7 +715,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
       <!-- (4) Calendar -->
       <div class="content" id="calendarCard">
         <h2 data-i18n="calendarTitle">التقويم</h2>
-        <p data-i18n="calendarIntro">أضف هذا الرابط إلى تقويم Google أو Apple أو Outlook لعرض مواعيدك تلقائياً.</p>
+        <p data-i18n="calendarIntro">أضف هذا الرابط إلى تقويم Google أو Apple أو Outlook لعرض مواعيدك تلقائيا.</p>
         <div class="waitlist-form">
           <input type="text" class="waitlist-input" id="calendarUrl" readonly dir="ltr">
           <button type="button" class="waitlist-btn" id="copyUrlBtn" data-i18n="copyUrlBtn">نسخ الرابط</button>
@@ -786,21 +786,21 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         apiCreate: "إنشاء مفتاح",
         apiDocs: "طريقة الاستخدام",
         apiRevoke: "إلغاء",
-        apiCreated: "أُنشئ المفتاح، انسخه الآن.",
-        apiRevoked: "أُلغي المفتاح.",
+        apiCreated: "أنشئ المفتاح، انسخه الآن.",
+        apiRevoked: "ألغي المفتاح.",
         apiNone: "لا مفاتيح بعد.",
         apiLastUsed: "آخر استخدام",
         title: "الإعدادات",
         intro: "إدارة ملفك الشخصي وقنوات التنبيه وقواعد التذكير والتقويم والاشتراك.",
-        loading: "جارٍ التحميل...",
+        loading: "جاري التحميل...",
         serviceUnavailableTitle: "الخدمة قيد التجهيز",
-        serviceUnavailableText: "نعمل حالياً على تجهيز الخدمة، حاول مرة أخرى لاحقاً.",
-        noOrg: "لا توجد شركة محددة، أنشئ شركتك أولاً من لوحة التحكم.",
+        serviceUnavailableText: "نعمل حاليا على تجهيز الخدمة، حاول مرة أخرى لاحقا.",
+        noOrg: "لا توجد شركة محددة، أنشئ شركتك أولا من لوحة التحكم.",
         genericError: "حدث خطأ، حاول مرة أخرى.",
         saved: "تم الحفظ.",
         deleted: "تم الحذف.",
-        planLimitItems: "وصلت إلى الحد الأقصى لعدد العناصر في باقتك الحالية، رقِّ باقتك لإضافة المزيد.",
-        planLimitMembers: "وصلت إلى الحد الأقصى لعدد الأعضاء في باقتك الحالية، رقِّ باقتك لإضافة المزيد.",
+        planLimitItems: "وصلت إلى الحد الأقصى لعدد العناصر في باقتك الحالية، رق باقتك لإضافة المزيد.",
+        planLimitMembers: "وصلت إلى الحد الأقصى لعدد الأعضاء في باقتك الحالية، رق باقتك لإضافة المزيد.",
         profileTitle: "الملف الشخصي",
         fullNameLabel: "الاسم الكامل",
         fullNamePlaceholder: "اسمك الكامل",
@@ -808,10 +808,10 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         langLabel: "لغة الواجهة",
         tzLabel: "المنطقة الزمنية",
         saveBtn: "حفظ",
-        saving: "جارٍ الحفظ...",
+        saving: "جاري الحفظ...",
         profileSaved: "تم حفظ الملف الشخصي.",
         channelsTitle: "قنوات التنبيه",
-        channelsIntro: "اربط القنوات التي تريد استقبال التذكيرات عبرها. البريد الإلكتروني مفعّل دائماً.",
+        channelsIntro: "اربط القنوات التي تريد استقبال التذكيرات عبرها. البريد الإلكتروني مفعل دائما.",
         chEmail: "البريد الإلكتروني",
         chTelegram: "تيليجرام",
         chWhatsapp: "واتساب",
@@ -819,7 +819,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         statusLinked: "مرتبط",
         statusPending: "بانتظار التحقق",
         statusNotLinked: "غير مرتبط",
-        statusUnavailable: "غير متاح حالياً",
+        statusUnavailable: "غير متاح حاليا",
         planChannelLocked: "هذه القناة غير متاحة في باقتك الحالية.",
         genCodeBtn: "توليد رمز",
         regenCodeBtn: "توليد رمز جديد",
@@ -835,9 +835,9 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         openTelegram: "فتح تيليجرام",
         tgQrHint: "أو امسح الرمز بكاميرا الجوال لربط تيليجرام مباشرة",
         openWhatsapp: "فتح واتساب",
-        testSending: "جارٍ الإرسال...",
-        testSent: "أُرسلت الرسالة التجريبية.",
-        testFailed: "تعذّر إرسال الرسالة التجريبية، حاول لاحقاً.",
+        testSending: "جاري الإرسال...",
+        testSent: "أرسلت الرسالة التجريبية.",
+        testFailed: "تعذر إرسال الرسالة التجريبية، حاول لاحقا.",
         testNotLinked: "القناة غير مرتبطة بعد.",
         unlinked: "تم إلغاء ربط القناة.",
         invalidPhone: "أدخل رقم الجوال بالصيغة الدولية، مثل +9665xxxxxxx",
@@ -845,9 +845,9 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         codeGenerated: "تم توليد الرمز، أكمل خطوات الربط.",
         refreshed: "تم تحديث الحالة.",
         tgLinked: "تم ربط تيليجرام بحسابك.",
-        tgLinkFailed: "تعذّر ربط تيليجرام، افتح البوت واضغط الزر مرة أخرى.",
+        tgLinkFailed: "تعذر ربط تيليجرام، افتح البوت واضغط الزر مرة أخرى.",
         rulesTitle: "قواعد التذكير",
-        rulesIntro: "حدّد لكل سجل موعد التذكير والقنوات والمستلمين.",
+        rulesIntro: "حدد لكل سجل موعد التذكير والقنوات والمستلمين.",
         colTracker: "السجل",
         colOffset: "موعد التذكير",
         colChannels: "القنوات",
@@ -857,7 +857,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         off1440: "قبل يوم واحد",
         off4320: "قبل 3 أيام",
         off10080: "قبل 7 أيام",
-        off43200: "قبل 30 يوماً",
+        off43200: "قبل 30 يوما",
         offCustom: "قبل {n} دقيقة",
         targetAssignee: "المسؤول فقط",
         targetAll: "جميع الأعضاء",
@@ -866,13 +866,13 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         deleteRuleConfirm: "هل تريد حذف قاعدة التذكير لهذا السجل؟",
         ruleSaved: "تم حفظ قاعدة التذكير.",
         ruleDeleted: "تم حذف قاعدة التذكير.",
-        noTrackers: "لا توجد سجلات بعد، أنشئ سجلاً أولاً.",
-        ruleActive: "مفعّلة",
+        noTrackers: "لا توجد سجلات بعد، أنشئ سجلا أولا.",
+        ruleActive: "مفعلة",
         calendarTitle: "التقويم",
-        calendarIntro: "أضف هذا الرابط إلى تقويم Google أو Apple أو Outlook لعرض مواعيدك تلقائياً.",
+        calendarIntro: "أضف هذا الرابط إلى تقويم Google أو Apple أو Outlook لعرض مواعيدك تلقائيا.",
         copyUrlBtn: "نسخ الرابط",
         urlCopied: "تم نسخ الرابط.",
-        copyFailed: "تعذّر النسخ، انسخ الرابط يدوياً.",
+        copyFailed: "تعذر النسخ، انسخ الرابط يدويا.",
         regenerateBtn: "إعادة توليد الرابط",
         addToGoogle: "أضف إلى تقويم جوجل",
         addToApple: "أضف إلى تقويم آبل أو أوتلوك",
@@ -885,24 +885,24 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         limitMembers: "الأعضاء",
         limitItems: "العناصر",
         limitChannels: "القنوات",
-        limitImports: "عمليات الاستيراد شهرياً",
+        limitImports: "عمليات الاستيراد شهريا",
         unlimited: "غير محدود",
         upgradeBtn: "طلب ترقية",
         save: "حفظ",
         orgCardTitle: "الشركة",
         orgSaved: "تم حفظ اسم الشركة.",
         deleteOrgBtn: "حذف الشركة",
-        deleteOrgConfirm: "ستُحذف الشركة «{name}» وكل عناصرها وسجلاتها نهائياً. هل تتابع؟",
+        deleteOrgConfirm: "ستحذف الشركة «{name}» وكل عناصرها وسجلاتها نهائيا. هل تتابع؟",
         upgradeSent: "أرسلنا طلبك، سيصلك التفعيل بعد المراجعة.",
         reqStatus_pending: "قيد المراجعة",
-        reqStatus_approved: "مفعّل",
+        reqStatus_approved: "مفعل",
         reqStatus_rejected: "مرفوض",
         reqStatus_cancelled: "ملغى",
         upgradeSubject: "طلب ترقية الباقة",
         signOutTitle: "تسجيل الخروج",
         signOutText: "يمكنك تسجيل الدخول مرة أخرى في أي وقت.",
         signOutBtn: "تسجيل الخروج",
-        signingOut: "جارٍ تسجيل الخروج...",
+        signingOut: "جاري تسجيل الخروج...",
         backBtn: "العودة إلى لوحة التحكم",
         copyrightLine2: "جميع الحقوق محفوظة",
         aboutLink: "من نحن",
@@ -1251,7 +1251,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         testFailed: "آزمائشی پیغام نہیں بھیجا جا سکا، براہ کرم بعد میں کوشش کریں۔",
         testNotLinked: "یہ چینل ابھی منسلک نہیں ہے۔",
         unlinked: "چینل کا لنک ختم کر دیا گیا۔",
-        invalidPhone: "بین الاقوامی فارمیٹ میں موبائل نمبر درج کریں، مثلاً +9665xxxxxxx",
+        invalidPhone: "بین الاقوامی فارمیٹ میں موبائل نمبر درج کریں، مثلا +9665xxxxxxx",
         phoneLinked: "نمبر منسلک ہو گیا۔",
         codeGenerated: "کوڈ بن گیا، لنکنگ کے مراحل مکمل کریں۔",
         refreshed: "حالت تازہ ہو گئی۔",
@@ -1305,7 +1305,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         deleteOrgBtn: "کمپنی حذف کریں",
         deleteOrgConfirm: "«{name}» اور اس کے تمام آئٹمز حذف ہو جائیں گے۔ جاری رکھیں؟",
         upgradeSent: "درخواست بھیج دی گئی۔ جائزے کے بعد پلان فعال ہو جائے گا۔",
-        reqStatus_pending: "زیرِ جائزہ",
+        reqStatus_pending: "زیر جائزہ",
         reqStatus_approved: "فعال",
         reqStatus_rejected: "مسترد",
         reqStatus_cancelled: "منسوخ",
@@ -1386,7 +1386,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
       document.getElementById("langDropdown").classList.toggle("show");
       document.getElementById("themeDropdown").classList.remove("show");
     });
-    // زر المظهر يبدّل الثيم مباشرةً بضغطة واحدة بلا قائمة (طلب المهندس رعد)
+    // زر المظهر يبدل الثيم مباشرة بضغطة واحدة بلا قائمة (طلب المهندس رعد)
     document.getElementById("themeMenuBtn").addEventListener("click", e => {
       e.stopPropagation();
       setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
@@ -1598,7 +1598,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
           .catch(function () { /* channels stay unavailable */ });
       }
 
-      /* وصل المستخدم من زر «ربط حسابي» داخل البوت: اربط المحادثة بحسابه فوراً ونظّف الرابط */
+      /* وصل المستخدم من زر «ربط حسابي» داخل البوت: اربط المحادثة بحسابه فورا ونظف الرابط */
       function linkFromBotToken() {
         var params = new URLSearchParams(window.location.search);
         var token = params.get("tglink");
@@ -1713,7 +1713,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
         renderTelegramQr(body);
       }
 
-      /* يرسم رمز QR لرابط t.me الموجود في البطاقة؛ إن لم تُحمَّل المكتبة تُزال الحاوية بصمت */
+      /* يرسم رمز QR لرابط t.me الموجود في البطاقة؛ إن لم تحمل المكتبة تزال الحاوية بصمت */
       function renderTelegramQr(body) {
         var box = el("telegramQr"), img = el("telegramQrImg");
         if (!box || !img) return;
@@ -1754,7 +1754,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
 
       function renderChannels() {
         if (!state.loaded) return;
-        /* لا نعرض إلا القنوات التي تسمح بها الباقة (حالياً تيليغرام وحده). */
+        /* لا نعرض إلا القنوات التي تسمح بها الباقة (حاليا تيليغرام وحده). */
         var allowed = allowedChannels();
         CHANNELS.forEach(function (ch) {
           var card = document.getElementById(ch + "Card");

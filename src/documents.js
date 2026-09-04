@@ -1,9 +1,9 @@
 /**
  * تحليل المستندات — /api/documents/analyze
- * يستقبل نص مستند (مستخرج من PDF في المتصفح) أو صورة (base64)، ويعيد حقولاً
+ * يستقبل نص مستند (مستخرج من PDF في المتصفح) أو صورة (base64)، ويعيد حقولا
  * منظمة: نوع المستند، عنوانه، رقمه، الجهة، تاريخ الإصدار، تاريخ الانتهاء، المبلغ،
- * رقم الدعوى، الشركة. الصور تُقرأ بنموذج رؤية من Workers AI ثم يُستخرج منها.
- * لا يُخزَّن شيء هنا؛ الحفظ يتم من المتصفح عبر سوبابيس بصلاحيات المستخدم.
+ * رقم الدعوى، الشركة. الصور تقرأ بنموذج رؤية من Workers AI ثم يستخرج منها.
+ * لا يخزن شيء هنا؛ الحفظ يتم من المتصفح عبر سوبابيس بصلاحيات المستخدم.
  */
 
 const TEXT_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
@@ -35,18 +35,18 @@ function extractionPrompt(text) {
   "number": رقم المستند الرئيسي (رقم السجل / الرقم الضريبي / رقم الرخصة / رقم الصك…),
   "issuer": الجهة المصدرة,
   "party": اسم الشركة أو الشخص صاحب المستند,
-  "issue_date": التاريخ كما هو مكتوب في المستند بصيغة "YYYY-MM-DD" بدون تحويل (إن كان هجرياً اكتبه هجرياً مثل "1446-03-12"),
+  "issue_date": التاريخ كما هو مكتوب في المستند بصيغة "YYYY-MM-DD" بدون تحويل (إن كان هجريا اكتبه هجريا مثل "1446-03-12"),
   "issue_date_calendar": "hijri" أو "gregorian",
   "expiry_date": تاريخ الانتهاء أو الاستحقاق أو الجلسة القادمة كما هو مكتوب بصيغة "YYYY-MM-DD" بدون تحويل,
   "expiry_date_calendar": "hijri" أو "gregorian",
-  "amount": رقم بالريال إن وُجد مبلغ,
-  "case_number": رقم الدعوى أو القضية إن وُجد,
-  "court": المحكمة إن وُجدت,
+  "amount": رقم بالريال إن وجد مبلغ,
+  "case_number": رقم الدعوى أو القضية إن وجد,
+  "court": المحكمة إن وجدت,
   "summary": جملة واحدة تصف المستند,
   "confidence": رقم من 0 إلى 1
 }
 
-قواعد: لا تحوّل بين التقويمين أبداً، فقط انسخ التاريخ كما ورد وحدد تقويمه (السنوات 13xx و14xx هجرية، و19xx و20xx ميلادية). الأرقام غربية. لا تخترع قيماً غير موجودة في النص.
+قواعد: لا تحول بين التقويمين أبدا، فقط انسخ التاريخ كما ورد وحدد تقويمه (السنوات 13xx و14xx هجرية، و19xx و20xx ميلادية). الأرقام غربية. لا تخترع قيما غير موجودة في النص.
 
 النص:
 """
@@ -62,8 +62,8 @@ function parseJson(raw) {
   try { return JSON.parse(s.slice(start, end + 1)); } catch { return null; }
 }
 
-/* تحويل هجري (أم القرى) → ميلادي حسابياً: نقدّر اليوم ثم نبحث حوله عن اليوم الذي
-   يُنتج التاريخ الهجري نفسه في Intl. لا نثق بتحويل النموذج اللغوي. */
+/* تحويل هجري (أم القرى) → ميلادي حسابيا: نقدر اليوم ثم نبحث حوله عن اليوم الذي
+   ينتج التاريخ الهجري نفسه في Intl. لا نثق بتحويل النموذج اللغوي. */
 const HIJRI_FMT = new Intl.DateTimeFormat("en-u-ca-islamic-umalqura", { day: "numeric", month: "numeric", year: "numeric" });
 function hijriParts(d) {
   const out = {};
@@ -71,7 +71,7 @@ function hijriParts(d) {
   return out;
 }
 function hijriToGregorian(y, m, d) {
-  // تقدير: 1 محرم 1 هـ ≈ 16 يوليو 622 م، والسنة الهجرية 354.367 يوماً
+  // تقدير: 1 محرم 1 ه ≈ 16 يوليو 622 م، والسنة الهجرية 354.367 يوما
   const approx = new Date(Date.UTC(622, 6, 16) + ((y - 1) * 354.367 + (m - 1) * 29.53 + (d - 1)) * 86400000);
   for (let off = -40; off <= 40; off++) {
     const cand = new Date(approx.getTime() + off * 86400000);
@@ -115,7 +115,7 @@ function clean(out) {
   };
 }
 
-/* قواعد حتمية للمستندات السعودية الشائعة: تعمل قبل النموذج وبعده، ولا تخترع شيئاً */
+/* قواعد حتمية للمستندات السعودية الشائعة: تعمل قبل النموذج وبعده، ولا تخترع شيئا */
 const AR_DIGITS = { "٠":"0","١":"1","٢":"2","٣":"3","٤":"4","٥":"5","٦":"6","٧":"7","٨":"8","٩":"9","۰":"0","۱":"1","۲":"2","۳":"3","۴":"4","۵":"5","۶":"6","۷":"7","۸":"8","۹":"9" };
 function westernize(t) { return String(t || "").replace(/[٠-٩۰-۹]/g, (d) => AR_DIGITS[d] || d); }
 function findDate(text, labels) {
@@ -207,7 +207,7 @@ export async function handleDocumentAnalyze(request, env) {
     });
     parsed = parseJson(out && (out.response || out.result));
   } catch (e) { parsed = null; }
-  /* النموذج قد يخطئ أو يفشل؛ القواعد الحتمية تُكمل أو تصحّح، ولا نفشل ما دامت وجدت شيئاً */
+  /* النموذج قد يخطئ أو يفشل؛ القواعد الحتمية تكمل أو تصحح، ولا نفشل ما دامت وجدت شيئا */
   const merged = mergeRules(parsed, rules);
   if (!parsed && !rules.kind) return new Response(JSON.stringify({ error: "extract_failed" }), { status: 502, headers });
   return new Response(JSON.stringify({ fields: clean(merged), text_chars: text.length, rules: Object.keys(rules) }), { headers });

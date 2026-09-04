@@ -428,9 +428,9 @@
       h2 { font-size: 1.5rem; }
     }
 
-    /* ===== نظام الأزرار الموحّد (شكل واحد + تباين مقروء) ===== */
+    /* ===== نظام الأزرار الموحد (شكل واحد + تباين مقروء) ===== */
     /* كل الأزرار بزوايا واحدة ووزن خط واحد وارتفاع واحد؛ الحد الشفاف في الزر
-       الممتلئ يجعل ارتفاعه مطابقاً للزر المحدَّد صاحب الإطار 1.5px. */
+       الممتلئ يجعل ارتفاعه مطابقا للزر المحدد صاحب الإطار 1.5px. */
     .waitlist-btn, .chat-option-btn {
       display: inline-flex;
       align-items: center;
@@ -454,7 +454,7 @@
     .waitlist-btn:focus-visible,
     .chat-option-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
     /* الوضع الداكن: الأبيض فوق الأزرق الفاتح تباينه 3:1 فقط (دون معيار AA)،
-       فحبر الزر الممتلئ داكن (5.5:1)، والزر المحدَّد يأخذ الأزرق الأفتح (4.9:1). */
+       فحبر الزر الممتلئ داكن (5.5:1)، والزر المحدد يأخذ الأزرق الأفتح (4.9:1). */
     .waitlist-btn, .back-btn, .content a.back-btn { color: var(--btn-ink); }
     [data-theme="dark"] .chat-option-btn:not(.is-danger),
     [data-theme="dark"] .content a.chat-option-btn:not(.is-danger) {
@@ -507,13 +507,13 @@
 
     <!-- loading -->
     <div class="content" id="loadingCard">
-      <p class="login-intro" data-i18n="loading">جارٍ التحميل...</p>
+      <p class="login-intro" data-i18n="loading">جاري التحميل...</p>
     </div>
 
     <!-- Supabase not configured yet -->
     <div class="content" id="unavailableCard" style="display:none">
       <h2 data-i18n="serviceUnavailableTitle">الخدمة قيد التجهيز</h2>
-      <p data-i18n="serviceUnavailableText">نعمل حالياً على تجهيز الخدمة، حاول مرة أخرى لاحقاً.</p>
+      <p data-i18n="serviceUnavailableText">نعمل حاليا على تجهيز الخدمة، حاول مرة أخرى لاحقا.</p>
       <p><a href="/app/dashboard.html" class="back-btn" data-i18n="dashboardBtn">العودة إلى لوحة التحكم</a></p>
     </div>
 
@@ -551,14 +551,14 @@
 
       <div class="content" id="activateCard">
         <h2 data-i18n="activateTitle">تفعيل اشتراك</h2>
-        <p class="login-intro" data-i18n="activateIntro">اختر الشركة والباقة والمدة ثم اضغط «تفعيل». يُسجَّل الاشتراك باسمك وتُحدَّث باقة الشركة فوراً.</p>
+        <p class="login-intro" data-i18n="activateIntro">اختر الشركة والباقة والمدة ثم اضغط «تفعيل». يسجل الاشتراك باسمك وتحدث باقة الشركة فورا.</p>
         <form class="login-stack" id="activateForm" novalidate>
           <div class="waitlist-form"><select class="waitlist-input" id="actOrg" required></select></div>
           <div class="waitlist-form"><select class="waitlist-input" id="actPlan" required></select></div>
           <div class="waitlist-form">
             <select class="waitlist-input" id="actMonths">
               <option value="1" data-i18n="monthsOne">شهر واحد</option>
-              <option value="12" data-i18n="monthsTwelve">12 شهراً</option>
+              <option value="12" data-i18n="monthsTwelve">12 شهرا</option>
             </select>
           </div>
           <div class="waitlist-form"><input type="text" class="waitlist-input" id="actNote" placeholder="ملاحظة (اختياري)" maxlength="500" autocomplete="off"></div>
@@ -570,7 +570,7 @@
       <!-- (3) contact messages -->
       <div class="content" id="messagesCard">
         <h2 data-i18n="messagesTitle">رسائل التواصل</h2>
-        <p data-i18n="messagesIntro">الرسائل الواردة من نموذج التواصل في الموقع، الأحدث أولاً.</p>
+        <p data-i18n="messagesIntro">الرسائل الواردة من نموذج التواصل في الموقع، الأحدث أولا.</p>
         <div class="waitlist-form">
           <button type="button" class="waitlist-btn" id="msgsRefresh" data-i18n="refreshBtn">تحديث</button>
         </div>
@@ -581,7 +581,7 @@
 
       <div class="content" id="telegramLogCard">
         <h2 data-i18n="tgMsgsTitle">رسائل تلغرام</h2>
-        <p data-i18n="tgMsgsIntro">كل ما يصل بوت تلغرام من المستخدمين، الأحدث أولاً.</p>
+        <p data-i18n="tgMsgsIntro">كل ما يصل بوت تلغرام من المستخدمين، الأحدث أولا.</p>
         <div class="waitlist-form">
           <button type="button" class="waitlist-btn" id="tgRefresh" data-i18n="refreshBtn">تحديث</button>
         </div>
@@ -616,9 +616,9 @@
     const translations = {
       ar: {
         title: "لوحة إدارة المنصة",
-        loading: "جارٍ التحميل...",
+        loading: "جاري التحميل...",
         serviceUnavailableTitle: "الخدمة قيد التجهيز",
-        serviceUnavailableText: "نعمل حالياً على تجهيز الخدمة، حاول مرة أخرى لاحقاً.",
+        serviceUnavailableText: "نعمل حاليا على تجهيز الخدمة، حاول مرة أخرى لاحقا.",
         deniedTitle: "غير مصرح",
         deniedText: "هذه الصفحة مخصصة لمشرفي المنصة فقط.",
         dashboardBtn: "العودة إلى لوحة التحكم",
@@ -638,21 +638,21 @@
         expired: "منتهية",
         activateRowBtn: "تفعيل اشتراك",
         activateTitle: "تفعيل اشتراك",
-        activateIntro: "اختر الشركة والباقة والمدة ثم اضغط «تفعيل». يُسجَّل الاشتراك باسمك وتُحدَّث باقة الشركة فوراً.",
+        activateIntro: "اختر الشركة والباقة والمدة ثم اضغط «تفعيل». يسجل الاشتراك باسمك وتحدث باقة الشركة فورا.",
         orgSelectPlaceholder: "اختر الشركة",
         planSelectPlaceholder: "اختر الباقة",
         monthsOne: "شهر واحد",
-        monthsTwelve: "12 شهراً",
+        monthsTwelve: "12 شهرا",
         notePlaceholder: "ملاحظة (اختياري)",
         activateBtn: "تفعيل",
-        activating: "جارٍ التفعيل...",
+        activating: "جاري التفعيل...",
         activated: "تم تفعيل الاشتراك بنجاح.",
-        activateMissing: "اختر الشركة والباقة أولاً.",
+        activateMissing: "اختر الشركة والباقة أولا.",
         messagesTitle: "رسائل التواصل",
-        messagesIntro: "الرسائل الواردة من نموذج التواصل في الموقع، الأحدث أولاً.",
+        messagesIntro: "الرسائل الواردة من نموذج التواصل في الموقع، الأحدث أولا.",
         messagesEmpty: "لا توجد رسائل بعد.",
         tgMsgsTitle: "رسائل تلغرام",
-        tgMsgsIntro: "كل ما يصل بوت تلغرام من المستخدمين، الأحدث أولاً.",
+        tgMsgsIntro: "كل ما يصل بوت تلغرام من المستخدمين، الأحدث أولا.",
         tgMsgsEmpty: "لا رسائل بعد.",
         colChat: "المحادثة",
         colUser: "المستخدم",
@@ -671,12 +671,12 @@
         requestsEmpty: "لا توجد طلبات.",
         approveBtn: "موافقة وتفعيل",
         rejectBtn: "رفض",
-        monthsLabel: "شهراً",
+        monthsLabel: "شهرا",
         orgNameLabel: "الشركة",
-        savingReq: "جارٍ التنفيذ...",
+        savingReq: "جاري التنفيذ...",
         savedReq: "تم التنفيذ.",
         reqStatus_pending: "قيد المراجعة",
-        reqStatus_approved: "مفعّل",
+        reqStatus_approved: "مفعل",
         reqStatus_rejected: "مرفوض",
         reqStatus_cancelled: "ملغى",
         noSubject: "بدون موضوع",
@@ -684,10 +684,10 @@
         statusRead: "مقروءة",
         statusReplied: "تم الرد",
         statusClosed: "مغلقة",
-        loadError: "تعذّر التحميل:",
+        loadError: "تعذر التحميل:",
         genericError: "حدث خطأ، حاول مرة أخرى.",
-        planLimitItems: "وصلت إلى الحد الأقصى لعدد العناصر في باقتك الحالية، رقِّ باقتك لإضافة المزيد.",
-        planLimitMembers: "وصلت إلى الحد الأقصى لعدد الأعضاء في باقتك الحالية، رقِّ باقتك لإضافة المزيد.",
+        planLimitItems: "وصلت إلى الحد الأقصى لعدد العناصر في باقتك الحالية، رق باقتك لإضافة المزيد.",
+        planLimitMembers: "وصلت إلى الحد الأقصى لعدد الأعضاء في باقتك الحالية، رق باقتك لإضافة المزيد.",
         copyrightLine2: "جميع الحقوق محفوظة",
         aboutLink: "من نحن",
         termsLink: "شروط الاستخدام",
@@ -899,7 +899,7 @@
         expired: "میعاد ختم",
         activateRowBtn: "سبسکرپشن فعال کریں",
         activateTitle: "سبسکرپشن فعال کریں",
-        activateIntro: "کمپنی، پلان اور مدت منتخب کریں، پھر «فعال کریں» دبائیں۔ سبسکرپشن آپ کے نام سے درج ہو گی اور کمپنی کا پلان فوراً اپ ڈیٹ ہو جائے گا۔",
+        activateIntro: "کمپنی، پلان اور مدت منتخب کریں، پھر «فعال کریں» دبائیں۔ سبسکرپشن آپ کے نام سے درج ہو گی اور کمپنی کا پلان فورا اپ ڈیٹ ہو جائے گا۔",
         orgSelectPlaceholder: "کمپنی منتخب کریں",
         planSelectPlaceholder: "پلان منتخب کریں",
         monthsOne: "ایک مہینہ",
@@ -936,7 +936,7 @@
         orgNameLabel: "کمپنی",
         savingReq: "جاری ہے...",
         savedReq: "ہو گیا۔",
-        reqStatus_pending: "زیرِ جائزہ",
+        reqStatus_pending: "زیر جائزہ",
         reqStatus_approved: "فعال",
         reqStatus_rejected: "مسترد",
         reqStatus_cancelled: "منسوخ",
@@ -1020,7 +1020,7 @@
       document.getElementById("langDropdown").classList.toggle("show");
       document.getElementById("themeDropdown").classList.remove("show");
     });
-    // زر المظهر يبدّل الثيم مباشرةً بضغطة واحدة بلا قائمة (طلب المهندس رعد)
+    // زر المظهر يبدل الثيم مباشرة بضغطة واحدة بلا قائمة (طلب المهندس رعد)
     document.getElementById("themeMenuBtn").addEventListener("click", e => {
       e.stopPropagation();
       setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");

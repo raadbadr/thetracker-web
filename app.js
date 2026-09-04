@@ -31,17 +31,17 @@
   var FALLBACK = {
     loginLink: "تسجيل الدخول",
     dashboardLink: "لوحة التحكم",
-    statusSending: "جارٍ الإرسال...",
-    statusRedirecting: "جارٍ تحويلك إلى مزوّد الخدمة...",
+    statusSending: "جاري الإرسال...",
+    statusRedirecting: "جاري تحويلك إلى مزود الخدمة...",
     statusEmailSent: "تحقق من بريدك الإلكتروني، فقد أرسلنا إليك رابط الدخول.",
     statusCodeSent: "أرسلنا رمز التحقق إلى جوالك.",
-    statusVerifying: "جارٍ التحقق...",
-    statusSuccess: "تم تسجيل الدخول، جارٍ تحويلك...",
+    statusVerifying: "جاري التحقق...",
+    statusSuccess: "تم تسجيل الدخول، جاري تحويلك...",
     statusWrongCode: "رمز التحقق غير صحيح أو منتهي الصلاحية، حاول مرة أخرى.",
-    statusUnavailable: "خدمة تسجيل الدخول غير متاحة حالياً، حاول لاحقاً أو تواصل مع الدعم.",
-    statusProviderUnavailable: "هذه الطريقة غير متاحة حالياً، جرّب طريقة أخرى.",
+    statusUnavailable: "خدمة تسجيل الدخول غير متاحة حاليا، حاول لاحقا أو تواصل مع الدعم.",
+    statusProviderUnavailable: "هذه الطريقة غير متاحة حاليا، جرب طريقة أخرى.",
     statusRateLimit: "محاولات كثيرة، حاول مرة أخرى بعد قليل.",
-    statusInvalidEmail: "أدخل بريداً إلكترونياً صحيحاً.",
+    statusInvalidEmail: "أدخل بريدا إلكترونيا صحيحا.",
     statusInvalidPhone: "أدخل رقم الجوال بالصيغة الدولية، مثل +9665xxxxxxx",
     statusError: "حدث خطأ، حاول مرة أخرى."
   };
@@ -96,7 +96,7 @@
 
   /* ---------- client bootstrap ---------- */
 
-  /* الوجهة بعد الدخول: المسار المطلوب في ?next= إن كان مساراً داخلياً آمناً
+  /* الوجهة بعد الدخول: المسار المطلوب في ?next= إن كان مسارا داخليا آمنا
      تحت /app/ (تضعه common.js عند حراسة الصفحات)، وإلا لوحة التحكم. */
   function nextPath() {
     try {
@@ -281,9 +281,9 @@
   }
 
   /* ---------- تسجيل الدخول بجوجل من نطاقنا ----------
-     مسار OAuth عبر سوبابيس ينقل المتصفح إلى <project>.supabase.co فتُظهر جوجل ذلك
+     مسار OAuth عبر سوبابيس ينقل المتصفح إلى <project>.supabase.co فتظهر جوجل ذلك
      المضيف للمستخدم. هنا نطلب رمز الهوية من جوجل مباشرة بتحويل كامل للصفحة
-     (OpenID Connect implicit) فتظهر appmails.net على شاشة جوجل، ثم نسلّم الرمز
+     (OpenID Connect implicit) فتظهر appmails.net على شاشة جوجل، ثم نسلم الرمز
      لسوبابيس. تحويل كامل بلا نوافذ منبثقة ولا إطارات، فيعمل في سفاري وغيره. */
 
   var GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
@@ -313,7 +313,7 @@
     return !!(googleDirect && googleClientId && window.crypto && window.crypto.subtle && window.TextEncoder);
   }
 
-  /* يبدأ الدخول: nonce أصلي يُحفظ محلياً وبصمته تُرسل لجوجل داخل الرمز. */
+  /* يبدأ الدخول: nonce أصلي يحفظ محليا وبصمته ترسل لجوجل داخل الرمز. */
   function startGoogleSignIn() {
     if (!googleReady()) return auth.signInWithGoogle();
     var nonce = randomNonce();
@@ -337,7 +337,7 @@
     });
   }
 
-  /* يُستدعى عند فتح صفحة الدخول: إن عاد رمز الهوية في العنوان نُسلّمه لسوبابيس. */
+  /* يستدعى عند فتح صفحة الدخول: إن عاد رمز الهوية في العنوان نسلمه لسوبابيس. */
   function completeGoogleSignIn() {
     var hash = String(window.location.hash || "").replace(/^#/, "");
     if (!hash) return Promise.resolve(null);
@@ -356,7 +356,7 @@
       window.sessionStorage.removeItem(NEXT_KEY);
     } catch (e) { /* ignore */ }
 
-    /* ننظف العنوان حتى لا يبقى الرمز ظاهراً. */
+    /* ننظف العنوان حتى لا يبقى الرمز ظاهرا. */
     try { window.history.replaceState(null, "", window.location.pathname + window.location.search); } catch (e) {}
 
     if (err) return Promise.reject({ code: "google_" + err, message: err });
@@ -433,7 +433,7 @@
       startGoogleSignIn().catch(function (err) { fail(err, "oauth"); });
     });
 
-    /* العودة من جوجل: الرمز يصل في نهاية العنوان فنُكمل الدخول فوراً. */
+    /* العودة من جوجل: الرمز يصل في نهاية العنوان فنكمل الدخول فورا. */
     completeGoogleSignIn().then(function (res) {
       if (res) { setBusy(true); setStatus("statusSuccess", "success"); }
     }).catch(function (err) { fail(err, "oauth"); });

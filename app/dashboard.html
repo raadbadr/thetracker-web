@@ -767,9 +767,9 @@
       .platform-stat-card, .platform-stat-card::after, .platform-stat-icon, .chat-option-btn, .waitlist-btn, .cal-chip { transition: none; }
     }
 
-    /* ===== نظام الأزرار الموحّد (شكل واحد + تباين مقروء) ===== */
+    /* ===== نظام الأزرار الموحد (شكل واحد + تباين مقروء) ===== */
     /* كل الأزرار بزوايا واحدة ووزن خط واحد وارتفاع واحد؛ الحد الشفاف في الزر
-       الممتلئ يجعل ارتفاعه مطابقاً للزر المحدَّد صاحب الإطار 1.5px. */
+       الممتلئ يجعل ارتفاعه مطابقا للزر المحدد صاحب الإطار 1.5px. */
     .waitlist-btn, .chat-option-btn {
       display: inline-flex;
       align-items: center;
@@ -793,7 +793,7 @@
     .waitlist-btn:focus-visible,
     .chat-option-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
     /* الوضع الداكن: الأبيض فوق الأزرق الفاتح تباينه 3:1 فقط (دون معيار AA)،
-       فحبر الزر الممتلئ داكن (5.5:1)، والزر المحدَّد يأخذ الأزرق الأفتح (4.9:1). */
+       فحبر الزر الممتلئ داكن (5.5:1)، والزر المحدد يأخذ الأزرق الأفتح (4.9:1). */
     .waitlist-btn, .back-btn, .content a.back-btn { color: var(--btn-ink); }
     [data-theme="dark"] .chat-option-btn:not(.is-danger),
     [data-theme="dark"] .content a.chat-option-btn:not(.is-danger) {
@@ -873,12 +873,12 @@
     </div>
 
     <div class="content" id="loadingCard">
-      <p class="empty-note" data-i18n="loading">جارٍ التحميل...</p>
+      <p class="empty-note" data-i18n="loading">جاري التحميل...</p>
     </div>
 
     <div class="content" id="unavailableCard" hidden>
       <h2 data-i18n="serviceUnavailableTitle">الخدمة قيد التجهيز</h2>
-      <p data-i18n="serviceUnavailableText">نعمل حالياً على تجهيز الخدمة، حاول مرة أخرى لاحقاً.</p>
+      <p data-i18n="serviceUnavailableText">نعمل حاليا على تجهيز الخدمة، حاول مرة أخرى لاحقا.</p>
     </div>
 
     <div class="content" id="createOrgCard" hidden>
@@ -976,7 +976,7 @@
 
           <div class="inline-form" id="addItemPanel" hidden>
             <h3 data-i18n="addItemTitle">عنصر جديد</h3>
-            <p class="inline-hint" id="noTrackersHint" data-i18n="noTrackersHint" hidden>لا توجد سجلات بعد، أنشئ سجلاً أولاً لتتمكن من إضافة العناصر.</p>
+            <p class="inline-hint" id="noTrackersHint" data-i18n="noTrackersHint" hidden>لا توجد سجلات بعد، أنشئ سجلا أولا لتتمكن من إضافة العناصر.</p>
             <form id="addItemForm" novalidate>
               <div class="form-grid">
                 <label class="form-field"><span data-i18n="fieldTitle">العنوان</span><input type="text" class="waitlist-input" id="addTitle" placeholder="عنوان العنصر" maxlength="300"></label>
@@ -1094,15 +1094,15 @@
       ar: {
         exportCsv: "تصدير CSV",
         title: "لوحة التحكم",
-        loading: "جارٍ التحميل...",
+        loading: "جاري التحميل...",
         serviceUnavailableTitle: "الخدمة قيد التجهيز",
-        serviceUnavailableText: "نعمل حالياً على تجهيز الخدمة، حاول مرة أخرى لاحقاً.",
-        noOrg: "لا توجد شركة محددة، أنشئ شركتك أولاً.",
-        planLimitItems: "وصلت إلى الحد الأقصى لعدد العناصر في باقتك الحالية، رقِّ باقتك لإضافة المزيد.",
-        planLimitMembers: "وصلت إلى الحد الأقصى لعدد الأعضاء في باقتك الحالية، رقِّ باقتك لإضافة المزيد.",
+        serviceUnavailableText: "نعمل حاليا على تجهيز الخدمة، حاول مرة أخرى لاحقا.",
+        noOrg: "لا توجد شركة محددة، أنشئ شركتك أولا.",
+        planLimitItems: "وصلت إلى الحد الأقصى لعدد العناصر في باقتك الحالية، رق باقتك لإضافة المزيد.",
+        planLimitMembers: "وصلت إلى الحد الأقصى لعدد الأعضاء في باقتك الحالية، رق باقتك لإضافة المزيد.",
         planLimitLink: "عرض الباقات والأسعار",
         genericError: "حدث خطأ، حاول مرة أخرى.",
-        errorLoad: "تعذّر تحميل البيانات، حاول مرة أخرى.",
+        errorLoad: "تعذر تحميل البيانات، حاول مرة أخرى.",
         saved: "تم الحفظ.",
         deleted: "تم الحذف.",
         companyLabel: "الشركة:",
@@ -1111,7 +1111,7 @@
         renameOrgBtn: "تعديل الاسم",
         deleteOrgBtn: "حذف الشركة",
         orgRenamed: "تم تعديل اسم الشركة.",
-        deleteOrgConfirm: "ستُحذف الشركة «{name}» وكل عناصرها وسجلاتها نهائياً. هل تتابع؟",
+        deleteOrgConfirm: "ستحذف الشركة «{name}» وكل عناصرها وسجلاتها نهائيا. هل تتابع؟",
         newOrgPlaceholder: "اسم الشركة",
         newOrgSubmit: "إنشاء",
         cancel: "إلغاء",
@@ -1134,16 +1134,16 @@
         tlPrev: "المعلم السابق",
         tlNext: "المعلم التالي",
         timelineEmpty: "لا نشاط بعد — ابدأ باستيراد ملف أو إضافة موعد.",
-        tlCreated: "أُضيف عنصر",
-        tlDone: "أُنجز",
+        tlCreated: "أضيف عنصر",
+        tlDone: "أنجز",
         tlImport: "استيراد ملف",
-        tlAttachment: "رُفع ملف",
+        tlAttachment: "رفع ملف",
         tlMember: "انضم عضو",
         tlPlan: "اشتراك",
         tlToday: "اليوم",
         tlYesterday: "أمس",
-        tlDaysAgo: "قبل {n} يوماً",
-        achDoneMonth: "أُنجز هذا الشهر",
+        tlDaysAgo: "قبل {n} يوما",
+        achDoneMonth: "أنجز هذا الشهر",
         achItems: "إجمالي العناصر",
         achFiles: "الملفات",
         achImports: "عمليات الاستيراد",
@@ -1169,11 +1169,11 @@
         attachLinkPlaceholder: "أو الصق رابط جوجل درايف",
         attachLinkBtn: "إضافة الرابط",
         attachEmpty: "لا مرفقات لهذا العنصر.",
-        attachUploading: "جارٍ الرفع...",
+        attachUploading: "جاري الرفع...",
         attachDone: "تمت الإضافة.",
-        attachFailed: "تعذّر رفع الملف.",
+        attachFailed: "تعذر رفع الملف.",
         attachLimit: "تجاوزت مساحة التخزين المسموحة في باقتك.",
-        attachDeleteConfirm: "حذف المرفق نهائياً؟",
+        attachDeleteConfirm: "حذف المرفق نهائيا؟",
         attachLinkLabel: "رابط خارجي",
         delete: "حذف",
         chartTitle: "المؤشر (جدول المخالفات)",
@@ -1201,9 +1201,9 @@
         calendarCardTitle: "التقويم والمواعيد",
         startService: "بدء الخدمة",
         svcImportTitle: "استيراد من إكسل",
-        svcImportText: "حوّل جدول مواعيدك وعقودك إلى عناصر متابَعة في دقيقة.",
+        svcImportText: "حول جدول مواعيدك وعقودك إلى عناصر متابعة في دقيقة.",
         svcAddTitle: "إضافة موعد",
-        svcAddText: "سجّل جلسة أو موعد استحقاق جديداً يدوياً.",
+        svcAddText: "سجل جلسة أو موعد استحقاق جديدا يدويا.",
         svcTeamTitle: "دعوة زميل",
         svcTeamText: "أضف زملاءك وأسند إليهم المواعيد والمهام.",
         svcTelegramTitle: "ربط تيليغرام",
@@ -1247,12 +1247,12 @@
         save: "حفظ",
         add: "إضافة",
         titleRequired: "أدخل عنوان العنصر.",
-        trackerRequired: "اختر سجلاً أولاً.",
+        trackerRequired: "اختر سجلا أولا.",
         newTrackerBtn: "+ سجل جديد",
         newTrackerPlaceholder: "اسم السجل",
         trackerCreated: "تم إنشاء السجل.",
         trackerNameRequired: "أدخل اسم السجل.",
-        noTrackersHint: "لا توجد سجلات بعد، أنشئ سجلاً أولاً لتتمكن من إضافة العناصر.",
+        noTrackersHint: "لا توجد سجلات بعد، أنشئ سجلا أولا لتتمكن من إضافة العناصر.",
         calPrev: "الشهر السابق",
         calNext: "الشهر التالي",
         calToday: "اليوم",
@@ -1279,7 +1279,7 @@
         month12: "ديسمبر",
         moreItems: "{n} عناصر أخرى",
         icsTitle: "رابط التقويم (ICS)",
-        icsHint: "أضف هذا الرابط إلى تقويم Apple أو Google أو Outlook بوصفه اشتراكاً في تقويم عبر الرابط، لتظهر مواعيد عناصرك تلقائياً وتتحدث دورياً.",
+        icsHint: "أضف هذا الرابط إلى تقويم Apple أو Google أو Outlook بوصفه اشتراكا في تقويم عبر الرابط، لتظهر مواعيد عناصرك تلقائيا وتتحدث دوريا.",
         copy: "نسخ الرابط",
         copied: "تم نسخ الرابط.",
         regenerate: "إعادة توليد الرابط",
@@ -2002,7 +2002,7 @@
       document.getElementById("langDropdown").classList.toggle("show");
       document.getElementById("themeDropdown").classList.remove("show");
     });
-    // زر المظهر يبدّل الثيم مباشرةً بضغطة واحدة بلا قائمة (طلب المهندس رعد)
+    // زر المظهر يبدل الثيم مباشرة بضغطة واحدة بلا قائمة (طلب المهندس رعد)
     document.getElementById("themeMenuBtn").addEventListener("click", e => {
       e.stopPropagation();
       setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
@@ -2255,7 +2255,7 @@
         items.forEach(function (it) {
           var data = it.data || {};
           var blob = JSON.stringify(data) + " " + (it.title || "") + " " + (it.category || "");
-          if (/تظلم|تظلّم|objection|appeal/i.test(blob)) objected++;
+          if (/تظلم|تظلم|objection|appeal/i.test(blob)) objected++;
           if (/محكمة|court/i.test(blob)) court++;
           var num = data.violation_number || data["رقم المخالفة"] || data.number || null;
           if (num) {
@@ -2440,7 +2440,7 @@
         return app.fmtDate(iso);
       }
 
-      /* شريط باركينزي: المسار زمني، المعالم علامات ملوّنة، والمقبض يقف على "الان" */
+      /* شريط باركينزي: المسار زمني، المعالم علامات ملونة، والمقبض يقف على "الان" */
       var TLX_STEPS = 10000;
       var TLX_THUMB_W = 36;
 
@@ -2654,7 +2654,7 @@
         services.className = "content";
         services.innerHTML = "<h2>" + esc(T("servicesTitle")) + '</h2><div class="svc-grid">' + buildServices() + "</div>";
 
-        /* التقويم يخرج من التبويبات ويظهر دائماً في العمود الجانبي */
+        /* التقويم يخرج من التبويبات ويظهر دائما في العمود الجانبي */
         var calCard = document.createElement("div");
         calCard.className = "content";
         calCard.innerHTML = "<h2>" + esc(T("calendarCardTitle")) + "</h2>";
@@ -2681,7 +2681,7 @@
           mainCol.appendChild(services);
           mainCol.appendChild(main);
         } else {
-          /* القضايا والمخالفات: القائمة في العمود الرئيسي والتقويم جانباً، بلا بطاقة خدمات */
+          /* القضايا والمخالفات: القائمة في العمود الرئيسي والتقويم جانبا، بلا بطاقة خدمات */
           mainCol.appendChild(main);
           sideCol.appendChild(calCard);
         }
@@ -2694,7 +2694,7 @@
         grid.appendChild(mainCol);
         if (state.viewType) grid.appendChild(sideCol);
 
-        /* الخط الزمني يتصدّر اللوحة بعرض الصفحة (وبعد المؤشرات في لوحتي القضايا والمخالفات) */
+        /* الخط الزمني يتصدر اللوحة بعرض الصفحة (وبعد المؤشرات في لوحتي القضايا والمخالفات) */
         var timeline = document.createElement("div");
         timeline.className = "content";
         timeline.id = "timelineCard";
@@ -2892,7 +2892,7 @@
         }).catch(function (err) { fail(err); });
       }
 
-      /* أرقام اللوحة الفرعية تُحسب من عناصرها هي لا من عناصر الشركة كلها. */
+      /* أرقام اللوحة الفرعية تحسب من عناصرها هي لا من عناصر الشركة كلها. */
       function loadViewStats() {
         var now = Date.now();
         var in7 = now + 7 * 86400000;
@@ -3479,7 +3479,7 @@
       function addDays(d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
 
       /* Grid always starts on Sunday; rows = as many full weeks as the month needs.
-         الشهر هنا هو الشهر المعروض فعلاً: ميلادي أو هجري بحسب الوضع. */
+         الشهر هنا هو الشهر المعروض فعلا: ميلادي أو هجري بحسب الوضع. */
       function calRange() {
         var first = calendarIsHijri() ? startOfHijriMonth(state.month) : startOfMonth(state.month);
         var daysInMonth = calendarIsHijri()
@@ -3504,7 +3504,7 @@
       }
 
       /* تقويم أم القرى عبر Intl: الشبكة نفسها تتبع الشهر الهجري في الوضع الهجري */
-      var HIJRI_LOCALE = "ar-SA-u-ca-islamic-umalqura-nu-latn";   /* الأرقام غربية دائماً */
+      var HIJRI_LOCALE = "ar-SA-u-ca-islamic-umalqura-nu-latn";   /* الأرقام غربية دائما */
 
       function hijriParts(date) {
         try {

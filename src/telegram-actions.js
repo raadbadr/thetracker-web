@@ -1,6 +1,6 @@
 // --- عقل البوت: فهم المقصود من أي رسالة وتنفيذه ---------------------------------
-// أي مدخل (نص، صوت مُفرَّغ، نص صورة، ملف) يمرّ على مستخرِج نيّة يعيد JSON: إضافة عنصر،
-// إنجاز، إسناد، بحث، أو سؤال. الأفعال الكاتبة تُعرض أولاً وتُنفَّذ بعد ضغطة تأكيد.
+// أي مدخل (نص، صوت مفرغ، نص صورة، ملف) يمر على مستخرج نية يعيد JSON: إضافة عنصر،
+// إنجاز، إسناد، بحث، أو سؤال. الأفعال الكاتبة تعرض أولا وتنفذ بعد ضغطة تأكيد.
 // الإيجاز الصباحي وتجهيز الغد المسائي يخرجان من Cron كل 5 دقائق بحسب توقيت كل مستخدم.
 import { rpc, sendTelegram, bot as botText, menuKeyboard, urlButton } from "./notify.js";
 
@@ -44,11 +44,11 @@ ${ctx && ctx.attachment ? `The message came with a ${ctx.attachment.kind} whose 
 Never invent numbers; leave fields absent if unknown.`;
 }
 
-/* تصنيف احتياطي بالقواعد: موعد/جلسة/مخالفة مع تاريخ ← تسجيل، حتى لو تعثّر النموذج */
-const DATE_RX = /(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4})|(\d{4}-\d{2}-\d{2})|(الأحد|الاثنين|الإثنين|الثلاثاء|الأربعاء|الخميس|الجمعة|السبت|غد|بكرة|بعد غد|الأسبوع|الشهر|صباح|مساء|الساعة|\d{1,2}\s*(ص|م|صباحاً|مساءً|AM|PM))/i;
-const ADD_RX = /(سجل|سجّل|أضف|اضف|ضيف|موعد|جلسة|جلسه|نظر الدعوى|مخالفة|مخالفه|غرامة|مهمة|مهمه|deadline|hearing|session|fine|violation|appointment|add|schedule)/i;
-const DONE_RX = /(خلصت|خلّصت|أنجزت|انجزت|تم سداد|سددت|أغلقت|اغلقت|انتهت|منجز|done|completed|paid|closed)/i;
-const ASSIGN_RX = /(أسند|اسند|حوّل|حول|كلّف|كلف|assign|hand)/i;
+/* تصنيف احتياطي بالقواعد: موعد/جلسة/مخالفة مع تاريخ ← تسجيل، حتى لو تعثر النموذج */
+const DATE_RX = /(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4})|(\d{4}-\d{2}-\d{2})|(الأحد|الاثنين|الإثنين|الثلاثاء|الأربعاء|الخميس|الجمعة|السبت|غد|بكرة|بعد غد|الأسبوع|الشهر|صباح|مساء|الساعة|\d{1,2}\s*(ص|م|صباحا|مساء|AM|PM))/i;
+const ADD_RX = /(سجل|سجل|أضف|اضف|ضيف|موعد|جلسة|جلسه|نظر الدعوى|مخالفة|مخالفه|غرامة|مهمة|مهمه|deadline|hearing|session|fine|violation|appointment|add|schedule)/i;
+const DONE_RX = /(خلصت|خلصت|أنجزت|انجزت|تم سداد|سددت|أغلقت|اغلقت|انتهت|منجز|done|completed|paid|closed)/i;
+const ASSIGN_RX = /(أسند|اسند|حول|حول|كلف|كلف|assign|hand)/i;
 const SEARCH_RX = /^(وين|أين|اين|فين|ابحث|دور|ما هي|ماهي|what|where|find|show)/i;
 export function heuristicIntent(text) {
   const t = String(text || "").trim();
@@ -71,7 +71,7 @@ function firstJson(text) {
   try { return JSON.parse(s.slice(i, j + 1)); } catch { return null; }
 }
 
-/* يستخرج نيّة واحدة من الرسالة (ومحتوى المرفق إن وُجد) */
+/* يستخرج نية واحدة من الرسالة (ومحتوى المرفق إن وجد) */
 export async function extractIntent(env, text, ctx) {
   if (!env.AI) return { action: "question" };
   const user = (ctx && ctx.attachment ? `[${ctx.attachment.kind}: ${ctx.attachment.name}]\n${String(ctx.attachment.content || "").slice(0, 6000)}\n\nUser message: ` : "") + String(text || "");
@@ -86,7 +86,7 @@ export async function extractIntent(env, text, ctx) {
   const parsed = (out && typeof out.response === "object" && out.response) || firstJson(raw);
   const guess = heuristicIntent(text);
   if (!parsed || !parsed.action) return guess || { action: "question" };
-  // النموذج قال "سؤال/لا شيء" بينما القواعد ترى موعداً أو إنجازاً واضحاً: القواعد أولى
+  // النموذج قال "سؤال/لا شيء" بينما القواعد ترى موعدا أو إنجازا واضحا: القواعد أولى
   if ((parsed.action === "question" || parsed.action === "none") && guess && guess.action !== "search") return guess;
   if (parsed.action === "add" && parsed.item && !parsed.item.due_at && guess && guess.action === "add" && !parsed.item.title) parsed.item.title = guess.item.title;
   return parsed;
@@ -214,7 +214,7 @@ export async function runTelegramDigests(env) {
       const d = await rpc(env, "telegram_digest", { p_secret: env.WORKER_SECRET, p_user_id: t.user_id });
       if (t.kind === "evening" && (!d || !d.tomorrow || !d.tomorrow.length)) {
         await rpc(env, "telegram_mark_digest", { p_secret: env.WORKER_SECRET, p_user_id: t.user_id, p_kind: "evening" });
-        continue; // لا جلسات غداً: لا إزعاج
+        continue; // لا جلسات غدا: لا إزعاج
       }
       const text = formatDigest(t.lang || "ar", t.name || "", d || { today: [], tomorrow: [], violations_soon: [], neglected: [] }, t.kind);
       await sendTelegram(env, t.chat_id, text, urlButton(botText(t.lang || "ar").openDash, DASHBOARD_URL));

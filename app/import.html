@@ -506,9 +506,9 @@
       h2 { font-size: 1.5rem; }
     }
 
-    /* ===== نظام الأزرار الموحّد (شكل واحد + تباين مقروء) ===== */
+    /* ===== نظام الأزرار الموحد (شكل واحد + تباين مقروء) ===== */
     /* كل الأزرار بزوايا واحدة ووزن خط واحد وارتفاع واحد؛ الحد الشفاف في الزر
-       الممتلئ يجعل ارتفاعه مطابقاً للزر المحدَّد صاحب الإطار 1.5px. */
+       الممتلئ يجعل ارتفاعه مطابقا للزر المحدد صاحب الإطار 1.5px. */
     .waitlist-btn, .chat-option-btn {
       display: inline-flex;
       align-items: center;
@@ -532,7 +532,7 @@
     .waitlist-btn:focus-visible,
     .chat-option-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
     /* الوضع الداكن: الأبيض فوق الأزرق الفاتح تباينه 3:1 فقط (دون معيار AA)،
-       فحبر الزر الممتلئ داكن (5.5:1)، والزر المحدَّد يأخذ الأزرق الأفتح (4.9:1). */
+       فحبر الزر الممتلئ داكن (5.5:1)، والزر المحدد يأخذ الأزرق الأفتح (4.9:1). */
     .waitlist-btn, .back-btn, .content a.back-btn { color: var(--btn-ink); }
     [data-theme="dark"] .chat-option-btn:not(.is-danger),
     [data-theme="dark"] .content a.chat-option-btn:not(.is-danger) {
@@ -586,20 +586,20 @@
 
     <!-- Loading -->
     <div class="content" id="loadingCard">
-      <p class="waitlist-msg" data-i18n="loading" role="status" aria-live="polite">جارٍ التحميل...</p>
+      <p class="waitlist-msg" data-i18n="loading" role="status" aria-live="polite">جاري التحميل...</p>
     </div>
 
     <!-- Supabase not configured yet -->
     <div class="content" id="unavailableCard" hidden>
       <h2 data-i18n="serviceUnavailableTitle">الخدمة قيد التجهيز</h2>
-      <p data-i18n="serviceUnavailableText">نعمل حالياً على تجهيز الخدمة، حاول مرة أخرى لاحقاً.</p>
+      <p data-i18n="serviceUnavailableText">نعمل حاليا على تجهيز الخدمة، حاول مرة أخرى لاحقا.</p>
       <div class="step-actions"><a href="/index.html" class="back-btn" data-i18n="backHome">العودة للرئيسية</a></div>
     </div>
 
     <!-- No organization yet -->
     <div class="content" id="noOrgCard" hidden>
       <h2 data-i18n="noOrgTitle">لا توجد شركة محددة</h2>
-      <p data-i18n="noOrgText">أنشئ شركتك أولاً من لوحة التحكم ثم عد إلى هذه الصفحة.</p>
+      <p data-i18n="noOrgText">أنشئ شركتك أولا من لوحة التحكم ثم عد إلى هذه الصفحة.</p>
       <div class="step-actions"><a href="/app/dashboard.html" class="back-btn" data-i18n="goDashboard">الانتقال إلى لوحة التحكم</a></div>
     </div>
 
@@ -645,8 +645,8 @@
           </label>
         </div>
         <div class="features-grid stats-block" id="mappingGrid"></div>
-        <p data-i18n="mappingHint">الأعمدة غير المربوطة تُحفظ كبيانات إضافية مع كل عنصر.</p>
-        <p data-i18n="statusHint">في عمود الحالة تُعتبر القيم done أو منجز أو completed منجزة، وما عداها يبقى مفتوحاً.</p>
+        <p data-i18n="mappingHint">الأعمدة غير المربوطة تحفظ كبيانات إضافية مع كل عنصر.</p>
+        <p data-i18n="statusHint">في عمود الحالة تعتبر القيم done أو منجز أو completed منجزة، وما عداها يبقى مفتوحا.</p>
         <p class="waitlist-msg" id="mappingStats" role="status" aria-live="polite" hidden></p>
         <p class="waitlist-msg warning" id="unmatchedHint" hidden></p>
       </div>
@@ -721,27 +721,27 @@
         templateBtn: "تنزيل القالب",
         title: "استيراد من Excel",
         subtitle: "ارفع ملف Excel أو CSV، ثم اربط أعمدته بحقول السجل، وسنتولى الباقي.",
-        loading: "جارٍ التحميل...",
+        loading: "جاري التحميل...",
         serviceUnavailableTitle: "الخدمة قيد التجهيز",
-        serviceUnavailableText: "نعمل حالياً على تجهيز الخدمة، حاول مرة أخرى لاحقاً.",
+        serviceUnavailableText: "نعمل حاليا على تجهيز الخدمة، حاول مرة أخرى لاحقا.",
         backHome: "العودة للرئيسية",
         noOrgTitle: "لا توجد شركة محددة",
-        noOrgText: "أنشئ شركتك أولاً من لوحة التحكم ثم عد إلى هذه الصفحة.",
+        noOrgText: "أنشئ شركتك أولا من لوحة التحكم ثم عد إلى هذه الصفحة.",
         goDashboard: "الانتقال إلى لوحة التحكم",
         backBtn: "العودة إلى لوحة التحكم",
         step1Title: "1. اختر الملف",
         dropTitle: "اسحب الملف إلى هنا أو انقر لاختياره",
         dropHint: "xlsx · xls · csv · tsv · json",
         chooseFile: "اختيار ملف",
-        readingFile: "جارٍ قراءة الملف...",
-        readError: "تعذّرت قراءة الملف، تأكد من أنه ملف Excel أو CSV صالح.",
-        libMissing: "تعذّر تحميل مكتبة قراءة الملفات، أعد تحميل الصفحة وحاول مرة أخرى.",
-        unsupportedType: "نوع الملف غير مدعوم، اختر ملفاً بصيغة xlsx أو xls أو csv.",
+        readingFile: "جاري قراءة الملف...",
+        readError: "تعذرت قراءة الملف، تأكد من أنه ملف Excel أو CSV صالح.",
+        libMissing: "تعذر تحميل مكتبة قراءة الملفات، أعد تحميل الصفحة وحاول مرة أخرى.",
+        unsupportedType: "نوع الملف غير مدعوم، اختر ملفا بصيغة xlsx أو xls أو csv.",
         emptySheet: "لا تحتوي هذه الورقة على بيانات.",
-        fileLoaded: "تمت قراءة الملف: {name} ({rows} صفاً، {cols} عموداً).",
+        fileLoaded: "تمت قراءة الملف: {name} ({rows} صفا، {cols} عمودا).",
         step2Title: "2. معاينة البيانات",
         sheetLabel: "الورقة",
-        previewNote: "تُعرض أول {shown} صفاً من أصل {total}.",
+        previewNote: "تعرض أول {shown} صفا من أصل {total}.",
         columnN: "عمود",
         step3Title: "3. ربط الأعمدة",
         mapTitle: "العنوان",
@@ -762,12 +762,12 @@
         required: "مطلوب",
         optional: "اختياري",
         notMapped: "— بدون —",
-        mappingHint: "الأعمدة غير المربوطة تُحفظ كبيانات إضافية مع كل عنصر.",
-        statusHint: "في عمود الحالة تُعتبر القيم done أو منجز أو completed منجزة، وما عداها يبقى مفتوحاً.",
+        mappingHint: "الأعمدة غير المربوطة تحفظ كبيانات إضافية مع كل عنصر.",
+        statusHint: "في عمود الحالة تعتبر القيم done أو منجز أو completed منجزة، وما عداها يبقى مفتوحا.",
         validRows: "الصفوف الصالحة للاستيراد: {n}",
-        skippedRows: "صفوف ستُتجاهل لعدم وجود عنوان أو تاريخ صالح: {n}",
+        skippedRows: "صفوف ستتجاهل لعدم وجود عنوان أو تاريخ صالح: {n}",
         unmatchedAssignees: "صفوف ببريد مسؤول غير موجود في الفريق: {n}",
-        unmatchedHint: "لم يُعثر على هذه العناوين بين أعضاء الفريق، وستُستورد عناصرها بدون مسؤول: {list}",
+        unmatchedHint: "لم يعثر على هذه العناوين بين أعضاء الفريق، وستستورد عناصرها بدون مسؤول: {list}",
         step4Title: "4. السجل",
         trackerLabel: "أضف العناصر إلى",
         newTracker: "سجل جديد",
@@ -776,31 +776,31 @@
         step5Title: "5. التحقق من الباقة",
         importsThisMonth: "عمليات الاستيراد هذا الشهر",
         itemsUsage: "العناصر المستخدمة",
-        rowsToImport: "الصفوف التي ستُستورد",
+        rowsToImport: "الصفوف التي ستستورد",
         unlimited: "غير محدود",
         ofLimit: "{used} من {limit}",
-        checkingPlan: "جارٍ التحقق من الباقة...",
+        checkingPlan: "جاري التحقق من الباقة...",
         planOk: "باقتك الحالية تسمح بهذا الاستيراد.",
-        planImportsExceeded: "وصلت إلى الحد الأقصى لعمليات الاستيراد في هذا الشهر ({used} من {limit}). رقِّ باقتك للمتابعة.",
-        planItemsExceeded: "عدد الصفوف الصالحة ({rows}) يتجاوز العناصر المتبقية في باقتك ({remaining} متبقية من أصل {limit}). رقِّ باقتك أو قلّل عدد الصفوف.",
+        planImportsExceeded: "وصلت إلى الحد الأقصى لعمليات الاستيراد في هذا الشهر ({used} من {limit}). رق باقتك للمتابعة.",
+        planItemsExceeded: "عدد الصفوف الصالحة ({rows}) يتجاوز العناصر المتبقية في باقتك ({remaining} متبقية من أصل {limit}). رق باقتك أو قلل عدد الصفوف.",
         upgradePlan: "ترقية الباقة",
         importBtn: "بدء الاستيراد",
-        mappingRequired: "اختر عمود العنوان وعمود تاريخ الاستحقاق أولاً.",
+        mappingRequired: "اختر عمود العنوان وعمود تاريخ الاستحقاق أولا.",
         noValidRows: "لا توجد صفوف صالحة للاستيراد، تحقق من ربط الأعمدة.",
-        progressCreatingTracker: "جارٍ إنشاء السجل...",
-        progressImport: "جارٍ تسجيل عملية الاستيراد...",
-        progressInserting: "جارٍ إدراج العناصر: {done} من {total}",
-        progressRule: "جارٍ إنشاء قاعدة التنبيه الافتراضية...",
+        progressCreatingTracker: "جاري إنشاء السجل...",
+        progressImport: "جاري تسجيل عملية الاستيراد...",
+        progressInserting: "جاري إدراج العناصر: {done} من {total}",
+        progressRule: "جاري إنشاء قاعدة التنبيه الافتراضية...",
         importFailed: "فشل الاستيراد: {error}",
-        importPartial: "توقف الاستيراد بعد إدراج {done} عنصراً.",
-        planLimitItems: "وصلت إلى الحد الأقصى لعدد العناصر في باقتك الحالية، رقِّ باقتك لإضافة المزيد.",
+        importPartial: "توقف الاستيراد بعد إدراج {done} عنصرا.",
+        planLimitItems: "وصلت إلى الحد الأقصى لعدد العناصر في باقتك الحالية، رق باقتك لإضافة المزيد.",
         summaryTitle: "اكتمل الاستيراد",
-        summaryInserted: "عناصر مُدرجة",
-        summarySkipped: "صفوف مُتجاهلة",
+        summaryInserted: "عناصر مدرجة",
+        summarySkipped: "صفوف متجاهلة",
         summaryUnmatched: "صفوف بمسؤول غير مطابق",
-        summaryTracker: "أُضيفت العناصر إلى السجل: {name}",
-        summaryRuleNote: "أُنشئت قاعدة تنبيه افتراضية: تذكير عبر البريد الإلكتروني قبل الاستحقاق بيوم واحد.",
-        summaryRuleFailed: "تعذّر إنشاء قاعدة التنبيه الافتراضية، يمكنك إضافتها لاحقاً من صفحة التنبيهات.",
+        summaryTracker: "أضيفت العناصر إلى السجل: {name}",
+        summaryRuleNote: "أنشئت قاعدة تنبيه افتراضية: تذكير عبر البريد الإلكتروني قبل الاستحقاق بيوم واحد.",
+        summaryRuleFailed: "تعذر إنشاء قاعدة التنبيه الافتراضية، يمكنك إضافتها لاحقا من صفحة التنبيهات.",
         importAnother: "استيراد ملف آخر",
         genericError: "حدث خطأ، حاول مرة أخرى.",
         copyrightLine2: "جميع الحقوق محفوظة",
@@ -1185,7 +1185,7 @@
       document.getElementById("langDropdown").classList.toggle("show");
       document.getElementById("themeDropdown").classList.remove("show");
     });
-    // زر المظهر يبدّل الثيم مباشرةً بضغطة واحدة بلا قائمة (طلب المهندس رعد)
+    // زر المظهر يبدل الثيم مباشرة بضغطة واحدة بلا قائمة (طلب المهندس رعد)
     document.getElementById("themeMenuBtn").addEventListener("click", e => {
       e.stopPropagation();
       setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
@@ -1570,7 +1570,7 @@
 
           const rec = { title: title, due_at: due, category: isViolations ? "مخالفة" : null, status: "open", assignee_id: null, data: {} };
 
-          /* المبلغ يُجمع لاحقاً في اللوحات، والعميل يأتي من العمود أو من اسم الورقة */
+          /* المبلغ يجمع لاحقا في اللوحات، والعميل يأتي من العمود أو من اسم الورقة */
           if (m.amount >= 0) {
             const raw = String(cellText(row[m.amount]) || "").replace(/[^0-9.\-]/g, "");
             const num = parseFloat(raw);

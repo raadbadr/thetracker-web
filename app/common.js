@@ -43,10 +43,10 @@
   var FALLBACK = {
     ar: {
       serviceUnavailableTitle: "الخدمة قيد التجهيز",
-      serviceUnavailableText: "نعمل حالياً على تجهيز الخدمة، حاول مرة أخرى لاحقاً.",
-      noOrg: "لا توجد شركة محددة، أنشئ شركتك أولاً.",
-      planLimitItems: "وصلت إلى الحد الأقصى لعدد العناصر في باقتك الحالية، رقِّ باقتك لإضافة المزيد.",
-      planLimitMembers: "وصلت إلى الحد الأقصى لعدد الأعضاء في باقتك الحالية، رقِّ باقتك لإضافة المزيد.",
+      serviceUnavailableText: "نعمل حاليا على تجهيز الخدمة، حاول مرة أخرى لاحقا.",
+      noOrg: "لا توجد شركة محددة، أنشئ شركتك أولا.",
+      planLimitItems: "وصلت إلى الحد الأقصى لعدد العناصر في باقتك الحالية، رق باقتك لإضافة المزيد.",
+      planLimitMembers: "وصلت إلى الحد الأقصى لعدد الأعضاء في باقتك الحالية، رق باقتك لإضافة المزيد.",
       genericError: "حدث خطأ، حاول مرة أخرى.",
       saved: "تم الحفظ.",
       deleted: "تم الحذف."
@@ -406,7 +406,7 @@
       });
   }
 
-  /* الدعوة تصل صاحبها عند أول فتح للتطبيق: القاعدة تُدخله في الشركة وتختم الدعوة،
+  /* الدعوة تصل صاحبها عند أول فتح للتطبيق: القاعدة تدخله في الشركة وتختم الدعوة،
      وتعيد الشركات التي انضم إليها الآن ليراها في إشعار بدل انضمام صامت. */
   function acceptInvitations(client) {
     return client.rpc("accept_my_invitations").then(unwrap)
@@ -615,7 +615,7 @@
             uploaded_by: app.user.id
           }).select("*").single().then(unwrap)
             .catch(function (err) {
-              /* لا نترك ملفاً يتيماً في التخزين إذا رفضت القاعدة الصف */
+              /* لا نترك ملفا يتيما في التخزين إذا رفضت القاعدة الصف */
               client.storage.from(ATTACH_BUCKET).remove([path]);
               throw err;
             });
@@ -640,7 +640,7 @@
 
   /* ---------- Google Drive: اختيار ملف من درايف المستخدم وربطه بالعنصر ----------
      يعمل عبر Google Picker بصلاحية drive.file (غير حساسة): المستخدم يختار الملف
-     بنفسه، ونخزّن رابطه واسمه فقط؛ الملف يبقى في درايفه. */
+     بنفسه، ونخزن رابطه واسمه فقط؛ الملف يبقى في درايفه. */
   var DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
   var driveConfig = { clientId: null, apiKey: null };
   var driveToken = null;
@@ -781,7 +781,7 @@
     });
   }
 
-  /* بحث عن مستخدم مسجّل لدعوته (مطابقة تامة للبريد أو الجوال أو رقمه القياسي). */
+  /* بحث عن مستخدم مسجل لدعوته (مطابقة تامة للبريد أو الجوال أو رقمه القياسي). */
   function findProfileForInvite(query) {
     return run(function (client) {
       return client.rpc("find_profile_for_invite", { p_query: String(query || "") }).then(unwrap);
@@ -1025,7 +1025,7 @@
    * مكان عمل الفريق: توزيع الأعمال والتواصل وتوجيه المهمات
    * ============================================================ */
 
-  /* أعمال الشركة كلها بأصحابها، ليُحسب عبء كل عضو وتظهر الأعمال بلا صاحب. */
+  /* أعمال الشركة كلها بأصحابها، ليحسب عبء كل عضو وتظهر الأعمال بلا صاحب. */
   function teamWorkItems() {
     return run(function (client) {
       var orgId = requireOrg();
@@ -1039,7 +1039,7 @@
     });
   }
 
-  /* الإسناد نفسه يُنبّه العضو عبر مشغّل في القاعدة، فلا شيء يُرسل من هنا. */
+  /* الإسناد نفسه ينبه العضو عبر مشغل في القاعدة، فلا شيء يرسل من هنا. */
   function assignItem(itemId, userId) {
     return run(function (client) {
       var orgId = requireOrg();
@@ -1072,8 +1072,8 @@
     });
   }
 
-  /* ملف في الدردشة: مسار منظّم الشركة/chat/المحادثة/السنة-الشهر/الملف، صف في attachments، ثم رسالة تشير إليه.
-     itemId اختياري: يربط الملف بقضية أو مخالفة فيظهر في ملفها أيضاً. */
+  /* ملف في الدردشة: مسار منظم الشركة/chat/المحادثة/السنة-الشهر/الملف، صف في attachments، ثم رسالة تشير إليه.
+     itemId اختياري: يربط الملف بقضية أو مخالفة فيظهر في ملفها أيضا. */
   function sendTeamFile(file, toUserId, itemId) {
     return run(function (client) {
       var orgId = requireOrg();
@@ -1208,7 +1208,7 @@
     });
   }
 
-  /* ربط محادثة تلغرام من زر داخل البوت: الرمز الموقّع يأتي في رابط الإعدادات (?tglink=) */
+  /* ربط محادثة تلغرام من زر داخل البوت: الرمز الموقع يأتي في رابط الإعدادات (?tglink=) */
   function linkTelegramByToken(token) {
     return app.ready.then(function () {
       requireClient();
@@ -1236,7 +1236,7 @@
     });
   }
 
-  /* role: "R" | "A" | "S" | "I" | null (حذف). المعتمد A واحد لكل عنصر: يُزال السابق أولاً. */
+  /* role: "R" | "A" | "S" | "I" | null (حذف). المعتمد A واحد لكل عنصر: يزال السابق أولا. */
   function setItemRole(itemId, userId, role) {
     return run(function (client) {
       var orgId = requireOrg();
@@ -1255,7 +1255,7 @@
     });
   }
 
-  /* توزيع بضغطة: mode = "R" (منفّذ + مكلَّف، والموزِّع معتمد A تلقائياً) | "S" (مساند) | null (إزالة) */
+  /* توزيع بضغطة: mode = "R" (منفذ + مكلف، والموزع معتمد A تلقائيا) | "S" (مساند) | null (إزالة) */
   function distributeItem(itemId, userId, mode) {
     return run(function (client) {
       requireOrg();
@@ -1263,7 +1263,7 @@
     });
   }
 
-  /* سطر الإدخال الذكي: النص ← نيّة (عنوان/نوع/موعد/عميل/رقم دعوى/اسم المنفّذ) عبر الـ Worker بجلسة المستخدم */
+  /* سطر الإدخال الذكي: النص ← نية (عنوان/نوع/موعد/عميل/رقم دعوى/اسم المنفذ) عبر ال Worker بجلسة المستخدم */
   function parseIntent(text) {
     return app.ready.then(function () {
       requireClient();
@@ -1279,7 +1279,7 @@
     });
   }
 
-  /* إنشاء عنصر في متتبع نوعه وتوزيعه على المنفّذ في خطوة واحدة */
+  /* إنشاء عنصر في متتبع نوعه وتوزيعه على المنفذ في خطوة واحدة */
   function quickAddItem(item, assigneeId) {
     return run(function (client) {
       var orgId = requireOrg();
@@ -1486,7 +1486,7 @@
   /* ============================================================
    * قائمة الخدمات الجانبية — تظهر في كل صفحات التطبيق بعد تسجيل الدخول،
    * على اليمين في العربية والأردية وعلى اليسار في الإنجليزية والفرنسية.
-   * تُبنى هنا مرة واحدة بدل تكرارها في خمس صفحات.
+   * تبنى هنا مرة واحدة بدل تكرارها في خمس صفحات.
    * ============================================================ */
 
   var NAV_ITEMS = [
@@ -1558,7 +1558,7 @@
     "body.sidebar-off .app-sidebar{display:none}",
     "body.sidebar-off.has-app-sidebar .container{padding-inline-start:1rem}",
     /* الإيقاع العمودي داخل البطاقات — قاعدة عامة لكل صفحات التطبيق (لا إصلاحات متفرقة):
-       عنوان القسم يأخذ هواءً فوقه، وآخر عنصر في البطاقة لا يلتصق بحافتها، والقوائم والشبكات تُفصل عمّا بعدها */
+       عنوان القسم يأخذ هواء فوقه، وآخر عنصر في البطاقة لا يلتصق بحافتها، والقوائم والشبكات تفصل عما بعدها */
     ".content h3{margin:1.75rem 0 .75rem}",
     ".content h2+h3,.content h3:first-child{margin-top:.25rem}",
     ".content>:last-child{margin-bottom:0}",
@@ -1574,7 +1574,7 @@
   var SIDEBAR_TOGGLE_LABELS = { ar: "إظهار الخدمات أو إخفاؤها", en: "Show or hide services", fr: "Afficher ou masquer les services", ur: "خدمات دکھائیں یا چھپائیں" };
   var SIDEBAR_KEY = "tracker_sidebar";
 
-  /* القائمة الجانبية تُطوى وتُفتح، وتبقى على اختيار المستخدم بين الصفحات. */
+  /* القائمة الجانبية تطوى وتفتح، وتبقى على اختيار المستخدم بين الصفحات. */
   function sidebarVisible() {
     try { return localStorage.getItem(SIDEBAR_KEY) !== "off"; } catch (e) { return true; }
   }
@@ -1638,7 +1638,7 @@
       renderSidebar();
     }).catch(function () { /* الصفحة تتكفل بعرض الخطأ */ });
 
-    /* إعادة الرسم عند تغيير اللغة (setLang يغيّر lang/dir على <html>). */
+    /* إعادة الرسم عند تغيير اللغة (setLang يغير lang/dir على <html>). */
     if (typeof MutationObserver !== "undefined") {
       new MutationObserver(function () { renderSidebar(); })
         .observe(document.documentElement, { attributes: true, attributeFilter: ["lang", "dir"] });
@@ -1907,9 +1907,9 @@
     });
   }
 
-  /* أين أنا الآن؟ اسم الشركة الحالية ظاهر دائماً ويُبدَّل من مكانه. */
+  /* أين أنا الآن؟ اسم الشركة الحالية ظاهر دائما ويبدل من مكانه. */
   var NEW_ORG_TEXT = {
-    ar: { title: "شركة جديدة", hint: "اكتب اسم الشركة التي تريد إضافتها.", save: "إنشاء", cancel: "إلغاء", error: "تعذّر الإنشاء، حاول مرة أخرى." },
+    ar: { title: "شركة جديدة", hint: "اكتب اسم الشركة التي تريد إضافتها.", save: "إنشاء", cancel: "إلغاء", error: "تعذر الإنشاء، حاول مرة أخرى." },
     en: { title: "New company", hint: "Enter the name of the company to add.", save: "Create", cancel: "Cancel", error: "Could not create it, try again." },
     fr: { title: "Nouvelle entreprise", hint: "Saisissez le nom de l'entreprise.", save: "Créer", cancel: "Annuler", error: "Création impossible, réessayez." },
     ur: { title: "نئی کمپنی", hint: "کمپنی کا نام لکھیں۔", save: "بنائیں", cancel: "منسوخ", error: "نہیں بن سکی، دوبارہ کوشش کریں۔" }
@@ -2030,7 +2030,7 @@
       if (!bellPanel.classList.contains("is-open")) return;
       var badge = document.getElementById("topBellBadge");
       if (badge) { badge.hidden = true; badge.textContent = "0"; }
-      /* نُعلّمها مقروءة أولاً ثم نُعيد التحميل، وإلا عاد العدّاد بصف لم يُحدَّث بعد. */
+      /* نعلمها مقروءة أولا ثم نعيد التحميل، وإلا عاد العداد بصف لم يحدث بعد. */
       markNotificationsRead().then(function () { loadBell(); }).catch(function () { loadBell(); });
     });
 
@@ -2057,7 +2057,7 @@
     });
   }
 
-  /* تنبيهات الفريق تُخزَّن بنوعها لا بنصها، فيقرأها كل مستخدم بلغته. */
+  /* تنبيهات الفريق تخزن بنوعها لا بنصها، فيقرأها كل مستخدم بلغته. */
   var BELL_TEAM_TEXT = {
     invite: {
       ar: "دعوة للانضمام إلى شركة {org}", en: "Invitation to join {org}",
@@ -2080,7 +2080,7 @@
       fr: "Message de {actor}", ur: "{actor} کی طرف سے پیغام"
     },
     assigned: {
-      ar: "أُسندت إليك: {item}", en: "Assigned to you: {item}",
+      ar: "أسندت إليك: {item}", en: "Assigned to you: {item}",
       fr: "Qui vous est assigné : {item}", ur: "آپ کے سپرد: {item}"
     }
   };
@@ -2094,7 +2094,7 @@
       .replace("{item}", payload.item_title || payload.excerpt || "");
   }
 
-  /* وجهة كل تنبيه: رسالة فريق → المحادثة، دعوة → الفريق، عنصر → لوحته مفتوحاً على العنصر */
+  /* وجهة كل تنبيه: رسالة فريق → المحادثة، دعوة → الفريق، عنصر → لوحته مفتوحا على العنصر */
   function bellTarget(n) {
     var p = n.payload || {};
     var kind = p.kind || "";
@@ -2148,12 +2148,12 @@
     }).catch(function () { /* التنبيهات ليست حرجة */ });
   }
 
-  /* داخل التطبيق لا يخرج المستخدم من حسابه: روابط الموقع العام تُفتح في تبويب
+  /* داخل التطبيق لا يخرج المستخدم من حسابه: روابط الموقع العام تفتح في تبويب
      جديد، ورابط "تسجيل الدخول" في التذييل لا معنى له بعد الدخول. */
   function keepInsideApp() {
-    /* لا شيء يُخرج المستخدم من لوحته: روابط الموقع العام في التذييل تُزال داخل
-       التطبيق، وما تبقّى من روابط خارجية يُفتح في تبويب جديد. */
-    /* نُخفي روابط الموقع العام في التذييل فقط، ونُبقي روابط التطبيق مثل لوحة التحكم. */
+    /* لا شيء يخرج المستخدم من لوحته: روابط الموقع العام في التذييل تزال داخل
+       التطبيق، وما تبقى من روابط خارجية يفتح في تبويب جديد. */
+    /* نخفي روابط الموقع العام في التذييل فقط، ونبقي روابط التطبيق مثل لوحة التحكم. */
     var footerRows = document.querySelectorAll(".footer-links");
     for (var f = 0; f < footerRows.length; f++) {
       var kids = footerRows[f].querySelectorAll("a[href]");
@@ -2166,7 +2166,7 @@
       footerRows[f].hidden = visible === 0;
     }
 
-    /* زر الخروج واحد فقط، في الشريط العلوي؛ أي زر آخر في الصفحات يُخفى. */
+    /* زر الخروج واحد فقط، في الشريط العلوي؛ أي زر آخر في الصفحات يخفى. */
     var strays = document.querySelectorAll("#signOutCard, #signOutBtn, #quickLinks");
     for (var i = 0; i < strays.length; i++) strays[i].hidden = true;
 
@@ -2220,10 +2220,10 @@
    * ============================================================ */
 
   var PROFILE_TEXT = {
-    ar: { title: "أكمل بياناتك", intro: "نحتاج اسمك الكامل ورقم جوالك قبل استخدام المنصة.", name: "الاسم الكامل", phone: "رقم الجوال", save: "حفظ ومتابعة", error: "تعذّر الحفظ، حاول مرة أخرى.", invalid: "أدخل اسماً كاملاً ورقم جوال بالصيغة الدولية مثل +9665xxxxxxx" },
+    ar: { title: "أكمل بياناتك", intro: "نحتاج اسمك الكامل ورقم جوالك قبل استخدام المنصة.", name: "الاسم الكامل", phone: "رقم الجوال", save: "حفظ ومتابعة", error: "تعذر الحفظ، حاول مرة أخرى.", invalid: "أدخل اسما كاملا ورقم جوال بالصيغة الدولية مثل +9665xxxxxxx" },
     en: { title: "Complete your details", intro: "We need your full name and mobile number before you use the platform.", name: "Full name", phone: "Mobile number", save: "Save and continue", error: "Could not save, try again.", invalid: "Enter a full name and a mobile number in international format, e.g. +9665xxxxxxx" },
     fr: { title: "Complétez vos informations", intro: "Nous avons besoin de votre nom complet et de votre numéro de mobile.", name: "Nom complet", phone: "Numéro de mobile", save: "Enregistrer et continuer", error: "Enregistrement impossible, réessayez.", invalid: "Saisissez un nom complet et un numéro au format international, ex. +9665xxxxxxx" },
-    ur: { title: "اپنی تفصیلات مکمل کریں", intro: "پلیٹ فارم استعمال کرنے سے پہلے ہمیں آپ کا پورا نام اور موبائل نمبر درکار ہے۔", name: "پورا نام", phone: "موبائل نمبر", save: "محفوظ کریں اور جاری رکھیں", error: "محفوظ نہیں ہو سکا، دوبارہ کوشش کریں۔", invalid: "پورا نام اور بین الاقوامی فارمیٹ میں نمبر درج کریں، مثلاً +9665xxxxxxx" }
+    ur: { title: "اپنی تفصیلات مکمل کریں", intro: "پلیٹ فارم استعمال کرنے سے پہلے ہمیں آپ کا پورا نام اور موبائل نمبر درکار ہے۔", name: "پورا نام", phone: "موبائل نمبر", save: "محفوظ کریں اور جاری رکھیں", error: "محفوظ نہیں ہو سکا، دوبارہ کوشش کریں۔", invalid: "پورا نام اور بین الاقوامی فارمیٹ میں نمبر درج کریں، مثلا +9665xxxxxxx" }
   };
 
   var PROFILE_CSS = [
@@ -2305,7 +2305,7 @@
   }
 
   var JOINED_LABELS = {
-    ar: "انضممت إلى شركة {name}. تجدها في مبدّل الشركات.",
+    ar: "انضممت إلى شركة {name}. تجدها في مبدل الشركات.",
     en: "You joined {name}. You will find it in the company switcher.",
     fr: "Vous avez rejoint {name}. Retrouvez-la dans le sélecteur d'entreprise.",
     ur: "آپ {name} میں شامل ہو گئے۔ یہ کمپنی سوئچر میں ملے گی۔"
@@ -2322,7 +2322,7 @@
     });
   }
 
-  /* القائمة الجانبية تُركّب بعد اكتمال تعريف الواجهة، وأي خطأ فيها لا يوقف الصفحة. */
+  /* القائمة الجانبية تركب بعد اكتمال تعريف الواجهة، وأي خطأ فيها لا يوقف الصفحة. */
   function bootSidebar() {
     try { mountSidebar(); } catch (e) { /* تجاهل */ }
     try { mountTopbar(); } catch (e) { /* تجاهل */ }

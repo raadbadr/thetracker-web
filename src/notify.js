@@ -1,7 +1,7 @@
 // --- مرسلات القنوات + Cron التنبيهات ----------------------------------------
 // البريد: دالة Edge في سوبابيس (send-zoho-email — نسخة باركينزي) عبر Zoho.
 // تيليغرام: Bot API. واتساب: Meta Cloud API. SMS: Unifonic أو Twilio.
-// الـ Worker لا يحمل مفتاح service role: يستخدم مفتاح anon + سرّ مشترك
+// ال Worker لا يحمل مفتاح service role: يستخدم مفتاح anon + سر مشترك
 // (WORKER_SECRET) تتحقق منه دوال SECURITY DEFINER في قاعدة البيانات.
 
 const NO_CACHE = { cacheTtl: 0, cacheEverything: false };
@@ -29,10 +29,10 @@ export async function rpc(env, name, args) {
 
 const TEXT = {
   ar: { reminder: (t, due, tr) => `⏰ تذكير من TheTracker\n${t}\nالاستحقاق: ${due}${tr ? `\nالسجل: ${tr}` : ""}\nhttps://appmails.net/app/dashboard.html`,
-        linked: (name, org) => `مرحباً ${name || ""} 👋\n✅ تم ربط حسابك بـ TheTracker بنجاح.${org ? `\nالشركة: ${org}` : ""}\nستصلك تنبيهات مواعيدك هنا.`,
-        badCode: "الرمز غير صحيح أو منتهٍ. افتح الإعدادات في TheTracker وانسخ الرمز الجديد.",
+        linked: (name, org) => `مرحبا ${name || ""} 👋\n✅ تم ربط حسابك ب TheTracker بنجاح.${org ? `\nالشركة: ${org}` : ""}\nستصلك تنبيهات مواعيدك هنا.`,
+        badCode: "الرمز غير صحيح أو منته. افتح الإعدادات في TheTracker وانسخ الرمز الجديد.",
         needCode: "لربط حسابك: افتح الإعدادات في TheTracker ← تيليجرام ← «توليد رمز»، ثم أرسل الرمز هنا أو امسح رمز QR.",
-        alreadyLinked: (name) => `حسابك مرتبط${name ? ` يا ${name}` : ""} ✅\nستصلك تنبيهات مواعيدك هنا تلقائياً.`,
+        alreadyLinked: (name) => `حسابك مرتبط${name ? ` يا ${name}` : ""} ✅\nستصلك تنبيهات مواعيدك هنا تلقائيا.`,
         test: "✅ رسالة تجريبية من TheTracker: هذه القناة تعمل." },
   en: { reminder: (t, due, tr) => `⏰ TheTracker reminder\n${t}\nDue: ${due}${tr ? `\nTracker: ${tr}` : ""}\nhttps://appmails.net/app/dashboard.html`,
         linked: (name, org) => `Hello ${name || ""} 👋\n✅ Your TheTracker account is now linked.${org ? `\nCompany: ${org}` : ""}\nYour reminders will arrive here.`,
@@ -59,32 +59,32 @@ export function t(lang) { return TEXT[lang] || TEXT.ar; }
 const BOT = {
   ar: { upcoming: "📅 مواعيدي القادمة", overdue: "⏰ المتأخرات", dashboard: "🌐 لوحة التحكم", help: "❓ مساعدة",
         linkBtn: "🔗 ربط حسابي", openDash: "فتح لوحة التحكم",
-        phoneBtn: "📱 ربط برقم جوالي", phoneHint: "أو شارك رقم جوالك المسجَّل في TheTracker بالزر بالأسفل فيتم الربط فوراً.",
-        phoneNotFound: "لم نجد حساباً بهذا الرقم. سجّل الدخول إلى الموقع واضغط زر الربط أعلاه.",
-        importFound: (file, n) => `📄 ${file}\nوجدت ${n} ${n === 1 ? "ورقة قابلة" : "أوراق قابلة"} للاستيراد:`, importSheet: (name, rows, skipped) => `• ${name}: ${rows} صفاً${skipped ? ` (سيُهمل ${skipped} بلا عنوان أو تاريخ)` : ""}`,
-        importAsk: "أحفظها في شركتك الآن؟", importNothing: "لم أجد في الملف جدولاً فيه عمود عنوان وعمود تاريخ (أو رقم مخالفة وتاريخها). استورده من صفحة الاستيراد لتضبط الأعمدة يدوياً.", importDoneTitle: "✅ تم الحفظ:", importDoneLine: (tracker, n, isNew) => `• ${tracker}: ${n} عنصر${isNew ? " (متتبع جديد مع قاعدة تذكير قبل الاستحقاق بيوم)" : ""}`,
-        importCancelled: "أُلغي الاستيراد؛ لم يُحفظ شيء.", importExpired: "انتهت صلاحية هذا الطلب. أرسل الملف مرة أخرى.", importLimit: "توقّف الحفظ عند حد الباقة الحالية للعناصر — رقِّ الباقة من الإعدادات ثم أعد الإرسال.", importFailed: "تعذّر الحفظ. حاول مرة أخرى أو استورد من صفحة الاستيراد.",
+        phoneBtn: "📱 ربط برقم جوالي", phoneHint: "أو شارك رقم جوالك المسجل في TheTracker بالزر بالأسفل فيتم الربط فورا.",
+        phoneNotFound: "لم نجد حسابا بهذا الرقم. سجل الدخول إلى الموقع واضغط زر الربط أعلاه.",
+        importFound: (file, n) => `📄 ${file}\nوجدت ${n} ${n === 1 ? "ورقة قابلة" : "أوراق قابلة"} للاستيراد:`, importSheet: (name, rows, skipped) => `• ${name}: ${rows} صفا${skipped ? ` (سيهمل ${skipped} بلا عنوان أو تاريخ)` : ""}`,
+        importAsk: "أحفظها في شركتك الآن؟", importNothing: "لم أجد في الملف جدولا فيه عمود عنوان وعمود تاريخ (أو رقم مخالفة وتاريخها). استورده من صفحة الاستيراد لتضبط الأعمدة يدويا.", importDoneTitle: "✅ تم الحفظ:", importDoneLine: (tracker, n, isNew) => `• ${tracker}: ${n} عنصر${isNew ? " (متتبع جديد مع قاعدة تذكير قبل الاستحقاق بيوم)" : ""}`,
+        importCancelled: "ألغي الاستيراد؛ لم يحفظ شيء.", importExpired: "انتهت صلاحية هذا الطلب. أرسل الملف مرة أخرى.", importLimit: "توقف الحفظ عند حد الباقة الحالية للعناصر — رق الباقة من الإعدادات ثم أعد الإرسال.", importFailed: "تعذر الحفظ. حاول مرة أخرى أو استورد من صفحة الاستيراد.",
         btnSave: "✅ حفظ", btnCancel: "❌ إلغاء",
         kindViolation: "مخالفة", kindSession: "جلسة", kindTask: "مهمة", fWhen: "الموعد", fClient: "العميل", fCase: "رقم الدعوى", fViolation: "رقم المخالفة", fAmount: "المبلغ", fPlace: "الجهة/المكان", fNotes: "ملاحظات",
-        actAddTitle: "📝 سأسجّل هذا:", actDoneTitle: "✔️ سأعلّم كمنجز:", actAssignTitle: "👤 سأسند:", confirmAsk: "أؤكد؟",
-        actSaved: (num, title, tracker, isNew) => `✅ سُجّل${num ? ` (${num})` : ""}: ${title}\nفي «${tracker}»${isNew ? " — متتبع جديد مع تذكير قبل الموعد بيوم" : ""}.`,
-        actDoneOk: (num, title) => `✅ أُنجز${num ? ` (${num})` : ""}: ${title}`,
-        actAssignOk: (title, member, notified) => `✅ أُسند «${title}» إلى ${member}${notified ? " وأُبلغ على تلغرام" : ""}.`,
-        assignedToYou: (title, num) => `👤 أُسند إليك${num ? ` (${num})` : ""}: ${title}`,
-        notFound: (q) => `لم أجد عنصراً مفتوحاً يطابق «${q}».`, manyFound: "وجدت أكثر من عنصر مطابق:", manyHint: "حدّد بالرقم القياسي أو بكلمات أدق.", noMember: (m) => `لم أجد عضواً في الفريق باسم «${m}».`,
-        searchTitle: (q) => `🔎 نتائج «${q}»:`, searchNone: (q) => `لا شيء يطابق «${q}».`, statusDone: "منجز", days: "يوماً", noFiles: "⚠️ بلا مرفقات",
+        actAddTitle: "📝 سأسجل هذا:", actDoneTitle: "✔️ سأعلم كمنجز:", actAssignTitle: "👤 سأسند:", confirmAsk: "أؤكد؟",
+        actSaved: (num, title, tracker, isNew) => `✅ سجل${num ? ` (${num})` : ""}: ${title}\nفي «${tracker}»${isNew ? " — متتبع جديد مع تذكير قبل الموعد بيوم" : ""}.`,
+        actDoneOk: (num, title) => `✅ أنجز${num ? ` (${num})` : ""}: ${title}`,
+        actAssignOk: (title, member, notified) => `✅ أسند «${title}» إلى ${member}${notified ? " وأبلغ على تلغرام" : ""}.`,
+        assignedToYou: (title, num) => `👤 أسند إليك${num ? ` (${num})` : ""}: ${title}`,
+        notFound: (q) => `لم أجد عنصرا مفتوحا يطابق «${q}».`, manyFound: "وجدت أكثر من عنصر مطابق:", manyHint: "حدد بالرقم القياسي أو بكلمات أدق.", noMember: (m) => `لم أجد عضوا في الفريق باسم «${m}».`,
+        searchTitle: (q) => `🔎 نتائج «${q}»:`, searchNone: (q) => `لا شيء يطابق «${q}».`, statusDone: "منجز", days: "يوما", noFiles: "⚠️ بلا مرفقات",
         digestTitle: (n) => `☀️ صباح الخير${n ? ` ${n}` : ""} — إيجاز اليوم:`, digestToday: (n) => `📅 مواعيد اليوم (${n}):`, digestTodayNone: "📅 لا مواعيد اليوم.",
         digestTomorrow: (n) => `⏭ الغد (${n}):`, digestFines: (n, total) => `💸 مخالفات تنتهي مهلتها خلال 3 أيام (${n}) بمجموع ${total}:`,
-        digestOverdue: (n, amt) => `⚠️ متأخر: ${n} عنصر${amt && amt !== "0" ? ` — مخالفات بمبلغ ${amt}` : ""}.`, digestNeglected: "🕸 لم تُحدَّث منذ أكثر من 30 يوماً:",
+        digestOverdue: (n, amt) => `⚠️ متأخر: ${n} عنصر${amt && amt !== "0" ? ` — مخالفات بمبلغ ${amt}` : ""}.`, digestNeglected: "🕸 لم تحدث منذ أكثر من 30 يوما:",
         digestFooter: (n) => `المفتوح كله: ${n}. أرسل لي أي شيء لتسجيله أو اسألني.`,
-        prepTitle: (n) => `🌙 ${n ? n + "، " : ""}تجهيز الغد:`, prepNone: "لا جلسات غداً.",
-        needsParent: "لأي قضية أو مخالفة تتبع هذه المهمة؟ (لا مهمة بلا أصل) — اختر:", noParents: "لا توجد قضايا أو مخالفات مفتوحة لتتبعها هذه المهمة. سجّل القضية أو المخالفة أولاً.",
-        voiceHeard: "🎙 سمعتك: ", fileUnreadable: "تعذّرت قراءة هذا الملف. أرسل PDF أو صورة أو إكسل أو CSV.", fileTooBig: "الملف أكبر من الحد المسموح (15 ميغابايت).", fileQuestion: "لخّص هذا الملف باختصار، واذكر ما يمكن للمستخدم فعله به في TheTracker (مثلاً استيراده من صفحة الاستيراد إن كان جدول مواعيد أو مخالفات أو قضايا).",
-        linkIntro: "أهلاً بك في TheTracker 👋\nاضغط الزر لربط هذا البوت بحسابك: تُفتح صفحة الإعدادات في الموقع ويتم الربط تلقائياً.",
+        prepTitle: (n) => `🌙 ${n ? n + "، " : ""}تجهيز الغد:`, prepNone: "لا جلسات غدا.",
+        needsParent: "لأي قضية أو مخالفة تتبع هذه المهمة؟ (لا مهمة بلا أصل) — اختر:", noParents: "لا توجد قضايا أو مخالفات مفتوحة لتتبعها هذه المهمة. سجل القضية أو المخالفة أولا.",
+        voiceHeard: "🎙 سمعتك: ", fileUnreadable: "تعذرت قراءة هذا الملف. أرسل PDF أو صورة أو إكسل أو CSV.", fileTooBig: "الملف أكبر من الحد المسموح (15 ميغابايت).", fileQuestion: "لخص هذا الملف باختصار، واذكر ما يمكن للمستخدم فعله به في TheTracker (مثلا استيراده من صفحة الاستيراد إن كان جدول مواعيد أو مخالفات أو قضايا).",
+        linkIntro: "أهلا بك في TheTracker 👋\nاضغط الزر لربط هذا البوت بحسابك: تفتح صفحة الإعدادات في الموقع ويتم الربط تلقائيا.",
         menuHint: "اختر من الأزرار بالأسفل:",
         upcomingTitle: "📅 مواعيدك القادمة:", overdueTitle: "⏰ المواعيد المتأخرة:",
         noUpcoming: "لا مواعيد قادمة 👌", noOverdue: "لا مواعيد متأخرة 👌",
-        help: "ستصلك هنا تذكيرات مواعيدك تلقائياً حسب قواعد التذكير في الإعدادات.\nالأزرار: مواعيدك القادمة، المتأخرات، ولوحة التحكم." },
+        help: "ستصلك هنا تذكيرات مواعيدك تلقائيا حسب قواعد التذكير في الإعدادات.\nالأزرار: مواعيدك القادمة، المتأخرات، ولوحة التحكم." },
   en: { upcoming: "📅 Upcoming", overdue: "⏰ Overdue", dashboard: "🌐 Dashboard", help: "❓ Help",
         linkBtn: "🔗 Link my account", openDash: "Open dashboard",
         phoneBtn: "📱 Link with my phone number", phoneHint: "Or share the phone number registered in TheTracker with the button below — the link completes instantly.",
@@ -143,9 +143,9 @@ const BOT = {
         help: "Vos rappels arrivent ici automatiquement selon les règles définies dans Paramètres.\nBoutons : à venir, en retard, tableau de bord." },
   ur: { upcoming: "📅 آنے والی تاریخیں", overdue: "⏰ تاخیر شدہ", dashboard: "🌐 ڈیش بورڈ", help: "❓ مدد",
         linkBtn: "🔗 میرا اکاؤنٹ منسلک کریں", openDash: "ڈیش بورڈ کھولیں",
-        phoneBtn: "📱 فون نمبر سے منسلک کریں", phoneHint: "یا نیچے دیے بٹن سے TheTracker میں رجسٹرڈ فون نمبر شیئر کریں — منسلکی فوراً مکمل ہو جائے گی۔",
+        phoneBtn: "📱 فون نمبر سے منسلک کریں", phoneHint: "یا نیچے دیے بٹن سے TheTracker میں رجسٹرڈ فون نمبر شیئر کریں — منسلکی فورا مکمل ہو جائے گی۔",
         phoneNotFound: "اس نمبر سے کوئی اکاؤنٹ نہیں ملا۔ ویب سائٹ پر سائن ان کر کے اوپر والا لنک بٹن دبائیں۔",
-        importFound: (file, n) => `📄 ${file}\n${n} قابلِ درآمد شیٹ ملی:`, importSheet: (name, rows, skipped) => `• ${name}: ${rows} قطاریں${skipped ? ` (${skipped} بغیر عنوان یا تاریخ چھوڑ دی جائیں گی)` : ""}`,
+        importFound: (file, n) => `📄 ${file}\n${n} قابل درآمد شیٹ ملی:`, importSheet: (name, rows, skipped) => `• ${name}: ${rows} قطاریں${skipped ? ` (${skipped} بغیر عنوان یا تاریخ چھوڑ دی جائیں گی)` : ""}`,
         importAsk: "ابھی اپنی کمپنی میں محفوظ کروں؟", importNothing: "فائل میں عنوان اور تاریخ کے کالم والا جدول نہیں ملا (یا خلاف ورزی نمبر اور تاریخ)۔ کالم خود ترتیب دینے کے لیے درآمد صفحے سے درآمد کریں۔", importDoneTitle: "✅ محفوظ ہو گیا:", importDoneLine: (tracker, n, isNew) => `• ${tracker}: ${n} آئٹمز${isNew ? " (نیا ٹریکر، یاد دہانی ایک دن پہلے)" : ""}`,
         importCancelled: "درآمد منسوخ؛ کچھ محفوظ نہیں ہوا۔", importExpired: "یہ درخواست ختم ہو گئی۔ فائل دوبارہ بھیجیں۔", importLimit: "آپ کے پلان کی آئٹم حد پر محفوظ کرنا رک گیا — ترتیبات سے پلان اپ گریڈ کر کے دوبارہ بھیجیں۔", importFailed: "محفوظ نہیں ہو سکا۔ دوبارہ کوشش کریں یا درآمد صفحے سے درآمد کریں۔",
         btnSave: "✅ محفوظ کریں", btnCancel: "❌ منسوخ",
@@ -163,7 +163,7 @@ const BOT = {
         digestFooter: (n) => `کل کھلے: ${n}۔ کچھ بھی بھیجیں درج کرنے کے لیے، یا پوچھیں۔`,
         prepTitle: (n) => `🌙 ${n ? n + "، " : ""}کل کی تیاری:`, prepNone: "کل کوئی سماعت نہیں۔",
         needsParent: "یہ کام کس مقدمے یا خلاف ورزی سے متعلق ہے؟ (کوئی کام الگ نہیں) — چنیں:", noParents: "اس کام کے لیے کوئی کھلا مقدمہ یا خلاف ورزی نہیں۔ پہلے مقدمہ یا خلاف ورزی درج کریں۔",
-        voiceHeard: "🎙 میں نے سنا: ", fileUnreadable: "یہ فائل پڑھی نہیں جا سکی۔ PDF، تصویر، ایکسل یا CSV بھیجیں۔", fileTooBig: "فائل اجازت شدہ حد (15 MB) سے بڑی ہے۔", fileQuestion: "اس فائل کا مختصر خلاصہ کریں اور بتائیں کہ صارف TheTracker میں اس کا کیا کر سکتا ہے (مثلاً اگر یہ تاریخوں، خلاف ورزیوں یا مقدمات کا جدول ہے تو درآمد صفحے سے درآمد کریں)۔",
+        voiceHeard: "🎙 میں نے سنا: ", fileUnreadable: "یہ فائل پڑھی نہیں جا سکی۔ PDF، تصویر، ایکسل یا CSV بھیجیں۔", fileTooBig: "فائل اجازت شدہ حد (15 MB) سے بڑی ہے۔", fileQuestion: "اس فائل کا مختصر خلاصہ کریں اور بتائیں کہ صارف TheTracker میں اس کا کیا کر سکتا ہے (مثلا اگر یہ تاریخوں، خلاف ورزیوں یا مقدمات کا جدول ہے تو درآمد صفحے سے درآمد کریں)۔",
         linkIntro: "TheTracker میں خوش آمدید 👋\nاس بوٹ کو اپنے اکاؤنٹ سے منسلک کرنے کے لیے بٹن دبائیں: ترتیبات کا صفحہ کھلے گا اور منسلکی خود بخود مکمل ہو جائے گی۔",
         menuHint: "نیچے دیے گئے بٹنوں میں سے چنیں:",
         upcomingTitle: "📅 آپ کی آنے والی تاریخیں:", overdueTitle: "⏰ تاخیر شدہ آئٹمز:",
@@ -188,7 +188,7 @@ export function menuAction(text) {
   return null;
 }
 
-/* زر يفتح رابطاً (لوحة التحكم أو صفحة الربط) */
+/* زر يفتح رابطا (لوحة التحكم أو صفحة الربط) */
 export function urlButton(label, url) {
   return { reply_markup: { inline_keyboard: [[{ text: label, url }]] } };
 }
@@ -255,7 +255,7 @@ export async function sendTelegram(env, chatId, text, extra) {
   return true;
 }
 
-/* «يكتب الآن…» ريثما يُحضَّر الرد (صوت/ملف/نموذج) */
+/* «يكتب الآن…» ريثما يحضر الرد (صوت/ملف/نموذج) */
 export async function sendChatAction(env, chatId, action) {
   if (!env.TELEGRAM_BOT_TOKEN) return;
   try {

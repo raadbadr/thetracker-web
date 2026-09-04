@@ -180,7 +180,7 @@
     /* بطاقة الدعوة — نفس لغة النيومورفيك: مسافات منتظمة وظل ناعم */
     .invite-block { margin-top: 1.75rem; }
     .invite-block:first-of-type { margin-top: 1.25rem; }
-    /* عنوان قسم داخل بطاقة: مسافة واضحة عمّا قبله (قاعدة الإيقاع العمودي) */
+    /* عنوان قسم داخل بطاقة: مسافة واضحة عما قبله (قاعدة الإيقاع العمودي) */
     .invite-block-title {
       margin: 1.75rem 0 0.75rem;
       font-size: 0.95rem;
@@ -200,7 +200,7 @@
     }
     .invite-row .waitlist-input { width: 100%; min-width: 0; }
     .invite-row .waitlist-btn { white-space: nowrap; }
-    /* لوحة توزيع الأعمال: عمود لكل عضو، والبطاقات تُسحب بين الأعمدة */
+    /* لوحة توزيع الأعمال: عمود لكل عضو، والبطاقات تسحب بين الأعمدة */
     .wl-board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(230px, 1fr); gap: var(--gap, 1.5rem); overflow-x: auto; padding-bottom: .5rem; }
     .wl-col { display: flex; flex-direction: column; min-height: 260px; border-radius: 18px; border: 1px solid var(--glass-border); background: var(--glass); box-shadow: 4px 4px 10px var(--shadow-dark), -4px -4px 10px var(--shadow-light); transition: box-shadow .15s ease, border-color .15s ease; }
     .wl-col.is-over { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-shadow); }
@@ -505,9 +505,9 @@
       }
     }
 
-    /* ===== نظام الأزرار الموحّد (شكل واحد + تباين مقروء) ===== */
+    /* ===== نظام الأزرار الموحد (شكل واحد + تباين مقروء) ===== */
     /* كل الأزرار بزوايا واحدة ووزن خط واحد وارتفاع واحد؛ الحد الشفاف في الزر
-       الممتلئ يجعل ارتفاعه مطابقاً للزر المحدَّد صاحب الإطار 1.5px. */
+       الممتلئ يجعل ارتفاعه مطابقا للزر المحدد صاحب الإطار 1.5px. */
     .waitlist-btn, .chat-option-btn {
       display: inline-flex;
       align-items: center;
@@ -531,7 +531,7 @@
     .waitlist-btn:focus-visible,
     .chat-option-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
     /* الوضع الداكن: الأبيض فوق الأزرق الفاتح تباينه 3:1 فقط (دون معيار AA)،
-       فحبر الزر الممتلئ داكن (5.5:1)، والزر المحدَّد يأخذ الأزرق الأفتح (4.9:1). */
+       فحبر الزر الممتلئ داكن (5.5:1)، والزر المحدد يأخذ الأزرق الأفتح (4.9:1). */
     .waitlist-btn, .back-btn, .content a.back-btn { color: var(--btn-ink); }
     [data-theme="dark"] .chat-option-btn:not(.is-danger),
     [data-theme="dark"] .content a.chat-option-btn:not(.is-danger) {
@@ -680,19 +680,19 @@
     <!-- Supabase not configured yet -->
     <div class="content" id="unavailableCard" hidden>
       <h2 data-i18n="serviceUnavailableTitle">الخدمة قيد التجهيز</h2>
-      <p data-i18n="serviceUnavailableText">نعمل حالياً على تجهيز الخدمة، حاول مرة أخرى لاحقاً.</p>
+      <p data-i18n="serviceUnavailableText">نعمل حاليا على تجهيز الخدمة، حاول مرة أخرى لاحقا.</p>
     </div>
 
     <!-- Signed in but no organization yet -->
     <div class="content" id="noOrgCard" hidden>
-      <h2 data-i18n="noOrg">لا توجد شركة محددة، أنشئ شركتك أولاً.</h2>
+      <h2 data-i18n="noOrg">لا توجد شركة محددة، أنشئ شركتك أولا.</h2>
       <p data-i18n="noOrgHint">انتقل إلى لوحة التحكم لإنشاء شركتك ثم عد إلى هذه الصفحة.</p>
     </div>
 
     <!-- Members -->
     <div class="content" id="teamCard">
-      <p class="login-intro" data-i18n="intro">أضف أعضاء فريقك وحدّد أدوارهم، وتابع الدعوات المعلقة.</p>
-      <p class="waitlist-msg" id="teamStatus" role="status" aria-live="polite" data-i18n="loading">جارٍ التحميل...</p>
+      <p class="login-intro" data-i18n="intro">أضف أعضاء فريقك وحدد أدوارهم، وتابع الدعوات المعلقة.</p>
+      <p class="waitlist-msg" id="teamStatus" role="status" aria-live="polite" data-i18n="loading">جاري التحميل...</p>
       <p id="capacityLine" hidden></p>
 
       <h2 data-i18n="membersTitle">أعضاء الفريق</h2>
@@ -705,7 +705,7 @@
     <!-- Invite (owner / admin only) -->
     <div class="content" id="inviteCard" hidden>
       <h2 data-i18n="inviteTitle">دعوة عضو جديد</h2>
-      <p data-i18n="inviteIntro">أدخل البريد الإلكتروني للعضو واختر دوره. إن كان مسجّلاً في المنصة وصله تنبيه في جرس التنبيهات فوراً، وينضم إلى الفريق عند فتحه التطبيق. وإن لم يكن مسجّلاً فأرسل له رابط تسجيل الدخول:</p>
+      <p data-i18n="inviteIntro">أدخل البريد الإلكتروني للعضو واختر دوره. إن كان مسجلا في المنصة وصله تنبيه في جرس التنبيهات فورا، وينضم إلى الفريق عند فتحه التطبيق. وإن لم يكن مسجلا فأرسل له رابط تسجيل الدخول:</p>
       <p>
         <a href="/login.html" id="loginLinkText" dir="ltr">https://appmails.net/login.html</a>
         <button type="button" class="chat-option-btn" id="copyLinkBtn" data-i18n="copyLinkBtn">نسخ رابط تسجيل الدخول</button>
@@ -724,7 +724,7 @@
       </div>
 
       <div class="invite-block">
-        <h3 class="invite-block-title" data-i18n="lookupTitle">أو من المسجّلين في المنصة</h3>
+        <h3 class="invite-block-title" data-i18n="lookupTitle">أو من المسجلين في المنصة</h3>
         <div class="invite-row" id="lookupRow">
           <input type="text" class="waitlist-input" id="lookupQuery" placeholder="بريد أو جوال أو رقم مستخدم" data-i18n-placeholder="lookupPlaceholder" autocomplete="off">
           <button type="button" class="waitlist-btn" id="lookupBtn" data-i18n="lookupBtn">عرض المستخدمين</button>
@@ -749,31 +749,31 @@
     <!-- مصفوفة RASI: أدوار الأعضاء على كل عنصر -->
     <div class="content" id="rasiCard" hidden>
       <h2 data-i18n="rasiTitle">مصفوفة RASI</h2>
-      <p data-i18n="rasiIntro">لكل قضية أو مخالفة أو مهمة: من ينفّذ (R)، من يعتمد ويُساءل (A — واحد فقط)، من يساند (S)، ومن يُبلَّغ (I). اضغط الخلية لتبديل الدور، ويصل صاحبه تنبيه فوراً.</p>
-      <!-- الحروف R A S I مصطلح لاتيني فتُقرأ من اليسار إلى اليمين دائماً -->
+      <p data-i18n="rasiIntro">لكل قضية أو مخالفة أو مهمة: من ينفذ (R)، من يعتمد ويساءل (A — واحد فقط)، من يساند (S)، ومن يبلغ (I). اضغط الخلية لتبديل الدور، ويصل صاحبه تنبيه فورا.</p>
+      <!-- الحروف R A S I مصطلح لاتيني فتقرأ من اليسار إلى اليمين دائما -->
       <div class="rasi-legend" dir="ltr">
-        <span><b class="is-R">R</b> <span data-i18n="rasiLegendR">المنفّذ المسؤول</span></span>
+        <span><b class="is-R">R</b> <span data-i18n="rasiLegendR">المنفذ المسؤول</span></span>
         <span><b class="is-A">A</b> <span data-i18n="rasiLegendA">المعتمد والمساءل</span></span>
         <span><b class="is-S">S</b> <span data-i18n="rasiLegendS">المساند</span></span>
-        <span><b class="is-I">I</b> <span data-i18n="rasiLegendI">المُبلَّغ</span></span>
+        <span><b class="is-I">I</b> <span data-i18n="rasiLegendI">المبلغ</span></span>
       </div>
 
       <!-- التوزيع السريع: ضغطة على اسم العضو تكفي -->
       <h3 class="invite-block-title" data-i18n="quickAddTitle">إدخال سريع</h3>
-      <p class="settings-note" data-i18n="quickAddHint">اكتب المهمة كما تقولها: «جلسة القضية 4521 لشركة الأبراج الأحد 10 صباحاً لأحمد» — يُفهم النوع والموعد والعميل ورقم الدعوى ومن ينفّذ، ويُسجَّل ويُوزَّع بضغطة واحدة.</p>
+      <p class="settings-note" data-i18n="quickAddHint">اكتب المهمة كما تقولها: «جلسة القضية 4521 لشركة الأبراج الأحد 10 صباحا لأحمد» — يفهم النوع والموعد والعميل ورقم الدعوى ومن ينفذ، ويسجل ويوزع بضغطة واحدة.</p>
       <form class="invite-row quick-add" id="quickAddForm" novalidate>
-        <input type="text" class="waitlist-input" id="quickAddText" maxlength="500" autocomplete="off" placeholder="اكتب المهمة ومن ينفّذها وموعدها…">
-        <select class="waitlist-input" id="quickAddMember" aria-label="المنفّذ"></select>
+        <input type="text" class="waitlist-input" id="quickAddText" maxlength="500" autocomplete="off" placeholder="اكتب المهمة ومن ينفذها وموعدها…">
+        <select class="waitlist-input" id="quickAddMember" aria-label="المنفذ"></select>
         <button type="submit" class="waitlist-btn" id="quickAddBtn" data-i18n="quickAddBtn">إضافة</button>
       </form>
       <div class="invite-row quick-parent" id="quickParentRow" hidden>
         <select class="waitlist-input" id="quickAddParent" aria-label="القضية أو المخالفة"></select>
-        <button type="button" class="waitlist-btn" id="quickParentBtn" data-i18n="quickAddLink">اربط وسجّل</button>
+        <button type="button" class="waitlist-btn" id="quickParentBtn" data-i18n="quickAddLink">اربط وسجل</button>
       </div>
       <p class="waitlist-msg" id="quickAddMsg" role="status" aria-live="polite" hidden></p>
 
       <h3 class="invite-block-title" data-i18n="quickTitle">توزيع سريع</h3>
-      <p class="settings-note" data-i18n="quickHint">اضغط اسم العضو على العنصر: ضغطة واحدة = هو المنفّذ المسؤول (R) وأنت المعتمد (A) تلقائياً، ضغطة ثانية = مساند (S)، ثالثة = إزالة.</p>
+      <p class="settings-note" data-i18n="quickHint">اضغط اسم العضو على العنصر: ضغطة واحدة = هو المنفذ المسؤول (R) وأنت المعتمد (A) تلقائيا، ضغطة ثانية = مساند (S)، ثالثة = إزالة.</p>
       <div class="user-list" id="quickList"></div>
       <p class="waitlist-msg" id="rasiEmpty" data-i18n="rasiEmpty" hidden>لا عناصر مفتوحة لعرضها.</p>
 
@@ -803,7 +803,7 @@
               <div class="chat-head-sub" id="paneSub"></div>
             </div>
             <button type="button" class="chat-option-btn chat-files-btn" id="filesBtn" data-i18n="chatFiles">📁 الملفات</button>
-            <span class="chat-live" id="liveDot" data-i18n="chatOffline">يُعاد الاتصال...</span>
+            <span class="chat-live" id="liveDot" data-i18n="chatOffline">يعاد الاتصال...</span>
           </div>
           <div class="chat-files" id="chatFiles" hidden></div>
           <div class="chat-messages" id="messages" aria-live="polite"></div>
@@ -851,14 +851,14 @@
         exportCsv: "تصدير CSV",
         fCase: "القضية",
         title: "إدارة الفريق",
-        intro: "أضف أعضاء فريقك وحدّد أدوارهم، وتابع الدعوات المعلقة.",
+        intro: "أضف أعضاء فريقك وحدد أدوارهم، وتابع الدعوات المعلقة.",
         backBtn: "العودة إلى لوحة التحكم",
         serviceUnavailableTitle: "الخدمة قيد التجهيز",
-        serviceUnavailableText: "نعمل حالياً على تجهيز الخدمة، حاول مرة أخرى لاحقاً.",
-        noOrg: "لا توجد شركة محددة، أنشئ شركتك أولاً.",
+        serviceUnavailableText: "نعمل حاليا على تجهيز الخدمة، حاول مرة أخرى لاحقا.",
+        noOrg: "لا توجد شركة محددة، أنشئ شركتك أولا.",
         noOrgHint: "انتقل إلى لوحة التحكم لإنشاء شركتك ثم عد إلى هذه الصفحة.",
-        loading: "جارٍ التحميل...",
-        loadError: "تعذّر تحميل بيانات الفريق، حاول مرة أخرى.",
+        loading: "جاري التحميل...",
+        loadError: "تعذر تحميل بيانات الفريق، حاول مرة أخرى.",
         membersTitle: "أعضاء الفريق",
         membersEmpty: "لا يوجد أعضاء بعد.",
         readOnlyNote: "يمكن للمالك والمشرفين فقط إدارة الأعضاء والدعوات.",
@@ -881,53 +881,53 @@
         memberRemoved: "تمت إزالة العضو.",
         roleUpdated: "تم تحديث الدور.",
         inviteTitle: "دعوة عضو جديد",
-        inviteIntro: "أدخل البريد الإلكتروني للعضو واختر دوره. إن كان مسجّلاً في المنصة وصله تنبيه في جرس التنبيهات فوراً، وينضم إلى الفريق عند فتحه التطبيق. وإن لم يكن مسجّلاً فأرسل له رابط تسجيل الدخول:",
+        inviteIntro: "أدخل البريد الإلكتروني للعضو واختر دوره. إن كان مسجلا في المنصة وصله تنبيه في جرس التنبيهات فورا، وينضم إلى الفريق عند فتحه التطبيق. وإن لم يكن مسجلا فأرسل له رابط تسجيل الدخول:",
         copyLinkBtn: "نسخ رابط تسجيل الدخول",
         linkCopied: "تم نسخ الرابط.",
         inviteEmailPlaceholder: "بريد العضو الإلكتروني",
         inviteBtn: "دعوة",
-        lookupTitle: "أو من المسجّلين في المنصة",
+        lookupTitle: "أو من المسجلين في المنصة",
         inviteByEmailTitle: "بالبريد الإلكتروني",
         lookupBtn: "عرض المستخدمين",
         lookupPlaceholder: "بريد أو جوال أو رقم مستخدم",
         lookupNone: "لا يوجد مستخدم مطابق. تستطيع دعوته ببريده مباشرة.",
-        inviteSending: "جارٍ الإضافة...",
-        inviteCreated: "أُضيفت الدعوة لـ {email}، وسينضم تلقائياً عند تسجيل دخوله.",
+        inviteSending: "جاري الإضافة...",
+        inviteCreated: "أضيفت الدعوة ل {email}، وسينضم تلقائيا عند تسجيل دخوله.",
         workloadTitle: "توزيع الأعمال",
         workloadIntro: "اسحب العمل إلى العضو.",
         rasiTitle: "مصفوفة RASI",
-        rasiIntro: "لكل قضية أو مخالفة أو مهمة: من ينفّذ (R)، من يعتمد ويُساءل (A — واحد فقط)، من يساند (S)، ومن يُبلَّغ (I). اضغط الخلية لتبديل الدور، ويصل صاحبه تنبيه فوراً.",
-        rasiLegendR: "المنفّذ المسؤول",
+        rasiIntro: "لكل قضية أو مخالفة أو مهمة: من ينفذ (R)، من يعتمد ويساءل (A — واحد فقط)، من يساند (S)، ومن يبلغ (I). اضغط الخلية لتبديل الدور، ويصل صاحبه تنبيه فورا.",
+        rasiLegendR: "المنفذ المسؤول",
         rasiLegendA: "المعتمد والمساءل",
         rasiLegendS: "المساند",
-        rasiLegendI: "المُبلَّغ",
+        rasiLegendI: "المبلغ",
         rasiSearch: "ابحث بالعنوان أو الرقم",
         rasiEmpty: "لا عناصر مفتوحة لعرضها.",
         rasiItemCol: "العنصر",
-        rasiSaved: "حُفظ الدور.",
-        rasiNoMembers: "أضف أعضاء إلى الفريق أولاً.",
+        rasiSaved: "حفظ الدور.",
+        rasiNoMembers: "أضف أعضاء إلى الفريق أولا.",
         quickTitle: "توزيع سريع",
-        quickHint: "اضغط اسم العضو على العنصر: ضغطة واحدة = هو المنفّذ المسؤول (R) وأنت المعتمد (A) تلقائياً، ضغطة ثانية = مساند (S)، ثالثة = إزالة.",
+        quickHint: "اضغط اسم العضو على العنصر: ضغطة واحدة = هو المنفذ المسؤول (R) وأنت المعتمد (A) تلقائيا، ضغطة ثانية = مساند (S)، ثالثة = إزالة.",
         rasiShowMatrix: "عرض المصفوفة الكاملة",
         rasiHideMatrix: "إخفاء المصفوفة",
         quickAddTitle: "إدخال سريع",
-        quickAddHint: "اكتب المهمة كما تقولها: «جلسة القضية 4521 لشركة الأبراج الأحد 10 صباحاً لأحمد» — يُفهم النوع والموعد والعميل ورقم الدعوى ومن ينفّذ، ويُسجَّل ويُوزَّع بضغطة واحدة.",
+        quickAddHint: "اكتب المهمة كما تقولها: «جلسة القضية 4521 لشركة الأبراج الأحد 10 صباحا لأحمد» — يفهم النوع والموعد والعميل ورقم الدعوى ومن ينفذ، ويسجل ويوزع بضغطة واحدة.",
         quickAddBtn: "إضافة",
-        quickAddPh: "اكتب المهمة ومن ينفّذها وموعدها…",
-        quickAddNobody: "بلا منفّذ (أنا لاحقاً)",
-        quickAddParsing: "جارٍ الفهم…",
-        quickAddDone: "سُجّلت «{title}»{who}.",
+        quickAddPh: "اكتب المهمة ومن ينفذها وموعدها…",
+        quickAddNobody: "بلا منفذ (أنا لاحقا)",
+        quickAddParsing: "جاري الفهم…",
+        quickAddDone: "سجلت «{title}»{who}.",
         quickAddNoTitle: "لم أفهم مهمة من هذا النص — اكتب عنوانها على الأقل.",
         quickAddNeedsParent: "لأي قضية أو مخالفة تتبع هذه المهمة؟ — لا مهمة بلا أصل.",
-        quickAddLink: "اربط وسجّل",
+        quickAddLink: "اربط وسجل",
         unassignedTitle: "أعمال بلا صاحب",
-        unassignedEmpty: "كل الأعمال مُسندة.",
+        unassignedEmpty: "كل الأعمال مسندة.",
         wlOpen: "جارية",
         wlOverdue: "متأخرة",
         wlDone: "منتهية",
         assignTo: "أسند إلى",
-        assignPick: "اختر عضواً",
-        assignDone: "أُسند العمل إلى {name}.",
+        assignPick: "اختر عضوا",
+        assignDone: "أسند العمل إلى {name}.",
         unassign: "بلا صاحب",
         noDue: "بلا موعد",
         chatTitle: "تواصل الفريق",
@@ -945,27 +945,27 @@
         chatDownload: "تنزيل",
         chatFileNoLink: "بلا ربط بقضية",
         chatFileTooBig: "الملف أكبر من 25 ميغابايت.",
-        chatUploading: "جارٍ رفع الملف…",
+        chatUploading: "جاري رفع الملف…",
         chatEmpty: "لا رسائل بعد.",
-        chatLoadError: "تعذّر تحميل الرسائل.",
+        chatLoadError: "تعذر تحميل الرسائل.",
         chatDelete: "حذف",
         chatConfirmDelete: "حذف هذه الرسالة؟",
         chatUnread: "{n} جديدة",
         chatToday: "اليوم",
         chatLive: "متصل",
-        chatOffline: "يُعاد الاتصال...",
+        chatOffline: "يعاد الاتصال...",
         invitationsTitle: "الدعوات المعلقة",
         invitationsEmpty: "لا توجد دعوات معلقة.",
-        invitedOn: "أُضيفت في {date}",
+        invitedOn: "أضيفت في {date}",
         cancelInviteBtn: "إلغاء",
         confirmCancelInvite: "هل تريد إلغاء دعوة {email}؟",
-        inviteCancelled: "أُلغيت الدعوة.",
-        invalidEmail: "أدخل بريداً إلكترونياً صحيحاً.",
+        inviteCancelled: "ألغيت الدعوة.",
+        invalidEmail: "أدخل بريدا إلكترونيا صحيحا.",
         alreadyMember: "هذا البريد عضو في الفريق بالفعل.",
         alreadyInvited: "توجد دعوة معلقة لهذا البريد بالفعل.",
         notAllowed: "ليست لديك صلاحية لتنفيذ هذا الإجراء.",
         genericError: "حدث خطأ، حاول مرة أخرى.",
-        planLimitMembers: "وصلت إلى الحد الأقصى لعدد الأعضاء في باقتك الحالية، رقِّ باقتك لإضافة المزيد.",
+        planLimitMembers: "وصلت إلى الحد الأقصى لعدد الأعضاء في باقتك الحالية، رق باقتك لإضافة المزيد.",
         copyrightLine2: "جميع الحقوق محفوظة",
         aboutLink: "من نحن",
         termsLink: "شروط الاستخدام",
@@ -1247,7 +1247,7 @@
         exportCsv: "CSV برآمد",
         fCase: "مقدمہ",
         title: "ٹیم کا انتظام",
-        intro: "اپنی ٹیم کے اراکین شامل کریں، ان کے کردار طے کریں اور زیرِ التوا دعوتوں پر نظر رکھیں۔",
+        intro: "اپنی ٹیم کے اراکین شامل کریں، ان کے کردار طے کریں اور زیر التوا دعوتوں پر نظر رکھیں۔",
         backBtn: "ڈیش بورڈ پر واپس جائیں",
         serviceUnavailableTitle: "سروس تیار کی جا رہی ہے",
         serviceUnavailableText: "ہم سروس تیار کر رہے ہیں، براہ کرم بعد میں دوبارہ کوشش کریں۔",
@@ -1260,7 +1260,7 @@
         readOnlyNote: "صرف مالک اور منتظمین اراکین اور دعوتوں کا انتظام کر سکتے ہیں۔",
         capacityLimited: "اراکین: {limit} میں سے {used}",
         capacityUnlimited: "اراکین: {used} (لامحدود)",
-        capacityPending: "زیرِ التوا دعوتیں: {n}",
+        capacityPending: "زیر التوا دعوتیں: {n}",
         capacityFull: "آپ اپنے موجودہ پلان میں اراکین کی حد تک پہنچ چکے ہیں۔",
         upgradeLink: "پلان اپ گریڈ کریں",
         roleOwner: "مالک",
@@ -1277,7 +1277,7 @@
         memberRemoved: "رکن ہٹا دیا گیا۔",
         roleUpdated: "کردار اپ ڈیٹ ہو گیا۔",
         inviteTitle: "نئے رکن کو دعوت دیں",
-        inviteIntro: "رکن کا ای میل درج کریں اور اس کا کردار منتخب کریں۔ اگر وہ پلیٹ فارم پر رجسٹرڈ ہے تو اسے فوراً بیل میں اطلاع ملے گی، اور ایپ کھولتے ہی ٹیم میں شامل ہو جائے گا۔ ورنہ اسے سائن اِن لنک بھیجیں:",
+        inviteIntro: "رکن کا ای میل درج کریں اور اس کا کردار منتخب کریں۔ اگر وہ پلیٹ فارم پر رجسٹرڈ ہے تو اسے فورا بیل میں اطلاع ملے گی، اور ایپ کھولتے ہی ٹیم میں شامل ہو جائے گا۔ ورنہ اسے سائن ان لنک بھیجیں:",
         copyLinkBtn: "سائن ان لنک کاپی کریں",
         linkCopied: "لنک کاپی ہو گیا۔",
         inviteEmailPlaceholder: "رکن کا ای میل ایڈریس",
@@ -1292,7 +1292,7 @@
         workloadTitle: "کام کی تقسیم",
         workloadIntro: "کام کو رکن پر گھسیٹیں۔",
         rasiTitle: "RASI میٹرکس",
-        rasiIntro: "ہر مقدمے، خلاف ورزی یا کام کے لیے: کون کرتا ہے (R)، کون منظور اور جواب دہ ہے (A — صرف ایک)، کون معاونت کرتا ہے (S)، کسے مطلع رکھا جائے (I)۔ کردار بدلنے کے لیے خانہ دبائیں؛ متعلقہ شخص کو فوراً اطلاع ملتی ہے۔",
+        rasiIntro: "ہر مقدمے، خلاف ورزی یا کام کے لیے: کون کرتا ہے (R)، کون منظور اور جواب دہ ہے (A — صرف ایک)، کون معاونت کرتا ہے (S)، کسے مطلع رکھا جائے (I)۔ کردار بدلنے کے لیے خانہ دبائیں؛ متعلقہ شخص کو فورا اطلاع ملتی ہے۔",
         rasiLegendR: "ذمہ دار",
         rasiLegendA: "منظور کنندہ",
         rasiLegendS: "معاون",
@@ -1350,15 +1350,15 @@
         chatToday: "آج",
         chatLive: "لائیو",
         chatOffline: "دوبارہ جوڑا جا رہا ہے...",
-        invitationsTitle: "زیرِ التوا دعوتیں",
-        invitationsEmpty: "کوئی زیرِ التوا دعوت نہیں۔",
+        invitationsTitle: "زیر التوا دعوتیں",
+        invitationsEmpty: "کوئی زیر التوا دعوت نہیں۔",
         invitedOn: "شامل کی گئی: {date}",
         cancelInviteBtn: "منسوخ کریں",
         confirmCancelInvite: "کیا آپ {email} کی دعوت منسوخ کرنا چاہتے ہیں؟",
         inviteCancelled: "دعوت منسوخ کر دی گئی۔",
         invalidEmail: "درست ای میل ایڈریس درج کریں۔",
         alreadyMember: "یہ ای میل پہلے ہی ٹیم کے ایک رکن کا ہے۔",
-        alreadyInvited: "اس ای میل کے لیے پہلے ہی ایک دعوت زیرِ التوا ہے۔",
+        alreadyInvited: "اس ای میل کے لیے پہلے ہی ایک دعوت زیر التوا ہے۔",
         notAllowed: "آپ کو یہ کارروائی کرنے کی اجازت نہیں ہے۔",
         genericError: "کچھ غلط ہو گیا، براہ کرم دوبارہ کوشش کریں۔",
         planLimitMembers: "آپ اپنے موجودہ پلان میں اراکین کی حد تک پہنچ چکے ہیں، مزید شامل کرنے کے لیے پلان اپ گریڈ کریں۔",
@@ -1439,7 +1439,7 @@
       document.getElementById("langDropdown").classList.toggle("show");
       document.getElementById("themeDropdown").classList.remove("show");
     });
-    // زر المظهر يبدّل الثيم مباشرةً بضغطة واحدة بلا قائمة (طلب المهندس رعد)
+    // زر المظهر يبدل الثيم مباشرة بضغطة واحدة بلا قائمة (طلب المهندس رعد)
     document.getElementById("themeMenuBtn").addEventListener("click", e => {
       e.stopPropagation();
       setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
@@ -1979,7 +1979,7 @@
         var input = $("quickAddText"); if (input) input.placeholder = t("quickAddPh");
       }
 
-      /* اسم المنفّذ الذي فهمه المحلل ("لأحمد") ← عضو من الفريق */
+      /* اسم المنفذ الذي فهمه المحلل ("لأحمد") ← عضو من الفريق */
       function memberByName(name) {
         var q = String(name || "").trim().toLowerCase();
         if (!q) return null;
@@ -1995,7 +1995,7 @@
         return null;
       }
 
-      /* قاعدة: المهمة تتبع قضية أو مخالفة دائماً؛ إن لم يُعرف الأصل من النص تُعرض المرشّحات للاختيار */
+      /* قاعدة: المهمة تتبع قضية أو مخالفة دائما؛ إن لم يعرف الأصل من النص تعرض المرشحات للاختيار */
       var pendingAdd = null;
 
       function submitQuickAdd(payload, assignee) {
@@ -2209,7 +2209,7 @@
           wrap.hidden = !wrap.hidden;
           $("rasiToggle").textContent = t(wrap.hidden ? "rasiShowMatrix" : "rasiHideMatrix");
         });
-      /* البحث عن مستخدم مسجّل ثم دعوته بنقرة */
+      /* البحث عن مستخدم مسجل ثم دعوته بنقرة */
       function renderLookup(rows) {
         var box = $("lookupResult");
         if (!rows || !rows.length) {
@@ -2276,7 +2276,7 @@
     (function () {
       "use strict";
 
-      var TEAM = "";                       /* معرّف محادثة الفريق كله */
+      var TEAM = "";                       /* معرف محادثة الفريق كله */
       var SEEN_KEY = "tracker_chat_seen";  /* آخر وقت قراءة لكل محادثة، في هذا المتصفح */
       var POLL_MS = 15000;                 /* استقصاء احتياطي إن انقطع البث الحي */
 
@@ -2491,7 +2491,7 @@
         markSeen(state.thread);
         render();
         $("chatInput").focus();
-        /* تنبيهات الجرس عن هذه المحادثة تُعلَّم مقروءة */
+        /* تنبيهات الجرس عن هذه المحادثة تعلم مقروءة */
         if (app && app.markChatRead) app.markChatRead(state.thread === TEAM ? null : state.thread).catch(function () {});
       }
 
@@ -2511,7 +2511,7 @@
         return app.listTeamMessages(500).then(function (rows) {
           state.messages = rows || [];
           render();
-        }).catch(function () { /* الاستقصاء ليس حرجاً */ });
+        }).catch(function () { /* الاستقصاء ليس حرجا */ });
       }
 
       function upsert(msg) {
@@ -2519,7 +2519,7 @@
         state.messages.push(msg);
       }
 
-      /* البث الحي عبر Supabase Realtime؛ وإن تعذّر، استقصاء كل 15 ثانية. */
+      /* البث الحي عبر Supabase Realtime؛ وإن تعذر، استقصاء كل 15 ثانية. */
       var TYPING_TTL = 3000;
       var typingTimer = null, lastTypingSent = 0;
 
@@ -2548,7 +2548,7 @@
         var client = app.client;
         if (!client || typeof client.channel !== "function") { startPolling(); return; }
         var orgId = app.org.id;
-        /* سياسات الخصوصية تُطبَّق على قناة البث أيضاً، فلا بد من رمز جلسة المستخدم
+        /* سياسات الخصوصية تطبق على قناة البث أيضا، فلا بد من رمز جلسة المستخدم
            وإلا وصلت الحالة "متصل" بلا أي رسالة من الطرف الآخر. */
         var setAuth = function (session) {
           try { if (session && session.access_token && client.realtime && client.realtime.setAuth) client.realtime.setAuth(session.access_token); } catch (e) { /* ignore */ }
@@ -2566,7 +2566,7 @@
           .on("postgres_changes", { event: "INSERT", schema: "public", table: "team_messages", filter: "org_id=eq." + orgId }, function (payload) {
             var msg = payload.new;
             if (!msg) return;
-            /* الخصوصية تُطبَّق في القاعدة، وهنا نحترمها مرة أخرى احتياطاً */
+            /* الخصوصية تطبق في القاعدة، وهنا نحترمها مرة أخرى احتياطا */
             if (msg.to_user_id && msg.to_user_id !== me() && msg.author_id !== me()) return;
             upsert(msg);
             if (threadOf(msg) === state.thread) markSeen(state.thread);
