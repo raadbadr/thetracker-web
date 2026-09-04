@@ -2144,7 +2144,7 @@
     "html body.drawer-open .app-drawer-backdrop{opacity:1;pointer-events:auto}",
     "html body.drawer-open{overflow:hidden}",
     ".app-drawer-head{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.25rem .25rem 1rem;color:var(--text-primary);font-weight:700;font-size:.95rem}",
-    ".app-drawer-head span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
+    ".app-drawer-head a{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:inherit;text-decoration:none;padding:.5rem .25rem}",
     ".app-drawer-nav{display:flex;flex-direction:column;gap:.25rem;margin-bottom:.75rem;padding-bottom:.75rem;border-bottom:1px solid var(--glass-border)}",
     ".app-sidebar a,.app-sidebar button{min-height:44px;font-size:1rem}",
     "html body.has-app-sidebar .container,html body.sidebar-off.has-app-sidebar .container{max-width:100%;padding-inline:1rem}",
@@ -2268,7 +2268,7 @@
   }
   var DRAWER_CLOSE_LABELS = { ar: "إغلاق القائمة", en: "Close menu", fr: "Fermer le menu", ur: "مینو بند کریں" };
   function drawerHeadHtml() {
-    return '<div class="app-drawer-head"><span>' + escapeHtml(userDisplayName()) + "</span>" +
+    return '<div class="app-drawer-head"><a href="/app/settings.html#profileCard">' + escapeHtml(userDisplayName()) + "</a>" +
       '<button type="button" class="app-iconbtn" data-drawer-close aria-label="' + escapeHtml(sidebarLabel(DRAWER_CLOSE_LABELS)) + '">' +
       '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.3 5.71 12 12.01l-6.3-6.3-1.41 1.41 6.3 6.3-6.3 6.3 1.41 1.41 6.3-6.3 6.3 6.3 1.41-1.41-6.3-6.3 6.3-6.3z"/></svg></button></div>' +
       '<div class="app-drawer-nav">' + topnavLinksHtml() + "</div>";
@@ -2561,8 +2561,10 @@
     ".app-orgselect option{color:#12212b;background:#fff}",
     "body select,body .waitlist-input select,body select.waitlist-input{-webkit-appearance:none;appearance:none;background-image:none}",
     "body select::-ms-expand{display:none}",
+    /* اسم المستخدم رابط إلى ملفه الشخصي في الإعدادات (طلب المهندس رعد) */
     ".app-username{display:inline-flex;align-items:center;gap:.5rem;max-width:240px;height:40px;box-sizing:border-box;padding:0 1rem;border-radius:14px;",
-    "background:var(--glass-border);color:var(--text-primary);font-size:.85rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
+    "background:var(--glass-border);color:var(--text-primary);font-size:.85rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:none;cursor:pointer}",
+    ".app-username:hover{background:var(--primary);color:var(--btn-ink,#fff)}",
     ".app-iconbtn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;box-sizing:border-box;padding:0;border:1px solid var(--glass-border);",
     "[dir=rtl] #topSignOut svg{transform:scaleX(-1)}",
     "border-radius:12px;background:transparent;color:var(--text-secondary);cursor:pointer;transition:all .25s ease}",
@@ -2963,7 +2965,7 @@
       '<nav class="app-topnav">' + nav + "</nav>" +
       '<div class="app-userbox">' +
         orgBoxHtml() +
-        '<span class="app-username" id="topUserName" title="' + escapeHtml(userDisplayName()) + '">' + escapeHtml(userDisplayName()) + "</span>" +
+        '<a class="app-username" id="topUserName" href="/app/settings.html#profileCard" title="' + escapeHtml(userDisplayName()) + '">' + escapeHtml(userDisplayName()) + "</a>" +
         '<button type="button" class="app-iconbtn" id="topBellBtn" aria-label="' + escapeHtml(sidebarLabel(BELL_LABELS)) + '">' +
           '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5S10.5 3.17 10.5 4v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>' +
           '<span class="app-bell-badge" id="topBellBadge" hidden>0</span></button>' +
