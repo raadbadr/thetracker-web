@@ -898,7 +898,7 @@
   function listTeamMessages(limit) {
     return run(function (client) {
       var orgId = requireOrg();
-      return client.from("team_messages").select("*")
+      return client.from("team_messages").select("*, attachments(id,name,mime,size_bytes,storage_path,external_url,item_id,created_at)")
         .eq("org_id", orgId)
         .order("created_at", { ascending: false })
         .limit(limit || 50)
@@ -916,6 +916,45 @@
         .insert({ org_id: orgId, author_id: app.user.id, to_user_id: toUserId || null,
                   item_id: itemId || null, body: text.slice(0, 2000) })
         .select("*").single().then(unwrap);
+    });
+  }
+
+  /* ملف في الدردشة: مسار منظّم الشركة/chat/المحادثة/السنة-الشهر/الملف، صف في attachments، ثم رسالة تشير إليه.
+     itemId اختياري: يربط الملف بقضية أو مخالفة فيظهر في ملفها أيضاً. */
+  function sendTeamFile(file, toUserId, itemId) {
+    return run(function (client) {
+      var orgId = requireOrg();
+      if (!file) throw new Error("file required");
+      var safe = String(file.name || "file").replace(/[^\w.\- \u0600-\u06FF]/g, "_").slice(-120);
+      var thread = toUserId ? String(toUserId) : "team";
+      var d = new Date(), ym = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+      var path = orgId + "/chat/" + thread + "/" + ym + "/" + randomCode(10).toLowerCase() + "-" + safe;
+      return client.storage.from(ATTACH_BUCKET).upload(path, file, { upsert: false, contentType: file.type || undefined })
+        .then(function (res) {
+          if (res && res.error) throw res.error;
+          return client.from("attachments").insert({
+            org_id: orgId, item_id: itemId || null, name: file.name || safe, mime: file.type || null,
+            size_bytes: file.size || 0, storage_path: path, uploaded_by: app.user.id,
+            channel: "chat", thread_key: thread
+          }).select("*").single().then(unwrap)
+            .catch(function (err) { client.storage.from(ATTACH_BUCKET).remove([path]); throw err; });
+        })
+        .then(function (att) {
+          return client.from("team_messages")
+            .insert({ org_id: orgId, author_id: app.user.id, to_user_id: toUserId || null, item_id: itemId || null,
+                      body: "📎 " + String(file.name || safe).slice(0, 180), attachment_id: att.id })
+            .select("*, attachments(id,name,mime,size_bytes,storage_path,external_url,item_id,created_at)").single().then(unwrap);
+        });
+    });
+  }
+
+  /* ملفات محادثة بعينها (للوحة "الملفات") */
+  function listChatFiles(toUserId) {
+    return run(function (client) {
+      var orgId = requireOrg();
+      return client.from("attachments").select("id,name,mime,size_bytes,storage_path,external_url,item_id,uploaded_by,created_at")
+        .eq("org_id", orgId).eq("channel", "chat").eq("thread_key", toUserId ? String(toUserId) : "team")
+        .order("created_at", { ascending: false }).limit(300).then(unwrap).then(function (rows) { return rows || []; });
     });
   }
 
@@ -1476,6 +1515,8 @@
   app.setItemRole = setItemRole;
   app.distributeItem = distributeItem;
   app.parseIntent = parseIntent;
+  app.sendTeamFile = sendTeamFile;
+  app.listChatFiles = listChatFiles;
   app.quickAddItem = quickAddItem;
   app.linkTelegramByToken = linkTelegramByToken;
   app.testChannel = testChannel;

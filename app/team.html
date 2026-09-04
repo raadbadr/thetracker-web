@@ -200,6 +200,23 @@
     }
     .invite-row .waitlist-input { width: 100%; min-width: 0; }
     .invite-row .waitlist-btn { white-space: nowrap; }
+    /* لوحة توزيع الأعمال: عمود لكل عضو، والبطاقات تُسحب بين الأعمدة */
+    .wl-board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(230px, 1fr); gap: var(--gap, 1.5rem); overflow-x: auto; padding-bottom: .5rem; }
+    .wl-col { display: flex; flex-direction: column; min-height: 260px; border-radius: 18px; border: 1px solid var(--glass-border); background: var(--glass); box-shadow: 4px 4px 10px var(--shadow-dark), -4px -4px 10px var(--shadow-light); transition: box-shadow .15s ease, border-color .15s ease; }
+    .wl-col.is-over { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-shadow); }
+    .wl-col-head { padding: .8rem .9rem .6rem; border-bottom: 1px solid var(--glass-border); }
+    .wl-col-head strong { display: block; font-size: .95rem; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .wl-col-head span { font-size: .74rem; color: var(--text-secondary); }
+    .wl-col-head .is-late { color: var(--error); font-weight: 700; }
+    .wl-list { flex: 1 1 auto; display: grid; gap: .5rem; align-content: start; padding: .7rem; }
+    .wl-card { display: grid; gap: .2rem; padding: .6rem .7rem; border-radius: 12px; background: var(--glass-strong); border: 1px solid var(--glass-border); cursor: grab; user-select: none; }
+    .wl-card:active { cursor: grabbing; }
+    .wl-card.is-dragging { opacity: .45; }
+    .wl-card.is-late { border-color: var(--error); }
+    .wl-card b { font-size: .88rem; color: var(--text-primary); font-weight: 600; overflow-wrap: anywhere; }
+    .wl-card span { font-size: .72rem; color: var(--text-secondary); }
+    .wl-card select { margin-top: .25rem; padding: .35rem .5rem; font-size: .78rem; border-radius: 8px; }
+    .wl-empty { padding: 1rem .7rem; font-size: .8rem; color: var(--text-tertiary); text-align: center; }
     .user-list { display: grid; gap: 0.75rem; margin-top: 1rem; }
     /* مصفوفة RASI */
     .rasi-legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; font-size: 0.85rem; color: var(--text-secondary); margin: 0.25rem 0 0.9rem; }
@@ -596,7 +613,23 @@
     .chat-msg-del:hover { opacity: 1; text-decoration: underline; }
     .chat-empty { margin: auto; color: var(--text-tertiary); text-align: center; }
 
-    .chat-compose { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.6rem; align-items: end; padding: 0.75rem 1rem; border-top: 1px solid var(--glass-border); }
+    .chat-compose { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0.6rem; align-items: end; padding: 0.75rem 1rem; border-top: 1px solid var(--glass-border); }
+    .chat-attach { height: 46px; width: 46px; padding: 0; font-size: 1.2rem; }
+    .chat-filebar { display: grid; grid-template-columns: minmax(0, 1fr) minmax(160px, 260px) auto auto; gap: 0.5rem; align-items: center; padding: 0.6rem 1rem; border-top: 1px solid var(--glass-border); background: var(--glass); }
+    .chat-file-name { font-size: 0.85rem; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; direction: ltr; text-align: end; }
+    @media (max-width: 720px) { .chat-filebar { grid-template-columns: 1fr 1fr; } .chat-file-name { grid-column: 1 / -1; } }
+    .chat-files-btn { margin-inline-start: auto; }
+    .chat-files { padding: 0.75rem 1rem; border-bottom: 1px solid var(--glass-border); max-height: 240px; overflow: auto; font-size: 0.85rem; }
+    .chat-files h4 { margin: 0.5rem 0 0.35rem; font-size: 0.8rem; color: var(--text-secondary); }
+    .chat-file-row { display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0; }
+    .chat-file-row .grow { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .chat-file-row small { color: var(--text-tertiary); }
+    .chat-file { display: flex; align-items: center; gap: 0.6rem; }
+    .chat-file-icon { font-size: 1.4rem; }
+    .chat-file-meta { display: flex; flex-direction: column; min-width: 0; }
+    .chat-file-meta strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 260px; direction: ltr; unicode-bidi: isolate; }
+    .chat-file-meta small { opacity: .8; }
+    .chat-file a { color: inherit; text-decoration: underline; font-size: 0.8rem; }
     .chat-compose textarea { width: 100%; min-width: 0; resize: none; min-height: 46px; max-height: 160px; line-height: 1.5; }
     .chat-compose .waitlist-btn { white-space: nowrap; height: 46px; }
 
@@ -708,12 +741,8 @@
     <!-- توزيع الأعمال بين الأعضاء -->
     <div class="content" id="workloadCard" hidden>
       <h2 data-i18n="workloadTitle">توزيع الأعمال</h2>
-      <p data-i18n="workloadIntro">عبء كل عضو الآن، والأعمال التي لا صاحب لها بانتظار من تُسند إليه.</p>
-      <div class="features-grid" id="workloadGrid" role="list"></div>
-
-      <h3 class="invite-block-title" data-i18n="unassignedTitle">أعمال بلا صاحب</h3>
-      <div class="user-list" id="unassignedList" hidden></div>
-      <p id="unassignedEmpty" data-i18n="unassignedEmpty" hidden>كل الأعمال مُسندة.</p>
+      <p data-i18n="workloadIntro">اسحب العمل إلى العضو.</p>
+      <div class="wl-board" id="wlBoard"></div>
     </div>
 
     <!-- مصفوفة RASI: أدوار الأعضاء على كل عنصر -->
@@ -771,10 +800,20 @@
               <div class="chat-head-name" id="paneName"></div>
               <div class="chat-head-sub" id="paneSub"></div>
             </div>
+            <button type="button" class="chat-option-btn chat-files-btn" id="filesBtn" data-i18n="chatFiles">📁 الملفات</button>
             <span class="chat-live" id="liveDot" data-i18n="chatOffline">يُعاد الاتصال...</span>
           </div>
+          <div class="chat-files" id="chatFiles" hidden></div>
           <div class="chat-messages" id="messages" aria-live="polite"></div>
+          <div class="chat-filebar" id="fileBar" hidden>
+            <span class="chat-file-name" id="fileBarName"></span>
+            <select class="waitlist-input" id="fileLinkTo" aria-label="اربط بقضية أو مخالفة"></select>
+            <button type="button" class="waitlist-btn" id="fileSendBtn" data-i18n="chatSendFile">إرسال الملف</button>
+            <button type="button" class="chat-option-btn" id="fileCancelBtn" data-i18n="chatCancel">إلغاء</button>
+          </div>
           <form class="chat-compose" id="composeForm" novalidate>
+            <button type="button" class="chat-option-btn chat-attach" id="attachBtn" title="إرفاق ملف" aria-label="إرفاق ملف">📎</button>
+            <input type="file" id="chatFile" hidden>
             <textarea class="waitlist-input" id="chatInput" rows="1" maxlength="2000" placeholder="اكتب رسالتك... (Enter للإرسال، Shift+Enter لسطر جديد)" autocomplete="off"></textarea>
             <button type="submit" class="waitlist-btn" id="sendBtn" data-i18n="chatSend">إرسال</button>
           </form>
@@ -851,7 +890,7 @@
         inviteSending: "جارٍ الإضافة...",
         inviteCreated: "أُضيفت الدعوة لـ {email}، وسينضم تلقائياً عند تسجيل دخوله.",
         workloadTitle: "توزيع الأعمال",
-        workloadIntro: "عبء كل عضو الآن، والأعمال التي لا صاحب لها بانتظار من تُسند إليه.",
+        workloadIntro: "اسحب العمل إلى العضو.",
         rasiTitle: "مصفوفة RASI",
         rasiIntro: "لكل قضية أو مخالفة أو مهمة: من ينفّذ (R)، من يعتمد ويُساءل (A — واحد فقط)، من يساند (S)، ومن يُبلَّغ (I). اضغط الخلية لتبديل الدور، ويصل صاحبه تنبيه فوراً.",
         rasiLegendR: "المنفّذ المسؤول",
@@ -894,6 +933,14 @@
         chatPrivate: "خاص",
         chatPlaceholder: "اكتب رسالتك... (Enter للإرسال، Shift+Enter لسطر جديد)",
         chatSend: "إرسال",
+        chatSendFile: "إرسال الملف",
+        chatCancel: "إلغاء",
+        chatFiles: "📁 الملفات",
+        chatFilesEmpty: "لا ملفات في هذه المحادثة بعد.",
+        chatDownload: "تنزيل",
+        chatFileNoLink: "بلا ربط بقضية",
+        chatFileTooBig: "الملف أكبر من 25 ميغابايت.",
+        chatUploading: "جارٍ رفع الملف…",
         chatEmpty: "لا رسائل بعد.",
         chatLoadError: "تعذّر تحميل الرسائل.",
         chatDelete: "حذف",
@@ -972,7 +1019,7 @@
         inviteSending: "Adding...",
         inviteCreated: "Invitation added for {email}. They will join automatically when they sign in.",
         workloadTitle: "Work distribution",
-        workloadIntro: "Each member's current load, and the work with no owner waiting to be assigned.",
+        workloadIntro: "Drag work onto a member.",
         rasiTitle: "RASI Matrix",
         rasiIntro: "For every case, violation or task: who does it (R), who approves and answers for it (A — exactly one), who supports (S), who is kept informed (I). Click a cell to cycle the role; the person is notified instantly.",
         rasiLegendR: "Responsible",
@@ -1015,6 +1062,14 @@
         chatPrivate: "Private",
         chatPlaceholder: "Write a message... (Enter to send, Shift+Enter for a new line)",
         chatSend: "Send",
+        chatSendFile: "Send file",
+        chatCancel: "Cancel",
+        chatFiles: "📁 Files",
+        chatFilesEmpty: "No files in this conversation yet.",
+        chatDownload: "Download",
+        chatFileNoLink: "Not linked to a case",
+        chatFileTooBig: "The file exceeds 25 MB.",
+        chatUploading: "Uploading…",
         chatEmpty: "No messages yet.",
         chatLoadError: "Could not load messages.",
         chatDelete: "Delete",
@@ -1093,7 +1148,7 @@
         inviteSending: "Ajout en cours...",
         inviteCreated: "Invitation ajoutée pour {email}. Cette personne rejoindra l'équipe automatiquement lors de sa connexion.",
         workloadTitle: "Répartition du travail",
-        workloadIntro: "La charge actuelle de chaque membre, et le travail sans responsable en attente d'affectation.",
+        workloadIntro: "Glissez le travail sur un membre.",
         rasiTitle: "Matrice RASI",
         rasiIntro: "Pour chaque affaire, infraction ou tâche : qui exécute (R), qui approuve et répond (A — un seul), qui soutient (S), qui est informé (I). Cliquez une case pour changer le rôle ; la personne est notifiée aussitôt.",
         rasiLegendR: "Responsable",
@@ -1136,6 +1191,14 @@
         chatPrivate: "Privé",
         chatPlaceholder: "Écrivez un message... (Entrée pour envoyer, Maj+Entrée pour une nouvelle ligne)",
         chatSend: "Envoyer",
+        chatSendFile: "Envoyer le fichier",
+        chatCancel: "Annuler",
+        chatFiles: "📁 Fichiers",
+        chatFilesEmpty: "Aucun fichier dans cette conversation.",
+        chatDownload: "Télécharger",
+        chatFileNoLink: "Sans lien avec une affaire",
+        chatFileTooBig: "Le fichier dépasse 25 Mo.",
+        chatUploading: "Envoi…",
         chatEmpty: "Aucun message.",
         chatLoadError: "Impossible de charger les messages.",
         chatDelete: "Supprimer",
@@ -1214,7 +1277,7 @@
         inviteSending: "شامل کیا جا رہا ہے...",
         inviteCreated: "{email} کے لیے دعوت شامل کر دی گئی، سائن ان کرتے ہی وہ خود بخود شامل ہو جائے گا۔",
         workloadTitle: "کام کی تقسیم",
-        workloadIntro: "ہر رکن کا موجودہ بوجھ، اور وہ کام جن کا کوئی ذمہ دار نہیں۔",
+        workloadIntro: "کام کو رکن پر گھسیٹیں۔",
         rasiTitle: "RASI میٹرکس",
         rasiIntro: "ہر مقدمے، خلاف ورزی یا کام کے لیے: کون کرتا ہے (R)، کون منظور اور جواب دہ ہے (A — صرف ایک)، کون معاونت کرتا ہے (S)، کسے مطلع رکھا جائے (I)۔ کردار بدلنے کے لیے خانہ دبائیں؛ متعلقہ شخص کو فوراً اطلاع ملتی ہے۔",
         rasiLegendR: "ذمہ دار",
@@ -1257,6 +1320,14 @@
         chatPrivate: "نجی",
         chatPlaceholder: "پیغام لکھیں... (Enter بھیجنے کے لیے، Shift+Enter نئی سطر)",
         chatSend: "بھیجیں",
+        chatSendFile: "فائل بھیجیں",
+        chatCancel: "منسوخ",
+        chatFiles: "📁 فائلیں",
+        chatFilesEmpty: "اس گفتگو میں ابھی کوئی فائل نہیں۔",
+        chatDownload: "ڈاؤن لوڈ",
+        chatFileNoLink: "کسی مقدمے سے منسلک نہیں",
+        chatFileTooBig: "فائل 25 MB سے بڑی ہے۔",
+        chatUploading: "اپ لوڈ ہو رہی ہے…",
         chatEmpty: "ابھی کوئی پیغام نہیں۔",
         chatLoadError: "پیغامات لوڈ نہیں ہو سکے۔",
         chatDelete: "حذف کریں",
@@ -1767,56 +1838,78 @@
         show("workloadCard", state.loaded);
         if (!state.loaded) return;
 
-        var by = workload();
-        $("workloadGrid").innerHTML = state.members.map(function (m) {
-          var w = by[m.user_id] || { open: 0, overdue: 0, done: 0 };
-          return '<div class="feature-card" role="listitem">' +
-                   "<h3>" + esc(memberName(m)) + "</h3>" +
-                   '<div class="platform-stat-detail">' +
-                     '<div class="platform-stat-detail-row"><span>' + esc(t("wlOpen")) + "</span>" +
-                       '<span class="platform-stat-detail-val">' + esc(String(w.open)) + "</span></div>" +
-                     '<div class="platform-stat-detail-row"><span>' + esc(t("wlOverdue")) + "</span>" +
-                       '<span class="platform-stat-detail-val">' + esc(String(w.overdue)) + "</span></div>" +
-                     '<div class="platform-stat-detail-row"><span>' + esc(t("wlDone")) + "</span>" +
-                       '<span class="platform-stat-detail-val">' + esc(String(w.done)) + "</span></div>" +
-                   "</div></div>";
-        }).join("");
+        var now = Date.now();
+        var cols = [{ id: "", name: t("unassign") }].concat(state.members.map(function (m) { return { id: m.user_id, name: memberName(m) }; }));
+        var open = state.work.filter(function (it) { return it.status !== "done" && it.status !== "cancelled"; });
 
-        var free = state.work.filter(function (it) {
-          return !it.assignee_id && it.status !== "done" && it.status !== "cancelled";
-        });
-        var list = $("unassignedList");
-        list.innerHTML = free.map(function (it) {
-          var meta = [it.item_number || "", it.due_at ? fmtDate(it.due_at) : t("noDue")].filter(Boolean).join(" · ");
-          return '<div class="user-row"><div>' +
-                   "<strong>" + esc(it.title || "-") + "</strong><span>" + esc(meta) + "</span></div>" +
-                   '<div class="waitlist-form">' +
-                     '<select class="waitlist-input" data-assign-item="' + esc(it.id) + '" aria-label="' + esc(t("assignTo")) + '">' +
-                       memberOptions("") + "</select></div></div>";
+        $("wlBoard").innerHTML = cols.map(function (c) {
+          var mine = open.filter(function (it) { return (it.assignee_id || "") === c.id; });
+          var late = mine.filter(function (it) { return it.due_at && new Date(it.due_at).getTime() < now; }).length;
+          var done = c.id ? state.work.filter(function (it) { return it.assignee_id === c.id && it.status === "done"; }).length : 0;
+          var head = '<div class="wl-col-head"><strong>' + esc(c.name) + "</strong><span>" +
+                     esc(t("wlOpen")) + " " + mine.length +
+                     (late ? ' · <span class="is-late">' + esc(t("wlOverdue")) + " " + late + "</span>" : "") +
+                     (c.id ? " · " + esc(t("wlDone")) + " " + done : "") + "</span></div>";
+          var list = mine.map(function (it) {
+            var isLate = it.due_at && new Date(it.due_at).getTime() < now;
+            var meta = [it.item_number || "", it.due_at ? fmtDate(it.due_at) : t("noDue")].filter(Boolean).join(" · ");
+            return '<div class="wl-card' + (isLate ? " is-late" : "") + '" draggable="true" data-item="' + esc(it.id) + '">' +
+                     "<b>" + esc(it.title || "-") + "</b><span>" + esc(meta) + "</span>" +
+                     '<select class="waitlist-input" data-assign-item="' + esc(it.id) + '" aria-label="' + esc(t("assignTo")) + '">' + memberOptions(it.assignee_id || "") + "</select>" +
+                   "</div>";
+          }).join("");
+          return '<div class="wl-col" data-col="' + esc(c.id) + '">' + head + '<div class="wl-list">' + (list || '<div class="wl-empty">' + esc(t("unassignedEmpty")) + "</div>") + "</div></div>";
         }).join("");
-        list.hidden = !free.length;
-        show("unassignedEmpty", !free.length);
+      }
+
+      function assignTo(itemId, userId) {
+        return app.assignItem(itemId, userId || null).then(function () {
+          toast(userId ? tf("assignDone", { name: nameOf(userId) }) : t("unassign"), "success");
+          return loadWork();
+        }).catch(function (err) { toast(errorMessage(err), "error"); return loadWork(); });
       }
 
       function onAssignChange(ev) {
         var sel = ev.target.closest("[data-assign-item]");
         if (!sel) return;
-        var itemId = sel.getAttribute("data-assign-item");
-        var userId = sel.value;
-        if (!userId) return;
         sel.disabled = true;
-        app.assignItem(itemId, userId).then(function () {
-          toast(tf("assignDone", { name: nameOf(userId) }), "success");
-          return loadWork();
-        }).catch(function (err) {
-          sel.disabled = false;
-          toast(errorMessage(err), "error");
+        assignTo(sel.getAttribute("data-assign-item"), sel.value);
+      }
+
+      /* السحب والإفلات بين الأعمدة */
+      var dragId = null;
+      function wireDrag(board) {
+        board.addEventListener("dragstart", function (ev) {
+          var c = ev.target.closest(".wl-card"); if (!c) return;
+          dragId = c.getAttribute("data-item"); c.classList.add("is-dragging");
+          try { ev.dataTransfer.setData("text/plain", dragId); ev.dataTransfer.effectAllowed = "move"; } catch (e) { /* ignore */ }
+        });
+        board.addEventListener("dragend", function (ev) {
+          var c = ev.target.closest(".wl-card"); if (c) c.classList.remove("is-dragging");
+          board.querySelectorAll(".wl-col.is-over").forEach(function (el) { el.classList.remove("is-over"); });
+        });
+        board.addEventListener("dragover", function (ev) {
+          var col = ev.target.closest(".wl-col"); if (!col || !dragId) return;
+          ev.preventDefault(); try { ev.dataTransfer.dropEffect = "move"; } catch (e) { /* ignore */ }
+          board.querySelectorAll(".wl-col.is-over").forEach(function (el) { if (el !== col) el.classList.remove("is-over"); });
+          col.classList.add("is-over");
+        });
+        board.addEventListener("dragleave", function (ev) {
+          var col = ev.target.closest(".wl-col"); if (col && !col.contains(ev.relatedTarget)) col.classList.remove("is-over");
+        });
+        board.addEventListener("drop", function (ev) {
+          var col = ev.target.closest(".wl-col"); if (!col || !dragId) return;
+          ev.preventDefault();
+          var id = dragId; dragId = null;
+          col.classList.remove("is-over");
+          assignTo(id, col.getAttribute("data-col"));
         });
       }
 
       function loadWork() {
         return app.teamWorkItems().then(function (rows) {
           state.work = rows || [];
+          window.__teamWork = state.work;   /* الدردشة تستخدمها لربط الملفات بقضية */
           renderWorkload();
           return loadRoles();
         }).catch(function () { /* الأعمال ليست حرجة لعرض الفريق */ });
@@ -2072,7 +2165,8 @@
         $("membersGrid").addEventListener("click", onMembersClick);
         $("membersGrid").addEventListener("change", onMembersChange);
         $("invitationsList").addEventListener("click", onInvitationsClick);
-        $("unassignedList").addEventListener("change", onAssignChange);
+        $("wlBoard").addEventListener("change", onAssignChange);
+        wireDrag($("wlBoard"));
         $("rasiTable").addEventListener("click", onRasiClick);
         $("rasiSearch").addEventListener("input", function () { renderRasi(); });
         $("quickList").addEventListener("click", onQuickClick);
@@ -2256,12 +2350,85 @@
           var del = (isMine || canManage) ? '<button type="button" class="chat-msg-del" data-del="' + esc(m.id) + '">' + esc(t("chatDelete")) + "</button>" : "";
           html += '<div class="chat-msg ' + (isMine ? "is-mine" : "is-theirs") + '">' +
                     (!isMine && state.thread === TEAM ? '<span class="chat-msg-author">' + esc(nameOf(m.author_id)) + "</span>" : "") +
-                    '<div class="chat-bubble">' + esc(m.body || "") + "</div>" +
+                    (m.attachments ? fileBubble(m.attachments, isMine) : '<div class="chat-bubble">' + esc(m.body || "") + "</div>") +
                     '<div class="chat-msg-meta"><span>' + esc(timeLabel(m.created_at)) + "</span>" + del + "</div>" +
                   "</div>";
         });
         box.innerHTML = html;
         box.scrollTop = box.scrollHeight;
+      }
+
+      /* ---------- الملفات ---------- */
+      function fmtSize(n) { n = Number(n) || 0; return n >= 1048576 ? (n / 1048576).toFixed(1) + " MB" : n >= 1024 ? Math.round(n / 1024) + " KB" : n + " B"; }
+      function fileIcon(mime, name) {
+        var m = String(mime || ""), n = String(name || "").toLowerCase();
+        if (/^image\//.test(m)) return "🖼️";
+        if (/pdf/.test(m) || /\.pdf$/.test(n)) return "📕";
+        if (/sheet|excel|csv/.test(m) || /\.(xlsx|xls|csv)$/.test(n)) return "📊";
+        if (/word|document/.test(m) || /\.(docx?|rtf)$/.test(n)) return "📝";
+        if (/^audio\//.test(m)) return "🎙️";
+        if (/^video\//.test(m)) return "🎬";
+        return "📎";
+      }
+      function fileBubble(att, isMine) {
+        var linked = att.item_id ? itemTitle(att.item_id) : "";
+        return '<div class="chat-bubble chat-file"><span class="chat-file-icon">' + fileIcon(att.mime, att.name) + "</span>" +
+               '<div class="chat-file-meta"><strong>' + esc(att.name || "") + "</strong><small>" + esc(fmtSize(att.size_bytes)) + (linked ? " · " + esc(linked) : "") + "</small>" +
+               '<a href="#" data-file="' + esc(att.id) + '" data-path="' + esc(att.storage_path || "") + '">' + esc(t("chatDownload")) + "</a></div></div>";
+      }
+      function itemTitle(id) {
+        var w = (window.__teamWork || []).filter(function (it) { return it.id === id; })[0];
+        return w ? (w.title || "") : "";
+      }
+      function openFile(att) {
+        if (!app || !app.attachmentUrl) return;
+        app.attachmentUrl(att).then(function (url) { if (url) window.open(url, "_blank", "noopener"); })
+          .catch(function () { $("chatError").textContent = t("chatLoadError"); show("chatError", true); });
+      }
+      function renderFiles() {
+        var box = $("chatFiles");
+        if (!box || box.hidden) return;
+        app.listChatFiles(state.thread === TEAM ? null : state.thread).then(function (rows) {
+          if (!rows.length) { box.innerHTML = '<p class="chat-empty">' + esc(t("chatFilesEmpty")) + "</p>"; return; }
+          var html = "", lastMonth = "";
+          rows.forEach(function (f) {
+            var mk = String(f.created_at || "").slice(0, 7);
+            if (mk !== lastMonth) { html += "<h4>" + esc(monthLabel(f.created_at)) + "</h4>"; lastMonth = mk; }
+            html += '<div class="chat-file-row"><span>' + fileIcon(f.mime, f.name) + '</span><span class="grow">' + esc(f.name || "") + "</span>" +
+                    "<small>" + esc(fmtSize(f.size_bytes)) + " · " + esc(nameOf(f.uploaded_by)) + "</small>" +
+                    '<a href="#" data-file="' + esc(f.id) + '" data-path="' + esc(f.storage_path || "") + '">' + esc(t("chatDownload")) + "</a></div>";
+          });
+          box.innerHTML = html;
+        }).catch(function () { box.innerHTML = '<p class="chat-empty">' + esc(t("chatLoadError")) + "</p>"; });
+      }
+      function monthLabel(iso) {
+        try { return new Date(iso).toLocaleDateString(l === "ur" ? "ur-PK" : l === "ar" ? "ar-SA-u-ca-gregory-nu-latn" : l, { month: "long", year: "numeric" }); } catch (e) { return String(iso || "").slice(0, 7); }
+      }
+      var pendingFile = null;
+      function pickFile(file) {
+        if (!file) return;
+        if (file.size > 25 * 1024 * 1024) { $("chatError").textContent = t("chatFileTooBig"); show("chatError", true); return; }
+        pendingFile = file;
+        $("fileBarName").textContent = file.name + " (" + fmtSize(file.size) + ")";
+        var sel = $("fileLinkTo");
+        var opts = (window.__teamWork || []).filter(function (it) { return it.status === "open"; }).slice(0, 200);
+        sel.innerHTML = '<option value="">' + esc(t("chatFileNoLink")) + "</option>" + opts.map(function (it) {
+          return '<option value="' + esc(it.id) + '">' + esc(it.title || "") + (it.item_number ? " (" + esc(it.item_number) + ")" : "") + "</option>";
+        }).join("");
+        show("fileBar", true);
+      }
+      function sendFile() {
+        if (!pendingFile) return;
+        var btn = $("fileSendBtn"); btn.disabled = true; btn.textContent = t("chatUploading");
+        var to = state.thread === TEAM ? null : state.thread;
+        var itemId = $("fileLinkTo").value || null;
+        app.sendTeamFile(pendingFile, to, itemId).then(function (row) {
+          pendingFile = null; $("chatFile").value = ""; show("fileBar", false);
+          if (row) { upsert(row); markSeen(state.thread); render(); }
+          if (!$("chatFiles").hidden) renderFiles();
+        }).catch(function (err) {
+          $("chatError").textContent = err && err.message ? err.message : t("chatLoadError"); show("chatError", true);
+        }).finally(function () { btn.disabled = false; btn.textContent = t("chatSendFile"); });
       }
 
       /* شيء جديد في الدردشة؟ تصعد بطاقتها إلى أعلى الصفحة. */
@@ -2375,6 +2542,17 @@
       function boot() {
         app = window.trackerApp || null;
         loadSeen();
+        $("attachBtn").addEventListener("click", function () { $("chatFile").click(); });
+        $("chatFile").addEventListener("change", function () { pickFile(this.files && this.files[0]); });
+        $("fileSendBtn").addEventListener("click", sendFile);
+        $("fileCancelBtn").addEventListener("click", function () { pendingFile = null; $("chatFile").value = ""; show("fileBar", false); });
+        $("filesBtn").addEventListener("click", function () { var box = $("chatFiles"); box.hidden = !box.hidden; if (!box.hidden) renderFiles(); });
+        document.addEventListener("click", function (ev) {
+          var a = ev.target.closest("[data-file]");
+          if (!a) return;
+          ev.preventDefault();
+          openFile({ id: a.getAttribute("data-file"), storage_path: a.getAttribute("data-path") });
+        });
         $("threadList").addEventListener("click", function (ev) {
           var b = ev.target.closest("[data-thread]");
           if (b) openThread(b.getAttribute("data-thread"));
