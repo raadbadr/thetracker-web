@@ -453,7 +453,7 @@
         events.forEach(function (ev, i) {
           var label = T(TL_KINDS[ev.kind] || "tlCreated") + (ev.title ? " — " + ev.title : "");
           ms += '<div class="tlx-ms" data-kind="' + esc(ev.kind) + '" data-step="' + Math.round(ratioOf(ev.ms) * TLX_STEPS) + '" style="left:' + tlxLeft(ratioOf(ev.ms), isRtl) + '">' +
-                '<span class="tlx-ms-label">' + esc(label.length > 42 ? label.slice(0, 40) + "…" : label) + "</span>" +
+                '<span class="tlx-ms-label">' + esc(label) + "</span>" +
                 '<span class="tlx-ms-date">' + esc(tlxShortDate(ev.ms)) + "</span>" +
                 '<span class="tlx-ms-tick" aria-hidden="true"></span></div>';
         });
