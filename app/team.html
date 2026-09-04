@@ -230,19 +230,21 @@
     .rasi-table th { color: var(--text-secondary); font-weight: 600; white-space: nowrap; }
     .rasi-item { display: flex; flex-direction: column; gap: 0.15rem; }
     .rasi-item small { color: var(--text-secondary); }
-    /* لوحة الأدوار: حروف تُمسك وتُسحب، باللمس وبالفأرة */
+    /* لوحة الأدوار: حروف تمسك وتسحب، باللمس وبالفأرة */
     .rasi-palette { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin: .25rem 0 1rem; }
     .rasi-chip { width: 44px; height: 44px; border-radius: 12px; border: 1.5px solid var(--glass-border);
       background: var(--glass); color: var(--text-primary); font-family: inherit; font-weight: 700; font-size: 1rem;
-      cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
-    .rasi-chip:active { cursor: grabbing; }
+      cursor: pointer; user-select: none; -webkit-user-select: none; }
     .rasi-chip.is-clear { color: var(--text-secondary); }
-    .rasi-ghost { position: fixed; z-index: 90; width: 44px; height: 44px; border-radius: 12px; display: flex;
-      align-items: center; justify-content: center; font-weight: 700; pointer-events: none; opacity: .92;
-      box-shadow: 0 8px 20px var(--shadow-dark); }
-    .rasi-cell.is-drop { outline: 2px solid var(--primary); outline-offset: 2px; }
-    body.rasi-dragging { cursor: grabbing; }
-    .rasi-cell { width: 40px; height: 34px; touch-action: none; border-radius: 10px; border: 1.5px solid var(--glass-border); background: transparent; color: var(--text-tertiary); font-weight: 700; font-family: inherit; cursor: pointer; transition: transform .12s ease; }
+    .rasi-chip.is-armed { outline: 2px solid var(--primary); outline-offset: 2px; transform: translateY(-1px); }
+    /* دوائر الأعضاء على بطاقة العمل: نقرة واحدة تسند أو تنقل أو تلغي */
+    .mdots { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .45rem; }
+    .mdot { width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--glass-border);
+      background: var(--glass); color: var(--text-secondary); font-family: inherit; font-weight: 700;
+      font-size: .78rem; cursor: pointer; line-height: 1; }
+    .mdot.is-on { background: var(--primary); color: var(--btn-ink, #fff); border-color: transparent; }
+    .mdot:disabled { opacity: .6; cursor: wait; }
+    .rasi-cell { width: 40px; height: 34px; border-radius: 10px; border: 1.5px solid var(--glass-border); background: transparent; color: var(--text-tertiary); font-weight: 700; font-family: inherit; cursor: pointer; transition: transform .12s ease; }
     .rasi-cell:hover { transform: scale(1.08); }
     .rasi-cell:disabled { opacity: 0.6; cursor: wait; }
     .is-R { background: var(--primary); color: var(--btn-ink); border-color: transparent; }
@@ -802,7 +804,7 @@
     <!-- مصفوفة RASI: أدوار الأعضاء على كل عنصر -->
     <div class="content" id="rasiCard" hidden>
       <h2 data-i18n="rasiTitle">مصفوفة RASI</h2>
-      <p data-i18n="rasiIntro">لكل قضية أو مخالفة أو مهمة: من ينفذ (R)، من يعتمد ويساءل (A — واحد فقط)، من يساند (S)، ومن يبلغ (I). اسحب الحرف وأسقطه على تقاطع الشخص والمهمة، ويصل صاحبه تنبيه فورا.</p>
+      <p data-i18n="rasiIntro">لكل قضية أو مخالفة أو مهمة: من ينفذ (R)، من يعتمد ويساءل (A — واحد فقط)، من يساند (S)، ومن يبلغ (I). اختر الحرف ثم انقر الخانة، ويصل صاحبه تنبيه فورا.</p>
       <!-- الحروف R A S I مصطلح لاتيني فتقرأ من اليساري إلى اليمين دائما -->
       <div class="rasi-legend" dir="ltr">
         <span><b class="is-R">R</b> <span data-i18n="rasiLegendR">المنفذ المسؤول</span></span>
@@ -974,8 +976,9 @@
         workloadTitle: "توزيع الأعمال",
         workloadIntro: "اسحب العمل إلى العضو.",
         rasiTitle: "مصفوفة RASI",
-        rasiIntro: "لكل قضية أو مخالفة أو مهمة: من ينفذ (R)، من يعتمد ويساءل (A — واحد فقط)، من يساند (S)، ومن يبلغ (I). اسحب الحرف وأسقطه على تقاطع الشخص والمهمة، ويصل صاحبه تنبيه فورا.",
-        rasiDragHint: "اسحب الحرف إلى الخلية",
+        rasiIntro: "لكل قضية أو مخالفة أو مهمة: من ينفذ (R)، من يعتمد ويساءل (A — واحد فقط)، من يساند (S)، ومن يبلغ (I). اختر الحرف ثم انقر الخانة، ويصل صاحبه تنبيه فورا.",
+        rasiDragHint: "انقر لتعيين الدور المختار",
+        rasiPickFirst: "اختر حرف الدور أولا ثم انقر الخانة",
         rasiClearRole: "إزالة الدور",
         rasiDropped: "حفظ الدور",
         rasiLegendR: "المنفذ المسؤول",
@@ -1125,8 +1128,9 @@
         workloadTitle: "Work distribution",
         workloadIntro: "Drag work onto a member.",
         rasiTitle: "RASI Matrix",
-        rasiIntro: "For each case, violation or task: who does it (R), who approves and answers for it (A, one only), who supports (S), who is informed (I). Drag a letter onto the crossing of person and task; its owner is notified at once.",
-        rasiDragHint: "Drag a letter onto a cell",
+        rasiIntro: "For each case, violation or task: who does it (R), who approves and answers for it (A, one only), who supports (S), who is informed (I). Pick a letter, then tap a cell; its owner is notified at once.",
+        rasiDragHint: "Tap to set the chosen role",
+        rasiPickFirst: "Pick a role letter first, then tap a cell",
         rasiClearRole: "Remove role",
         rasiDropped: "Role saved",
         rasiLegendR: "Responsible",
@@ -1276,8 +1280,9 @@
         workloadTitle: "Répartition du travail",
         workloadIntro: "Glissez le travail sur un membre.",
         rasiTitle: "Matrice RASI",
-        rasiIntro: "Pour chaque affaire, infraction ou tâche : qui exécute (R), qui approuve et répond (A, un seul), qui soutient (S), qui est informé (I). Faites glisser une lettre sur le croisement personne/tâche ; son titulaire est notifié aussitôt.",
-        rasiDragHint: "Faites glisser une lettre sur une cellule",
+        rasiIntro: "Pour chaque affaire, infraction ou tâche : qui exécute (R), qui approuve (A, un seul), qui soutient (S), qui est informé (I). Choisissez une lettre puis touchez une case ; son titulaire est notifié aussitôt.",
+        rasiDragHint: "Touchez pour attribuer le rôle choisi",
+        rasiPickFirst: "Choisissez d'abord une lettre, puis touchez une case",
         rasiClearRole: "Retirer le rôle",
         rasiDropped: "Rôle enregistré",
         rasiLegendR: "Responsable",
@@ -1427,8 +1432,9 @@
         workloadTitle: "کام کی تقسیم",
         workloadIntro: "کام کو رکن پر گھسیٹیں۔",
         rasiTitle: "RASI میٹرکس",
-        rasiIntro: "ہر مقدمے، خلاف ورزی یا کام کے لیے: کون کرتا ہے (R)، کون منظوری دیتا اور جوابدہ ہے (A، صرف ایک)، کون معاونت کرتا ہے (S)، کسے مطلع کیا جائے (I)۔ حرف کو شخص اور کام کے تقاطع پر گھسیٹیں؛ متعلقہ فرد کو فورا اطلاع پہنچتی ہے۔",
-        rasiDragHint: "حرف کو خانے پر گھسیٹیں",
+        rasiIntro: "ہر مقدمے، خلاف ورزی یا کام کے لیے: کون کرتا ہے (R)، کون منظوری دیتا ہے (A، صرف ایک)، کون معاونت کرتا ہے (S)، کسے مطلع کیا جائے (I)۔ حرف منتخب کریں پھر خانہ دبائیں؛ متعلقہ فرد کو فورا اطلاع ملتی ہے۔",
+        rasiDragHint: "منتخب کردار مقرر کرنے کے لیے دبائیں",
+        rasiPickFirst: "پہلے کردار کا حرف منتخب کریں پھر خانہ دبائیں",
         rasiClearRole: "کردار ہٹائیں",
         rasiDropped: "کردار محفوظ ہو گیا",
         rasiLegendR: "ذمہ دار",
@@ -2049,6 +2055,19 @@
         return by;
       }
 
+      /* صف دوائر الأعضاء: نقرة تسند، نقرة على غيره تنقل، نقرة على المسند تلغي */
+      function memberDots(itemId, assigned) {
+        var dots = state.members.filter(function (m) { return m.status === "active"; }).map(function (m) {
+          var on = m.user_id === assigned;
+          return '<button type="button" class="mdot' + (on ? " is-on" : "") + '"' +
+                 ' data-assign-item="' + esc(itemId) + '" data-assign-user="' + esc(m.user_id) + '"' +
+                 ' aria-pressed="' + (on ? "true" : "false") + '"' +
+                 ' title="' + esc(memberName(m)) + '" aria-label="' + esc(memberName(m)) + '">' +
+                 esc(initials(memberName(m)).toUpperCase()) + "</button>";
+        }).join("");
+        return '<div class="mdots" role="group" aria-label="' + esc(t("assignTo")) + '">' + dots + "</div>";
+      }
+
       function memberOptions(selected) {
         var html = '<option value="">' + esc(t("assignPick")) + "</option>";
         state.members.forEach(function (m) {
@@ -2079,9 +2098,9 @@
           var list = mine.map(function (it) {
             var isLate = it.due_at && new Date(it.due_at).getTime() < now;
             var meta = [it.item_number || "", it.due_at ? fmtDate(it.due_at) : t("noDue")].filter(Boolean).join(" · ");
-            return '<div class="wl-card' + (isLate ? " is-late" : "") + '" draggable="true" data-item="' + esc(it.id) + '">' +
+            return '<div class="wl-card' + (isLate ? " is-late" : "") + '" data-item="' + esc(it.id) + '">' +
                      "<b>" + esc(it.title || "-") + "</b><span>" + esc(meta) + "</span>" +
-                     '<select class="waitlist-input" data-assign-item="' + esc(it.id) + '" aria-label="' + esc(t("assignTo")) + '">' + memberOptions(it.assignee_id || "") + "</select>" +
+                     memberDots(it.id, it.assignee_id || "") +
                    "</div>";
           }).join("");
           return '<div class="wl-col" data-col="' + esc(c.id) + '">' + head + '<div class="wl-list">' + (list || '<div class="wl-empty">' + esc(t("unassignedEmpty")) + "</div>") + "</div></div>";
@@ -2095,6 +2114,15 @@
         }).catch(function (err) { toast(errorMessage(err), "error"); return loadWork(); });
       }
 
+      function onDotClick(ev) {
+        var dot = ev.target.closest("[data-assign-user]");
+        if (!dot || dot.disabled) return;
+        var itemId = dot.getAttribute("data-assign-item"), userId = dot.getAttribute("data-assign-user");
+        var wasOn = dot.getAttribute("aria-pressed") === "true";
+        dot.disabled = true;
+        assignTo(itemId, wasOn ? "" : userId);
+      }
+
       function onAssignChange(ev) {
         var sel = ev.target.closest("[data-assign-item]");
         if (!sel) return;
@@ -2103,34 +2131,6 @@
       }
 
       /* السحب والإفلات بين الأعمدة */
-      var dragId = null;
-      function wireDrag(board) {
-        board.addEventListener("dragstart", function (ev) {
-          var c = ev.target.closest(".wl-card"); if (!c) return;
-          dragId = c.getAttribute("data-item"); c.classList.add("is-dragging");
-          try { ev.dataTransfer.setData("text/plain", dragId); ev.dataTransfer.effectAllowed = "move"; } catch (e) { /* ignore */ }
-        });
-        board.addEventListener("dragend", function (ev) {
-          var c = ev.target.closest(".wl-card"); if (c) c.classList.remove("is-dragging");
-          board.querySelectorAll(".wl-col.is-over").forEach(function (el) { el.classList.remove("is-over"); });
-        });
-        board.addEventListener("dragover", function (ev) {
-          var col = ev.target.closest(".wl-col"); if (!col || !dragId) return;
-          ev.preventDefault(); try { ev.dataTransfer.dropEffect = "move"; } catch (e) { /* ignore */ }
-          board.querySelectorAll(".wl-col.is-over").forEach(function (el) { if (el !== col) el.classList.remove("is-over"); });
-          col.classList.add("is-over");
-        });
-        board.addEventListener("dragleave", function (ev) {
-          var col = ev.target.closest(".wl-col"); if (col && !col.contains(ev.relatedTarget)) col.classList.remove("is-over");
-        });
-        board.addEventListener("drop", function (ev) {
-          var col = ev.target.closest(".wl-col"); if (!col || !dragId) return;
-          ev.preventDefault();
-          var id = dragId; dragId = null;
-          col.classList.remove("is-over");
-          assignTo(id, col.getAttribute("data-col"));
-        });
-      }
 
       function loadWork() {
         return app.teamWorkItems().then(function (rows) {
@@ -2319,8 +2319,8 @@
         }).join("");
       }
 
-      /* ---------- سحب الأدوار وإسقاطها ---------- */
-      var drag = null;
+      /* ---------- الأدوار بالنقر: يختار الحرف مرة ثم تنقر الخلايا ---------- */
+      var armedRole = null;
 
       function applyRole(itemId, userId, role, cell) {
         if (cell) cell.disabled = true;
@@ -2337,86 +2337,36 @@
         });
       }
 
-      function cellUnder(x, y) {
-        var el = document.elementFromPoint(x, y);
-        return el ? el.closest("[data-rasi-item]") : null;
+      function setArmed(role) {
+        armedRole = role;
+        var palette = $("rasiPalette");
+        if (!palette) return;
+        palette.querySelectorAll("[data-role]").forEach(function (chip) {
+          var on = chip.getAttribute("data-role") === (role == null ? "\u0000" : role);
+          chip.classList.toggle("is-armed", on);
+          chip.setAttribute("aria-pressed", on ? "true" : "false");
+        });
       }
 
-      function dragStart(ev, role, source) {
-        if (ev.button != null && ev.button !== 0) return;
-        drag = { role: role, source: source, over: null };
-        var ghost = document.createElement("div");
-        ghost.className = "rasi-ghost" + (role ? " is-" + role : " is-clear");
-        ghost.textContent = role || "✕";
-        document.body.appendChild(ghost);
-        document.body.classList.add("rasi-dragging");
-        drag.ghost = ghost;
-        moveGhost(ev.clientX, ev.clientY);
-        try { source.setPointerCapture(ev.pointerId); drag.pointerId = ev.pointerId; } catch (e) { /* الفأرة القديمة */ }
-        ev.preventDefault();
-      }
-
-      function moveGhost(x, y) {
-        if (!drag) return;
-        drag.ghost.style.left = (x - 22) + "px";
-        drag.ghost.style.top = (y - 22) + "px";
-        var cell = cellUnder(x, y);
-        if (cell !== drag.over) {
-          if (drag.over) drag.over.classList.remove("is-drop");
-          if (cell) cell.classList.add("is-drop");
-          drag.over = cell;
-        }
-      }
-
-      function dragEnd(x, y) {
-        if (!drag) return;
-        var cell = cellUnder(x, y);
-        var role = drag.role;
-        if (drag.over) drag.over.classList.remove("is-drop");
-        drag.ghost.remove();
-        document.body.classList.remove("rasi-dragging");
-        var wasCell = drag.source && drag.source.hasAttribute && drag.source.hasAttribute("data-rasi-item") ? drag.source : null;
-        drag = null;
-        if (!cell) {
-          /* أُفلت خارج المصفوفة: سحب دور من خليته يعني إزالته */
-          if (wasCell) applyRole(wasCell.getAttribute("data-rasi-item"), wasCell.getAttribute("data-rasi-user"), "", wasCell);
-          return;
-        }
-        var itemId = cell.getAttribute("data-rasi-item"), userId = cell.getAttribute("data-rasi-user");
-        var current = (state.roles[itemId] || {})[userId] || "";
-        if (current === role) return;               /* لا تغيير: لا حفظ ولا إعادة رسم */
-        if (wasCell && wasCell !== cell) {
-          var fromItem = wasCell.getAttribute("data-rasi-item"), fromUser = wasCell.getAttribute("data-rasi-user");
-          applyRole(fromItem, fromUser, "", wasCell).then(function () { return applyRole(itemId, userId, role, cell); });
-          return;
-        }
-        applyRole(itemId, userId, role, cell);
-      }
-
-      function wireRasiDrag() {
+      function wireRasi() {
         var palette = $("rasiPalette"), table = $("rasiTable");
         if (!palette || !table) return;
-        palette.addEventListener("pointerdown", function (ev) {
+        palette.addEventListener("click", function (ev) {
           var chip = ev.target.closest("[data-role]");
-          if (chip) dragStart(ev, chip.getAttribute("data-role"), chip);
+          if (!chip) return;
+          var role = chip.getAttribute("data-role");
+          setArmed(armedRole === role ? null : role);   /* نقرة ثانية تلغي الاختيار */
         });
-        table.addEventListener("pointerdown", function (ev) {
+        table.addEventListener("click", function (ev) {
           var cell = ev.target.closest("[data-rasi-item]");
           if (!cell || cell.disabled) return;
-          var role = (state.roles[cell.getAttribute("data-rasi-item")] || {})[cell.getAttribute("data-rasi-user")] || "";
-          if (!role) return;                        /* خلية فارغة: لا شيء يُسحب منها */
-          dragStart(ev, role, cell);
+          var itemId = cell.getAttribute("data-rasi-item"), userId = cell.getAttribute("data-rasi-user");
+          var current = (state.roles[itemId] || {})[userId] || "";
+          if (armedRole === null) { toast(t("rasiPickFirst")); return; }
+          var next = (armedRole === current) ? "" : armedRole;   /* النقر على الدور نفسه يزيله */
+          applyRole(itemId, userId, next, cell);
         });
-        document.addEventListener("pointermove", function (ev) { if (drag) { moveGhost(ev.clientX, ev.clientY); ev.preventDefault(); } }, { passive: false });
-        document.addEventListener("pointerup", function (ev) { if (drag) dragEnd(ev.clientX, ev.clientY); });
-        document.addEventListener("pointercancel", function () {
-          if (!drag) return;
-          if (drag.over) drag.over.classList.remove("is-drop");
-          drag.ghost.remove();
-          document.body.classList.remove("rasi-dragging");
-          drag = null;
-        });
-        /* لوحة المفاتيح بديل كامل: ركز الخلية واضغط الحرف، أو Delete للإزالة */
+        /* لوحة المفاتيح: ركز الخلية واضغط الحرف أو Delete */
         table.addEventListener("keydown", function (ev) {
           var cell = ev.target.closest("[data-rasi-item]");
           if (!cell) return;
@@ -2427,6 +2377,7 @@
           applyRole(cell.getAttribute("data-rasi-item"), cell.getAttribute("data-rasi-user"), role, cell);
         });
       }
+
 
 
       function render() {
@@ -2522,8 +2473,8 @@
             .then(function () { xlsxBtn.disabled = false; });
         });
         $("wlBoard").addEventListener("change", onAssignChange);
-        wireDrag($("wlBoard"));
-        wireRasiDrag();
+        $("wlBoard").addEventListener("click", onDotClick);
+        wireRasi();
         $("rasiSearch").addEventListener("input", function () { renderRasi(); });
         $("quickList").addEventListener("click", onQuickClick);
         $("quickAddForm").addEventListener("submit", onQuickAdd);

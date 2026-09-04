@@ -2785,7 +2785,8 @@
           e.preventDefault();
           var att = attachmentById((open || get).getAttribute(open ? "data-paper-open" : "data-paper-get"));
           if (!att) return;
-          app.attachmentUrl(att).then(function (u) {
+          /* العرض يفتح، والتنزيل يطلب رابطا يحمّل فعلا (Content-Disposition أو رابط درايف المباشر) */
+          app.attachmentUrl(att, open ? undefined : { download: att.name || true }).then(function (u) {
             if (!u) return;
             if (open) { window.open(u, "_blank", "noopener"); return; }
             var a = document.createElement("a");
