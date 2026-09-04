@@ -8,8 +8,9 @@ import { handleAssistantRequest, askAssistant } from "./assistant.js";
 import { handleCalendar } from "./calendar.js";
 import { runNotificationCron, linkChannelByCode, notifyTarget, sendTelegram, sendWhatsapp, sendSms, sendEmail, rpc, t as channelText,
          bot as botText, menuKeyboard, menuAction, urlButton, formatItems, telegramItems, linkChannelDirect, linkChannelByPhone, contactKeyboard,
-         sendChatAction, fetchTelegramFile, bytesToBase64, TELEGRAM_FILE_MAX, answerCallback, clearInlineButtons, confirmButtons } from "./notify.js";
+         sendChatAction, fetchTelegramFile, bytesToBase64, TELEGRAM_FILE_MAX, answerCallback, clearInlineButtons, confirmButtons, actionButtons } from "./notify.js";
 import { ALLOWED_EXT, fileExt, parseWorkbook, draftPayload, commitImport } from "./telegram-import.js";
+import { extractIntent, describeAction, formatSearch, executeAction, runTelegramDigests } from "./telegram-actions.js";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -259,6 +260,35 @@ async function readTelegramDocument(env, media, name, mime) {
   return String(data || "").trim() || null;
 }
 
+/** الرسالة (نص/صوت/ملف) ← نيّة ← بحث فوري، أو عرض فعل بزرّي تأكيد، أو جواب المساعد */
+async function smartReply(env, chatId, userId, text, lang, tgName, attachment, prefix) {
+  const b = botText(lang);
+  let intent = { action: "question" };
+  try { intent = await extractIntent(env, text, attachment ? { attachment } : null); } catch {}
+  const pre = prefix || "";
+  if (intent.action === "add" || intent.action === "done" || intent.action === "assign") {
+    if (intent.action === "add" && !(intent.item && intent.item.title)) intent.action = "question";
+    else {
+      try { await rpc(env, "telegram_draft_put", { p_secret: env.WORKER_SECRET, p_chat_id: String(chatId), p_user_id: userId, p_payload: { type: "action", intent } }); }
+      catch { intent.action = "question"; }
+    }
+    if (intent.action !== "question") {
+      try { await sendTelegram(env, chatId, pre + describeAction(lang, intent), actionButtons(lang)); } catch {}
+      return;
+    }
+  }
+  if (intent.action === "search" && intent.query) {
+    let rows = [];
+    try { rows = await rpc(env, "telegram_search", { p_secret: env.WORKER_SECRET, p_user_id: userId, p_query: intent.query, p_limit: 8 }); } catch {}
+    try { await sendTelegram(env, chatId, pre + formatSearch(lang, intent.query, rows), menuKeyboard(lang)); } catch {}
+    return;
+  }
+  let reply = null;
+  try { reply = await telegramAssistantReply(env, chatId, userId, text, attachment); } catch {}
+  if (!reply) reply = attachment ? b.fileUnreadable : channelText(lang).alreadyLinked(tgName);
+  try { await sendTelegram(env, chatId, pre + reply, menuKeyboard(lang)); } catch {}
+}
+
 /** POST /api/telegram/webhook — كل رسالة تُسجَّل ويُرَدّ عليها: ربط (/start الرمز)، قائمة أزرار، أو دعوة للربط */
 async function handleTelegramWebhook(request, env) {
   if (env.TELEGRAM_WEBHOOK_SECRET) {
@@ -346,10 +376,7 @@ async function handleTelegramWebhook(request, env) {
       if (!transcript) { try { await sendTelegram(env, chatId, b.fileUnreadable, menuKeyboard(lang)); } catch {} return json({ ok: true }); }
       const spokenMenu = menuAction(transcript);
       if (spokenMenu) { await runMenu(env, chatId, owner, spokenMenu); return json({ ok: true }); }
-      let reply = null;
-      try { reply = await telegramAssistantReply(env, chatId, owner, transcript); } catch {}
-      const answer = b.voiceHeard + "«" + transcript + "»\n\n" + (reply || channelText(lang).alreadyLinked((target && target.full_name) || tgName));
-      try { await sendTelegram(env, chatId, answer, menuKeyboard(lang)); } catch {}
+      await smartReply(env, chatId, owner, transcript, lang, (target && target.full_name) || tgName, null, b.voiceHeard + "«" + transcript + "»\n\n");
       return json({ ok: true });
     }
     // 3-ب) إكسل أو CSV: يُقرأ بمنطق صفحة الاستيراد، ويُعرض ملخصه بزرّي حفظ/إلغاء
@@ -372,22 +399,17 @@ async function handleTelegramWebhook(request, env) {
     let content = null;
     try { content = await readTelegramDocument(env, media, name, mime); } catch (e) { console.error("[telegram] read file failed:", String((e && e.message) || e).slice(0, 200)); }
     if (!content) { try { await sendTelegram(env, chatId, b.fileUnreadable, menuKeyboard(lang)); } catch {} return json({ ok: true }); }
-    let reply = null;
-    try { reply = await telegramAssistantReply(env, chatId, owner, caption || b.fileQuestion, { name, kind: photo ? "image" : "file", content }); } catch {}
-    try { await sendTelegram(env, chatId, reply || b.fileUnreadable, menuKeyboard(lang)); } catch {}
+    await smartReply(env, chatId, owner, caption || b.fileQuestion, lang, (target && target.full_name) || tgName, { name, kind: photo ? "image" : "file", content }, "");
     return json({ ok: true });
   }
   if (menu) { await runMenu(env, chatId, owner, menu); return json({ ok: true }); }
   if (text === "/start") { await greetLinked(env, chatId, owner, tgLang, tgName); return json({ ok: true }); }
-  // نص حر من مستخدم مربوط: المساعد الذكي يجيب من بياناته؛ وإن تعذّر، رسالة الحالة المعتادة
+  // نص حر من مستخدم مربوط: افهم المقصود (تسجيل/إنجاز/إسناد/بحث) أو أجب من بياناته
   let target = null;
   try { target = await notifyTarget(env, owner, "telegram"); } catch {}
   const lang = (target && target.lang) || tgLang;
-  let reply = null;
   await sendChatAction(env, chatId, "typing");
-  try { reply = await telegramAssistantReply(env, chatId, owner, text); } catch {}
-  if (!reply) reply = channelText(lang).alreadyLinked((target && target.full_name) || tgName);
-  try { await sendTelegram(env, chatId, reply, menuKeyboard(lang)); } catch {}
+  await smartReply(env, chatId, owner, text, lang, (target && target.full_name) || tgName, null, "");
   return json({ ok: true });
 }
 
@@ -413,6 +435,23 @@ async function handleTelegramCallback(env, cq) {
   try { target = await notifyTarget(env, owner, "telegram"); } catch {}
   const lang = (target && target.lang) || tgLang;
   const b = botText(lang);
+  if (data === "act:n") {
+    try { await rpc(env, "telegram_draft_take", { p_secret: env.WORKER_SECRET, p_chat_id: String(chatId) }); } catch {}
+    try { await sendTelegram(env, chatId, b.importCancelled, menuKeyboard(lang)); } catch {}
+    return json({ ok: true });
+  }
+  if (data === "act:y") {
+    let draft = null;
+    try { draft = await rpc(env, "telegram_draft_take", { p_secret: env.WORKER_SECRET, p_chat_id: String(chatId) }); } catch {}
+    const intent = draft && draft.payload && draft.payload.type === "action" ? draft.payload.intent : null;
+    if (!intent || String(draft.user_id) !== String(owner)) { try { await sendTelegram(env, chatId, b.importExpired, menuKeyboard(lang)); } catch {} return json({ ok: true }); }
+    await sendChatAction(env, chatId, "typing");
+    let out;
+    try { out = await executeAction(env, owner, intent, lang); }
+    catch (e) { out = { text: /PLAN_LIMIT/.test(String((e && e.message) || e)) ? b.importLimit : b.importFailed, extra: menuKeyboard(lang) }; }
+    try { await sendTelegram(env, chatId, out.text, out.extra); } catch {}
+    return json({ ok: true });
+  }
   if (data === "imp:n") {
     try { await rpc(env, "telegram_draft_take", { p_secret: env.WORKER_SECRET, p_chat_id: String(chatId) }); } catch {}
     try { await sendTelegram(env, chatId, b.importCancelled, menuKeyboard(lang)); } catch {}
@@ -546,5 +585,7 @@ export default {
   // Cron كل 5 دقائق: توليد التنبيهات المستحقة وإرسالها عبر القنوات
   async scheduled(event, env, ctx) {
     ctx.waitUntil(runNotificationCron(env).then((r) => console.log("[cron]", JSON.stringify(r))).catch((e) => console.error("[cron]", String(e))));
+    // الإيجاز الصباحي (07:00 بتوقيت كل مستخدم) وتجهيز جلسات الغد (18:00)
+    ctx.waitUntil(runTelegramDigests(env).then((r) => console.log("[digest]", JSON.stringify(r))).catch((e) => console.error("[digest]", String(e))));
   },
 };
