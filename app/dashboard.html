@@ -3048,14 +3048,14 @@
       }
 
       $("exportCsvBtn").addEventListener("click", function () {
-        var e = exportColumns();
-        app.exportCsv(exportName("csv"), e.items, e.cols);
+        var exportData = exportColumns();
+        app.exportCsv(exportName("csv"), exportData.items, exportData.cols);
       });
 
       $("exportXlsxBtn").addEventListener("click", function () {
-        var e = exportColumns();
+        var exportData = exportColumns();
         var btn = $("exportXlsxBtn"); btn.disabled = true;
-        app.exportXlsx(exportName("xlsx"), e.items, e.cols, T(VIEW_TYPES[state.viewType] ? VIEW_TYPES[state.viewType].titleKey : "appName"))
+        app.exportXlsx(exportName("xlsx"), exportData.items, exportData.cols, T(VIEW_TYPES[state.viewType] ? VIEW_TYPES[state.viewType].titleKey : "appName"))
           .catch(function () { toast("genericError", "error"); })
           .then(function () { btn.disabled = false; });
       });

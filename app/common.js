@@ -2102,37 +2102,37 @@
   }
 
   function cellValue(row, col) {
-    var v = (typeof col === "object")
+    var value = (typeof col === "object")
       ? (typeof col.get === "function" ? col.get(row) : row[col.key])
       : row[col];
-    if (v === null || v === undefined) return "";
-    if (typeof v === "object") return JSON.stringify(v);
-    return v;
+    if (value === null || value === undefined) return "";
+    if (typeof value === "object") return JSON.stringify(value);
+    return value;
   }
 
   /* نفس توقيع exportCsv تماما: (اسم الملف، الصفوف، الأعمدة) */
   function exportXlsx(filename, rows, columns, sheetName) {
     var cols = columns || Object.keys((rows && rows[0]) || {});
     return loadXlsx().then(function (XLSX) {
-      var header = cols.map(function (c) { return String(c.label || c); });
-      var body = (rows || []).map(function (r) {
-        return cols.map(function (c) {
-          var v = cellValue(r, c);
-          var n = (typeof v === "string" && v.trim() !== "" && isFinite(Number(v))) ? Number(v) : v;
-          return n;
+      var header = cols.map(function (col) { return String(col.label || col); });
+      var body = (rows || []).map(function (row) {
+        return cols.map(function (col) {
+          var value = cellValue(row, col);
+          var numericOrValue = (typeof value === "string" && value.trim() !== "" && isFinite(Number(value))) ? Number(value) : value;
+          return numericOrValue;
         });
       });
-      var ws = XLSX.utils.aoa_to_sheet([header].concat(body));
+      var worksheet = XLSX.utils.aoa_to_sheet([header].concat(body));
       /* عرض العمود يتبع أطول قيمة فيه حتى يقرأ الجدول بلا توسيع يدوي */
-      ws["!cols"] = header.map(function (h, i) {
-        var longest = h.length;
-        body.forEach(function (r) { var len = String(r[i] == null ? "" : r[i]).length; if (len > longest) longest = len; });
+      worksheet["!cols"] = header.map(function (label, columnIndex) {
+        var longest = label.length;
+        body.forEach(function (row) { var len = String(row[columnIndex] == null ? "" : row[columnIndex]).length; if (len > longest) longest = len; });
         return { wch: Math.min(60, Math.max(10, longest + 2)) };
       });
       var name = String(sheetName || "").slice(0, 28) || "Sheet1";
-      var wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, name);
-      XLSX.writeFile(wb, filename || "export.xlsx");
+      var workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, name);
+      XLSX.writeFile(workbook, filename || "export.xlsx");
       return true;
     });
   }

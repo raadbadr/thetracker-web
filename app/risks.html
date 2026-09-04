@@ -2272,10 +2272,10 @@
       function exportCsv() { app.exportCsv("risks.csv", state.list || [], riskColumns()); }
 
       function exportXlsx() {
-        var b = $("xlsxBtn"); b.disabled = true;
+        var xlsxBtn = $("xlsxBtn"); xlsxBtn.disabled = true;
         app.exportXlsx("risks.xlsx", state.list || [], riskColumns(), t("title"))
           .catch(function () { /* يظل الزر متاحا لإعادة المحاولة */ })
-          .then(function () { b.disabled = false; });
+          .then(function () { xlsxBtn.disabled = false; });
       }
 
       function wire() {

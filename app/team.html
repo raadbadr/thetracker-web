@@ -2282,10 +2282,10 @@
           app.exportCsv(stamp("csv"), state.members, memberColumns());
         });
         $("exportMembersXlsxBtn").addEventListener("click", function () {
-          var b = $("exportMembersXlsxBtn"); b.disabled = true;
+          var xlsxBtn = $("exportMembersXlsxBtn"); xlsxBtn.disabled = true;
           app.exportXlsx(stamp("xlsx"), state.members, memberColumns(), t("membersTitle"))
             .catch(function () { toast(t("genericError"), "error"); })
-            .then(function () { b.disabled = false; });
+            .then(function () { xlsxBtn.disabled = false; });
         });
         $("exportChatBtn").addEventListener("click", function () {
           app.listTeamMessages(5000).then(function (rows) {
@@ -2293,11 +2293,11 @@
           }).catch(function (err) { toast(errorMessage(err), "error"); });
         });
         $("exportChatXlsxBtn").addEventListener("click", function () {
-          var b = $("exportChatXlsxBtn"); b.disabled = true;
+          var xlsxBtn = $("exportChatXlsxBtn"); xlsxBtn.disabled = true;
           app.listTeamMessages(5000).then(function (rows) {
             return app.exportXlsx("chat-" + new Date().toISOString().slice(0, 10) + ".xlsx", rows || [], chatColumns(), t("chatTitle"));
           }).catch(function (err) { toast(errorMessage(err), "error"); })
-            .then(function () { b.disabled = false; });
+            .then(function () { xlsxBtn.disabled = false; });
         });
         $("wlBoard").addEventListener("change", onAssignChange);
         wireDrag($("wlBoard"));
