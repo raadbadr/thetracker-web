@@ -201,7 +201,7 @@ export function formatItems(lang, rows, title, emptyText) {
     const who = r.client_name ? ` — ${r.client_name}` : "";
     const num = r.case_number ? ` (${r.case_number})` : "";
     const tr = r.tracker_name ? ` · ${r.tracker_name}` : "";
-    return `${i + 1}. ${r.title || ""}${who}${num}\n   ${r.due_at ? fmtDue(r.due_at, lang) : "-"}${tr}`;
+    return `${i + 1}. ${r.title || ""}${who}${num}\n   ${r.due_at ? fmtDue(r.due_at) : "-"}${tr}`;
   });
   return `${title}\n\n${lines.join("\n")}`;
 }
@@ -223,11 +223,18 @@ export async function linkChannelDirect(env, userId, channel, externalId) {
   return rpc(env, "link_channel_direct", { p_secret: env.WORKER_SECRET, p_user_id: userId, p_channel: channel, p_external_id: String(externalId) });
 }
 
-function fmtDue(iso, lang) {
+/* الصيغة القياسية نفسها في كل قناة: dd-MM-yyyy HH:mm، ميلادي، 24 ساعة، أرقام
+   غربية، بلا اختلاف بين اللغات — مطابقة app.fmtDate في الموقع ومعيار تطبيق
+   باركينزي. توقيت الرياض ثابت هنا بقصد: التذكير يصل بتوقيت عمل الشركة. */
+function fmtDue(iso) {
   try {
-    return new Intl.DateTimeFormat(lang === "ar" ? "ar-SA-u-nu-latn" : lang === "ur" ? "ur-PK-u-nu-latn" : lang === "fr" ? "fr-FR" : "en-GB", {
-      timeZone: "Asia/Riyadh", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false,
-    }).format(new Date(iso));
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Riyadh", numberingSystem: "latn",
+      year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false,
+    }).formatToParts(new Date(iso));
+    const by = {};
+    parts.forEach((p) => { by[p.type] = p.value; });
+    return `${by.day}-${by.month}-${by.year} ${by.hour}:${by.minute}`;
   } catch { return String(iso); }
 }
 
@@ -381,7 +388,7 @@ export async function runNotificationCron(env) {
 
   for (const n of pending) {
     const lang = n.lang || "ar";
-    const text = t(lang).reminder(n.title || "", n.due_at ? fmtDue(n.due_at, lang) : "-", n.tracker_name);
+    const text = t(lang).reminder(n.title || "", n.due_at ? fmtDue(n.due_at) : "-", n.tracker_name);
     let status = "sent", error = null;
     try {
       if (n.channel === "email") {

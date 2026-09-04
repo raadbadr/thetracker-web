@@ -2519,8 +2519,7 @@
         return app && app.fmtDate ? app.fmtDate(iso) : d.toLocaleDateString();
       }
       function timeLabel(iso) {
-        try { return new Intl.DateTimeFormat(lang() === "ar" ? "ar-SA-u-nu-latn" : lang(), { hour: "2-digit", minute: "2-digit" }).format(new Date(iso)); }
-        catch (e) { return ""; }
+        return (app && app.fmtDate) ? app.fmtDate(iso, { timeOnly: true }) : "";
       }
 
       function renderMessages() {

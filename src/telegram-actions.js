@@ -158,14 +158,30 @@ export async function extractIntent(env, text, ctx) {
 }
 
 // ---------- تنسيق ----------
+/* اسم اليوم بلغة المستخدم، والتاريخ والوقت بالصيغة القياسية الثابتة
+   (dd-MM-yyyy HH:mm، أرقام غربية) — نفس app.fmtDate في الموقع، بلا اختلاف
+   بين اللغات في ترتيب الأرقام، مع إضافة مفيدة لسياق المحادثة: اسم اليوم. */
 export function fmtWhen(iso, lang) {
   if (!iso) return "-";
   try {
-    return new Intl.DateTimeFormat(lang === "ar" ? "ar-SA-u-ca-gregory-nu-latn" : lang === "ur" ? "ur-PK-u-nu-latn" : lang === "fr" ? "fr-FR" : "en-GB",
-      { timeZone: RIYADH, weekday: "short", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(iso));
+    const date = new Date(iso);
+    const weekdayLocale = lang === "ar" ? "ar-SA-u-ca-gregory" : lang === "ur" ? "ur-PK" : lang === "fr" ? "fr-FR" : "en-GB";
+    const weekday = new Intl.DateTimeFormat(weekdayLocale, { timeZone: RIYADH, weekday: "short" }).format(date);
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: RIYADH, numberingSystem: "latn",
+      year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false,
+    }).formatToParts(date);
+    const by = {};
+    parts.forEach((p) => { by[p.type] = p.value; });
+    return `${weekday} ${by.day}-${by.month}-${by.year} ${by.hour}:${by.minute}`;
   } catch { return String(iso); }
 }
-function money(n) { const v = Number(n); return isNaN(v) ? "" : v.toLocaleString("en-US", { maximumFractionDigits: 2 }); }
+/* المبلغ القياسي: خانتان عشريتان ثابتتان دائماً + فاصلة آلاف — نفس معيار
+   باركينزي (formatAmountWestern) ونفس app.fmtAmount في الموقع. */
+function money(n) {
+  const v = Number(n);
+  return isNaN(v) ? "" : new Intl.NumberFormat("en-US", { numberingSystem: "latn", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
+}
 
 export function describeAction(lang, intent) {
   const b = botText(lang);

@@ -3261,7 +3261,7 @@
       function money(n) {
         var v = Number(n);
         if (!isFinite(v) || !v) return "-";
-        return v.toLocaleString("en-US", { maximumFractionDigits: 2 }) + ' <span class="sar-symbol" aria-label="ريال سعودي"></span>';
+        return app.fmtAmount(v) + ' <span class="sar-symbol" aria-label="ريال سعودي"></span>';
       }
 
       function shortDate(v) {
