@@ -251,17 +251,23 @@
           var id = inserted && inserted[0] && inserted[0].id;
           if (!id) throw new Error("insert");
           if (state.driveDoc) {
-            return app.attachDriveFiles(id, [state.driveDoc]).catch(function () {
-              setStatus(t("docFileFailed"), "error");
-              return null;
-            });
+            return app.attachDriveFiles(id, [state.driveDoc]).then(function () { return true; })
+              .catch(function () { return false; });
           }
-          return app.uploadAttachment(id, state.file).catch(function (err) {
-            var code = String((err && (err.message || err.code)) || "");
+          return app.uploadAttachment(id, state.file).then(function () { return true; })
+            .catch(function (err) {
+              state.fileError = String((err && (err.message || err.code)) || "upload");
+              return false;
+            });
+        }).then(function (stored) {
+          /* الملف أهم من السطر: لا نقول «حُفظ» ما لم يُخزَّن فعلا */
+          if (stored === false) {
+            var code = state.fileError || ""; state.fileError = null;
             setStatus(code.indexOf("PLAN_LIMIT_STORAGE") !== -1 ? t("docStorageLimit") : t("docFileFailed"), "error");
-            return null;
-          });
-        }).then(function () {
+            show("docForm", false);
+            state.file = null; state.driveDoc = null; $("docFile").value = "";
+            return loadAll();
+          }
           setStatus(t("docSaved"), "success");
           show("docForm", false);
           state.file = null; state.driveDoc = null; $("docFile").value = "";
