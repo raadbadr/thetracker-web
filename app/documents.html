@@ -794,7 +794,7 @@
           </div>
 
           <!-- ماذا تستورد: حقولنا نحن هي الواجهة، لا فوضى الملف -->
-          <div class="import-step" id="step3">
+          <div class="import-step" id="step3" hidden>
             <h3 data-i18n="step3Title">ماذا تستورد</h3>
             <div class="waitlist-form" id="modeRow">
               <label class="form-field" style="flex:1 1 220px">
@@ -823,7 +823,7 @@
           <!-- الملف كما هو: معاينة صغيرة ثانوية، مطوية بشكل افتراضي -->
           <details class="import-details">
             <summary data-i18n="rawPreviewToggle">عرض الملف كما هو</summary>
-            <div class="import-step" id="step2">
+            <div class="import-step" id="step2" hidden>
               <div class="field stats-block" id="sheetRow" hidden>
                 <label class="field-label" for="sheetSelect" data-i18n="sheetLabel">الورقة</label>
                 <select class="waitlist-input" id="sheetSelect"></select>
@@ -835,7 +835,7 @@
           </details>
 
           <!-- السجل -->
-          <div class="import-step" id="step4">
+          <div class="import-step" id="step4" hidden>
             <h3 data-i18n="step4Title">السجل</h3>
             <div class="features-grid">
               <div class="field">
@@ -850,7 +850,7 @@
           </div>
 
           <!-- التحقق من الباقة + الاستيراد -->
-          <div class="import-step" id="step5">
+          <div class="import-step" id="step5" hidden>
             <h3 data-i18n="step5Title">التحقق من الباقة والاستيراد</h3>
             <div class="platform-stats-list stats-block" id="planStats"></div>
             <p class="waitlist-msg" id="planMsg" role="status" aria-live="polite" hidden></p>
@@ -2533,7 +2533,7 @@
           setStatus(t("docSaved"), "success");
           show("docForm", false);
           state.file = null; state.driveDoc = null; $("docFile").value = "";
-          return Promise.all([loadDocs(), loadPapers()]);
+          return loadAll();
         }).catch(function () { setStatus(t("docFailed"), "error"); })
           .finally(function () { btn.disabled = false; });
       }
@@ -2626,6 +2626,22 @@
         }).catch(function () { show("papersCard", false); });
       }
 
+      /* رسمة واحدة: الجدول وبطاقة الأوراق يظهران معا بعد وصول بياناتهما */
+      function loadAll() {
+        return Promise.all([
+          app.listItems({}),
+          app.listAttachments(null),
+          app.orgDocumentsStatus().catch(function () { return null; })
+        ]).then(function (res) {
+          state.items = (res[0] || []).filter(function (it) { return it.data && it.data.document_kind; });
+          state.attachments = {};
+          (res[1] || []).forEach(function (a) { if (a.item_id) (state.attachments[a.item_id] = state.attachments[a.item_id] || []).push(a); });
+          state.papers = res[2] && res[2].papers ? res[2] : null;
+          render();
+          renderPapers();
+        });
+      }
+
       function loadDocs() {
         return Promise.all([app.listItems({}), app.listAttachments(null)]).then(function (res) {
           state.items = (res[0] || []).filter(function (it) { return it.data && it.data.document_kind; });
@@ -2707,7 +2723,7 @@
           if (!app.org) { show("noOrgCard", true); return; }
           renderKindSelects(); wire();
           show("docsView", true);
-          return Promise.all([loadDocs(), loadPapers()]);
+          return loadAll();
         }).catch(function () { show("loadingCard", false); show("unavailableCard", true); });
       }
       if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
@@ -3596,12 +3612,10 @@
           return loadOrgData().then(function () {
             renderTrackerSelect();
             show(els.loadingCard, false);
-            show(els.importFlow, true);
           });
         }).catch(function (err) {
           show(els.loadingCard, false);
           if (err && err.code === "unavailable") { showUnavailable(); return; }
-          show(els.importFlow, true);
           renderTrackerSelect();
           toast((err && err.message) || t("genericError"), "error");
         });
@@ -3614,7 +3628,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
 <script src="/app.js?v=4" defer></script>
-<script src="/app/common.js?v=12" defer></script>
+<script src="/app/common.js?v=13" defer></script>
 <script src="/brand-logo.js?v=4" defer></script>
 </body>
 </html>

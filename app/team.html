@@ -1566,7 +1566,7 @@
       var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
       var app = null;
-      var state = { loaded: false, error: null, canManage: false, members: [], invitations: [], limits: {}, work: [], roles: {} };
+      var state = { loaded: false, workLoaded: false, error: null, canManage: false, members: [], invitations: [], limits: {}, work: [], roles: {} };
       var RASI_CYCLE = ["", "R", "A", "S", "I"];
 
       function $(id) { return document.getElementById(id); }
@@ -1980,8 +1980,8 @@
       function renderWorkload() {
         var card = $("workloadCard");
         if (!card) return;
-        show("workloadCard", state.loaded);
-        if (!state.loaded) return;
+        show("workloadCard", state.loaded && state.workLoaded);
+        if (!state.loaded || !state.workLoaded) return;
 
         var now = Date.now();
         var cols = [{ id: "", name: t("unassign") }].concat(state.members.map(function (m) { return { id: m.user_id, name: memberName(m) }; }));
@@ -2055,7 +2055,6 @@
         return app.teamWorkItems().then(function (rows) {
           state.work = rows || [];
           window.__teamWork = state.work;   /* الدردشة تستخدمها لربط الملفات بقضية */
-          renderWorkload();
           return loadRoles();
         }).catch(function () { /* الأعمال ليست حرجة لعرض الفريق */ });
       }
@@ -2066,8 +2065,14 @@
           var map = {};
           (rows || []).forEach(function (r) { (map[r.item_id] = map[r.item_id] || {})[r.user_id] = r.role; });
           state.roles = map;
+          state.workLoaded = true;          /* الآن فقط تظهر البطاقتان، مرة واحدة */
+          renderWorkload();
           renderRasi();
-        }).catch(function () { renderRasi(); });
+        }).catch(function () {
+          state.workLoaded = true;
+          renderWorkload();
+          renderRasi();
+        });
       }
 
       function rasiRows() {
@@ -2211,8 +2216,8 @@
       function renderRasi() {
         var card = $("rasiCard");
         if (!card) return;
-        show("rasiCard", state.loaded);
-        if (!state.loaded) return;
+        show("rasiCard", state.loaded && state.workLoaded);
+        if (!state.loaded || !state.workLoaded) return;
         renderQuick();
         var members = state.members.filter(function (m) { return m.status === "active"; });
         var rows = rasiRows();
@@ -2493,7 +2498,7 @@
           if (m.user_id === me()) return;
           rows.push({ id: m.user_id, name: nameOf(m.user_id), sub: t("chatPrivate") });
         });
-        list.innerHTML = rows.map(function (r) {
+        var threadsHtml = rows.map(function (r) {
           var last = lastMessage(r.id);
           var sub = last ? (last.author_id === me() ? "" : "") + String(last.body || "").replace(/\s+/g, " ").slice(0, 60) : r.sub;
           var unread = unreadCount(r.id);
@@ -2503,6 +2508,7 @@
                    (unread ? '<span class="chat-badge" aria-label="' + esc(tf("chatUnread", { n: unread })) + '">' + unread + "</span>" : "<span></span>") +
                  "</button>";
         }).join("");
+        if (threadsHtml !== lastThreadsHtml) { lastThreadsHtml = threadsHtml; list.innerHTML = threadsHtml; }
       }
 
       function renderHead() {
@@ -2521,6 +2527,8 @@
       function timeLabel(iso) {
         return (app && app.fmtDate) ? app.fmtDate(iso, { timeOnly: true }) : "";
       }
+
+      var lastMsgsHtml = "", lastThreadsHtml = "";
 
       function renderMessages() {
         var box = $("messages");
@@ -2541,8 +2549,11 @@
                     '<div class="chat-msg-meta"><span>' + esc(timeLabel(m.created_at)) + "</span>" + del + "</div>" +
                   "</div>";
         });
+        if (html === lastMsgsHtml) return;          /* لا شيء جديد: لا إعادة رسم ولا قفز */
+        var atBottom = (box.scrollHeight - box.scrollTop - box.clientHeight) < 40;
+        lastMsgsHtml = html;
         box.innerHTML = html;
-        box.scrollTop = box.scrollHeight;
+        if (atBottom) box.scrollTop = box.scrollHeight;
       }
 
       /* ---------- الملفات ---------- */
@@ -2834,7 +2845,7 @@
   </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 <script src="/app.js?v=4" defer></script>
-<script src="/app/common.js?v=12" defer></script>
+<script src="/app/common.js?v=13" defer></script>
 <script src="/brand-logo.js?v=4" defer></script>
 </body>
 </html>
