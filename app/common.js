@@ -743,163 +743,11 @@
   }
 
   function uploadAttachment(itemId, file) {
-    return run(function (client) {
-      var orgId = requireOrg();
-      if (!file) throw new Error("file required");
-      var safe = String(file.name || "file").replace(/[^\w.\- \u0600-\u06FF]/g, "_").slice(-120);
-      var path = orgId + "/" + (itemId || "org") + "/" + randomCode(10).toLowerCase() + "-" + safe;
-      return client.storage.from(ATTACH_BUCKET).upload(path, file, { upsert: false, contentType: file.type || undefined })
-        .then(function (res) {
-          if (res && res.error) throw res.error;
-          return client.from("attachments").insert({
-            org_id: orgId,
-            item_id: itemId || null,
-            name: file.name || safe,
-            mime: file.type || null,
-            size_bytes: file.size || 0,
-            storage_path: path,
-            uploaded_by: app.user.id
-          }).select("*").single().then(unwrap)
-            .catch(function (err) {
-              /* لا نترك ملفا يتيما في التخزين إذا رفضت القاعدة الصف */
-              client.storage.from(ATTACH_BUCKET).remove([path]);
-              throw err;
-            });
-        });
-    });
-  }
-
-  function addAttachmentLink(itemId, name, url) {
-    return run(function (client) {
-      var orgId = requireOrg();
-      var clean = String(url || "").trim();
-      if (!/^https?:\/\//i.test(clean)) throw new Error("invalid url");
-      return client.from("attachments").insert({
-        org_id: orgId,
-        item_id: itemId || null,
-        name: String(name || clean).slice(0, 200),
-        external_url: clean,
-        uploaded_by: app.user.id
-      }).select("*").single().then(unwrap);
-    });
-  }
-
-  /* ---------- Google Drive: اختيار ملف من درايف المستخدم وربطه بالعنصر ----------
-     يعمل عبر Google Picker بصلاحية drive.file (غير حساسة): المستخدم يختار الملف
-     بنفسه، ونخزن رابطه واسمه فقط؛ الملف يبقى في درايفه. */
-  var DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
-  var driveConfig = { clientId: null, apiKey: null };
-  var driveToken = null;
-
-  function driveAvailable() { return !!(driveConfig.clientId && driveConfig.apiKey); }
-
-  function driveAppId() { return String(driveConfig.clientId || "").split("-")[0] || ""; }
-
-  function loadScriptOnce(src, test) {
-    return new Promise(function (resolve, reject) {
-      if (test()) { resolve(); return; }
-      var el = document.createElement("script");
-      el.src = src; el.async = true;
-      el.onload = function () { resolve(); };
-      el.onerror = function () { reject(new Error("load_failed")); };
-      document.head.appendChild(el);
-    });
-  }
-
-  function driveAccessToken() {
-    if (driveToken && driveToken.expires > Date.now()) return Promise.resolve(driveToken.token);
-    return loadScriptOnce("https://accounts.google.com/gsi/client", function () { return !!(window.google && window.google.accounts && window.google.accounts.oauth2); })
-      .then(function () {
-        return new Promise(function (resolve, reject) {
-          var tc = window.google.accounts.oauth2.initTokenClient({
-            client_id: driveConfig.clientId,
-            scope: DRIVE_SCOPE,
-            callback: function (resp) {
-              if (!resp || !resp.access_token) { reject(new Error("no_token")); return; }
-              driveToken = { token: resp.access_token, expires: Date.now() + (Number(resp.expires_in) || 3000) * 1000 - 60000 };
-              resolve(resp.access_token);
-            },
-            error_callback: function () { reject(new Error("denied")); }
-          });
-          tc.requestAccessToken({ prompt: driveToken ? "" : "consent" });
-        });
-      });
-  }
-
-  function pickFromDrive(opts) {
-    var multi = !opts || opts.multi !== false;
-    if (!driveAvailable()) return Promise.reject(new Error("drive_unavailable"));
-    return driveAccessToken().then(function (token) {
-      return loadScriptOnce("https://apis.google.com/js/api.js", function () { return !!window.gapi; })
-        .then(function () { return new Promise(function (resolve) { window.gapi.load("picker", { callback: resolve }); }); })
-        .then(function () {
-          return new Promise(function (resolve, reject) {
-            var view = new window.google.picker.DocsView(window.google.picker.ViewId.DOCS).setIncludeFolders(true).setSelectFolderEnabled(false);
-            var builder = new window.google.picker.PickerBuilder()
-              .setOAuthToken(token)
-              .setDeveloperKey(driveConfig.apiKey)
-              .setAppId(driveAppId())
-              .setLocale(lang() === "ar" || lang() === "ur" ? "ar" : lang())
-              .addView(view);
-            if (multi) builder.enableFeature(window.google.picker.Feature.MULTISELECT_ENABLED);
-            var picker = builder
-              .setCallback(function (data) {
-                if (data.action === window.google.picker.Action.PICKED) resolve(data.docs || []);
-                else if (data.action === window.google.picker.Action.CANCEL) reject(new Error("cancelled"));
-              })
-              .build();
-            picker.setVisible(true);
-          });
-        });
-    });
-  }
-
-  /* ملف درايف المختار يُنزَّل مؤقتا في المتصفح ليقرأه المحلل، ولا يُرفع لتخزيننا.
-     ملفات جوجل (مستند/جدول) تُصدَّر PDF أو XLSX لأنها لا تنزل كما هي. */
-  var GOOGLE_EXPORT = {
-    "application/vnd.google-apps.document": ["application/pdf", ".pdf"],
-    "application/vnd.google-apps.presentation": ["application/pdf", ".pdf"],
-    "application/vnd.google-apps.drawing": ["application/pdf", ".pdf"],
-    "application/vnd.google-apps.spreadsheet": ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", ".xlsx"]
-  };
-
-  function driveDownload(doc) {
-    if (!doc || !doc.id) return Promise.reject(new Error("no_file"));
-    return driveAccessToken().then(function (token) {
-      var exp = GOOGLE_EXPORT[doc.mimeType];
-      var url = exp
-        ? "https://www.googleapis.com/drive/v3/files/" + encodeURIComponent(doc.id) + "/export?mimeType=" + encodeURIComponent(exp[0])
-        : "https://www.googleapis.com/drive/v3/files/" + encodeURIComponent(doc.id) + "?alt=media";
-      return fetch(url, { headers: { Authorization: "Bearer " + token } }).then(function (r) {
-        if (!r.ok) throw new Error("drive_download_" + r.status);
-        return r.blob();
-      }).then(function (blob) {
-        var name = String(doc.name || "drive-file");
-        if (exp && name.slice(-exp[1].length).toLowerCase() !== exp[1]) name += exp[1];
-        try { return new File([blob], name, { type: blob.type || (exp ? exp[0] : doc.mimeType) || "application/octet-stream" }); }
-        catch (e) { blob.name = name; return blob; }
-      });
-    });
-  }
-
-  /* يربط ملفات درايف المختارة بعنصر: صف مرفق لكل ملف برابطه (بلا رفع) */
-  function attachDriveFiles(itemId, docs) {
-    var list = (docs || []).filter(function (d) { return d && d.url; });
-    return list.reduce(function (p, d) {
-      return p.then(function () {
-        return run(function (client) {
-          var orgId = requireOrg();
-          return client.from("attachments").insert({
-            org_id: orgId, item_id: itemId || null,
-            name: String(d.name || "Google Drive").slice(0, 200),
-            mime: d.mimeType || null,
-            size_bytes: Number(d.sizeBytes) || 0,
-            external_url: d.url,
-            uploaded_by: app.user.id
-          }).then(unwrap);
-        });
-      });
-    }, Promise.resolve()).then(function () { return list.length; });
+    var orgId = requireOrg();
+    if (!file) return Promise.reject(new Error("file required"));
+    var safe = String(file.name || "file").replace(/[^\w.\- \u0600-\u06FF]/g, "_").slice(-120);
+    var path = orgId + "/" + (itemId || "org") + "/" + randomCode(10).toLowerCase() + "-" + safe;
+    return storeAttachment(file, { item_id: itemId || null }, path);
   }
 
   function attachmentUrl(att) {
@@ -926,7 +774,7 @@
   function storageUsed() {
     return run(function (client) {
       var orgId = requireOrg();
-      return client.from("attachments").select("size_bytes").eq("org_id", orgId).then(unwrap)
+      return client.from("attachments").select("size_bytes").eq("org_id", orgId).not("storage_path", "is", null).then(unwrap)
         .then(function (rows) {
           return (rows || []).reduce(function (sum, r) { return sum + (Number(r.size_bytes) || 0); }, 0);
         });
@@ -1254,30 +1102,21 @@
   /* ملف في الدردشة: مسار منظم الشركة/chat/المحادثة/السنة-الشهر/الملف، صف في attachments، ثم رسالة تشير إليه.
      itemId اختياري: يربط الملف بقضية أو مخالفة فيظهر في ملفها أيضا. */
   function sendTeamFile(file, toUserId, itemId) {
-    return run(function (client) {
-      var orgId = requireOrg();
-      if (!file) throw new Error("file required");
-      var safe = String(file.name || "file").replace(/[^\w.\- \u0600-\u06FF]/g, "_").slice(-120);
-      var thread = toUserId ? String(toUserId) : "team";
-      var d = new Date(), ym = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
-      var path = orgId + "/chat/" + thread + "/" + ym + "/" + randomCode(10).toLowerCase() + "-" + safe;
-      return client.storage.from(ATTACH_BUCKET).upload(path, file, { upsert: false, contentType: file.type || undefined })
-        .then(function (res) {
-          if (res && res.error) throw res.error;
-          return client.from("attachments").insert({
-            org_id: orgId, item_id: itemId || null, name: file.name || safe, mime: file.type || null,
-            size_bytes: file.size || 0, storage_path: path, uploaded_by: app.user.id,
-            channel: "chat", thread_key: thread
-          }).select("*").single().then(unwrap)
-            .catch(function (err) { client.storage.from(ATTACH_BUCKET).remove([path]); throw err; });
-        })
-        .then(function (att) {
+    var orgId = requireOrg();
+    if (!file) return Promise.reject(new Error("file required"));
+    var safe = String(file.name || "file").replace(/[^\w.\- \u0600-\u06FF]/g, "_").slice(-120);
+    var thread = toUserId ? String(toUserId) : "team";
+    var d = new Date(), ym = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+    var path = orgId + "/chat/" + thread + "/" + ym + "/" + randomCode(10).toLowerCase() + "-" + safe;
+    return storeAttachment(file, { item_id: itemId || null, channel: "chat", thread_key: thread }, path)
+      .then(function (att) {
+        return run(function (client) {
           return client.from("team_messages")
             .insert({ org_id: orgId, author_id: app.user.id, to_user_id: toUserId || null, item_id: itemId || null,
                       body: "📎 " + String(file.name || safe).slice(0, 180), attachment_id: att.id })
             .select("*, attachments(id,name,mime,size_bytes,storage_path,external_url,item_id,created_at)").single().then(unwrap);
         });
-    });
+      });
   }
 
   /* ملفات محادثة بعينها (للوحة "الملفات") */
@@ -1652,6 +1491,7 @@
       if (p.phone !== undefined) clean.phone = String(p.phone || "").trim() || null;
       if (p.lang !== undefined) clean.lang = p.lang;
       if (p.tz !== undefined) clean.tz = p.tz;
+      if (p.storage_mode !== undefined) clean.storage_mode = p.storage_mode === "drive" ? "drive" : "platform";
       return client.from("profiles").update(clean).eq("id", app.user.id).select("*").single()
         .then(unwrap)
         .then(function (row) { app.profile = row; return row; });
@@ -2067,6 +1907,18 @@
   app.setPlatformAdmin = setPlatformAdmin;
   app.activityFeed = activityFeed;
   app.achievements = achievements;
+  /* قاعدة الثبات: لا كتابة بمحتوى مطابق، والعنصر يظهر مع محتواه لا قبله */
+  function paint(el, html) {
+    var node = typeof el === "string" ? document.getElementById(el) : el;
+    if (!node) return false;
+    if (node.__sig === html) return false;
+    node.__sig = html;
+    node.innerHTML = html;
+    if (node.hidden) node.hidden = false;
+    return true;
+  }
+
+  app.paint = paint;
   app.exportXlsx = exportXlsx;
   app.setMemberPerson = setMemberPerson;
   app.departments = departments;
@@ -2091,6 +1943,9 @@
   app.uploadAttachment = uploadAttachment;
   app.addAttachmentLink = addAttachmentLink;
   app.driveAvailable = driveAvailable;
+  app.driveOAuthAvailable = driveOAuthAvailable;
+  app.storageMode = storageMode;
+  app.connectDrive = driveAccessToken;
   app.pickFromDrive = pickFromDrive;
   app.driveDownload = driveDownload;
   app.attachDriveFiles = attachDriveFiles;

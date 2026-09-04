@@ -893,35 +893,35 @@
     </div>
 
     <div id="dashboard" hidden>
-      <section class="stats-section" aria-live="polite">
+      <section class="stats-section" aria-live="polite" hidden>
         <div class="platform-stats-list">
           <div class="platform-stat-card" data-accent="users">
             <div class="platform-stat-icon" aria-hidden="true">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3 4h18v3H3V4zm0 6.5h18v3H3v-3zM3 17h18v3H3v-3z"/></svg>
             </div>
             <h3 class="platform-stat-label" data-i18n="statOpen">عناصر مفتوحة</h3>
-            <span class="platform-stat-value" id="statOpenVal">0</span>
+            <span class="platform-stat-value" id="statOpenVal"></span>
           </div>
           <div class="platform-stat-card" data-accent="spots">
             <div class="platform-stat-icon" aria-hidden="true">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM7 11h5v5H7z"/></svg>
             </div>
             <h3 class="platform-stat-label" data-i18n="statDue7">مستحقة خلال 7 أيام</h3>
-            <span class="platform-stat-value" id="statDue7Val">0</span>
+            <span class="platform-stat-value" id="statDue7Val"></span>
           </div>
           <div class="platform-stat-card" data-accent="overdue">
             <div class="platform-stat-icon" aria-hidden="true">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
             </div>
             <h3 class="platform-stat-label" data-i18n="statOverdue">متأخرة</h3>
-            <span class="platform-stat-value" id="statOverdueVal">0</span>
+            <span class="platform-stat-value" id="statOverdueVal"></span>
           </div>
           <div class="platform-stat-card" data-accent="cars">
             <div class="platform-stat-icon" aria-hidden="true">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
             </div>
             <h3 class="platform-stat-label" data-i18n="statDone">مكتملة</h3>
-            <span class="platform-stat-value" id="statDoneVal">0</span>
+            <span class="platform-stat-value" id="statDoneVal"></span>
           </div>
         </div>
       </section>
@@ -2326,6 +2326,13 @@
 
       function fillSelect(sel, options, value) {
         if (!sel) return;
+        var sig = options.map(function (o) { return o.value + "\u0001" + o.label; }).join("\u0002");
+        if (sel.dataset.sig === sig) {            /* نفس الخيارات: لا إعادة بناء */
+          sel.value = value || "";
+          if (sel.value !== (value || "") && sel.options.length) sel.selectedIndex = 0;
+          return;
+        }
+        sel.dataset.sig = sig;
         sel.innerHTML = "";
         options.forEach(function (o) {
           var op = document.createElement("option");
@@ -2521,7 +2528,7 @@
           if (it.status === "done") doneAmount += amt;
         });
 
-        card.innerHTML =
+        paintEl(card).html =
           "<h2>" + esc(T("casesIndicatorsTitle")) + "</h2>" +
           '<div class="ind-grid">' +
             '<div class="ind-card"><h3>' + esc(T("casesChartTitle")) + "</h3>" + barsHtml(caseMetrics(items)) + "</div>" +
@@ -2559,7 +2566,7 @@
           if (it.status === "cancelled" || /إلغاء|الغاء|قبول التظلم/.test(blob)) cancelledAmount += amt;
         });
 
-        card.innerHTML =
+        paintEl(card).html =
           "<h2>" + esc(T("indicatorsTitle")) + "</h2>" +
           '<div class="ind-grid">' +
             '<div class="ind-card"><h3>' + esc(T("chartTitle")) + "</h3>" + bars + "</div>" +
@@ -2686,7 +2693,10 @@
           "</div>" +
         "</div>";
         if (!events.length) html += '<p class="empty-note">' + esc(T("timelineEmpty")) + "</p>";
+        if (card.__sig === html) return;
+        card.__sig = html;
         card.innerHTML = html;
+        card.hidden = false;
         wireTimeline();
       }
 
@@ -2782,6 +2792,24 @@
         return html;
       }
 
+      /* الأرقام تظهر مرة واحدة بعد وصولها كلها، لا صفرا ثم قيمة */
+      /* لا يُعاد رسم بطاقة بمحتوى مطابق، ولا تظهر بطاقة قبل محتواها */
+      function paintEl(el) {
+        return {
+          set html(v) {
+            if (!el || el.__sig === v) return;
+            el.__sig = v;
+            el.innerHTML = v;
+            el.hidden = false;
+          }
+        };
+      }
+
+      function statsReady() {
+        var sec = document.querySelector(".stats-section");
+        if (sec) sec.hidden = false;
+      }
+
       function layoutDashboard() {
         var dash = $("dashboard");
         if (!dash || dash.dataset.laidOut) return;
@@ -2815,6 +2843,7 @@
           var chart = document.createElement("div");
           chart.className = "content chart-card";
           chart.id = id;
+          chart.hidden = true;   /* لا إطار فارغ قبل الرسم */
           dash.insertBefore(chart, dash.firstChild);
         }
         if (state.viewType === "violations") addChart("violationsChart");
@@ -2847,9 +2876,9 @@
         var timeline = document.createElement("div");
         timeline.className = "content";
         timeline.id = "timelineCard";
+        timeline.hidden = true;   /* يظهر مع أول رسم له */
         dash.insertBefore(timeline, grid);
 
-        calendar.hidden = false;
         var tabs = dash.querySelector(".tabs-row");
         if (tabs) tabs.hidden = true;
 
@@ -3072,7 +3101,8 @@
           $("statDue7Val").textContent = String(n[1]);
           $("statOverdueVal").textContent = String(n[2]);
           $("statDoneVal").textContent = String(n[3]);
-        }).catch(function (err) { fail(err); });
+          statsReady();
+        }).catch(function (err) { statsReady(); fail(err); });
       }
 
       /* أرقام اللوحة الفرعية تحسب من عناصرها هي لا من عناصر الشركة كلها. */
@@ -3094,6 +3124,7 @@
           $("statOpenVal").textContent = String(open);
           $("statDue7Val").textContent = String(due7);
           $("statOverdueVal").textContent = String(overdue);
+          statsReady();
           $("statDoneVal").textContent = String(done);
         }).catch(function (err) { fail(err); });
       }
@@ -3278,8 +3309,9 @@
         items.forEach(function (it) { if (it.client_name) names[it.client_name] = true; });
         var list = Object.keys(names).sort();
         var current = state.clientFilter || "";
-        sel.innerHTML = '<option value="">' + esc(T("allClients")) + "</option>" +
-          list.map(function (n) { return '<option value="' + esc(n) + '"' + (n === current ? " selected" : "") + ">" + esc(n) + "</option>"; }).join("");
+        paintEl(sel).html = '<option value="">' + esc(T("allClients")) + "</option>" +
+          list.map(function (n) { return '<option value="' + esc(n) + '">' + esc(n) + "</option>"; }).join("");
+        sel.value = current;
       }
 
       function renderTotals(items) {
@@ -3294,7 +3326,7 @@
           if (it.status !== "done") unpaidSum += amt;
           if (it.status === "open" && it.due_at && new Date(it.due_at).getTime() < now) overdue++;
         });
-        box.innerHTML =
+        paintEl(box).html =
           '<div class="total-card"><span class="total-label">' + esc(T("totalCount")) + '</span><span class="total-value">' + esc(String(total)) + "</span></div>" +
           '<div class="total-card"><span class="total-label">' + esc(T("totalAmount")) + '</span><span class="total-value">' + money(sum) + "</span></div>" +
           '<div class="total-card"><span class="total-label">' + esc(T("totalUnpaid")) + '</span><span class="total-value">' + money(unpaidSum) + "</span></div>" +
@@ -3365,7 +3397,7 @@
         var box = $("expenseTotals");
         if (!box) return;
         var t = expenseSums(rows);
-        box.innerHTML =
+        paintEl(box).html =
           '<div class="total-card"><span class="total-label">' + esc(T("expCount")) + '</span><span class="total-value">' + esc(String(t.count)) + "</span></div>" +
           '<div class="total-card"><span class="total-label">' + esc(T("expTotal")) + '</span><span class="total-value">' + money(t.sum) + "</span></div>" +
           '<div class="total-card"><span class="total-label">' + esc(T("expPaid")) + '</span><span class="total-value">' + money(t.paid) + "</span></div>" +
@@ -3407,7 +3439,7 @@
         var t = expenseSums(rows);
         var monthsWith = months.filter(function (v) { return v > 0; }).length;
 
-        card.innerHTML =
+        paintEl(card).html =
           "<h2>" + esc(T("expIndicatorsTitle")) + "</h2>" +
           '<div class="ind-grid">' +
             '<div class="ind-card"><h3>' + esc(T("expMonthlyTitle").replace("{y}", year)) + "</h3>" + monthBarsHtml(months) + "</div>" +
@@ -3494,12 +3526,10 @@
       function openCaseBundle(caseNumber) {
         var box = $("caseBundle");
         if (!box) return;
-        box.hidden = false;
-        box.innerHTML = "<h3>" + esc(T("caseBundleTitle").replace("{n}", caseNumber)) + '</h3><p class="empty-note">' + esc(T("loading")) + "</p>";
         app.caseBundle(caseNumber).then(function (rows) {
           var list = rows || [];
           if (!list.length) {
-            box.innerHTML = "<h3>" + esc(T("caseBundleTitle").replace("{n}", caseNumber)) + '</h3><p class="empty-note">' + esc(T("caseBundleEmpty")) + "</p>";
+            paintEl(box).html = "<h3>" + esc(T("caseBundleTitle").replace("{n}", caseNumber)) + '</h3><p class="empty-note">' + esc(T("caseBundleEmpty")) + "</p>";
             return;
           }
           var html = "<h3>" + esc(T("caseBundleTitle").replace("{n}", caseNumber)) + "</h3>" +
@@ -3516,9 +3546,9 @@
                     '<td><button type="button" class="chat-option-btn" data-bundle-open="' + esc(r.item_id) + '">' + esc(T("actionEdit")) + "</button></td></tr>";
           });
           html += "</tbody></table>";
-          box.innerHTML = html;
+          paintEl(box).html = html;
         }).catch(function () {
-          box.innerHTML = "<h3>" + esc(T("caseBundleTitle").replace("{n}", caseNumber)) + '</h3><p class="empty-note">' + esc(T("caseBundleEmpty")) + "</p>";
+          paintEl(box).html = "<h3>" + esc(T("caseBundleTitle").replace("{n}", caseNumber)) + '</h3><p class="empty-note">' + esc(T("caseBundleEmpty")) + "</p>";
         });
       }
 
@@ -3708,7 +3738,6 @@
         $("editCaseNumber").value = item.case_number || "";
         clearMsg("editMsg");
         show("editPanel");
-        renderAttachments([]);
         loadAttachments();
         try { $("editPanel").scrollIntoView({ behavior: "smooth", block: "nearest" }); } catch (e) { /* ignore */ }
         $("editTitle").focus();
@@ -3726,14 +3755,14 @@
       function renderAttachments(rows) {
         var box = $("attachList");
         if (!box) return;
-        if (!rows || !rows.length) { box.innerHTML = '<p class="empty-note">' + esc(T("attachEmpty")) + "</p>"; return; }
+        if (!rows || !rows.length) { paintEl(box).html = '<p class="empty-note">' + esc(T("attachEmpty")) + "</p>"; return; }
         var html = "";
         rows.forEach(function (a) {
           html += '<div class="attach-row"><a href="#" data-attach-open="' + esc(a.id) + '">' + esc(a.name) + "</a>" +
                   "<span>" + esc(a.external_url ? T("attachLinkLabel") : humanSize(a.size_bytes)) + "</span>" +
                   '<button type="button" class="chat-option-btn" data-attach-del="' + esc(a.id) + '">' + esc(T("delete")) + "</button></div>";
         });
-        box.innerHTML = html;
+        paintEl(box).html = html;
       }
 
       function loadAttachments() {
