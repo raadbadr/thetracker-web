@@ -1,0 +1,1892 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://cloudflareinsights.com; worker-src 'self' blob: https://cdnjs.cloudflare.com;">
+  <meta name="theme-color" content="#1a2933" id="themeColorMeta">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <title>المستندات | TheTracker</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Monoton&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/header.css">
+  <link rel="stylesheet" href="/footer.css?v=3">
+  <style>
+    /* Cross-browser reset + font enforcement (verbatim from login.html) */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    html {
+      -webkit-text-size-adjust: 100%;
+      -moz-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+    button, input, select, textarea, optgroup {
+      font-family: inherit;
+      font-size: inherit;
+      line-height: inherit;
+      color: inherit;
+      margin: 0;
+    }
+    button, [type="button"], [type="reset"], [type="submit"] {
+      -webkit-appearance: button;
+      appearance: button;
+    }
+    img, svg, video, canvas {
+      display: block;
+      max-width: 100%;
+    }
+    a { color: inherit; }
+    [hidden] { display: none !important; }
+
+    /* Theme tokens (verbatim from login.html; --secondary / --accent / --warning as in index.html) */
+    :root, [data-theme="light"] {
+      --primary: rgb(0, 104, 184);
+      --btn-ink: rgb(255, 255, 255);
+      --primary-light: rgb(25, 140, 220);
+      --primary-dark: rgb(0, 88, 160);
+      --secondary: rgb(0, 130, 190);
+      --accent: rgb(50, 150, 200);
+      --text-primary: rgb(26, 26, 38);
+      --text-secondary: rgb(77, 77, 89);
+      --text-tertiary: rgb(100, 112, 128);
+      --bg-top: rgb(250, 252, 255);
+      --bg-mid: rgb(242, 247, 252);
+      --bg-bottom: rgb(237, 245, 250);
+      --glass: rgba(255,255,255,0.85);
+      --glass-border: rgba(0,0,0,0.08);
+      --glass-strong: rgba(255, 255, 255, 0.95);
+      --shadow-light: rgba(255, 255, 255, 0.3);
+      --shadow-dark: rgba(0, 0, 0, 0.08);
+      --white: #ffffff;
+      --primary-shadow: rgba(0, 104, 184, 0.3);
+      --success: rgb(52, 199, 89);
+      --warning: rgb(255, 159, 10);
+      --error: rgb(255, 59, 48);
+    }
+    [data-theme="dark"] {
+      --primary: rgb(0, 160, 210);
+      --btn-ink: rgb(16, 32, 42);
+      --primary-light: rgb(40, 180, 220);
+      --primary-dark: rgb(0, 140, 190);
+      --secondary: rgb(0, 160, 210);
+      --accent: rgb(50, 160, 210);
+      --text-primary: rgb(255, 255, 255);
+      --text-secondary: rgba(255, 255, 255, 0.7);
+      --text-tertiary: rgba(255, 255, 255, 0.55);
+      --bg-top: rgb(31, 46, 56);
+      --bg-mid: rgb(26, 41, 51);
+      --bg-bottom: rgb(20, 36, 46);
+      --glass: rgba(255,255,255,0.08);
+      --glass-border: rgba(255,255,255,0.15);
+      --glass-strong: rgba(255, 255, 255, 0.12);
+      --shadow-light: rgba(255, 255, 255, 0.05);
+      --shadow-dark: rgba(5, 10, 15, 0.3);
+      --primary-shadow: rgba(0, 160, 210, 0.35);
+      --success: rgb(52, 199, 89);
+      --warning: rgb(255, 159, 10);
+      --error: rgb(255, 59, 48);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    html { background: var(--bg-bottom); }
+    body {
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      background: linear-gradient(135deg, var(--bg-top), var(--bg-bottom));
+      color: var(--text-primary);
+      line-height: 1.8;
+      min-height: 100vh;
+    }
+    .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+    body.has-site-header { padding-top: 52px; }
+    .header {
+      text-align: center;
+      padding: 3rem 2rem;
+      background: var(--glass);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      margin-bottom: 2rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+    [data-theme="dark"] .header { box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .content {
+      background: var(--glass);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      padding: 3rem;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+    [data-theme="dark"] .content { box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+    h2 {
+      font-size: 1.8rem;
+      margin: 2rem 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--primary);
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    h2:first-of-type { margin-top: 0; }
+    p { margin-bottom: 1rem; color: var(--text-secondary); }
+    .content a { color: var(--primary); text-decoration: none; }
+    .content a:hover { text-decoration: underline; }
+    .highlight { font-weight: 600; color: var(--primary); }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: var(--white);
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px var(--primary-shadow);
+    }
+    .back-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px var(--primary-shadow);
+    }
+    /* Form controls (verbatim from index.html / login.html) */
+    .waitlist-form {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+    /* بطاقة الدعوة — نفس لغة النيومورفيك: مسافات منتظمة وظل ناعم */
+    .invite-block { margin-top: 1.75rem; }
+    .invite-block:first-of-type { margin-top: 1.25rem; }
+    /* عنوان قسم داخل بطاقة: مسافة واضحة عمّا قبله (قاعدة الإيقاع العمودي) */
+    .invite-block-title {
+      margin: 1.75rem 0 0.75rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+    h2 + .invite-block-title, .content > .invite-block-title:first-child { margin-top: 0.25rem; }
+    .invite-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.75rem;
+      align-items: center;
+    }
+    #inviteForm.invite-row { grid-template-columns: minmax(0, 1fr) 150px auto; }
+    @media (max-width: 720px) {
+      .invite-row, #inviteForm.invite-row { grid-template-columns: 1fr; }
+    }
+    .invite-row .waitlist-input { width: 100%; min-width: 0; }
+    .invite-row .waitlist-btn { white-space: nowrap; }
+    /* لوحة توزيع الأعمال: عمود لكل عضو، والبطاقات تُسحب بين الأعمدة */
+    .wl-board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(230px, 1fr); gap: var(--gap, 1.5rem); overflow-x: auto; padding-bottom: .5rem; }
+    .wl-col { display: flex; flex-direction: column; min-height: 260px; border-radius: 18px; border: 1px solid var(--glass-border); background: var(--glass); box-shadow: 4px 4px 10px var(--shadow-dark), -4px -4px 10px var(--shadow-light); transition: box-shadow .15s ease, border-color .15s ease; }
+    .wl-col.is-over { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-shadow); }
+    .wl-col-head { padding: .8rem .9rem .6rem; border-bottom: 1px solid var(--glass-border); }
+    .wl-col-head strong { display: block; font-size: .95rem; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .wl-col-head span { font-size: .74rem; color: var(--text-secondary); }
+    .wl-col-head .is-late { color: var(--error); font-weight: 700; }
+    .wl-list { flex: 1 1 auto; display: grid; gap: .5rem; align-content: start; padding: .7rem; }
+    .wl-card { display: grid; gap: .2rem; padding: .6rem .7rem; border-radius: 12px; background: var(--glass-strong); border: 1px solid var(--glass-border); cursor: grab; user-select: none; }
+    .wl-card:active { cursor: grabbing; }
+    .wl-card.is-dragging { opacity: .45; }
+    .wl-card.is-late { border-color: var(--error); }
+    .wl-card b { font-size: .88rem; color: var(--text-primary); font-weight: 600; overflow-wrap: anywhere; }
+    .wl-card span { font-size: .72rem; color: var(--text-secondary); }
+    .wl-card select { margin-top: .25rem; padding: .35rem .5rem; font-size: .78rem; border-radius: 8px; }
+    .wl-empty { padding: 1rem .7rem; font-size: .8rem; color: var(--text-tertiary); text-align: center; }
+    .user-list { display: grid; gap: 0.75rem; margin-top: 1rem; }
+    /* مصفوفة RASI */
+    .rasi-legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; font-size: 0.85rem; color: var(--text-secondary); margin: 0.25rem 0 0.9rem; }
+    .rasi-legend b { display: inline-block; min-width: 1.7em; text-align: center; border-radius: 6px; padding: 0.05em 0.35em; }
+    .rasi-tools { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+    .rasi-tools .waitlist-input { flex: 1 1 220px; }
+    .rasi-wrap { overflow-x: auto; margin-top: 1rem; }
+    .rasi-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.85rem; min-width: 560px; }
+    .rasi-table th, .rasi-table td { padding: 0.45rem 0.5rem; border-bottom: 1px solid var(--glass-border); text-align: center; vertical-align: middle; }
+    .rasi-table th:first-child, .rasi-table td:first-child { text-align: start; position: sticky; inset-inline-start: 0; z-index: 1; min-width: 220px; background: var(--glass-strong); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    .rasi-table th { color: var(--text-secondary); font-weight: 600; white-space: nowrap; }
+    .rasi-item { display: flex; flex-direction: column; gap: 0.15rem; }
+    .rasi-item small { color: var(--text-secondary); }
+    .rasi-cell { width: 40px; height: 34px; border-radius: 10px; border: 1.5px solid var(--glass-border); background: transparent; color: var(--text-tertiary); font-weight: 700; font-family: inherit; cursor: pointer; transition: transform .12s ease; }
+    .rasi-cell:hover { transform: scale(1.08); }
+    .rasi-cell:disabled { opacity: 0.6; cursor: wait; }
+    .is-R { background: var(--primary); color: var(--btn-ink); border-color: transparent; }
+    .is-A { background: var(--success); color: #fff; border-color: transparent; }
+    .is-S { background: var(--warning); color: #1a1a26; border-color: transparent; }
+    .is-I { background: var(--glass-strong); color: var(--text-primary); border-color: var(--glass-border); }
+    .rasi-legend { justify-content: flex-end; }
+    .rasi-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: flex-end; }
+    .rasi-chip { padding: 0.35rem 0.75rem; border-radius: 999px; border: 1.5px solid var(--glass-border); background: transparent; color: var(--text-secondary); font-family: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: transform .12s ease; }
+    .rasi-chip:hover { transform: translateY(-1px); }
+    .rasi-chip:disabled { opacity: 0.6; cursor: wait; }
+    .rasi-chip b { margin-inline-start: 0.4em; font-weight: 800; }
+    .rasi-code { direction: ltr; unicode-bidi: isolate; }
+    #rasiMatrixWrap { margin-top: 1rem; }
+    .quick-add { grid-template-columns: minmax(0, 1fr) 170px auto; margin-bottom: 0.5rem; }
+    .quick-parent { margin-bottom: 0.5rem; }
+    @media (max-width: 720px) { .quick-add { grid-template-columns: 1fr; } }
+    .user-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.75rem;
+      align-items: center;
+      padding: 0.9rem 1.1rem;
+      border-radius: 16px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      box-shadow: 4px 4px 10px var(--shadow-dark), -4px -4px 10px var(--shadow-light);
+    }
+    .user-row strong { display: block; font-size: 0.95rem; color: var(--text-primary); }
+    .user-row span { font-size: 0.8rem; color: var(--text-secondary); }
+    .user-row .waitlist-btn { padding: 0.5rem 1.1rem; font-size: 0.85rem; }
+
+    .waitlist-input {
+      flex: 1;
+      min-width: 140px;
+      padding: 0.7rem 0.85rem;
+      border-radius: 10px;
+      border: 1px solid var(--glass-border);
+      background: var(--glass);
+      color: var(--text-primary);
+      font-size: 0.9rem;
+    }
+    .waitlist-input::placeholder { color: var(--text-tertiary); }
+    .waitlist-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(0, 160, 210, 0.2);
+    }
+    .waitlist-btn {
+      padding: 0.7rem 1.2rem;
+      border-radius: 10px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .waitlist-btn:hover { background: var(--primary-light); transform: translateY(-1px); }
+    .waitlist-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+    .waitlist-msg { margin-top: 0.5rem; font-size: 0.85rem; }
+    .waitlist-msg.success { color: var(--success); }
+    .waitlist-msg.error { color: var(--error); }
+    /* Card layout helpers (verbatim from login.html) */
+    .login-intro { text-align: center; }
+    .login-note { text-align: center; font-size: 0.85rem; margin-top: 1.5rem; margin-bottom: 0; }
+    .login-note + .login-note { margin-top: 0.5rem; }
+
+    /* Feature cards grid (verbatim from index.html) */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .feature-card {
+      background: var(--glass);
+      backdrop-filter: blur(30px) saturate(180%);
+      -webkit-backdrop-filter: blur(30px) saturate(180%);
+      padding: 2rem; /* NeumorphicTheme.Spacing.cardPadding = 20px */
+      border-radius: 24px; /* NeumorphicTheme.CornerRadius.xxxl */
+      box-shadow:
+        0 8px 32px var(--shadow-dark),
+        0 0 0 1px var(--glass-border),
+        inset 0 0 0 1px rgba(255,255,255,0.1);
+      border: 1px solid var(--glass-border);
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      transform-style: preserve-3d;
+    }
+
+    /* Gradient Border Effect */
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 24px;
+      padding: 2px;
+      background: linear-gradient(
+        135deg,
+        var(--primary),
+        var(--primary-light),
+        var(--secondary),
+        var(--accent)
+      );
+      -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      z-index: -1;
+    }
+
+    /* Shine Effect */
+    .feature-card::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(255,255,255,0.1) 50%,
+        transparent 70%
+      );
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-8px) scale(1.02) rotateX(2deg);
+      box-shadow:
+        0 20px 60px rgba(0,104,184,0.25),
+        0 0 40px rgba(0,104,184,0.15),
+        inset 0 0 0 1px rgba(255,255,255,0.2);
+      border-color: var(--primary);
+    }
+
+    .feature-card:hover::before {
+      opacity: 1;
+    }
+
+    .feature-card:hover::after {
+      transform: translateX(100%);
+    }
+
+    [data-theme="dark"] .feature-card {
+      box-shadow:
+        0 8px 32px rgba(0,0,0,0.6),
+        0 0 0 1px var(--glass-border),
+        inset 0 0 0 1px rgba(255,255,255,0.05);
+    }
+
+    [data-theme="dark"] .feature-card:hover {
+      box-shadow:
+        0 20px 60px rgba(0,160,210,0.3),
+        0 0 50px rgba(0,160,210,0.2),
+        inset 0 0 0 1px rgba(255,255,255,0.15);
+    }
+
+    .feature-card h3 {
+      color: var(--text-primary);
+      margin-bottom: 0.75rem;
+      font-weight: 700;
+      font-size: 1.4rem;
+      transition: all 0.3s ease;
+    }
+
+    .feature-card:hover h3 {
+      color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    [data-theme="dark"] .feature-card:hover h3 {
+      color: var(--primary-light);
+    }
+
+    .feature-card p {
+      color: var(--text-secondary);
+      line-height: 1.7;
+      transition: color 0.3s ease;
+    }
+
+    .feature-card:hover p {
+      color: var(--text-primary);
+    }
+
+    /* Pill buttons / badges (verbatim from index.html) */
+    .chat-option-btn {
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      border: 1.5px solid var(--primary);
+      background: transparent;
+      color: var(--primary);
+      font-family: inherit;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .chat-option-btn:hover {
+      background: var(--primary);
+      color: var(--white);
+      transform: translateY(-1px);
+    }
+
+    /* Detail rows (verbatim from index.html .platform-stat-card family) */
+    .platform-stat-detail {
+      width: 100%;
+      padding: 0 1.15rem 1.1rem;
+      margin-top: 0;
+      border-top: 1px solid var(--glass-border);
+    }
+    .platform-stat-detail-row {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.4rem 0;
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+    }
+    .platform-stat-detail-row span:first-child {
+      flex: 1;
+      text-align: start;
+    }
+    .platform-stat-detail-val {
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-primary);
+      min-width: 2ch;
+      text-align: end;
+      display: inline-block;
+      transform-origin: center center;
+    }
+
+    @media (max-width: 768px) {
+      .container { padding: 1rem; margin: 0 auto; }
+      .content { padding: 2rem 1.5rem; }
+      .header, .content h1, .content h2 { text-align: center; }
+      h1 { font-size: 2rem; }
+      h2 { font-size: 1.5rem; }
+      .features-grid {
+        justify-items: stretch;
+        grid-auto-rows: 1fr;
+      }
+      .feature-card {
+        text-align: center;
+        width: 100%;
+        min-width: 0;
+      }
+      .feature-card h3 {
+        font-size: 1.15rem;
+      }
+      .feature-card p {
+        font-size: 0.95rem;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* ===== نظام الأزرار الموحّد (شكل واحد + تباين مقروء) ===== */
+    /* كل الأزرار بزوايا واحدة ووزن خط واحد وارتفاع واحد؛ الحد الشفاف في الزر
+       الممتلئ يجعل ارتفاعه مطابقاً للزر المحدَّد صاحب الإطار 1.5px. */
+    .waitlist-btn, .chat-option-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.65rem 1.2rem;
+      border-radius: 12px;
+      border-width: 1.5px;
+      border-style: solid;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      line-height: 1.25;
+      text-decoration: none;
+    }
+    .waitlist-btn { border-color: transparent; }
+    .waitlist-input { border-radius: 12px; }
+    /* الرابط داخل .content يرث الأزرق، فيختفي نصه فوق الزر الأزرق الممتلئ */
+    .content a.waitlist-btn,
+    .content a.waitlist-btn:hover { color: var(--btn-ink); text-decoration: none; }
+    .waitlist-btn:focus-visible,
+    .chat-option-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+    /* الوضع الداكن: الأبيض فوق الأزرق الفاتح تباينه 3:1 فقط (دون معيار AA)،
+       فحبر الزر الممتلئ داكن (5.5:1)، والزر المحدَّد يأخذ الأزرق الأفتح (4.9:1). */
+    .waitlist-btn, .back-btn, .content a.back-btn { color: var(--btn-ink); }
+    [data-theme="dark"] .chat-option-btn:not(.is-danger),
+    [data-theme="dark"] .content a.chat-option-btn:not(.is-danger) {
+      color: var(--primary-light);
+      border-color: var(--primary-light);
+    }
+    [data-theme="dark"] .chat-option-btn:not(.is-danger):hover,
+    [data-theme="dark"] .content a.chat-option-btn:not(.is-danger):hover,
+    [data-theme="dark"] .chat-option-btn.is-active,
+    [data-theme="dark"] .cal-mode.is-active {
+      background: var(--primary-light);
+      color: var(--btn-ink);
+    }
+    /* ---------- الدردشة: شاشة كاملة بنفس لغة النيومورفيك ---------- */
+    .chat-shell {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 1rem;
+      height: calc(100vh - 52px - 60px - 9rem);
+      min-height: 520px;
+    }
+    .content.chat-card { padding: 1.25rem; }
+    .chat-threads, .chat-pane {
+      display: flex; flex-direction: column; min-height: 0;
+      border-radius: 18px; border: 1px solid var(--glass-border); background: var(--glass);
+      box-shadow: 4px 4px 10px var(--shadow-dark), -4px -4px 10px var(--shadow-light);
+    }
+    .chat-threads-title {
+      padding: 0.9rem 1rem 0.5rem; font-size: 0.8rem; font-weight: 700; letter-spacing: .06em;
+      color: var(--text-secondary); text-transform: uppercase;
+    }
+    .chat-thread-list { overflow-y: auto; padding: 0 0.5rem 0.5rem; display: grid; gap: 0.35rem; align-content: start; }
+    .chat-thread {
+      display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 0.7rem; align-items: center;
+      width: 100%; padding: 0.6rem 0.7rem; border: 0; border-radius: 14px; background: transparent;
+      color: var(--text-secondary); font: inherit; text-align: start; cursor: pointer; transition: all .2s ease;
+    }
+    .chat-thread:hover { background: var(--glass-border); color: var(--text-primary); }
+    .chat-thread.is-active { background: var(--primary); color: var(--btn-ink); box-shadow: 0 6px 18px var(--primary-shadow); }
+    .chat-thread.is-active .chat-thread-sub, .chat-thread.is-active .chat-avatar { color: inherit; opacity: .85; }
+    .chat-avatar {
+      width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+      background: var(--glass-strong); border: 1px solid var(--glass-border); font-weight: 700; font-size: 0.95rem; color: var(--primary);
+    }
+    .chat-thread.is-active .chat-avatar { background: rgba(255,255,255,.2); border-color: transparent; }
+    .chat-thread-name { display: block; font-weight: 600; font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .chat-thread-sub { display: block; font-size: 0.75rem; opacity: .8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .chat-badge {
+      min-width: 22px; height: 22px; padding: 0 .45rem; border-radius: 11px; display: grid; place-items: center;
+      background: var(--error); color: #fff; font-size: 0.72rem; font-weight: 700;
+    }
+    .chat-thread.is-active .chat-badge { background: rgba(255,255,255,.25); }
+
+    .chat-head {
+      display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1.1rem;
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .chat-head-name { font-weight: 700; color: var(--text-primary); }
+    .chat-head-sub { font-size: 0.78rem; color: var(--text-secondary); }
+    .chat-live { margin-inline-start: auto; font-size: 0.75rem; color: var(--text-secondary); display: inline-flex; align-items: center; gap: .35rem; }
+    .chat-live::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--warning); }
+    .chat-live.is-on::before { background: var(--success); }
+
+    .chat-messages { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .chat-day { align-self: center; font-size: 0.72rem; color: var(--text-tertiary); padding: 0.15rem 0.7rem; border-radius: 10px; background: var(--glass-border); margin: 0.4rem 0; }
+    .chat-msg { max-width: min(72%, 640px); display: grid; gap: 0.15rem; }
+    .chat-msg.is-mine { align-self: flex-end; }
+    .chat-msg.is-theirs { align-self: flex-start; }
+    .chat-msg-author { font-size: 0.72rem; color: var(--text-secondary); padding: 0 .4rem; }
+    .chat-bubble {
+      padding: 0.6rem 0.9rem; border-radius: 18px; line-height: 1.6; font-size: 0.95rem;
+      white-space: pre-wrap; overflow-wrap: anywhere; color: var(--text-primary);
+      background: var(--glass-strong); border: 1px solid var(--glass-border);
+    }
+    .chat-msg.is-mine .chat-bubble { background: var(--primary); color: var(--btn-ink); border-color: transparent; }
+    .chat-msg-meta { display: flex; align-items: center; gap: 0.5rem; font-size: 0.7rem; color: var(--text-tertiary); padding: 0 .4rem; }
+    .chat-msg.is-mine .chat-msg-meta { justify-content: flex-end; }
+    .chat-msg-del { border: 0; background: transparent; color: inherit; font: inherit; font-size: 0.7rem; cursor: pointer; opacity: .7; padding: 0; }
+    .chat-msg-del:hover { opacity: 1; text-decoration: underline; }
+    .chat-empty { margin: auto; color: var(--text-tertiary); text-align: center; }
+
+    .chat-compose { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0.6rem; align-items: end; padding: 0.75rem 1rem; border-top: 1px solid var(--glass-border); }
+    .chat-attach { height: 46px; width: 46px; padding: 0; font-size: 1.2rem; }
+    .chat-filebar { display: grid; grid-template-columns: minmax(0, 1fr) minmax(160px, 260px) auto auto; gap: 0.5rem; align-items: center; padding: 0.6rem 1rem; border-top: 1px solid var(--glass-border); background: var(--glass); }
+    .chat-file-name { font-size: 0.85rem; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; direction: ltr; text-align: end; }
+    @media (max-width: 720px) { .chat-filebar { grid-template-columns: 1fr 1fr; } .chat-file-name { grid-column: 1 / -1; } }
+    .chat-files-btn { margin-inline-start: auto; }
+    .chat-files { padding: 0.75rem 1rem; border-bottom: 1px solid var(--glass-border); max-height: 240px; overflow: auto; font-size: 0.85rem; }
+    .chat-files h4 { margin: 0.5rem 0 0.35rem; font-size: 0.8rem; color: var(--text-secondary); }
+    .chat-file-row { display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0; }
+    .chat-file-row .grow { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .chat-file-row small { color: var(--text-tertiary); }
+    .chat-file { display: flex; align-items: center; gap: 0.6rem; }
+    .chat-file-icon { font-size: 1.4rem; }
+    .chat-file-meta { display: flex; flex-direction: column; min-width: 0; }
+    .chat-file-meta strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 260px; direction: ltr; unicode-bidi: isolate; }
+    .chat-file-meta small { opacity: .8; }
+    .chat-file a { color: inherit; text-decoration: underline; font-size: 0.8rem; }
+    .chat-compose textarea { width: 100%; min-width: 0; resize: none; min-height: 46px; max-height: 160px; line-height: 1.5; }
+    .chat-compose .waitlist-btn { white-space: nowrap; height: 46px; }
+
+    @media (max-width: 860px) {
+      .chat-shell { grid-template-columns: 1fr; height: auto; min-height: 0; }
+      .chat-threads { max-height: 220px; }
+      .chat-pane { height: 70vh; min-height: 460px; }
+      .chat-msg { max-width: 88%; }
+    }
+    @media (prefers-reduced-motion: reduce) { .chat-thread, .waitlist-btn, .chat-option-btn { transition: none; } }
+
+    /* أنماط صفحة المستندات (منقولة من صفحتي الاستيراد ولوحة التحكم) */
+    .drop-zone { text-align: center; cursor: pointer; }
+    .drop-zone.is-dragover { border-color: var(--primary); }
+    .drop-zone p { margin-bottom: 0.75rem; }
+    .drop-zone .platform-stat-label { max-width: none; margin-bottom: 0.5rem; }
+    .field-label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.35rem;
+    }
+    .field .waitlist-input { width: 100%; }
+    .stats-block { margin-bottom: 1.5rem; }
+    .filters-row { justify-content: flex-start; margin-bottom: var(--gap); gap: 0.75rem; }
+    .inline-form {
+      background: var(--glass-strong);
+      backdrop-filter: blur(30px) saturate(180%);
+      -webkit-backdrop-filter: blur(30px) saturate(180%);
+      border: 1.5px solid var(--glass-border);
+      border-radius: 14px;
+      box-shadow: 0 8px 24px var(--shadow-dark), 0 3px 8px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(255,255,255,0.1);
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+    .inline-form h3 { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem; }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    .form-field { display: flex; flex-direction: column; gap: 0.25rem; }
+    .form-field > span { font-size: 0.85rem; color: var(--text-secondary); }
+    .form-field .waitlist-input { width: 100%; min-width: 0; }
+    .form-actions { justify-content: flex-start; }
+    .inline-form .waitlist-form { justify-content: flex-start; }
+    .inline-hint { font-size: 0.85rem; margin-bottom: 0.5rem; }
+    .table-wrap { overflow-x: auto; }
+    .items-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .items-table th, .items-table td {
+      text-align: start;
+      padding: 0.6rem 0.5rem;
+      border-bottom: 1px solid var(--glass-border);
+      vertical-align: middle;
+    }
+    .items-table th { color: var(--text-secondary); font-size: 0.82rem; font-weight: 600; white-space: nowrap; }
+    .items-table td { color: var(--text-primary); }
+    .item-title { font-weight: 600; }
+    .row-actions { margin-top: 0; flex-wrap: nowrap; }
+    .row-actions .chat-option-btn { padding: 0.3rem 0.7rem; font-size: 0.8rem; white-space: nowrap; }
+    .status-open { color: var(--primary); font-weight: 600; }
+    .status-overdue { color: var(--error); font-weight: 600; }
+    .status-done { color: var(--success); font-weight: 600; }
+    .status-cancelled { color: var(--text-tertiary); font-weight: 600; }
+    .empty-note { text-align: center; margin: 1rem 0 0; }
+    .drop-zone.is-over { border-color: var(--primary); }
+    .doc-form { margin-top: 1.25rem; }
+  </style>
+</head>
+<body class="has-site-header">
+  <header class="site-header">
+    <div class="menu-btn" id="langMenuBtn">
+      <div class="icon-circle"><span class="icon">🌐</span></div>
+      <div class="menu-text">
+        <div class="menu-label" data-i18n="language">اللغة</div>
+        <div class="menu-value" id="currentLangDisplay">العربية</div>
+      </div>
+      <span class="menu-icon">⋯</span>
+      <div class="menu-dropdown" id="langDropdown">
+        <div class="menu-dropdown-item" data-lang="ar"><span class="checkmark" id="check-ar">✓</span><span>العربية</span></div>
+        <div class="menu-dropdown-item" data-lang="en"><span class="checkmark" id="check-en" style="display:none">✓</span><span>English</span></div>
+        <div class="menu-dropdown-item" data-lang="fr"><span class="checkmark" id="check-fr" style="display:none">✓</span><span>Français</span></div>
+        <div class="menu-dropdown-item" data-lang="ur"><span class="checkmark" id="check-ur" style="display:none">✓</span><span>اردو</span></div>
+      </div>
+    </div>
+    <div class="menu-btn" id="themeMenuBtn">
+      <div class="icon-circle"><span class="icon" id="themeIcon">🌙</span></div>
+      <div class="menu-text">
+        <div class="menu-label" data-i18n="appearance">المظهر</div>
+        <div class="menu-value" id="currentThemeDisplay">داكن</div>
+      </div>
+      <span class="menu-icon">⋯</span>
+      <div class="menu-dropdown" id="themeDropdown">
+        <div class="menu-dropdown-item" data-theme="light"><span class="checkmark" id="check-light" style="display:none">✓</span><span data-i18n="light">فاتح</span></div>
+        <div class="menu-dropdown-item" data-theme="dark"><span class="checkmark" id="check-dark">✓</span><span data-i18n="dark">داكن</span></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="content" id="loadingCard"><p data-i18n="loading">جارٍ التحميل...</p></div>
+    <div class="content" id="unavailableCard" hidden><p data-i18n="unavailable">الخدمة غير متاحة الآن.</p></div>
+    <div class="content" id="noOrgCard" hidden><p data-i18n="noOrg">أنشئ شركتك أولاً من لوحة التحكم ثم عد إلى هنا.</p></div>
+
+    <div id="docsView" hidden>
+      <!-- (1) رفع مستند وفهمه -->
+      <div class="content" id="uploadCard">
+        <h2 data-i18n="docAddTitle">إضافة مستند</h2>
+        <p data-i18n="docAddIntro">ارفع السجل التجاري أو الشهادة الضريبية أو الرخصة أو صحيفة الدعوى أو أي مستند (PDF أو صورة)، وسيقرأه النظام ويستخرج نوعه ورقمه وتاريخ انتهائه ويضيفه للمتابعة والتنبيه تلقائياً.</p>
+        <div class="feature-card drop-zone" id="docDrop" tabindex="0" role="button">
+          <p data-i18n="docDropHint">اسحب المستند هنا أو اختر ملفاً</p>
+          <button type="button" class="waitlist-btn" id="docChooseBtn" data-i18n="docChoose">اختيار ملف</button>
+          <input type="file" id="docFile" accept=".pdf,.png,.jpg,.jpeg,.webp,application/pdf,image/*" hidden>
+        </div>
+        <p class="waitlist-msg" id="docStatus" role="status" aria-live="polite" hidden></p>
+
+        <form id="docForm" class="doc-form" hidden novalidate>
+          <div class="form-grid">
+            <label class="form-field"><span data-i18n="docKind">نوع المستند</span><select class="waitlist-input" id="fKind"></select></label>
+            <label class="form-field"><span data-i18n="docTitleField">العنوان</span><input type="text" class="waitlist-input" id="fTitle" maxlength="300"></label>
+            <label class="form-field"><span data-i18n="docNumber">رقم المستند</span><input type="text" class="waitlist-input" id="fNumber" maxlength="120" dir="ltr"></label>
+            <label class="form-field"><span data-i18n="docIssuer">الجهة المصدرة</span><input type="text" class="waitlist-input" id="fIssuer" maxlength="200"></label>
+            <label class="form-field"><span data-i18n="docParty">الشركة / صاحب المستند</span><input type="text" class="waitlist-input" id="fParty" maxlength="200"></label>
+            <label class="form-field"><span data-i18n="docIssueDate">تاريخ الإصدار</span><input type="date" class="waitlist-input" id="fIssue" dir="ltr"></label>
+            <label class="form-field"><span data-i18n="docExpiry">تاريخ الانتهاء / الاستحقاق</span><input type="date" class="waitlist-input" id="fExpiry" dir="ltr"></label>
+            <label class="form-field"><span data-i18n="docAmount">المبلغ (ر.س)</span><input type="number" class="waitlist-input" id="fAmount" step="0.01" dir="ltr"></label>
+            <label class="form-field"><span data-i18n="docCase">رقم الدعوى</span><input type="text" class="waitlist-input" id="fCase" maxlength="120" dir="ltr"></label>
+            <label class="form-field"><span data-i18n="docCourt">المحكمة</span><input type="text" class="waitlist-input" id="fCourt" maxlength="200"></label>
+          </div>
+          <p class="inline-hint" id="fSummary"></p>
+          <div class="waitlist-form form-actions">
+            <button type="submit" class="waitlist-btn" id="docSaveBtn" data-i18n="docSave">حفظ وإضافة للمتابعة</button>
+            <button type="button" class="chat-option-btn" id="docCancelBtn" data-i18n="cancel">إلغاء</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- (2) المستندات المحفوظة -->
+      <div class="content" id="listCard">
+        <h2 data-i18n="docListTitle">مستندات الشركة</h2>
+        <div class="waitlist-form filters-row">
+          <select class="waitlist-input" id="filterKind"></select>
+          <input type="search" class="waitlist-input" id="filterSearch" placeholder="بحث" data-i18n-placeholder="search" maxlength="120">
+        </div>
+        <div class="table-wrap" id="docsWrap" hidden>
+          <table class="items-table">
+            <thead><tr>
+              <th data-i18n="docKind">نوع المستند</th>
+              <th data-i18n="docTitleField">العنوان</th>
+              <th data-i18n="docNumber">الرقم</th>
+              <th data-i18n="docParty">الشركة</th>
+              <th data-i18n="docExpiry">الانتهاء</th>
+              <th data-i18n="docLeft">المتبقي</th>
+              <th data-i18n="docFiles">الملفات</th>
+              <th data-i18n="actions">الإجراءات</th>
+            </tr></thead>
+            <tbody id="docsBody"></tbody>
+          </table>
+        </div>
+        <p class="empty-note" id="docsEmpty" data-i18n="docsEmpty" hidden>لا مستندات بعد.</p>
+      </div>
+    </div>
+  </div>
+  <footer class="footer">
+    <p class="footer-links">
+      <a href="/about.html" data-i18n="aboutLink">من نحن</a>
+      <a href="/terms.html" data-i18n="termsLink">شروط الاستخدام</a>
+      <a href="/pricing.html" data-i18n="pricingLink">الباقات والأسعار</a>
+      <a href="/privacy.html" data-i18n="privacyLink">سياسة الخصوصية</a>
+      <a href="/login.html" data-i18n="loginLink">تسجيل الدخول</a>
+      <a href="/index.html#contact" data-i18n="contactLink">تواصل معنا</a>
+      <a href="mailto:support@appmails.net" class="footer-social-icon" aria-label="support@appmails.net"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></a>
+    </p>
+    <p class="footer-copyright">
+      <span data-i18n="copyrightLine2">جميع الحقوق محفوظة</span>
+      <span> · <img src="/tracker-logo-full-dark.png?v=2" alt="TheTracker" id="footerLogo" class="brand-logo-inline brand-logo-inline--xs" data-brand-logo-footer style="height:1.3em;width:auto;display:inline-block;vertical-align:-0.35em;max-width:none;"> <span class="footer-year">© 2026</span></span>
+    </p>
+  </footer>
+
+  <script>
+    const translations = {
+      ar: {
+        fCase: "القضية",
+        title: "المستندات",
+        docAddTitle: "إضافة مستند",
+        docAddIntro: "ارفع السجل التجاري أو الشهادة الضريبية أو الرخصة أو صحيفة الدعوى أو أي مستند (PDF أو صورة)، وسيقرأه النظام ويستخرج نوعه ورقمه وتاريخ انتهائه ويضيفه للمتابعة والتنبيه تلقائياً.",
+        docDropHint: "اسحب المستند هنا أو اختر ملفاً",
+        docChoose: "اختيار ملف",
+        docKind: "نوع المستند",
+        docTitleField: "العنوان",
+        docNumber: "رقم المستند",
+        docIssuer: "الجهة المصدرة",
+        docParty: "الشركة / صاحب المستند",
+        docIssueDate: "تاريخ الإصدار",
+        docExpiry: "تاريخ الانتهاء / الاستحقاق",
+        docAmount: "المبلغ (ر.س)",
+        docCase: "رقم الدعوى",
+        docCourt: "المحكمة",
+        docSave: "حفظ وإضافة للمتابعة",
+        docListTitle: "مستندات الشركة",
+        docLeft: "المتبقي",
+        docFiles: "الملفات",
+        docsEmpty: "لا مستندات بعد.",
+        docReading: "جارٍ قراءة المستند...",
+        docOcr: "المستند صورة، جارٍ قراءته بالذكاء الاصطناعي...",
+        docReady: "قرأت المستند — راجع الحقول ثم احفظ.",
+        docFailed: "تعذّر قراءة المستند، جرّب ملفاً أوضح.",
+        docSaving: "جارٍ الحفظ...",
+        docSaved: "حُفظ المستند وأُضيف للمتابعة والتنبيه.",
+        docFileFailed: "حُفظت البيانات لكن تعذّر رفع الملف.",
+        docStorageLimit: "حُفظت البيانات لكن مساحة التخزين في باقتك ممتلئة.",
+        docExpired: "منتهٍ",
+        docDays: "يوماً",
+        docDeleteConfirm: "حذف المستند وملفاته نهائياً؟",
+        allKinds: "كل الأنواع",
+        search: "بحث",
+        actions: "الإجراءات",
+        delete: "حذف",
+        unavailable: "الخدمة غير متاحة الآن.",
+        kind_commercial_register: "سجل تجاري",
+        kind_vat_certificate: "شهادة ضريبية",
+        kind_license: "رخصة",
+        kind_contract: "عقد",
+        kind_case_filing: "صحيفة دعوى / مرفوعات",
+        kind_court_ruling: "حكم قضائي",
+        kind_hearing_notice: "إشعار جلسة",
+        kind_violation: "مخالفة",
+        kind_invoice: "فاتورة",
+        kind_power_of_attorney: "وكالة",
+        kind_id_document: "هوية / إقامة",
+        kind_other: "مستند آخر",
+        intro: "أضف أعضاء فريقك وحدّد أدوارهم، وتابع الدعوات المعلقة.",
+        backBtn: "العودة إلى لوحة التحكم",
+        serviceUnavailableTitle: "الخدمة قيد التجهيز",
+        serviceUnavailableText: "نعمل حالياً على تجهيز الخدمة، حاول مرة أخرى لاحقاً.",
+        noOrg: "لا توجد شركة محددة، أنشئ شركتك أولاً.",
+        noOrgHint: "انتقل إلى لوحة التحكم لإنشاء شركتك ثم عد إلى هذه الصفحة.",
+        loading: "جارٍ التحميل...",
+        loadError: "تعذّر تحميل بيانات الفريق، حاول مرة أخرى.",
+        membersTitle: "أعضاء الفريق",
+        membersEmpty: "لا يوجد أعضاء بعد.",
+        readOnlyNote: "يمكن للمالك والمشرفين فقط إدارة الأعضاء والدعوات.",
+        capacityLimited: "الأعضاء: {used} من {limit}",
+        capacityUnlimited: "الأعضاء: {used} (بلا حد)",
+        capacityPending: "الدعوات المعلقة: {n}",
+        capacityFull: "وصلت إلى الحد الأقصى لعدد الأعضاء في باقتك الحالية.",
+        upgradeLink: "ترقية الباقة",
+        roleOwner: "المالك",
+        roleAdmin: "مشرف",
+        roleMember: "عضو",
+        roleLabel: "الدور",
+        statusInvited: "بانتظار الانضمام",
+        you: "أنت",
+        emailLabel: "البريد الإلكتروني",
+        joinedLabel: "تاريخ الانضمام",
+        changeRoleLabel: "تغيير الدور",
+        removeBtn: "إزالة",
+        confirmRemove: "هل تريد إزالة {name} من الفريق؟",
+        memberRemoved: "تمت إزالة العضو.",
+        roleUpdated: "تم تحديث الدور.",
+        inviteTitle: "دعوة عضو جديد",
+        inviteIntro: "أدخل البريد الإلكتروني للعضو واختر دوره. إن كان مسجّلاً في المنصة وصله تنبيه في جرس التنبيهات فوراً، وينضم إلى الفريق عند فتحه التطبيق. وإن لم يكن مسجّلاً فأرسل له رابط تسجيل الدخول:",
+        copyLinkBtn: "نسخ رابط تسجيل الدخول",
+        linkCopied: "تم نسخ الرابط.",
+        inviteEmailPlaceholder: "بريد العضو الإلكتروني",
+        inviteBtn: "دعوة",
+        lookupTitle: "أو من المسجّلين في المنصة",
+        inviteByEmailTitle: "بالبريد الإلكتروني",
+        lookupBtn: "عرض المستخدمين",
+        lookupPlaceholder: "بريد أو جوال أو رقم مستخدم",
+        lookupNone: "لا يوجد مستخدم مطابق. تستطيع دعوته ببريده مباشرة.",
+        inviteSending: "جارٍ الإضافة...",
+        inviteCreated: "أُضيفت الدعوة لـ {email}، وسينضم تلقائياً عند تسجيل دخوله.",
+        workloadTitle: "توزيع الأعمال",
+        workloadIntro: "اسحب العمل إلى العضو.",
+        rasiTitle: "مصفوفة RASI",
+        rasiIntro: "لكل قضية أو مخالفة أو مهمة: من ينفّذ (R)، من يعتمد ويُساءل (A — واحد فقط)، من يساند (S)، ومن يُبلَّغ (I). اضغط الخلية لتبديل الدور، ويصل صاحبه تنبيه فوراً.",
+        rasiLegendR: "المنفّذ المسؤول",
+        rasiLegendA: "المعتمد والمساءل",
+        rasiLegendS: "المساند",
+        rasiLegendI: "المُبلَّغ",
+        rasiSearch: "ابحث بالعنوان أو الرقم",
+        rasiEmpty: "لا عناصر مفتوحة لعرضها.",
+        rasiItemCol: "العنصر",
+        rasiSaved: "حُفظ الدور.",
+        rasiNoMembers: "أضف أعضاء إلى الفريق أولاً.",
+        quickTitle: "توزيع سريع",
+        quickHint: "اضغط اسم العضو على العنصر: ضغطة واحدة = هو المنفّذ المسؤول (R) وأنت المعتمد (A) تلقائياً، ضغطة ثانية = مساند (S)، ثالثة = إزالة.",
+        rasiShowMatrix: "عرض المصفوفة الكاملة",
+        rasiHideMatrix: "إخفاء المصفوفة",
+        quickAddTitle: "إدخال سريع",
+        quickAddHint: "اكتب المهمة كما تقولها: «جلسة القضية 4521 لشركة الأبراج الأحد 10 صباحاً لأحمد» — يُفهم النوع والموعد والعميل ورقم الدعوى ومن ينفّذ، ويُسجَّل ويُوزَّع بضغطة واحدة.",
+        quickAddBtn: "إضافة",
+        quickAddPh: "اكتب المهمة ومن ينفّذها وموعدها…",
+        quickAddNobody: "بلا منفّذ (أنا لاحقاً)",
+        quickAddParsing: "جارٍ الفهم…",
+        quickAddDone: "سُجّلت «{title}»{who}.",
+        quickAddNoTitle: "لم أفهم مهمة من هذا النص — اكتب عنوانها على الأقل.",
+        quickAddNeedsParent: "لأي قضية أو مخالفة تتبع هذه المهمة؟ — لا مهمة بلا أصل.",
+        quickAddLink: "اربط وسجّل",
+        unassignedTitle: "أعمال بلا صاحب",
+        unassignedEmpty: "كل الأعمال مُسندة.",
+        wlOpen: "جارية",
+        wlOverdue: "متأخرة",
+        wlDone: "منتهية",
+        assignTo: "أسند إلى",
+        assignPick: "اختر عضواً",
+        assignDone: "أُسند العمل إلى {name}.",
+        unassign: "بلا صاحب",
+        noDue: "بلا موعد",
+        chatTitle: "تواصل الفريق",
+        chatThreads: "المحادثات",
+        chatTeam: "الفريق كله",
+        chatTeamHint: "اكتب للكل",
+        chatPrivate: "خاص",
+        chatPlaceholder: "اكتب رسالتك... (Enter للإرسال، Shift+Enter لسطر جديد)",
+        chatSend: "إرسال",
+        chatSendFile: "إرسال الملف",
+        chatCancel: "إلغاء",
+        chatFiles: "📁 الملفات",
+        chatFilesEmpty: "لا ملفات في هذه المحادثة بعد.",
+        chatDownload: "تنزيل",
+        chatFileNoLink: "بلا ربط بقضية",
+        chatFileTooBig: "الملف أكبر من 25 ميغابايت.",
+        chatUploading: "جارٍ رفع الملف…",
+        chatEmpty: "لا رسائل بعد.",
+        chatLoadError: "تعذّر تحميل الرسائل.",
+        chatDelete: "حذف",
+        chatConfirmDelete: "حذف هذه الرسالة؟",
+        chatUnread: "{n} جديدة",
+        chatToday: "اليوم",
+        chatLive: "متصل",
+        chatOffline: "يُعاد الاتصال...",
+        invitationsTitle: "الدعوات المعلقة",
+        invitationsEmpty: "لا توجد دعوات معلقة.",
+        invitedOn: "أُضيفت في {date}",
+        cancelInviteBtn: "إلغاء",
+        confirmCancelInvite: "هل تريد إلغاء دعوة {email}؟",
+        inviteCancelled: "أُلغيت الدعوة.",
+        invalidEmail: "أدخل بريداً إلكترونياً صحيحاً.",
+        alreadyMember: "هذا البريد عضو في الفريق بالفعل.",
+        alreadyInvited: "توجد دعوة معلقة لهذا البريد بالفعل.",
+        notAllowed: "ليست لديك صلاحية لتنفيذ هذا الإجراء.",
+        genericError: "حدث خطأ، حاول مرة أخرى.",
+        planLimitMembers: "وصلت إلى الحد الأقصى لعدد الأعضاء في باقتك الحالية، رقِّ باقتك لإضافة المزيد.",
+        copyrightLine2: "جميع الحقوق محفوظة",
+        aboutLink: "من نحن",
+        termsLink: "شروط الاستخدام",
+        pricingLink: "الباقات والأسعار",
+        privacyLink: "سياسة الخصوصية",
+        loginLink: "تسجيل الدخول",
+        dashboardLink: "لوحة التحكم",
+        contactLink: "تواصل معنا",
+        language: "اللغة",
+        appearance: "المظهر",
+        light: "فاتح",
+        dark: "داكن"
+      },
+      en: {
+        fCase: "Case",
+        title: "Documents",
+        docAddTitle: "Add a document",
+        docAddIntro: "Upload a commercial register, VAT certificate, licence, statement of claim or any document (PDF or image); the system reads it, extracts its type, number and expiry, and adds it to tracking and reminders.",
+        docDropHint: "Drop the document here or choose a file",
+        docChoose: "Choose file",
+        docKind: "Document type",
+        docTitleField: "Title",
+        docNumber: "Document number",
+        docIssuer: "Issuer",
+        docParty: "Company / holder",
+        docIssueDate: "Issue date",
+        docExpiry: "Expiry / due date",
+        docAmount: "Amount (SAR)",
+        docCase: "Case number",
+        docCourt: "Court",
+        docSave: "Save and track",
+        docListTitle: "Company documents",
+        docLeft: "Remaining",
+        docFiles: "Files",
+        docsEmpty: "No documents yet.",
+        docReading: "Reading the document...",
+        docOcr: "Image document — reading it with AI...",
+        docReady: "Document read — review the fields and save.",
+        docFailed: "Could not read the document; try a clearer file.",
+        docSaving: "Saving...",
+        docSaved: "Saved and added to tracking and reminders.",
+        docFileFailed: "Data saved, but the file could not be uploaded.",
+        docStorageLimit: "Data saved, but your plan storage is full.",
+        docExpired: "Expired",
+        docDays: "days",
+        docDeleteConfirm: "Delete this document and its files permanently?",
+        allKinds: "All types",
+        search: "Search",
+        actions: "Actions",
+        delete: "Delete",
+        unavailable: "Service unavailable right now.",
+        kind_commercial_register: "Commercial register",
+        kind_vat_certificate: "VAT certificate",
+        kind_license: "Licence",
+        kind_contract: "Contract",
+        kind_case_filing: "Statement of claim / filing",
+        kind_court_ruling: "Court ruling",
+        kind_hearing_notice: "Hearing notice",
+        kind_violation: "Violation",
+        kind_invoice: "Invoice",
+        kind_power_of_attorney: "Power of attorney",
+        kind_id_document: "ID document",
+        kind_other: "Other document",
+        intro: "Add your team members, set their roles, and follow up on pending invitations.",
+        backBtn: "Back to Dashboard",
+        serviceUnavailableTitle: "Service is being prepared",
+        serviceUnavailableText: "We are setting up the service. Please try again later.",
+        noOrg: "No company selected. Create your company first.",
+        noOrgHint: "Go to the dashboard to create your company, then come back to this page.",
+        loading: "Loading...",
+        loadError: "Could not load the team data. Please try again.",
+        membersTitle: "Team members",
+        membersEmpty: "No members yet.",
+        readOnlyNote: "Only the owner and admins can manage members and invitations.",
+        capacityLimited: "Members: {used} of {limit}",
+        capacityUnlimited: "Members: {used} (unlimited)",
+        capacityPending: "Pending invitations: {n}",
+        capacityFull: "You have reached the member limit of your current plan.",
+        upgradeLink: "Upgrade plan",
+        roleOwner: "Owner",
+        roleAdmin: "Admin",
+        roleMember: "Member",
+        roleLabel: "Role",
+        statusInvited: "Awaiting sign-in",
+        you: "You",
+        emailLabel: "Email",
+        joinedLabel: "Joined on",
+        changeRoleLabel: "Change role",
+        removeBtn: "Remove",
+        confirmRemove: "Remove {name} from the team?",
+        memberRemoved: "Member removed.",
+        roleUpdated: "Role updated.",
+        inviteTitle: "Invite a new member",
+        inviteIntro: "Enter the member's email and choose a role. If they are registered on the platform they get a notification in the bell right away, and they join the team the next time they open the app. Otherwise, send them the sign-in link:",
+        copyLinkBtn: "Copy sign-in link",
+        linkCopied: "Link copied.",
+        inviteEmailPlaceholder: "Member's email address",
+        inviteBtn: "Invite",
+        lookupTitle: "Or from registered users",
+        inviteByEmailTitle: "By email",
+        lookupBtn: "Show users",
+        lookupPlaceholder: "Email, mobile or user number",
+        lookupNone: "No matching user. You can still invite them by email.",
+        inviteSending: "Adding...",
+        inviteCreated: "Invitation added for {email}. They will join automatically when they sign in.",
+        workloadTitle: "Work distribution",
+        workloadIntro: "Drag work onto a member.",
+        rasiTitle: "RASI Matrix",
+        rasiIntro: "For every case, violation or task: who does it (R), who approves and answers for it (A — exactly one), who supports (S), who is kept informed (I). Click a cell to cycle the role; the person is notified instantly.",
+        rasiLegendR: "Responsible",
+        rasiLegendA: "Approver / accountable",
+        rasiLegendS: "Support",
+        rasiLegendI: "Informed",
+        rasiSearch: "Search by title or number",
+        rasiEmpty: "No open items to show.",
+        rasiItemCol: "Item",
+        rasiSaved: "Role saved.",
+        rasiNoMembers: "Add team members first.",
+        quickTitle: "Quick distribution",
+        quickHint: "Tap a member on an item: one tap = Responsible (R) with you as Approver (A) automatically, second tap = Support (S), third = remove.",
+        rasiShowMatrix: "Show the full matrix",
+        rasiHideMatrix: "Hide the matrix",
+        quickAddTitle: "Quick entry",
+        quickAddHint: "Type it the way you would say it: \"Hearing for case 4521, Al-Abraj, Sunday 10 AM, for Ahmad\" — kind, date, client, case number and who does it are understood, recorded and distributed in one tap.",
+        quickAddBtn: "Add",
+        quickAddPh: "Type the task, who does it and when…",
+        quickAddNobody: "No responsible yet",
+        quickAddParsing: "Understanding…",
+        quickAddDone: "Recorded \"{title}\"{who}.",
+        quickAddNoTitle: "I could not read a task from that — at least give it a title.",
+        quickAddNeedsParent: "Which case or violation does this task belong to? — no task stands alone.",
+        quickAddLink: "Link and record",
+        unassignedTitle: "Unassigned work",
+        unassignedEmpty: "All work is assigned.",
+        wlOpen: "Open",
+        wlOverdue: "Overdue",
+        wlDone: "Done",
+        assignTo: "Assign to",
+        assignPick: "Pick a member",
+        assignDone: "Assigned to {name}.",
+        unassign: "Unassigned",
+        noDue: "No due date",
+        chatTitle: "Team chat",
+        chatThreads: "Conversations",
+        chatTeam: "Whole team",
+        chatTeamHint: "Everyone",
+        chatPrivate: "Private",
+        chatPlaceholder: "Write a message... (Enter to send, Shift+Enter for a new line)",
+        chatSend: "Send",
+        chatSendFile: "Send file",
+        chatCancel: "Cancel",
+        chatFiles: "📁 Files",
+        chatFilesEmpty: "No files in this conversation yet.",
+        chatDownload: "Download",
+        chatFileNoLink: "Not linked to a case",
+        chatFileTooBig: "The file exceeds 25 MB.",
+        chatUploading: "Uploading…",
+        chatEmpty: "No messages yet.",
+        chatLoadError: "Could not load messages.",
+        chatDelete: "Delete",
+        chatConfirmDelete: "Delete this message?",
+        chatUnread: "{n} new",
+        chatToday: "Today",
+        chatLive: "Live",
+        chatOffline: "Reconnecting...",
+        invitationsTitle: "Pending invitations",
+        invitationsEmpty: "No pending invitations.",
+        invitedOn: "added on {date}",
+        cancelInviteBtn: "Cancel",
+        confirmCancelInvite: "Cancel the invitation for {email}?",
+        inviteCancelled: "Invitation cancelled.",
+        invalidEmail: "Enter a valid email address.",
+        alreadyMember: "This email already belongs to a team member.",
+        alreadyInvited: "There is already a pending invitation for this email.",
+        notAllowed: "You do not have permission to perform this action.",
+        genericError: "Something went wrong. Please try again.",
+        planLimitMembers: "You have reached the member limit of your current plan. Upgrade to add more.",
+        copyrightLine2: "All rights reserved",
+        aboutLink: "About Us",
+        termsLink: "Terms of Use",
+        pricingLink: "Plans & Pricing",
+        privacyLink: "Privacy Policy",
+        loginLink: "Sign in",
+        dashboardLink: "Dashboard",
+        contactLink: "Contact Us",
+        language: "Language",
+        appearance: "Appearance",
+        light: "Light",
+        dark: "Dark"
+      },
+      fr: {
+        fCase: "Affaire",
+        title: "Documents",
+        docAddTitle: "Ajouter un document",
+        docAddIntro: "Téléversez un registre de commerce, une attestation TVA, une licence, une requête ou tout document (PDF ou image) ; le système le lit, en extrait le type, le numéro et l'échéance, et l'ajoute au suivi et aux rappels.",
+        docDropHint: "Déposez le document ici ou choisissez un fichier",
+        docChoose: "Choisir un fichier",
+        docKind: "Type de document",
+        docTitleField: "Titre",
+        docNumber: "Numéro",
+        docIssuer: "Émetteur",
+        docParty: "Entreprise / titulaire",
+        docIssueDate: "Date d'émission",
+        docExpiry: "Expiration / échéance",
+        docAmount: "Montant (SAR)",
+        docCase: "Numéro de dossier",
+        docCourt: "Tribunal",
+        docSave: "Enregistrer et suivre",
+        docListTitle: "Documents de l'entreprise",
+        docLeft: "Restant",
+        docFiles: "Fichiers",
+        docsEmpty: "Aucun document.",
+        docReading: "Lecture du document...",
+        docOcr: "Document image — lecture par IA...",
+        docReady: "Document lu — vérifiez les champs puis enregistrez.",
+        docFailed: "Lecture impossible ; essayez un fichier plus net.",
+        docSaving: "Enregistrement...",
+        docSaved: "Enregistré et ajouté au suivi.",
+        docFileFailed: "Données enregistrées, mais le fichier n’a pas pu être téléversé.",
+        docStorageLimit: "Données enregistrées, mais le stockage de votre forfait est plein.",
+        docExpired: "Expiré",
+        docDays: "jours",
+        docDeleteConfirm: "Supprimer ce document et ses fichiers ?",
+        allKinds: "Tous les types",
+        search: "Rechercher",
+        actions: "Actions",
+        delete: "Supprimer",
+        unavailable: "Service indisponible.",
+        kind_commercial_register: "Registre de commerce",
+        kind_vat_certificate: "Attestation TVA",
+        kind_license: "Licence",
+        kind_contract: "Contrat",
+        kind_case_filing: "Requête / dépôt",
+        kind_court_ruling: "Jugement",
+        kind_hearing_notice: "Avis d'audience",
+        kind_violation: "Infraction",
+        kind_invoice: "Facture",
+        kind_power_of_attorney: "Procuration",
+        kind_id_document: "Pièce d'identité",
+        kind_other: "Autre document",
+        intro: "Ajoutez les membres de votre équipe, définissez leurs rôles et suivez les invitations en attente.",
+        backBtn: "Retour au tableau de bord",
+        serviceUnavailableTitle: "Service en cours de préparation",
+        serviceUnavailableText: "Nous préparons le service. Veuillez réessayer plus tard.",
+        noOrg: "Aucune entreprise sélectionnée. Créez d'abord votre entreprise.",
+        noOrgHint: "Rendez-vous sur le tableau de bord pour créer votre entreprise, puis revenez sur cette page.",
+        loading: "Chargement...",
+        loadError: "Impossible de charger les données de l'équipe. Veuillez réessayer.",
+        membersTitle: "Membres de l'équipe",
+        membersEmpty: "Aucun membre pour le moment.",
+        readOnlyNote: "Seuls le propriétaire et les administrateurs peuvent gérer les membres et les invitations.",
+        capacityLimited: "Membres : {used} sur {limit}",
+        capacityUnlimited: "Membres : {used} (illimité)",
+        capacityPending: "Invitations en attente : {n}",
+        capacityFull: "Vous avez atteint la limite de membres de votre forfait actuel.",
+        upgradeLink: "Changer de forfait",
+        roleOwner: "Propriétaire",
+        roleAdmin: "Administrateur",
+        roleMember: "Membre",
+        roleLabel: "Rôle",
+        statusInvited: "En attente de connexion",
+        you: "Vous",
+        emailLabel: "E-mail",
+        joinedLabel: "Membre depuis le",
+        changeRoleLabel: "Changer le rôle",
+        removeBtn: "Retirer",
+        confirmRemove: "Retirer {name} de l'équipe ?",
+        memberRemoved: "Membre retiré.",
+        roleUpdated: "Rôle mis à jour.",
+        inviteTitle: "Inviter un nouveau membre",
+        inviteIntro: "Saisissez l'e-mail du membre et choisissez son rôle. S'il est inscrit sur la plateforme, il reçoit aussitôt une notification dans la cloche et rejoint l'équipe à sa prochaine ouverture de l'application. Sinon, envoyez-lui le lien de connexion :",
+        copyLinkBtn: "Copier le lien de connexion",
+        linkCopied: "Lien copié.",
+        inviteEmailPlaceholder: "Adresse e-mail du membre",
+        inviteBtn: "Inviter",
+        lookupTitle: "Ou parmi les utilisateurs inscrits",
+        inviteByEmailTitle: "Par e-mail",
+        lookupBtn: "Afficher les utilisateurs",
+        lookupPlaceholder: "E-mail, mobile ou numéro",
+        lookupNone: "Aucun utilisateur trouvé. Vous pouvez l'inviter par e-mail.",
+        inviteSending: "Ajout en cours...",
+        inviteCreated: "Invitation ajoutée pour {email}. Cette personne rejoindra l'équipe automatiquement lors de sa connexion.",
+        workloadTitle: "Répartition du travail",
+        workloadIntro: "Glissez le travail sur un membre.",
+        rasiTitle: "Matrice RASI",
+        rasiIntro: "Pour chaque affaire, infraction ou tâche : qui exécute (R), qui approuve et répond (A — un seul), qui soutient (S), qui est informé (I). Cliquez une case pour changer le rôle ; la personne est notifiée aussitôt.",
+        rasiLegendR: "Responsable",
+        rasiLegendA: "Approbateur",
+        rasiLegendS: "Soutien",
+        rasiLegendI: "Informé",
+        rasiSearch: "Rechercher par titre ou numéro",
+        rasiEmpty: "Aucun élément ouvert à afficher.",
+        rasiItemCol: "Élément",
+        rasiSaved: "Rôle enregistré.",
+        rasiNoMembers: "Ajoutez d’abord des membres.",
+        quickTitle: "Répartition rapide",
+        quickHint: "Touchez un membre sur un élément : un clic = Responsable (R) et vous Approbateur (A) automatiquement, deuxième clic = Soutien (S), troisième = retirer.",
+        rasiShowMatrix: "Afficher la matrice complète",
+        rasiHideMatrix: "Masquer la matrice",
+        quickAddTitle: "Saisie rapide",
+        quickAddHint: "Écrivez-la comme vous la diriez : « Audience affaire 4521, Al-Abraj, dimanche 10 h, pour Ahmad » — type, date, client, numéro d’affaire et responsable sont compris, enregistrés et répartis en un clic.",
+        quickAddBtn: "Ajouter",
+        quickAddPh: "Tapez la tâche, qui la fait et quand…",
+        quickAddNobody: "Sans responsable",
+        quickAddParsing: "Analyse…",
+        quickAddDone: "« {title} » enregistrée{who}.",
+        quickAddNoTitle: "Aucune tâche lisible dans ce texte — donnez au moins un titre.",
+        quickAddNeedsParent: "À quelle affaire ou infraction cette tâche appartient-elle ? — aucune tâche isolée.",
+        quickAddLink: "Lier et enregistrer",
+        unassignedTitle: "Travail non attribué",
+        unassignedEmpty: "Tout le travail est attribué.",
+        wlOpen: "En cours",
+        wlOverdue: "En retard",
+        wlDone: "Terminé",
+        assignTo: "Attribuer à",
+        assignPick: "Choisir un membre",
+        assignDone: "Attribué à {name}.",
+        unassign: "Non attribué",
+        noDue: "Sans échéance",
+        chatTitle: "Discussion d'équipe",
+        chatThreads: "Conversations",
+        chatTeam: "Toute l'équipe",
+        chatTeamHint: "À tous",
+        chatPrivate: "Privé",
+        chatPlaceholder: "Écrivez un message... (Entrée pour envoyer, Maj+Entrée pour une nouvelle ligne)",
+        chatSend: "Envoyer",
+        chatSendFile: "Envoyer le fichier",
+        chatCancel: "Annuler",
+        chatFiles: "📁 Fichiers",
+        chatFilesEmpty: "Aucun fichier dans cette conversation.",
+        chatDownload: "Télécharger",
+        chatFileNoLink: "Sans lien avec une affaire",
+        chatFileTooBig: "Le fichier dépasse 25 Mo.",
+        chatUploading: "Envoi…",
+        chatEmpty: "Aucun message.",
+        chatLoadError: "Impossible de charger les messages.",
+        chatDelete: "Supprimer",
+        chatConfirmDelete: "Supprimer ce message ?",
+        chatUnread: "{n} nouveau(x)",
+        chatToday: "Aujourd'hui",
+        chatLive: "En direct",
+        chatOffline: "Reconnexion...",
+        invitationsTitle: "Invitations en attente",
+        invitationsEmpty: "Aucune invitation en attente.",
+        invitedOn: "ajoutée le {date}",
+        cancelInviteBtn: "Annuler",
+        confirmCancelInvite: "Annuler l'invitation de {email} ?",
+        inviteCancelled: "Invitation annulée.",
+        invalidEmail: "Saisissez une adresse e-mail valide.",
+        alreadyMember: "Cette adresse appartient déjà à un membre de l'équipe.",
+        alreadyInvited: "Une invitation est déjà en attente pour cette adresse.",
+        notAllowed: "Vous n'avez pas l'autorisation d'effectuer cette action.",
+        genericError: "Une erreur est survenue. Veuillez réessayer.",
+        planLimitMembers: "Vous avez atteint la limite de membres de votre forfait actuel. Passez à un forfait supérieur pour en ajouter.",
+        copyrightLine2: "Tous droits réservés",
+        aboutLink: "À propos",
+        termsLink: "Conditions d'utilisation",
+        pricingLink: "Forfaits et tarifs",
+        privacyLink: "Politique de confidentialité",
+        loginLink: "Connexion",
+        dashboardLink: "Tableau de bord",
+        contactLink: "Contactez-nous",
+        language: "Langue",
+        appearance: "Apparence",
+        light: "Clair",
+        dark: "Sombre"
+      },
+      ur: {
+        fCase: "مقدمہ",
+        title: "دستاویزات",
+        docAddTitle: "دستاویز شامل کریں",
+        docAddIntro: "کمرشل رجسٹر، ٹیکس سرٹیفکیٹ، لائسنس، دعویٰ یا کوئی بھی دستاویز (PDF یا تصویر) اپ لوڈ کریں؛ نظام اسے پڑھ کر قسم، نمبر اور میعاد نکالتا ہے اور ٹریکنگ و یاد دہانی میں شامل کرتا ہے۔",
+        docDropHint: "دستاویز یہاں ڈالیں یا فائل چنیں",
+        docChoose: "فائل چنیں",
+        docKind: "دستاویز کی قسم",
+        docTitleField: "عنوان",
+        docNumber: "دستاویز نمبر",
+        docIssuer: "جاری کنندہ",
+        docParty: "کمپنی / مالک",
+        docIssueDate: "اجرا کی تاریخ",
+        docExpiry: "میعاد / مقررہ تاریخ",
+        docAmount: "رقم (ریال)",
+        docCase: "مقدمہ نمبر",
+        docCourt: "عدالت",
+        docSave: "محفوظ کریں اور ٹریک کریں",
+        docListTitle: "کمپنی کی دستاویزات",
+        docLeft: "باقی",
+        docFiles: "فائلیں",
+        docsEmpty: "ابھی کوئی دستاویز نہیں۔",
+        docReading: "دستاویز پڑھی جا رہی ہے...",
+        docOcr: "تصویری دستاویز — AI سے پڑھی جا رہی ہے...",
+        docReady: "پڑھ لی گئی — خانے جانچ کر محفوظ کریں۔",
+        docFailed: "پڑھی نہیں جا سکی؛ واضح فائل آزمائیں۔",
+        docSaving: "محفوظ ہو رہا ہے...",
+        docSaved: "محفوظ ہو کر ٹریکنگ میں شامل ہو گئی۔",
+        docFileFailed: "ڈیٹا محفوظ ہوا مگر فائل اپ لوڈ نہیں ہو سکی۔",
+        docStorageLimit: "ڈیٹا محفوظ ہوا مگر پیکج کی اسٹوریج بھر گئی۔",
+        docExpired: "ختم",
+        docDays: "دن",
+        docDeleteConfirm: "دستاویز اور فائلیں مستقل حذف کریں؟",
+        allKinds: "تمام اقسام",
+        search: "تلاش",
+        actions: "کارروائیاں",
+        delete: "حذف",
+        unavailable: "خدمت دستیاب نہیں۔",
+        kind_commercial_register: "کمرشل رجسٹر",
+        kind_vat_certificate: "ٹیکس سرٹیفکیٹ",
+        kind_license: "لائسنس",
+        kind_contract: "معاہدہ",
+        kind_case_filing: "دعویٰ / دستاویزات",
+        kind_court_ruling: "عدالتی فیصلہ",
+        kind_hearing_notice: "سماعت کا نوٹس",
+        kind_violation: "خلاف ورزی",
+        kind_invoice: "انوائس",
+        kind_power_of_attorney: "مختار نامہ",
+        kind_id_document: "شناختی دستاویز",
+        kind_other: "دیگر دستاویز",
+        intro: "اپنی ٹیم کے اراکین شامل کریں، ان کے کردار طے کریں اور زیرِ التوا دعوتوں پر نظر رکھیں۔",
+        backBtn: "ڈیش بورڈ پر واپس جائیں",
+        serviceUnavailableTitle: "سروس تیار کی جا رہی ہے",
+        serviceUnavailableText: "ہم سروس تیار کر رہے ہیں، براہ کرم بعد میں دوبارہ کوشش کریں۔",
+        noOrg: "کوئی کمپنی منتخب نہیں، پہلے اپنی کمپنی بنائیں۔",
+        noOrgHint: "اپنی کمپنی بنانے کے لیے ڈیش بورڈ پر جائیں، پھر اس صفحے پر واپس آئیں۔",
+        loading: "لوڈ ہو رہا ہے...",
+        loadError: "ٹیم کا ڈیٹا لوڈ نہیں ہو سکا، براہ کرم دوبارہ کوشش کریں۔",
+        membersTitle: "ٹیم کے اراکین",
+        membersEmpty: "ابھی کوئی رکن نہیں ہے۔",
+        readOnlyNote: "صرف مالک اور منتظمین اراکین اور دعوتوں کا انتظام کر سکتے ہیں۔",
+        capacityLimited: "اراکین: {limit} میں سے {used}",
+        capacityUnlimited: "اراکین: {used} (لامحدود)",
+        capacityPending: "زیرِ التوا دعوتیں: {n}",
+        capacityFull: "آپ اپنے موجودہ پلان میں اراکین کی حد تک پہنچ چکے ہیں۔",
+        upgradeLink: "پلان اپ گریڈ کریں",
+        roleOwner: "مالک",
+        roleAdmin: "منتظم",
+        roleMember: "رکن",
+        roleLabel: "کردار",
+        statusInvited: "سائن ان کا انتظار",
+        you: "آپ",
+        emailLabel: "ای میل",
+        joinedLabel: "شمولیت کی تاریخ",
+        changeRoleLabel: "کردار تبدیل کریں",
+        removeBtn: "ہٹائیں",
+        confirmRemove: "کیا آپ {name} کو ٹیم سے ہٹانا چاہتے ہیں؟",
+        memberRemoved: "رکن ہٹا دیا گیا۔",
+        roleUpdated: "کردار اپ ڈیٹ ہو گیا۔",
+        inviteTitle: "نئے رکن کو دعوت دیں",
+        inviteIntro: "رکن کا ای میل درج کریں اور اس کا کردار منتخب کریں۔ اگر وہ پلیٹ فارم پر رجسٹرڈ ہے تو اسے فوراً بیل میں اطلاع ملے گی، اور ایپ کھولتے ہی ٹیم میں شامل ہو جائے گا۔ ورنہ اسے سائن اِن لنک بھیجیں:",
+        copyLinkBtn: "سائن ان لنک کاپی کریں",
+        linkCopied: "لنک کاپی ہو گیا۔",
+        inviteEmailPlaceholder: "رکن کا ای میل ایڈریس",
+        inviteBtn: "دعوت دیں",
+        lookupTitle: "یا رجسٹرڈ صارفین میں سے",
+        inviteByEmailTitle: "ای میل سے",
+        lookupBtn: "صارفین دکھائیں",
+        lookupPlaceholder: "ای میل، موبائل یا صارف نمبر",
+        lookupNone: "کوئی صارف نہیں ملا۔ آپ ای میل سے دعوت دے سکتے ہیں۔",
+        inviteSending: "شامل کیا جا رہا ہے...",
+        inviteCreated: "{email} کے لیے دعوت شامل کر دی گئی، سائن ان کرتے ہی وہ خود بخود شامل ہو جائے گا۔",
+        workloadTitle: "کام کی تقسیم",
+        workloadIntro: "کام کو رکن پر گھسیٹیں۔",
+        rasiTitle: "RASI میٹرکس",
+        rasiIntro: "ہر مقدمے، خلاف ورزی یا کام کے لیے: کون کرتا ہے (R)، کون منظور اور جواب دہ ہے (A — صرف ایک)، کون معاونت کرتا ہے (S)، کسے مطلع رکھا جائے (I)۔ کردار بدلنے کے لیے خانہ دبائیں؛ متعلقہ شخص کو فوراً اطلاع ملتی ہے۔",
+        rasiLegendR: "ذمہ دار",
+        rasiLegendA: "منظور کنندہ",
+        rasiLegendS: "معاون",
+        rasiLegendI: "مطلع",
+        rasiSearch: "عنوان یا نمبر سے تلاش",
+        rasiEmpty: "دکھانے کے لیے کوئی کھلا آئٹم نہیں۔",
+        rasiItemCol: "آئٹم",
+        rasiSaved: "کردار محفوظ ہو گیا۔",
+        rasiNoMembers: "پہلے ٹیم میں ارکان شامل کریں۔",
+        quickTitle: "فوری تقسیم",
+        quickHint: "آئٹم پر رکن کا نام دبائیں: ایک بار = ذمہ دار (R) اور آپ خود بخود منظور کنندہ (A)، دوسری بار = معاون (S)، تیسری بار = ہٹائیں۔",
+        rasiShowMatrix: "مکمل میٹرکس دکھائیں",
+        rasiHideMatrix: "میٹرکس چھپائیں",
+        quickAddTitle: "فوری اندراج",
+        quickAddHint: "جیسے آپ کہتے ہیں ویسے لکھیں: «مقدمہ 4521 کی سماعت، الابراج، اتوار 10 بجے، احمد کے لیے» — قسم، تاریخ، کلائنٹ، مقدمہ نمبر اور ذمہ دار سمجھ کر ایک ہی بار میں درج اور تقسیم ہو جاتا ہے۔",
+        quickAddBtn: "شامل کریں",
+        quickAddPh: "کام، ذمہ دار اور وقت لکھیں…",
+        quickAddNobody: "ابھی کوئی ذمہ دار نہیں",
+        quickAddParsing: "سمجھ رہا ہوں…",
+        quickAddDone: "«{title}» درج ہو گیا{who}۔",
+        quickAddNoTitle: "اس متن سے کوئی کام سمجھ نہیں آیا — کم از کم عنوان لکھیں۔",
+        quickAddNeedsParent: "یہ کام کس مقدمے یا خلاف ورزی سے متعلق ہے؟ — کوئی کام الگ نہیں۔",
+        quickAddLink: "منسلک کریں اور درج کریں",
+        unassignedTitle: "بغیر ذمہ دار کام",
+        unassignedEmpty: "تمام کام تفویض ہو چکے ہیں۔",
+        wlOpen: "جاری",
+        wlOverdue: "تاخیر شدہ",
+        wlDone: "مکمل",
+        assignTo: "تفویض کریں",
+        assignPick: "رکن منتخب کریں",
+        assignDone: "{name} کے سپرد کر دیا گیا۔",
+        unassign: "بغیر ذمہ دار",
+        noDue: "کوئی تاریخ نہیں",
+        chatTitle: "ٹیم رابطہ",
+        chatThreads: "گفتگوئیں",
+        chatTeam: "پوری ٹیم",
+        chatTeamHint: "سب کو",
+        chatPrivate: "نجی",
+        chatPlaceholder: "پیغام لکھیں... (Enter بھیجنے کے لیے، Shift+Enter نئی سطر)",
+        chatSend: "بھیجیں",
+        chatSendFile: "فائل بھیجیں",
+        chatCancel: "منسوخ",
+        chatFiles: "📁 فائلیں",
+        chatFilesEmpty: "اس گفتگو میں ابھی کوئی فائل نہیں۔",
+        chatDownload: "ڈاؤن لوڈ",
+        chatFileNoLink: "کسی مقدمے سے منسلک نہیں",
+        chatFileTooBig: "فائل 25 MB سے بڑی ہے۔",
+        chatUploading: "اپ لوڈ ہو رہی ہے…",
+        chatEmpty: "ابھی کوئی پیغام نہیں۔",
+        chatLoadError: "پیغامات لوڈ نہیں ہو سکے۔",
+        chatDelete: "حذف کریں",
+        chatConfirmDelete: "یہ پیغام حذف کریں؟",
+        chatUnread: "{n} نئے",
+        chatToday: "آج",
+        chatLive: "لائیو",
+        chatOffline: "دوبارہ جوڑا جا رہا ہے...",
+        invitationsTitle: "زیرِ التوا دعوتیں",
+        invitationsEmpty: "کوئی زیرِ التوا دعوت نہیں۔",
+        invitedOn: "شامل کی گئی: {date}",
+        cancelInviteBtn: "منسوخ کریں",
+        confirmCancelInvite: "کیا آپ {email} کی دعوت منسوخ کرنا چاہتے ہیں؟",
+        inviteCancelled: "دعوت منسوخ کر دی گئی۔",
+        invalidEmail: "درست ای میل ایڈریس درج کریں۔",
+        alreadyMember: "یہ ای میل پہلے ہی ٹیم کے ایک رکن کا ہے۔",
+        alreadyInvited: "اس ای میل کے لیے پہلے ہی ایک دعوت زیرِ التوا ہے۔",
+        notAllowed: "آپ کو یہ کارروائی کرنے کی اجازت نہیں ہے۔",
+        genericError: "کچھ غلط ہو گیا، براہ کرم دوبارہ کوشش کریں۔",
+        planLimitMembers: "آپ اپنے موجودہ پلان میں اراکین کی حد تک پہنچ چکے ہیں، مزید شامل کرنے کے لیے پلان اپ گریڈ کریں۔",
+        copyrightLine2: "جملہ حقوق محفوظ ہیں",
+        aboutLink: "ہمارے بارے میں",
+        termsLink: "استعمال کی شرائط",
+        pricingLink: "پلانز اور قیمتیں",
+        privacyLink: "رازداری کی پالیسی",
+        loginLink: "سائن ان",
+        dashboardLink: "ڈیش بورڈ",
+        contactLink: "ہم سے رابطہ کریں",
+        language: "زبان",
+        appearance: "ظہور",
+        light: "روشن",
+        dark: "اندھیرا"
+      }
+    };
+
+    const lang = () => localStorage.getItem("tracker_lang") || "ar";
+    const theme = () => localStorage.getItem("tracker_theme") || "dark";
+    const langNames = { ar: "العربية", en: "English", fr: "Français", ur: "اردو" };
+    let l = lang();
+    document.documentElement.lang = l;
+    document.documentElement.dir = (l === "ar" || l === "ur") ? "rtl" : "ltr";
+
+    const placeholderKeys = { inviteEmail: "inviteEmailPlaceholder", chatInput: "chatPlaceholder" };
+    const ariaKeys = { inviteRole: "roleLabel" };
+    function applyPlaceholders(code) {
+      const dict = translations[code] || translations.ar;
+      Object.keys(placeholderKeys).forEach(id => {
+        const el = document.getElementById(id);
+        if (el && dict[placeholderKeys[id]]) el.placeholder = dict[placeholderKeys[id]];
+      });
+      Object.keys(ariaKeys).forEach(id => {
+        const el = document.getElementById(id);
+        if (el && dict[ariaKeys[id]]) el.setAttribute("aria-label", dict[ariaKeys[id]]);
+      });
+    }
+
+    function setLang(code) {
+      localStorage.setItem("tracker_lang", code);
+      l = code;
+      document.documentElement.lang = code;
+      document.documentElement.dir = (code === "ar" || code === "ur") ? "rtl" : "ltr";
+      document.getElementById("currentLangDisplay").textContent = langNames[code] || code;
+      ["ar","en","fr","ur"].forEach(c => {
+        const el = document.getElementById("check-" + c);
+        if (el) el.style.display = c === code ? "inline" : "none";
+      });
+      const th = theme();
+      document.getElementById("currentThemeDisplay").textContent = translations[code][th === "dark" ? "dark" : "light"];
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const k = el.dataset.i18n;
+        if (translations[code] && translations[code][k]) el.innerHTML = translations[code][k];
+      });
+      applyPlaceholders(code);
+      document.title = (translations[code] && translations[code].title ? translations[code].title : "Team") + " | TheTracker";
+      if (typeof window.__trackerAuthRefresh === "function") window.__trackerAuthRefresh();
+      if (typeof window.__teamRender === "function") window.__teamRender();
+      if (typeof window.__chatRender === "function") window.__chatRender();
+    }
+
+    function setTheme(th) {
+      localStorage.setItem("tracker_theme", th);
+      document.documentElement.dataset.theme = th;
+      const meta = document.getElementById("themeColorMeta");
+      if (meta) meta.content = th === "dark" ? "#1a2933" : "#0068b8";
+      const logo = document.getElementById("footerLogo");
+      if (logo) logo.src = th === "dark" ? "/tracker-logo-full-dark.png?v=2" : "/tracker-logo-full-light.png?v=2";
+      document.getElementById("themeIcon").textContent = th === "dark" ? "🌙" : "☀️";
+      document.getElementById("currentThemeDisplay").textContent = translations[l][th === "dark" ? "dark" : "light"];
+      document.getElementById("check-light").style.display = th === "light" ? "inline" : "none";
+      document.getElementById("check-dark").style.display = th === "dark" ? "inline" : "none";
+    }
+
+    document.getElementById("langMenuBtn").addEventListener("click", e => {
+      e.stopPropagation();
+      document.getElementById("langDropdown").classList.toggle("show");
+      document.getElementById("themeDropdown").classList.remove("show");
+    });
+    // زر المظهر يبدّل الثيم مباشرةً بضغطة واحدة بلا قائمة (طلب المهندس رعد)
+    document.getElementById("themeMenuBtn").addEventListener("click", e => {
+      e.stopPropagation();
+      setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+      document.getElementById("langDropdown").classList.remove("show");
+    });
+    document.addEventListener("click", () => {
+      document.getElementById("langDropdown").classList.remove("show");
+      document.getElementById("themeDropdown").classList.remove("show");
+    });
+
+    document.querySelectorAll("#langDropdown .menu-dropdown-item").forEach(item => {
+      item.addEventListener("click", () => setLang(item.dataset.lang));
+    });
+    document.querySelectorAll("#themeDropdown .menu-dropdown-item").forEach(item => {
+      item.addEventListener("click", () => {
+        setTheme(item.dataset.theme);
+        document.getElementById("themeDropdown").classList.remove("show");
+      });
+    });
+
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+      const k = el.dataset.i18n;
+      if (translations[l] && translations[l][k]) el.textContent = translations[l][k];
+    });
+    applyPlaceholders(l);
+    document.getElementById("currentLangDisplay").textContent = langNames[l] || l;
+    ["ar","en","fr","ur"].forEach(c => {
+      const el = document.getElementById("check-" + c);
+      if (el) el.style.display = l === c ? "inline" : "none";
+    });
+    document.title = (translations[l] && translations[l].title ? translations[l].title : "Team") + " | TheTracker";
+
+    (function() {
+      const th = theme();
+      document.documentElement.dataset.theme = th;
+      const meta = document.getElementById("themeColorMeta");
+      if (meta) meta.content = th === "dark" ? "#1a2933" : "#0068b8";
+      const logo = document.getElementById("footerLogo");
+      if (logo) logo.src = th === "dark" ? "/tracker-logo-full-dark.png?v=2" : "/tracker-logo-full-light.png?v=2";
+      document.getElementById("themeIcon").textContent = th === "dark" ? "🌙" : "☀️";
+      document.getElementById("currentThemeDisplay").textContent = translations[l][th === "dark" ? "dark" : "light"];
+      document.getElementById("check-light").style.display = th === "light" ? "inline" : "none";
+      document.getElementById("check-dark").style.display = th === "dark" ? "inline" : "none";
+    })();
+  </script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js", { scope: "/", updateViaCache: "none" }).catch(() => {});
+      });
+    }
+  </script>
+  <script>
+    (function () {
+      "use strict";
+      var app = null;
+      var state = { items: [], attachments: {}, file: null, fields: null, tracker: null, kind: "", search: "" };
+      var PDF_SRC = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+      var PDF_WORKER = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      var KINDS = ["commercial_register","vat_certificate","license","contract","case_filing","court_ruling","hearing_notice","violation","invoice","power_of_attorney","id_document","other"];
+      var TRACKER_NAME = { ar: "المستندات", en: "Documents", fr: "Documents", ur: "دستاویزات" };
+
+      function $(id) { return document.getElementById(id); }
+      function t(key) { if (app && app.t) return app.t(key); var d = translations[lang()] || translations.ar; return d[key] || translations.ar[key] || key; }
+      function esc(s) { return app && app.escapeHtml ? app.escapeHtml(s) : String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]; }); }
+      function show(id, on) { var el = $(id); if (el) el.hidden = !on; }
+      function setStatus(text, kind) { var el = $("docStatus"); el.textContent = text || ""; el.className = "waitlist-msg" + (kind ? " " + kind : ""); el.hidden = !text; }
+      function kindLabel(k) { return t("kind_" + (KINDS.indexOf(k) !== -1 ? k : "other")); }
+
+      /* ---------- قراءة الملف ---------- */
+      function loadScript(src) {
+        return new Promise(function (resolve, reject) {
+          if (window.pdfjsLib) { resolve(); return; }
+          var s = document.createElement("script"); s.src = src; s.onload = resolve; s.onerror = reject; document.head.appendChild(s);
+        });
+      }
+      function fileToBase64(file) {
+        return new Promise(function (resolve, reject) {
+          var r = new FileReader(); r.onload = function () { resolve(String(r.result)); }; r.onerror = reject; r.readAsDataURL(file);
+        });
+      }
+      function pdfToText(file) {
+        return loadScript(PDF_SRC).then(function () {
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDF_WORKER;
+          return file.arrayBuffer();
+        }).then(function (buf) {
+          return window.pdfjsLib.getDocument({ data: buf }).promise;
+        }).then(function (pdf) {
+          var pages = Math.min(pdf.numPages, 6), chain = Promise.resolve(""), text = "";
+          for (var p = 1; p <= pages; p++) {
+            (function (n) {
+              chain = chain.then(function () { return pdf.getPage(n); })
+                .then(function (page) { return page.getTextContent(); })
+                .then(function (tc) { text += tc.items.map(function (i) { return i.str; }).join(" ") + "\n"; });
+            })(p);
+          }
+          return chain.then(function () { return { text: text.trim(), pdf: pdf }; });
+        });
+      }
+      function pdfFirstPageImage(pdf) {
+        return pdf.getPage(1).then(function (page) {
+          var vp = page.getViewport({ scale: 1.6 });
+          var canvas = document.createElement("canvas"); canvas.width = vp.width; canvas.height = vp.height;
+          return page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise.then(function () {
+            return canvas.toDataURL("image/jpeg", 0.85);
+          });
+        });
+      }
+
+      function analyze(payload) {
+        return fetch("/api/documents/analyze", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
+          .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error || "analyze"); return d.fields; }); });
+      }
+
+      function handleFile(file) {
+        if (!file) return;
+        state.file = file;
+        show("docForm", false);
+        setStatus(t("docReading"));
+        var isPdf = /pdf$/i.test(file.name) || file.type === "application/pdf";
+        var work = isPdf
+          ? pdfToText(file).then(function (r) {
+              if (r.text.length >= 60) return analyze({ text: r.text });
+              setStatus(t("docOcr"));
+              return pdfFirstPageImage(r.pdf).then(function (img) { return analyze({ image: img }); });
+            })
+          : fileToBase64(file).then(function (img) { setStatus(t("docOcr")); return analyze({ image: img }); });
+        work.then(function (fields) {
+          state.fields = fields;
+          fillForm(fields);
+          setStatus(t("docReady"), "success");
+          show("docForm", true);
+        }).catch(function () { setStatus(t("docFailed"), "error"); });
+      }
+
+      function fillForm(f) {
+        $("fKind").value = KINDS.indexOf(f.kind) !== -1 ? f.kind : "other";
+        $("fTitle").value = f.title || (f.number ? kindLabel(f.kind) + " " + f.number : kindLabel(f.kind));
+        $("fNumber").value = f.number || "";
+        $("fIssuer").value = f.issuer || "";
+        $("fParty").value = f.party || "";
+        $("fIssue").value = f.issue_date || "";
+        $("fExpiry").value = f.expiry_date || "";
+        $("fAmount").value = f.amount != null ? f.amount : "";
+        $("fCase").value = f.case_number || "";
+        $("fCourt").value = f.court || "";
+        $("fSummary").textContent = f.summary || "";
+      }
+
+      /* ---------- الحفظ: عنصر متابَع + مرفق ---------- */
+      function ensureTracker() {
+        if (state.tracker) return Promise.resolve(state.tracker);
+        return app.listTrackers().then(function (list) {
+          var names = Object.keys(TRACKER_NAME).map(function (k) { return TRACKER_NAME[k]; });
+          var found = (list || []).filter(function (tr) { return names.indexOf(tr.name) !== -1; })[0];
+          if (found) { state.tracker = found; return found; }
+          return app.createTracker({ name: TRACKER_NAME[lang()] || TRACKER_NAME.ar }).then(function (tr) { state.tracker = tr; return tr; });
+        });
+      }
+
+      function save(ev) {
+        ev.preventDefault();
+        if (!state.file) return;
+        var btn = $("docSaveBtn"); btn.disabled = true;
+        setStatus(t("docSaving"));
+        var kind = $("fKind").value;
+        var expiry = $("fExpiry").value ? new Date($("fExpiry").value + "T09:00:00").toISOString() : null;
+        var amount = parseFloat($("fAmount").value); if (!isFinite(amount)) amount = null;
+        ensureTracker().then(function (tr) {
+          var row = {
+            tracker_id: tr.id,
+            title: String($("fTitle").value || "").trim() || kindLabel(kind),
+            due_at: expiry,
+            status: "open",
+            category: kindLabel(kind),
+            amount: amount,
+            client_name: String($("fParty").value || "").trim() || null,
+            case_number: String($("fCase").value || "").trim() || null,
+            data: {
+              document_kind: kind,
+              number: String($("fNumber").value || "").trim() || null,
+              issuer: String($("fIssuer").value || "").trim() || null,
+              issue_date: $("fIssue").value || null,
+              court: String($("fCourt").value || "").trim() || null,
+              summary: $("fSummary").textContent || null
+            }
+          };
+          return app.insertItems([row]);
+        }).then(function (inserted) {
+          var id = inserted && inserted[0] && inserted[0].id;
+          if (!id) throw new Error("insert");
+          return app.uploadAttachment(id, state.file).catch(function (err) {
+            var code = String((err && (err.message || err.code)) || "");
+            setStatus(code.indexOf("PLAN_LIMIT_STORAGE") !== -1 ? t("docStorageLimit") : t("docFileFailed"), "error");
+            return null;
+          });
+        }).then(function () {
+          setStatus(t("docSaved"), "success");
+          show("docForm", false);
+          state.file = null; $("docFile").value = "";
+          return loadDocs();
+        }).catch(function () { setStatus(t("docFailed"), "error"); })
+          .finally(function () { btn.disabled = false; });
+      }
+
+      /* ---------- القائمة ---------- */
+      function daysLeft(iso) {
+        if (!iso) return null;
+        return Math.ceil((new Date(iso).getTime() - Date.now()) / 86400000);
+      }
+      function render() {
+        var rows = state.items.filter(function (it) {
+          var d = it.data || {};
+          if (state.kind && d.document_kind !== state.kind) return false;
+          if (state.search) {
+            var hay = ((it.title || "") + " " + (d.number || "") + " " + (it.client_name || "")).toLowerCase();
+            if (hay.indexOf(state.search.toLowerCase()) === -1) return false;
+          }
+          return true;
+        });
+        var body = $("docsBody"); body.innerHTML = "";
+        show("docsWrap", rows.length > 0); show("docsEmpty", rows.length === 0);
+        rows.forEach(function (it) {
+          var d = it.data || {}; var left = daysLeft(it.due_at);
+          var leftText = left == null ? "-" : (left < 0 ? t("docExpired") : (left + " " + t("docDays")));
+          var cls = left == null ? "" : (left < 0 ? "status-overdue" : (left <= 30 ? "status-open" : ""));
+          var files = state.attachments[it.id] || [];
+          var tr = document.createElement("tr");
+          tr.innerHTML =
+            "<td>" + esc(kindLabel(d.document_kind)) + "</td>" +
+            '<td><span class="item-title">' + esc(it.title) + "</span></td>" +
+            '<td dir="ltr">' + esc(d.number || "-") + "</td>" +
+            "<td>" + esc(it.client_name || "-") + "</td>" +
+            "<td>" + (it.due_at ? esc(app.fmtDate(it.due_at)) : "-") + "</td>" +
+            '<td><span class="' + cls + '">' + esc(leftText) + "</span></td>" +
+            "<td>" + files.map(function (a) { return '<a href="#" data-open="' + esc(a.id) + '">' + esc(a.name) + "</a>"; }).join("<br>") + "</td>" +
+            '<td><div class="chat-options row-actions">' +
+              '<button type="button" class="chat-option-btn is-danger" data-del="' + esc(it.id) + '">' + esc(t("delete")) + "</button>" +
+            "</div></td>";
+          body.appendChild(tr);
+        });
+      }
+      function loadDocs() {
+        return Promise.all([app.listItems({}), app.listAttachments(null)]).then(function (res) {
+          state.items = (res[0] || []).filter(function (it) { return it.data && it.data.document_kind; });
+          state.attachments = {};
+          (res[1] || []).forEach(function (a) { if (a.item_id) (state.attachments[a.item_id] = state.attachments[a.item_id] || []).push(a); });
+          render();
+        });
+      }
+
+      function renderKindSelects() {
+        var opts = KINDS.map(function (k) { return '<option value="' + k + '">' + esc(kindLabel(k)) + "</option>"; }).join("");
+        $("fKind").innerHTML = opts;
+        $("filterKind").innerHTML = '<option value="">' + esc(t("allKinds")) + "</option>" + opts;
+      }
+
+      function wire() {
+        $("docChooseBtn").addEventListener("click", function () { $("docFile").click(); });
+        $("docFile").addEventListener("change", function () { handleFile(this.files && this.files[0]); });
+        var dz = $("docDrop");
+        dz.addEventListener("dragover", function (e) { e.preventDefault(); dz.classList.add("is-over"); });
+        dz.addEventListener("dragleave", function () { dz.classList.remove("is-over"); });
+        dz.addEventListener("drop", function (e) { e.preventDefault(); dz.classList.remove("is-over"); handleFile(e.dataTransfer.files && e.dataTransfer.files[0]); });
+        $("docForm").addEventListener("submit", save);
+        $("docCancelBtn").addEventListener("click", function () { show("docForm", false); state.file = null; $("docFile").value = ""; setStatus(""); });
+        $("filterKind").addEventListener("change", function () { state.kind = this.value; render(); });
+        $("filterSearch").addEventListener("input", function () { state.search = this.value.trim(); render(); });
+        $("docsBody").addEventListener("click", function (e) {
+          var o = e.target.closest("[data-open]"), d = e.target.closest("[data-del]");
+          if (o) {
+            e.preventDefault();
+            var att = null; Object.keys(state.attachments).forEach(function (k) { state.attachments[k].forEach(function (a) { if (a.id === o.dataset.open) att = a; }); });
+            if (att) app.attachmentUrl(att).then(function (u) { if (u) window.open(u, "_blank", "noopener"); });
+          } else if (d) {
+            if (!window.confirm(t("docDeleteConfirm"))) return;
+            app.deleteItem(d.dataset.del).then(loadDocs).catch(function () { setStatus(t("docFailed"), "error"); });
+          }
+        });
+      }
+
+      window.__docsRefresh = function () { renderKindSelects(); render(); };
+
+      function boot() {
+        app = window.trackerApp;
+        if (!app || !app.ready) { show("loadingCard", false); show("unavailableCard", true); return; }
+        app.ready.then(function (res) {
+          show("loadingCard", false);
+          if (!res || res.unavailable || app.unavailable) { show("unavailableCard", true); return; }
+          if (!app.org) { show("noOrgCard", true); return; }
+          renderKindSelects(); wire();
+          show("docsView", true);
+          return loadDocs();
+        }).catch(function () { show("loadingCard", false); show("unavailableCard", true); });
+      }
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
+    })();
+  </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+<script src="/app.js?v=4" defer></script>
+<script src="/app/common.js?v=6" defer></script>
+<script src="/brand-logo.js?v=4" defer></script>
+</body>
+</html>
+

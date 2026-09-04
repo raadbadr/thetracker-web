@@ -6,6 +6,7 @@
 
 import { handleAssistantRequest, askAssistant } from "./assistant.js";
 import { handleCalendar } from "./calendar.js";
+import { handleDocumentAnalyze } from "./documents.js";
 import { runNotificationCron, linkChannelByCode, notifyTarget, sendTelegram, sendWhatsapp, sendSms, sendEmail, rpc, t as channelText,
          bot as botText, menuKeyboard, menuAction, urlButton, formatItems, telegramItems, linkChannelDirect, linkChannelByPhone, contactKeyboard,
          sendChatAction, fetchTelegramFile, bytesToBase64, TELEGRAM_FILE_MAX, answerCallback, clearInlineButtons, confirmButtons, actionButtons } from "./notify.js";
@@ -598,6 +599,7 @@ export default {
       if (path === "/api/config" && request.method === "GET") return handleConfig(env);
       if (path === "/api/stats" && request.method === "GET") return await handleStats(env);
       if (path === "/api/assistant" && request.method === "POST") return await handleAssistantRequest(request, env);
+      if (path === "/api/documents/analyze" && request.method === "POST") return await handleDocumentAnalyze(request, env);
       if (path === "/api/contact" && request.method === "POST") return await handleContact(request, env);
       if (path === "/api/notify/test" && request.method === "POST") return await handleNotifyTest(request, env);
       if (path === "/api/telegram/webhook" && request.method === "POST") return await handleTelegramWebhook(request, env);
