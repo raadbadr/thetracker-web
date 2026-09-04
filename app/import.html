@@ -547,6 +547,9 @@
       color: var(--btn-ink);
     }
   </style>
+  <!-- دُمج الاستيراد داخل صفحة المستندات (2026-09-04)؛ هذا المسار يبقى ليحوّل الروابط القديمة -->
+  <meta http-equiv="refresh" content="0; url=/app/documents.html#importFlow">
+  <script>window.location.replace("/app/documents.html#importFlow");</script>
 </head>
 <body class="has-site-header">
   <header class="site-header">
@@ -2094,7 +2097,7 @@
   </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 <script src="/app.js?v=4" defer></script>
-<script src="/app/common.js?v=8" defer></script>
+<script src="/app/common.js?v=9" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
 <script src="/brand-logo.js?v=4" defer></script>
 </body>

@@ -124,22 +124,22 @@ function clean(out) {
 
 /* قواعد حتمية للمستندات السعودية الشائعة: تعمل قبل النموذج وبعده، ولا تخترع شيئا */
 const AR_DIGITS = { "٠":"0","١":"1","٢":"2","٣":"3","٤":"4","٥":"5","٦":"6","٧":"7","٨":"8","٩":"9","۰":"0","۱":"1","۲":"2","۳":"3","۴":"4","۵":"5","۶":"6","۷":"7","۸":"8","۹":"9" };
-function westernize(t) { return String(t || "").replace(/[٠-٩۰-۹]/g, (d) => AR_DIGITS[d] || d); }
+function westernize(text) { return String(text || "").replace(/[٠-٩۰-۹]/g, (digit) => AR_DIGITS[digit] || digit); }
 function findDate(text, labels) {
-  const re = new RegExp("(?:" + labels.join("|") + ")[^0-9]{0,40}(\\d{4}[\\/\\-.]\\d{1,2}[\\/\\-.]\\d{1,2}|\\d{1,2}[\\/\\-.]\\d{1,2}[\\/\\-.]\\d{4})", "i");
-  const m = text.match(re);
-  if (!m) return null;
-  let d = m[1].replace(/[\/.]/g, "-").split("-").map((x) => x.padStart(2, "0"));
-  if (d[0].length === 4) return { raw: `${d[0]}-${d[1]}-${d[2]}`, year: Number(d[0]) };
-  return { raw: `${d[2]}-${d[1]}-${d[0]}`, year: Number(d[2]) };
+  const dateRegex = new RegExp("(?:" + labels.join("|") + ")[^0-9]{0,40}(\\d{4}[\\/\\-.]\\d{1,2}[\\/\\-.]\\d{1,2}|\\d{1,2}[\\/\\-.]\\d{1,2}[\\/\\-.]\\d{4})", "i");
+  const dateMatch = text.match(dateRegex);
+  if (!dateMatch) return null;
+  let dateParts = dateMatch[1].replace(/[\/.]/g, "-").split("-").map((part) => part.padStart(2, "0"));
+  if (dateParts[0].length === 4) return { raw: `${dateParts[0]}-${dateParts[1]}-${dateParts[2]}`, year: Number(dateParts[0]) };
+  return { raw: `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`, year: Number(dateParts[2]) };
 }
 function findAfter(text, labels, pattern) {
-  const re = new RegExp("(?:" + labels.join("|") + ")\\s*[:：\\-]?\\s*(" + pattern + ")", "i");
-  const m = text.match(re);
-  return m ? m[1].trim() : null;
+  const labelRegex = new RegExp("(?:" + labels.join("|") + ")\\s*[:：\\-]?\\s*(" + pattern + ")", "i");
+  const labelMatch = text.match(labelRegex);
+  return labelMatch ? labelMatch[1].trim() : null;
 }
 /* جدول الأوراق الرسمية المعروفة: كل نوع بكلماته ومسمّيات رقمه وجهته. يُفحص بالترتيب. */
-const W = (w) => "(?<![\\u0600-\\u06FF])(?:" + w + ")(?![\\u0600-\\u06FF])";
+const wordBoundaryAr = (pattern) => "(?<![\\u0600-\\u06FF])(?:" + pattern + ")(?![\\u0600-\\u06FF])";
 const KIND_RULES = [
   { kind: "commercial_register", test: /السجل\s*التجاري|سجل\s*تجاري|commercial\s*regist/i, issuer: "وزارة التجارة",
     number: ["رقم\\s*السجل\\s*التجاري", "رقم\\s*السجل", "C\\.?R\\.?\\s*(?:No\\.?)?"], numPat: "[1247]\\d{9}", party: ["اسم\\s*المنشأة", "الاسم\\s*التجاري", "اسم\\s*الشركة", "اسم\\s*التاجر"] },
@@ -159,15 +159,15 @@ const KIND_RULES = [
   { kind: "lease_contract", test: /عقد\s*(?:إيجار|ايجار|الإيجار|الايجار)|lease\s*(?:agreement|contract)/i,
     number: ["رقم\\s*العقد", "رقم\\s*التوثيق", "contract\\s*(?:No\\.?)?"], numPat: "[0-9A-Za-z\\-]{4,25}", party: ["المستأجر", "اسم\\s*المستأجر"], issuerTest: [[/منصة|شبكة|موثق/, "منصة إيجار"]],
     amount: /(?:قيمة\s*(?:الإيجار|الايجار|العقد)|الأجرة\s*السنوية|إجمالي\s*(?:الإيجار|العقد))[^0-9]{0,30}([0-9][0-9,\.]{2,})/ },
-  { kind: "power_of_attorney", test: new RegExp(W("وكالة|الوكالة|توكيل") + "|power\\s*of\\s*attorney", "i"), issuer: "وزارة العدل",
+  { kind: "power_of_attorney", test: new RegExp(wordBoundaryAr("وكالة|الوكالة|توكيل") + "|power\\s*of\\s*attorney", "i"), issuer: "وزارة العدل",
     number: ["رقم\\s*الوكالة", "رقم\\s*التوثيق", "الرقم"], numPat: "\\d{6,20}", party: ["الموكل", "اسم\\s*الموكل"] },
   { kind: "hearing_notice", test: /إشعار\s*(?:ب)?(?:موعد\s*)?جلسة|موعد\s*(?:ال)?جلسة|تحديد\s*جلسة|hearing/i, issuer: "المحكمة",
     number: ["رقم\\s*(?:ال)?دعوى", "رقم\\s*القضية"], numPat: "\\d{4,20}", party: ["المدعي", "المدعى\\s*عليه"] },
   { kind: "case_filing", test: /صحيفة\s*(?:ال)?دعوى|لائحة\s*(?:ال)?دعوى|مذكرة\s*(?:جوابية|دفاع)|statement\s*of\s*claim/i, issuer: "المحكمة",
     number: ["رقم\\s*(?:ال)?دعوى", "رقم\\s*القضية", "رقم\\s*القيد"], numPat: "\\d{4,20}", party: ["المدعي", "المدعى\\s*عليه"] },
-  { kind: "court_ruling", test: new RegExp(W("صك\\s*حكم|حكم\\s*(?:نهائي|ابتدائي|غيابي|حضوري)?|الحكم|قرار\\s*(?:المحكمة|الدائرة)|منطوق\\s*الحكم") + "|judg?ment|ruling", "i"), issuer: "وزارة العدل",
+  { kind: "court_ruling", test: new RegExp(wordBoundaryAr("صك\\s*حكم|حكم\\s*(?:نهائي|ابتدائي|غيابي|حضوري)?|الحكم|قرار\\s*(?:المحكمة|الدائرة)|منطوق\\s*الحكم") + "|judg?ment|ruling", "i"), issuer: "وزارة العدل",
     number: ["رقم\\s*الصك", "رقم\\s*الحكم", "رقم\\s*القرار"], numPat: "\\d{6,20}", party: ["المدعي", "المدعى\\s*عليه"] },
-  { kind: "violation", test: new RegExp(W("مخالفة|المخالفة|غرامة|الغرامة") + "|violation|fine\\s*notice|ticket", "i"),
+  { kind: "violation", test: new RegExp(wordBoundaryAr("مخالفة|المخالفة|غرامة|الغرامة") + "|violation|fine\\s*notice|ticket", "i"),
     number: ["رقم\\s*المخالفة", "رقم\\s*القرار", "رقم\\s*الإشعار"], numPat: "\\d{4,20}", party: ["اسم\\s*المنشأة", "اسم\\s*المخالف", "المخالف"],
     amount: /(?:مبلغ\s*(?:المخالفة|الغرامة)|قيمة\s*(?:المخالفة|الغرامة)|الغرامة|المبلغ)[^0-9]{0,25}([0-9][0-9,\.]{1,})/ },
   { kind: "invoice", test: /فاتورة|invoice|tax\s*invoice/i,
@@ -175,10 +175,10 @@ const KIND_RULES = [
     amount: /(?:الإجمالي|المجموع|الإجمالي\s*شامل|total\s*(?:amount)?|grand\s*total)[^0-9]{0,25}([0-9][0-9,\.]{1,})/i },
   { kind: "id_document", test: /الهوية\s*الوطنية|بطاقة\s*(?:ال)?هوية|إقامة|رخصة\s*إقامة|جواز\s*سفر|passport|national\s*id|iqama/i, issuer: "وزارة الداخلية",
     number: ["رقم\\s*الهوية", "رقم\\s*الإقامة", "رقم\\s*الجواز", "ID\\s*(?:No\\.?)?"], numPat: "[12]\\d{9}|[A-Z]\\d{7,9}", party: ["الاسم", "اسم\\s*صاحب\\s*الهوية"] },
-  { kind: "license", test: new RegExp(W("رخصة|الرخصة|ترخيص|الترخيص|تصريح|التصريح") + "|licen[cs]e|permit", "i"),
+  { kind: "license", test: new RegExp(wordBoundaryAr("رخصة|الرخصة|ترخيص|الترخيص|تصريح|التصريح") + "|licen[cs]e|permit", "i"),
     number: ["رقم\\s*الرخصة", "رقم\\s*الترخيص", "رقم\\s*التصريح", "Licen[cs]e\\s*(?:No\\.?)?"], numPat: "[A-Za-z0-9\\-\\/]{4,30}", party: ["اسم\\s*المنشأة", "الاسم\\s*التجاري", "اسم\\s*الشركة", "اسم\\s*المرخص\\s*له"],
     issuerTest: [[/البلدية|أمانة/, "الأمانة / البلدية"], [/الدفاع\s*المدني/, "الدفاع المدني"], [/الهيئة\s*العامة\s*للنقل/, "الهيئة العامة للنقل"], [/وزارة\s*الصحة/, "وزارة الصحة"]] },
-  { kind: "contract", test: new RegExp(W("عقد|العقد|اتفاقية|الاتفاقية") + "|contract|agreement", "i"),
+  { kind: "contract", test: new RegExp(wordBoundaryAr("عقد|العقد|اتفاقية|الاتفاقية") + "|contract|agreement", "i"),
     number: ["رقم\\s*العقد", "رقم\\s*الاتفاقية", "contract\\s*(?:No\\.?)?"], numPat: "[0-9A-Za-z\\-\\/]{3,25}", party: ["الطرف\\s*الأول", "الطرف\\s*الثاني", "العميل"],
     amount: /(?:قيمة\s*العقد|إجمالي\s*(?:قيمة\s*)?العقد|المبلغ\s*الإجمالي|contract\s*value)[^0-9]{0,25}([0-9][0-9,\.]{2,})/i },
 ];

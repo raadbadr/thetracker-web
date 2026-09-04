@@ -46,56 +46,56 @@ Never invent numbers; leave fields absent if unknown.`;
 
 /* حل تاريخ ووقت فعليين بتوقيت الرياض من نص عربي: أرقام، أيام الأسبوع، غدا/بعد غد،
    "بعد N يوم" — بلا نموذج لغوي. يطابق افتراضات النظام في intentSystem أعلاه. */
-const AR_WEEKDAYS = { "الاحد": 0, "الأحد": 0, "الاثنين": 1, "الإثنين": 1, "الثلاثاء": 2, "الاربعاء": 3, "الأربعاء": 3, "الخميس": 4, "الجمعة": 5, "السبت": 6 };
+const QUICK_ADD_WEEKDAYS = { "الاحد": 0, "الأحد": 0, "الاثنين": 1, "الإثنين": 1, "الثلاثاء": 2, "الاربعاء": 3, "الأربعاء": 3, "الخميس": 4, "الجمعة": 5, "السبت": 6 };
 function riyadhNowParts() {
   const parts = new Intl.DateTimeFormat("en-GB", { timeZone: RIYADH, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
-  const m = {}; parts.forEach((p) => { m[p.type] = p.value; });
-  return { y: Number(m.year), mo: Number(m.month), d: Number(m.day) };
+  const wallClock = {}; parts.forEach((part) => { wallClock[part.type] = part.value; });
+  return { year: Number(wallClock.year), month: Number(wallClock.month), day: Number(wallClock.day) };
 }
-function riyadhWeekday(y, mo, d) { return new Date(Date.UTC(y, mo - 1, d, -3)).getUTCDay(); }
-function addDaysRiyadh(now, n) {
-  const dt = new Date(Date.UTC(now.y, now.mo - 1, now.d) + n * 86400000);
-  return { y: dt.getUTCFullYear(), mo: dt.getUTCMonth() + 1, d: dt.getUTCDate() };
+function riyadhWeekday(year, month, day) { return new Date(Date.UTC(year, month - 1, day, -3)).getUTCDay(); }
+function addDaysInRiyadh(fromDate, daysToAdd) {
+  const shifted = new Date(Date.UTC(fromDate.year, fromDate.month - 1, fromDate.day) + daysToAdd * 86400000);
+  return { year: shifted.getUTCFullYear(), month: shifted.getUTCMonth() + 1, day: shifted.getUTCDate() };
 }
-function riyadhIso(y, mo, d, h, mi) {
-  const pad = (n) => String(n).padStart(2, "0");
-  return `${y}-${pad(mo)}-${pad(d)}T${pad(h)}:${pad(mi)}:00+03:00`;
+function riyadhIso(year, month, day, hour, minute) {
+  const pad = (num) => String(num).padStart(2, "0");
+  return `${year}-${pad(month)}-${pad(day)}T${pad(hour)}:${pad(minute)}:00+03:00`;
 }
-function extractTimeOfDay(text, defH, defM) {
-  let m = text.match(/الساعة\s*(\d{1,2})(?::(\d{2}))?\s*(ص|صباحا|صباحاً|م|مساء|مساءً|am|pm)?/i);
-  if (m) return timeFrom(m[1], m[2], m[3]);
-  m = text.match(/\b(\d{1,2}):(\d{2})\b/);
-  if (m) return timeFrom(m[1], m[2], null);
-  m = text.match(/\b(\d{1,2})\s*(ص|صباحا|صباحاً|م|مساء|مساءً|am|pm)\b/i);
-  if (m) return timeFrom(m[1], null, m[2]);
-  return { h: defH, mi: defM };
+function extractTimeOfDay(text, defaultHour, defaultMinute) {
+  let match = text.match(/الساعة\s*(\d{1,2})(?::(\d{2}))?\s*(ص|صباحا|صباحاً|م|مساء|مساءً|am|pm)?/i);
+  if (match) return timeOfDayFromMatch(match[1], match[2], match[3]);
+  match = text.match(/\b(\d{1,2}):(\d{2})\b/);
+  if (match) return timeOfDayFromMatch(match[1], match[2], null);
+  match = text.match(/\b(\d{1,2})\s*(ص|صباحا|صباحاً|م|مساء|مساءً|am|pm)\b/i);
+  if (match) return timeOfDayFromMatch(match[1], null, match[2]);
+  return { hour: defaultHour, minute: defaultMinute };
 }
-function timeFrom(hStr, miStr, mark) {
-  let h = Number(hStr) || 0; const mi = Number(miStr) || 0; mark = (mark || "").toLowerCase();
-  if (/^(م|مساء|مساءً|pm)$/.test(mark) && h < 12) h += 12;
-  if (/^(ص|صباحا|صباحاً|am)$/.test(mark) && h === 12) h = 0;
-  return { h, mi };
+function timeOfDayFromMatch(hourText, minuteText, meridiemMark) {
+  let hour = Number(hourText) || 0; const minute = Number(minuteText) || 0; meridiemMark = (meridiemMark || "").toLowerCase();
+  if (/^(م|مساء|مساءً|pm)$/.test(meridiemMark) && hour < 12) hour += 12;
+  if (/^(ص|صباحا|صباحاً|am)$/.test(meridiemMark) && hour === 12) hour = 0;
+  return { hour, minute };
 }
 function extractDueDate(text) {
   const now = riyadhNowParts();
-  if (/بعد\s*غد/.test(text)) return addDaysRiyadh(now, 2);
-  if (/غدا|غداً|بكرة|بكره/.test(text)) return addDaysRiyadh(now, 1);
-  const afterN = text.match(/بعد\s*(\d{1,3})\s*(?:يوم|أيام|ايام)/);
-  if (afterN) return addDaysRiyadh(now, Number(afterN[1]));
-  const isoNum = text.match(/\b(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})\b/);
-  if (isoNum) return { y: Number(isoNum[1]), mo: Number(isoNum[2]), d: Number(isoNum[3]) };
-  const dmyNum = text.match(/\b(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})\b/);
-  if (dmyNum) {
-    let y = Number(dmyNum[3]); if (y < 100) y += 2000;
-    return { y, mo: Number(dmyNum[2]), d: Number(dmyNum[1]) };
+  if (/بعد\s*غد/.test(text)) return addDaysInRiyadh(now, 2);
+  if (/غدا|غداً|بكرة|بكره/.test(text)) return addDaysInRiyadh(now, 1);
+  const daysAfterMatch = text.match(/بعد\s*(\d{1,3})\s*(?:يوم|أيام|ايام)/);
+  if (daysAfterMatch) return addDaysInRiyadh(now, Number(daysAfterMatch[1]));
+  const isoDateMatch = text.match(/\b(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})\b/);
+  if (isoDateMatch) return { year: Number(isoDateMatch[1]), month: Number(isoDateMatch[2]), day: Number(isoDateMatch[3]) };
+  const dayMonthYearMatch = text.match(/\b(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})\b/);
+  if (dayMonthYearMatch) {
+    let fullYear = Number(dayMonthYearMatch[3]); if (fullYear < 100) fullYear += 2000;
+    return { year: fullYear, month: Number(dayMonthYearMatch[2]), day: Number(dayMonthYearMatch[1]) };
   }
-  for (const name in AR_WEEKDAYS) {
-    if (!text.includes(name)) continue;
-    const target = AR_WEEKDAYS[name];
-    let delta = (target - riyadhWeekday(now.y, now.mo, now.d) + 7) % 7;
-    if (delta === 0) delta = 7;
-    if (/القادم|القادمة|الجاي|الجاية|بعد اسبوع|بعد أسبوع/.test(text)) delta += 7;
-    return addDaysRiyadh(now, delta);
+  for (const weekdayName in QUICK_ADD_WEEKDAYS) {
+    if (!text.includes(weekdayName)) continue;
+    const targetWeekday = QUICK_ADD_WEEKDAYS[weekdayName];
+    let daysUntilTarget = (targetWeekday - riyadhWeekday(now.year, now.month, now.day) + 7) % 7;
+    if (daysUntilTarget === 0) daysUntilTarget = 7;
+    if (/القادم|القادمة|الجاي|الجاية|بعد اسبوع|بعد أسبوع/.test(text)) daysUntilTarget += 7;
+    return addDaysInRiyadh(now, daysUntilTarget);
   }
   return null;
 }
@@ -118,7 +118,7 @@ export function heuristicIntent(text) {
     const violNo = (t.match(/(?:مخالفة|مخالفه)\s*(?:رقم|no\.?|#)?\s*([0-9]{2,})/i) || [])[1] || null;
     const date = extractDueDate(t);
     let due_at = null;
-    if (date) { const time = extractTimeOfDay(t, kind === "violation" ? 23 : 9, kind === "violation" ? 59 : 0); due_at = riyadhIso(date.y, date.mo, date.d, time.h, time.mi); }
+    if (date) { const time = extractTimeOfDay(t, kind === "violation" ? 23 : 9, kind === "violation" ? 59 : 0); due_at = riyadhIso(date.year, date.month, date.day, time.hour, time.minute); }
     return { action: "add", item: { kind, title: t.slice(0, 160), case_number: caseNo, violation_number: violNo, due_at }, confident: !!due_at };
   }
   return null;

@@ -1322,89 +1322,90 @@
    * إدخال سريع بلا ذكاء اصطناعي: أنماط معروفة (تاريخ، وقت، رقم قضية أو
    * مخالفة، مبلغ) تُحل فوراً في المتصفح. لا شبكة ولا انتظار إن كفت القواعد.
    * ============================================================ */
-  var AR_WEEKDAYS = { "الاحد": 0, "الأحد": 0, "الاثنين": 1, "الإثنين": 1, "الثلاثاء": 2, "الاربعاء": 3, "الأربعاء": 3, "الخميس": 4, "الجمعة": 5, "السبت": 6 };
-  var QA_KIND_RX = { violation: /مخالفة|مخالفه|غرامة|fine|violation/i, session: /جلسة|جلسه|نظر الدعوى|hearing|session|قضية|دعوى/i };
-  var QA_HAS_ADD_WORD = /سجل|أضف|اضف|ضيف|موعد|جلسة|جلسه|نظر الدعوى|مخالفة|مخالفه|غرامة|مهمة|مهمه|deadline|hearing|session|fine|violation|appointment|add|schedule/i;
-  var QA_DATE_NUM_RX = /\b(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})\b|\b(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})\b/;
-
+  var QUICK_ADD_WEEKDAYS = { "الاحد": 0, "الأحد": 0, "الاثنين": 1, "الإثنين": 1, "الثلاثاء": 2, "الاربعاء": 3, "الأربعاء": 3, "الخميس": 4, "الجمعة": 5, "السبت": 6 };
+  var QUICK_ADD_KIND_PATTERNS = { violation: /مخالفة|مخالفه|غرامة|fine|violation/i, session: /جلسة|جلسه|نظر الدعوى|hearing|session|قضية|دعوى/i };
+  var QUICK_ADD_TRIGGER_WORDS = /سجل|أضف|اضف|ضيف|موعد|جلسة|جلسه|نظر الدعوى|مخالفة|مخالفه|غرامة|مهمة|مهمه|deadline|hearing|session|fine|violation|appointment|add|schedule/i;
+  var QUICK_ADD_NUMERIC_DATE = /\b(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})\b|\b(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})\b/;
 
   function riyadhNow() {
     var parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Riyadh", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).formatToParts(new Date());
-    var m = {}; parts.forEach(function (p) { m[p.type] = p.value; });
-    return { y: Number(m.year), mo: Number(m.month), d: Number(m.day), h: Number(m.hour), mi: Number(m.minute) };
+    var wallClock = {};
+    parts.forEach(function (part) { wallClock[part.type] = part.value; });
+    return { year: Number(wallClock.year), month: Number(wallClock.month), day: Number(wallClock.day), hour: Number(wallClock.hour), minute: Number(wallClock.minute) };
   }
-  function riyadhIso(y, mo, d, h, mi) {
-    var pad = function (n) { return String(n).padStart(2, "0"); };
-    return y + "-" + pad(mo) + "-" + pad(d) + "T" + pad(h) + ":" + pad(mi) + ":00+03:00";
+  function riyadhIso(year, month, day, hour, minute) {
+    var pad = function (num) { return String(num).padStart(2, "0"); };
+    return year + "-" + pad(month) + "-" + pad(day) + "T" + pad(hour) + ":" + pad(minute) + ":00+03:00";
   }
-  function riyadhWeekday(y, mo, d) {
+  function riyadhWeekday(year, month, day) {
     /* Sunday=0..Saturday=6 بحسب توقيت الرياض، بلا التواء المنطقة الزمنية المحلية للمتصفح */
-    return new Date(Date.UTC(y, mo - 1, d, -3)).getUTCDay();
+    return new Date(Date.UTC(year, month - 1, day, -3)).getUTCDay();
   }
-  function addDaysRiyadh(now, n) {
-    var t = Date.UTC(now.y, now.mo - 1, now.d) + n * 86400000;
-    var dt = new Date(t);
-    return { y: dt.getUTCFullYear(), mo: dt.getUTCMonth() + 1, d: dt.getUTCDate() };
+  function addDaysInRiyadh(fromDate, daysToAdd) {
+    var shifted = new Date(Date.UTC(fromDate.year, fromDate.month - 1, fromDate.day) + daysToAdd * 86400000);
+    return { year: shifted.getUTCFullYear(), month: shifted.getUTCMonth() + 1, day: shifted.getUTCDate() };
   }
+
   /* الوقت يُلتقط فقط قريباً من "الساعة" أو ملاصقاً لمؤشر ص/م أو بصيغة HH:MM — أرقام
      أخرى في النص (رقم القضية مثلاً) لا تُخلط بوقت الجلسة أبداً */
-  function timeFrom(hStr, miStr, mark) {
-    var h = Number(hStr) || 0, mi = Number(miStr) || 0; mark = (mark || "").toLowerCase();
-    if (/^(م|مساء|مساءً|pm)$/.test(mark) && h < 12) h += 12;
-    if (/^(ص|صباحا|صباحاً|am)$/.test(mark) && h === 12) h = 0;
-    return { h: h, mi: mi };
+  function timeOfDayFromMatch(hourText, minuteText, meridiemMark) {
+    var hour = Number(hourText) || 0, minute = Number(minuteText) || 0;
+    meridiemMark = (meridiemMark || "").toLowerCase();
+    if (/^(م|مساء|مساءً|pm)$/.test(meridiemMark) && hour < 12) hour += 12;
+    if (/^(ص|صباحا|صباحاً|am)$/.test(meridiemMark) && hour === 12) hour = 0;
+    return { hour: hour, minute: minute };
   }
-  function extractTime(text, defaultH, defaultM) {
-    var m = text.match(/الساعة\s*(\d{1,2})(?::(\d{2}))?\s*(ص|صباحا|صباحاً|م|مساء|مساءً|am|pm)?/i);
-    if (m) return timeFrom(m[1], m[2], m[3]);
-    m = text.match(/\b(\d{1,2}):(\d{2})\b/);
-    if (m) return timeFrom(m[1], m[2], null);
-    m = text.match(/\b(\d{1,2})\s*(ص|صباحا|صباحاً|م|مساء|مساءً|am|pm)\b/i);
-    if (m) return timeFrom(m[1], null, m[2]);
-    return { h: defaultH, mi: defaultM };
+  function extractTimeOfDay(text, defaultHour, defaultMinute) {
+    var match = text.match(/الساعة\s*(\d{1,2})(?::(\d{2}))?\s*(ص|صباحا|صباحاً|م|مساء|مساءً|am|pm)?/i);
+    if (match) return timeOfDayFromMatch(match[1], match[2], match[3]);
+    match = text.match(/\b(\d{1,2}):(\d{2})\b/);
+    if (match) return timeOfDayFromMatch(match[1], match[2], null);
+    match = text.match(/\b(\d{1,2})\s*(ص|صباحا|صباحاً|م|مساء|مساءً|am|pm)\b/i);
+    if (match) return timeOfDayFromMatch(match[1], null, match[2]);
+    return { hour: defaultHour, minute: defaultMinute };
   }
-  function extractDate(text, now) {
-    if (/غدا|غداً|بكرة|بكره/.test(text) && !/بعد\s*غد/.test(text)) return addDaysRiyadh(now, 1);
-    if (/بعد\s*غد/.test(text)) return addDaysRiyadh(now, 2);
-    var afterN = text.match(/بعد\s*(\d{1,3})\s*(?:يوم|أيام|ايام)/);
-    if (afterN) return addDaysRiyadh(now, Number(afterN[1]));
-    var num = text.match(QA_DATE_NUM_RX);
-    if (num) {
-      if (num[1]) return { y: Number(num[1]), mo: Number(num[2]), d: Number(num[3]) };
-      var y = Number(num[6]); if (y < 100) y += 2000;
-      return { y: y, mo: Number(num[5]), d: Number(num[4]) };
+  function extractDueDate(text, referenceNow) {
+    if (/غدا|غداً|بكرة|بكره/.test(text) && !/بعد\s*غد/.test(text)) return addDaysInRiyadh(referenceNow, 1);
+    if (/بعد\s*غد/.test(text)) return addDaysInRiyadh(referenceNow, 2);
+    var daysAfterMatch = text.match(/بعد\s*(\d{1,3})\s*(?:يوم|أيام|ايام)/);
+    if (daysAfterMatch) return addDaysInRiyadh(referenceNow, Number(daysAfterMatch[1]));
+    var numericDate = text.match(QUICK_ADD_NUMERIC_DATE);
+    if (numericDate) {
+      if (numericDate[1]) return { year: Number(numericDate[1]), month: Number(numericDate[2]), day: Number(numericDate[3]) };
+      var fullYear = Number(numericDate[6]); if (fullYear < 100) fullYear += 2000;
+      return { year: fullYear, month: Number(numericDate[5]), day: Number(numericDate[4]) };
     }
-    for (var name in AR_WEEKDAYS) {
-      if (text.indexOf(name) === -1) continue;
-      var target = AR_WEEKDAYS[name];
-      var todayWd = riyadhWeekday(now.y, now.mo, now.d);
-      var delta = (target - todayWd + 7) % 7;
-      if (delta === 0) delta = 7;
-      if (/القادم|القادمة|الجاي|الجاية|بعد اسبوع|بعد أسبوع/.test(text)) delta += 7;
-      return addDaysRiyadh(now, delta);
+    for (var weekdayName in QUICK_ADD_WEEKDAYS) {
+      if (text.indexOf(weekdayName) === -1) continue;
+      var targetWeekday = QUICK_ADD_WEEKDAYS[weekdayName];
+      var todayWeekday = riyadhWeekday(referenceNow.year, referenceNow.month, referenceNow.day);
+      var daysUntilTarget = (targetWeekday - todayWeekday + 7) % 7;
+      if (daysUntilTarget === 0) daysUntilTarget = 7;
+      if (/القادم|القادمة|الجاي|الجاية|بعد اسبوع|بعد أسبوع/.test(text)) daysUntilTarget += 7;
+      return addDaysInRiyadh(referenceNow, daysUntilTarget);
     }
     return null;
   }
 
   /* يعيد عنصراً كاملاً إن وثقت القواعد من نوعه وموعده، وإلا null لتذهب للنموذج اللغوي */
   function quickParseFast(text) {
-    var t = String(text || "").trim();
-    if (!t || !QA_HAS_ADD_WORD.test(t)) return null;
-    var kind = QA_KIND_RX.violation.test(t) ? "violation" : QA_KIND_RX.session.test(t) ? "session" : "task";
+    var trimmedText = String(text || "").trim();
+    if (!trimmedText || !QUICK_ADD_TRIGGER_WORDS.test(trimmedText)) return null;
+    var kind = QUICK_ADD_KIND_PATTERNS.violation.test(trimmedText) ? "violation" : QUICK_ADD_KIND_PATTERNS.session.test(trimmedText) ? "session" : "task";
     var now = riyadhNow();
-    var date = extractDate(t, now);
-    if (!date) return null;
-    var time = extractTime(t, kind === "violation" ? 23 : 9, kind === "violation" ? 59 : 0);
-    var caseNo = (t.match(/(?:دعوى|قضية|القضية|الدعوى|case)\s*(?:رقم|no\.?|#)?\s*([0-9]{2,})/i) || [])[1] || null;
-    var violNo = (t.match(/(?:مخالفة|مخالفه)\s*(?:رقم|no\.?|#)?\s*([0-9]{2,})/i) || [])[1] || null;
-    var amount = (t.match(/(?:مبلغ|قيمة|غرامة)[^0-9]{0,15}([0-9][0-9,\.]{1,})\s*(?:ريال|رس|sar)?/i) || t.match(/([0-9][0-9,\.]{2,})\s*(?:ريال|رس|sar)/i) || [])[1];
-    amount = amount ? Number(String(amount).replace(/,/g, "")) : null;
+    var dueDate = extractDueDate(trimmedText, now);
+    if (!dueDate) return null;
+    var dueTime = extractTimeOfDay(trimmedText, kind === "violation" ? 23 : 9, kind === "violation" ? 59 : 0);
+    var caseNumber = (trimmedText.match(/(?:دعوى|قضية|القضية|الدعوى|case)\s*(?:رقم|no\.?|#)?\s*([0-9]{2,})/i) || [])[1] || null;
+    var violationNumber = (trimmedText.match(/(?:مخالفة|مخالفه)\s*(?:رقم|no\.?|#)?\s*([0-9]{2,})/i) || [])[1] || null;
+    var amountMatch = trimmedText.match(/(?:مبلغ|قيمة|غرامة)[^0-9]{0,15}([0-9][0-9,\.]{1,})\s*(?:ريال|رس|sar)?/i) || trimmedText.match(/([0-9][0-9,\.]{2,})\s*(?:ريال|رس|sar)/i);
+    var amount = amountMatch ? Number(String(amountMatch[1]).replace(/,/g, "")) : null;
     return {
       action: "add",
       item: {
-        kind: kind, title: t.slice(0, 160),
-        due_at: riyadhIso(date.y, date.mo, date.d, time.h, time.mi),
-        case_number: caseNo, violation_number: violNo, amount: amount
+        kind: kind, title: trimmedText.slice(0, 160),
+        due_at: riyadhIso(dueDate.year, dueDate.month, dueDate.day, dueTime.hour, dueTime.minute),
+        case_number: caseNumber, violation_number: violationNumber, amount: amount
       },
       fast: true
     };
@@ -1673,9 +1674,6 @@
     { href: "/app/settings.html", path: "settings",
       icon: '<path d="M19.14 12.94a7.07 7.07 0 000-1.88l2.03-1.58a.5.5 0 00.12-.64l-1.92-3.32a.5.5 0 00-.61-.22l-2.39.96a7.03 7.03 0 00-1.62-.94l-.36-2.54a.5.5 0 00-.5-.42h-3.84a.5.5 0 00-.5.42l-.36 2.54c-.58.24-1.12.56-1.62.94l-2.39-.96a.5.5 0 00-.61.22L2.65 8.84a.5.5 0 00.12.64l2.03 1.58a7.07 7.07 0 000 1.88l-2.03 1.58a.5.5 0 00-.12.64l1.92 3.32c.13.22.39.3.61.22l2.39-.96c.5.38 1.04.7 1.62.94l.36 2.54c.04.24.25.42.5.42h3.84c.25 0 .46-.18.5-.42l.36-2.54c.58-.24 1.12-.56 1.62-.94l2.39.96c.22.08.48 0 .61-.22l1.92-3.32a.5.5 0 00-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1112 8.5a3.5 3.5 0 010 7z"/>',
       labels: { ar: "الإعدادات", en: "Settings", fr: "Paramètres", ur: "ترتیبات" } },
-    { href: "/app/import.html", path: "import",
-      icon: '<path d="M19 12v7H5v-7H3v9h18v-9h-2zM11 3v10.17l-3.59-3.58L6 11l6 6 6-6-1.41-1.41L13 13.17V3h-2z"/>',
-      labels: { ar: "استيراد إكسل", en: "Excel import", fr: "Import Excel", ur: "ایکسل درآمد" } },
     { href: "/app/admin.html", path: "admin", adminOnly: true,
       icon: '<path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>',
       labels: { ar: "إدارة المنصة", en: "Platform admin", fr: "Administration", ur: "پلیٹ فارم ایڈمن" } },

@@ -579,6 +579,18 @@
         <div class="features-grid" id="msgsGrid"></div>
       </div>
 
+      <!-- (0) platform admins -->
+      <div class="content" id="platformAdminsCard">
+        <h2 data-i18n="paTitle">مديرو المنصة</h2>
+        <p data-i18n="paIntro">من له صلاحية هذه الصفحة. أضف مديرا ببريده إن كان مسجلا في المنصة.</p>
+        <div class="waitlist-form">
+          <input type="email" class="waitlist-input" id="paEmail" placeholder="بريد المستخدم" autocomplete="off" dir="ltr">
+          <button type="button" class="waitlist-btn" id="paAddBtn" data-i18n="paAddBtn">إضافة مدير</button>
+        </div>
+        <p class="waitlist-msg" id="paStatus" role="status" aria-live="polite" style="display:none"></p>
+        <div class="features-grid" id="paGrid"></div>
+      </div>
+
       <div class="content" id="telegramLogCard">
         <h2 data-i18n="tgMsgsTitle">رسائل تلغرام</h2>
         <p data-i18n="tgMsgsIntro">كل ما يصل بوت تلغرام من المستخدمين، الأحدث أولا.</p>
@@ -623,6 +635,17 @@
         deniedText: "هذه الصفحة مخصصة لمشرفي المنصة فقط.",
         dashboardBtn: "العودة إلى لوحة التحكم",
         orgsTitle: "الشركات",
+        paTitle: "مديرو المنصة",
+        paIntro: "من له صلاحية هذه الصفحة. أضف مديرا ببريده إن كان مسجلا في المنصة.",
+        paAddBtn: "إضافة مدير",
+        paRemoveBtn: "إزالة",
+        paYou: "أنت",
+        paSaving: "جاري الحفظ...",
+        paAdded: "أضيف {email} كمدير منصة.",
+        paRemoved: "أزيلت صلاحية {email}.",
+        paNoUser: "لا يوجد مستخدم مسجل بهذا البريد.",
+        paCannotSelfRemove: "لا يمكنك إزالة صلاحيتك عن نفسك.",
+        paLastAdmin: "لا يمكن ترك المنصة بلا مدير.",
         orgsIntro: "جميع الشركات المسجلة في المنصة مع باقتها الحالية وعدد أعضائها وعناصرها.",
         filterPlaceholder: "ابحث باسم الشركة أو بريد المالك",
         refreshBtn: "تحديث",
@@ -710,6 +733,17 @@
         deniedText: "This page is for platform administrators only.",
         dashboardBtn: "Back to Dashboard",
         orgsTitle: "Organizations",
+        paTitle: "Platform admins",
+        paIntro: "Who has access to this page. Add an admin by email if they are registered on the platform.",
+        paAddBtn: "Add admin",
+        paRemoveBtn: "Remove",
+        paYou: "You",
+        paSaving: "Saving...",
+        paAdded: "{email} added as a platform admin.",
+        paRemoved: "{email}'s access removed.",
+        paNoUser: "No registered user with that email.",
+        paCannotSelfRemove: "You cannot remove your own access.",
+        paLastAdmin: "The platform cannot be left with no admin.",
         orgsIntro: "All organizations registered on the platform, with their current plan, member count and item count.",
         filterPlaceholder: "Search by organization name or owner email",
         refreshBtn: "Refresh",
@@ -797,6 +831,17 @@
         deniedText: "Cette page est réservée aux administrateurs de la plateforme.",
         dashboardBtn: "Retour au tableau de bord",
         orgsTitle: "Entreprises",
+        paTitle: "Administrateurs de la plateforme",
+        paIntro: "Qui a accès à cette page. Ajoutez un administrateur par e-mail s'il est inscrit sur la plateforme.",
+        paAddBtn: "Ajouter un administrateur",
+        paRemoveBtn: "Retirer",
+        paYou: "Vous",
+        paSaving: "Enregistrement...",
+        paAdded: "{email} ajouté comme administrateur.",
+        paRemoved: "Accès de {email} retiré.",
+        paNoUser: "Aucun utilisateur inscrit avec cet e-mail.",
+        paCannotSelfRemove: "Vous ne pouvez pas retirer votre propre accès.",
+        paLastAdmin: "La plateforme ne peut pas rester sans administrateur.",
         orgsIntro: "Toutes les entreprises inscrites sur la plateforme, avec leur forfait actuel, le nombre de membres et le nombre d'éléments.",
         filterPlaceholder: "Rechercher par nom d'entreprise ou e-mail du propriétaire",
         refreshBtn: "Actualiser",
@@ -884,6 +929,17 @@
         deniedText: "یہ صفحہ صرف پلیٹ فارم ایڈمنز کے لیے ہے۔",
         dashboardBtn: "ڈیش بورڈ پر واپس جائیں",
         orgsTitle: "کمپنیاں",
+        paTitle: "پلیٹ فارم ایڈمنز",
+        paIntro: "اس صفحے تک کس کی رسائی ہے۔ اگر رجسٹرڈ ہو تو ای میل سے ایڈمن شامل کریں۔",
+        paAddBtn: "ایڈمن شامل کریں",
+        paRemoveBtn: "ہٹائیں",
+        paYou: "آپ",
+        paSaving: "محفوظ ہو رہا ہے...",
+        paAdded: "{email} کو ایڈمن بنا دیا گیا۔",
+        paRemoved: "{email} کی رسائی ہٹا دی گئی۔",
+        paNoUser: "اس ای میل سے کوئی رجسٹرڈ صارف نہیں۔",
+        paCannotSelfRemove: "آپ اپنی رسائی خود نہیں ہٹا سکتے۔",
+        paLastAdmin: "پلیٹ فارم بغیر ایڈمن کے نہیں رہ سکتا۔",
         orgsIntro: "پلیٹ فارم پر رجسٹرڈ تمام کمپنیاں، ان کے موجودہ پلان، اراکین اور آئٹمز کی تعداد کے ساتھ۔",
         filterPlaceholder: "کمپنی کے نام یا مالک کے ای میل سے تلاش کریں",
         refreshBtn: "تازہ کریں",
@@ -1503,6 +1559,49 @@
         if (reqsLoaded) renderRequests();
       };
 
+      /* ---------- platform admins ---------- */
+
+      function paCard(admin) {
+        const isSelf = app.user && admin.id === app.user.id;
+        const removeBtn = isSelf ? "" :
+          '<button type="button" class="waitlist-btn" data-pa-remove="' + esc(admin.email) + '">' + esc(T("paRemoveBtn")) + "</button>";
+        return '<div class="feature-card" data-pa="' + esc(admin.id) + '">' +
+          '<h3>' + esc(admin.full_name || admin.email || "-") + (isSelf ? " · " + esc(T("paYou")) : "") + "</h3>" +
+          '<p dir="ltr">' + esc(admin.email || "") + "</p>" +
+          '<p>' + esc(fmtDate(admin.created_at)) + "</p>" +
+          removeBtn +
+        "</div>";
+      }
+
+      function loadPlatformAdmins() {
+        return app.platformAdmins().then(list => {
+          $("paGrid").innerHTML = (list || []).map(paCard).join("");
+        }).catch(err => { setStatus($("paStatus"), errorText(err), "error"); });
+      }
+
+      function bindPlatformAdmins() {
+        $("paAddBtn").addEventListener("click", () => {
+          const email = ($("paEmail").value || "").trim();
+          if (!email) return;
+          setStatus($("paStatus"), T("paSaving"));
+          app.setPlatformAdmin(email, true).then(() => {
+            $("paEmail").value = "";
+            setStatus($("paStatus"), T("paAdded").replace("{email}", email), "success");
+            return loadPlatformAdmins();
+          }).catch(err => { setStatus($("paStatus"), errorText(err), "error"); });
+        });
+        $("paGrid").addEventListener("click", (ev) => {
+          const btn = ev.target.closest("[data-pa-remove]");
+          if (!btn) return;
+          const email = btn.getAttribute("data-pa-remove");
+          setStatus($("paStatus"), T("paSaving"));
+          app.setPlatformAdmin(email, false).then(() => {
+            setStatus($("paStatus"), T("paRemoved").replace("{email}", email), "success");
+            return loadPlatformAdmins();
+          }).catch(err => { setStatus($("paStatus"), errorText(err), "error"); });
+        });
+      }
+
       function boot() {
         app = window.trackerApp;
         if (!app || !app.ready) { show("unavailableCard"); return; }
@@ -1511,6 +1610,8 @@
           if (!app.isPlatformAdmin()) { show("deniedCard"); return; }
           show("adminView");
           bind();
+          bindPlatformAdmins();
+          loadPlatformAdmins();
           loadOrgs();
           loadMessages();
           loadTgMessages();
@@ -1532,7 +1633,7 @@
   </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 <script src="/app.js?v=4" defer></script>
-<script src="/app/common.js?v=8" defer></script>
+<script src="/app/common.js?v=9" defer></script>
 <script src="/brand-logo.js?v=4" defer></script>
 </body>
 </html>

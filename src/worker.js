@@ -314,7 +314,7 @@ async function telegramAssistantReply(env, chatId, userId, text, attachment) {
     upcoming_items: upcoming, overdue_items: overdue,
     counts: { upcoming: Array.isArray(upcoming) ? upcoming.length : 0, overdue: Array.isArray(overdue) ? overdue.length : 0 },
     dashboard_url: "https://appmails.net/app/dashboard.html",
-    import_url: "https://appmails.net/app/import.html",
+    import_url: "https://appmails.net/app/documents.html#importFlow",
   };
   if (attachment) facts.attachment = { name: attachment.name || "", kind: attachment.kind || "file", content: String(attachment.content || "").slice(0, 9000) };
   const system = `أنت مساعد TheTracker داخل تلغرام، تخدم المستخدم ${facts.user.name || ""}${facts.user.company ? ` من شركة «${facts.user.company}»` : ""}.
