@@ -2961,15 +2961,15 @@
         items.forEach(function (it) { Object.keys(it.data || {}).forEach(function (k) { extra[k] = true; }); });
         var cols = [
           { label: "#", get: function (r) { return r.item_number || ""; } },
-          { label: T("fTitle") || "title", get: function (r) { return r.title; } },
-          { label: T("fCategory") || "category", get: function (r) { return r.category; } },
-          { label: T("fTracker") || "tracker", get: function (r) { return r.trackers && r.trackers.name || ""; } },
-          { label: T("fStatus") || "status", get: function (r) { return r.status; } },
-          { label: T("fDue") || "due", get: function (r) { return r.due_at ? fmtDate(r.due_at, { withTime: true }) : ""; } },
-          { label: T("fAssignee") || "assignee", get: function (r) { return r.assignee_id ? assigneeName(r.assignee_id) : ""; } },
-          { label: "amount", get: function (r) { return r.amount; } },
-          { label: "client", get: function (r) { return r.client_name; } },
-          { label: "case", get: function (r) { return r.case_number; } }
+          { label: T("colTitle"), get: function (r) { return r.title; } },
+          { label: "category", get: function (r) { return r.category; } },
+          { label: T("colTracker"), get: function (r) { return r.trackers && r.trackers.name || ""; } },
+          { label: T("colStatus"), get: function (r) { return r.status; } },
+          { label: T("colDue"), get: function (r) { return r.due_at ? fmtDate(r.due_at, { withTime: true }) : ""; } },
+          { label: T("colAssignee"), get: function (r) { return r.assignee_id ? assigneeName(r.assignee_id) : ""; } },
+          { label: T("colAmount"), get: function (r) { return r.amount; } },
+          { label: T("colClient"), get: function (r) { return r.client_name; } },
+          { label: T("colCaseNumber"), get: function (r) { return r.case_number; } }
         ].concat(Object.keys(extra).map(function (k) { return { label: k, get: function (r) { return (r.data || {})[k]; } }; }));
         app.exportCsv((state.viewType || "items") + "-" + new Date().toISOString().slice(0, 10) + ".csv", items, cols);
       });
