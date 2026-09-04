@@ -975,6 +975,7 @@
             <select class="waitlist-input" id="filterStatus"></select>
             <input type="search" class="waitlist-input" id="filterSearch" placeholder="بحث في العناوين" maxlength="120">
             <button type="button" class="waitlist-btn" id="addItemBtn" data-i18n="addItemBtn">+ عنصر</button>
+            <button type="button" class="chat-option-btn" id="exportXlsxBtn" data-i18n="exportXlsx">تصدير إكسل</button>
             <button type="button" class="chat-option-btn" id="exportCsvBtn" data-i18n="exportCsv">تصدير CSV</button>
           </form>
 
@@ -1099,6 +1100,8 @@
   <script>
     const translations = {
       ar: {
+        exportXlsx: "تصدير إكسل",
+        appName: "TheTracker",
         exportCsv: "تصدير CSV",
         title: "لوحة التحكم",
         loading: "جاري التحميل...",
@@ -1315,6 +1318,8 @@
         dark: "داكن"
       },
       en: {
+        exportXlsx: "Export Excel",
+        appName: "TheTracker",
         exportCsv: "Export CSV",
         title: "Dashboard",
         loading: "Loading...",
@@ -1531,6 +1536,8 @@
         dark: "Dark"
       },
       fr: {
+        exportXlsx: "Exporter Excel",
+        appName: "TheTracker",
         exportCsv: "Exporter CSV",
         title: "Tableau de bord",
         loading: "Chargement...",
@@ -1747,6 +1754,8 @@
         dark: "Sombre"
       },
       ur: {
+        exportXlsx: "ایکسل ایکسپورٹ",
+        appName: "TheTracker",
         exportCsv: "CSV برآمد",
         title: "ڈیش بورڈ",
         loading: "لوڈ ہو رہا ہے...",
@@ -3015,7 +3024,7 @@
         $("noTrackersHint").hidden = state.trackers.length > 0;
       }
 
-      $("exportCsvBtn").addEventListener("click", function () {
+      function exportColumns() {
         var items = state.items || [];
         var extra = {};
         items.forEach(function (it) { Object.keys(it.data || {}).forEach(function (k) { extra[k] = true; }); });
@@ -3031,7 +3040,24 @@
           { label: T("colClient"), get: function (r) { return r.client_name; } },
           { label: T("colCaseNumber"), get: function (r) { return r.case_number; } }
         ].concat(Object.keys(extra).map(function (k) { return { label: k, get: function (r) { return (r.data || {})[k]; } }; }));
-        app.exportCsv((state.viewType || "items") + "-" + new Date().toISOString().slice(0, 10) + ".csv", items, cols);
+        return { items: items, cols: cols };
+      }
+
+      function exportName(ext) {
+        return (state.viewType || "items") + "-" + new Date().toISOString().slice(0, 10) + "." + ext;
+      }
+
+      $("exportCsvBtn").addEventListener("click", function () {
+        var e = exportColumns();
+        app.exportCsv(exportName("csv"), e.items, e.cols);
+      });
+
+      $("exportXlsxBtn").addEventListener("click", function () {
+        var e = exportColumns();
+        var btn = $("exportXlsxBtn"); btn.disabled = true;
+        app.exportXlsx(exportName("xlsx"), e.items, e.cols, T(VIEW_TYPES[state.viewType] ? VIEW_TYPES[state.viewType].titleKey : "appName"))
+          .catch(function () { toast("genericError", "error"); })
+          .then(function () { btn.disabled = false; });
       });
       $("filterTracker").addEventListener("change", function () { state.filters.tracker = this.value; loadItems(); });
       $("filterStatus").addEventListener("change", function () { state.filters.status = this.value; loadItems(); });

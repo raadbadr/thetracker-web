@@ -1893,6 +1893,7 @@
   app.setPlatformAdmin = setPlatformAdmin;
   app.activityFeed = activityFeed;
   app.achievements = achievements;
+  app.exportXlsx = exportXlsx;
   app.setMemberPerson = setMemberPerson;
   app.entityTypes = function () { return ENTITY_TYPES.slice(); };
   app.entityLabel = entityLabel;
@@ -2081,6 +2082,59 @@
     a.download = filename || "export.csv";
     document.body.appendChild(a); a.click();
     setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+
+  /* ---------- التصدير إلى إكسل: ملف xlsx حقيقي بالعربية بلا تشويه ---------- */
+  var XLSX_SRC = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+  var xlsxPromise = null;
+
+  function loadXlsx() {
+    if (window.XLSX) return Promise.resolve(window.XLSX);
+    if (xlsxPromise) return xlsxPromise;
+    xlsxPromise = new Promise(function (resolve, reject) {
+      var el = document.createElement("script");
+      el.src = XLSX_SRC;
+      el.onload = function () { window.XLSX ? resolve(window.XLSX) : reject(new Error("xlsx_missing")); };
+      el.onerror = function () { xlsxPromise = null; reject(new Error("xlsx_load_failed")); };
+      document.head.appendChild(el);
+    });
+    return xlsxPromise;
+  }
+
+  function cellValue(row, col) {
+    var v = (typeof col === "object")
+      ? (typeof col.get === "function" ? col.get(row) : row[col.key])
+      : row[col];
+    if (v === null || v === undefined) return "";
+    if (typeof v === "object") return JSON.stringify(v);
+    return v;
+  }
+
+  /* نفس توقيع exportCsv تماما: (اسم الملف، الصفوف، الأعمدة) */
+  function exportXlsx(filename, rows, columns, sheetName) {
+    var cols = columns || Object.keys((rows && rows[0]) || {});
+    return loadXlsx().then(function (XLSX) {
+      var header = cols.map(function (c) { return String(c.label || c); });
+      var body = (rows || []).map(function (r) {
+        return cols.map(function (c) {
+          var v = cellValue(r, c);
+          var n = (typeof v === "string" && v.trim() !== "" && isFinite(Number(v))) ? Number(v) : v;
+          return n;
+        });
+      });
+      var ws = XLSX.utils.aoa_to_sheet([header].concat(body));
+      /* عرض العمود يتبع أطول قيمة فيه حتى يقرأ الجدول بلا توسيع يدوي */
+      ws["!cols"] = header.map(function (h, i) {
+        var longest = h.length;
+        body.forEach(function (r) { var len = String(r[i] == null ? "" : r[i]).length; if (len > longest) longest = len; });
+        return { wch: Math.min(60, Math.max(10, longest + 2)) };
+      });
+      var name = String(sheetName || "").slice(0, 28) || "Sheet1";
+      var wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, name);
+      XLSX.writeFile(wb, filename || "export.xlsx");
+      return true;
+    });
   }
 
   function apiKeys() {

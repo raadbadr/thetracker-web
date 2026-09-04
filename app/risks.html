@@ -791,6 +791,7 @@
         <div class="toolbar">
           <input type="search" class="waitlist-input" id="search" placeholder="بحث" data-i18n-placeholder="search">
           <select class="waitlist-input" id="statusFilter"></select>
+          <button type="button" class="chat-option-btn" id="xlsxBtn" data-i18n="exportXlsx">تصدير إكسل</button>
           <button type="button" class="chat-option-btn" id="csvBtn" data-i18n="exportCsv">تصدير CSV</button>
           <button type="button" class="waitlist-btn" id="newBtn" data-i18n="newRisk">＋ خطر جديد</button>
         </div>
@@ -869,6 +870,11 @@
   <script>
     const translations = {
       ar: {
+        exportXlsx: "تصدير إكسل",
+        colLikelihood: "الاحتمال",
+        colImpact: "الأثر",
+        colResLikelihood: "الاحتمال بعد المعالجة",
+        colResImpact: "الأثر بعد المعالجة",
         fCase: "القضية",
         title: "إدارة المخاطر",
         regTitle: "سجل المخاطر",
@@ -1136,6 +1142,11 @@
         dark: "داكن"
       },
       en: {
+        exportXlsx: "Export Excel",
+        colLikelihood: "Likelihood",
+        colImpact: "Impact",
+        colResLikelihood: "Residual likelihood",
+        colResImpact: "Residual impact",
         fCase: "Case",
         title: "Risk management",
         regTitle: "Risk register",
@@ -1403,6 +1414,11 @@
         dark: "Dark"
       },
       fr: {
+        exportXlsx: "Exporter Excel",
+        colLikelihood: "Probabilité",
+        colImpact: "Impact",
+        colResLikelihood: "Probabilité résiduelle",
+        colResImpact: "Impact résiduel",
         fCase: "Affaire",
         title: "Gestion des risques",
         regTitle: "Registre des risques",
@@ -1670,6 +1686,11 @@
         dark: "Sombre"
       },
       ur: {
+        exportXlsx: "ایکسل ایکسپورٹ",
+        colLikelihood: "امکان",
+        colImpact: "اثر",
+        colResLikelihood: "بقایا امکان",
+        colResImpact: "بقایا اثر",
         fCase: "مقدمہ",
         title: "خطرات کا انتظام",
         regTitle: "خطرات کا رجسٹر",
@@ -2236,15 +2257,31 @@
           renderAll();
         });
       }
-      function exportCsv() {
-        var cols = ["code","title","category","client_name","case_number","likelihood","impact","res_likelihood","res_impact","strategy","status","review_at"];
-        var lines = [cols.join(",")].concat(state.list.map(function (r) { return cols.map(function (c) { return '"' + String(r[c] == null ? "" : r[c]).replace(/"/g, '""') + '"'; }).join(","); }));
-        var blob = new Blob(["﻿" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
-        var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "risks.csv"; a.click();
+      /* أعمدة السجل بأسمائها المعروضة، تُستعمل في CSV وإكسل معا */
+      function riskColumns() {
+        var keys = ["code","title","category","client_name","case_number","likelihood","impact","res_likelihood","res_impact","strategy","status","review_at"];
+        var labels = { code: t("colCode"), title: t("colTitle"), category: t("colCategory"), client_name: t("colClient"),
+          case_number: t("colCase"), likelihood: t("colLikelihood"), impact: t("colImpact"),
+          res_likelihood: t("colResLikelihood"), res_impact: t("colResImpact"), strategy: t("colStrategy"),
+          status: t("colStatus"), review_at: t("colReview") };
+        return keys.map(function (k) {
+          return { label: labels[k] || k, get: function (r) { return r[k] == null ? "" : r[k]; } };
+        });
       }
+
+      function exportCsv() { app.exportCsv("risks.csv", state.list || [], riskColumns()); }
+
+      function exportXlsx() {
+        var b = $("xlsxBtn"); b.disabled = true;
+        app.exportXlsx("risks.xlsx", state.list || [], riskColumns(), t("title"))
+          .catch(function () { /* يظل الزر متاحا لإعادة المحاولة */ })
+          .then(function () { b.disabled = false; });
+      }
+
       function wire() {
         $("newBtn").addEventListener("click", function () { openEditor(null); });
         $("csvBtn").addEventListener("click", exportCsv);
+        $("xlsxBtn").addEventListener("click", exportXlsx);
         $("search").addEventListener("input", function () { state.search = this.value.trim(); renderList(); });
         $("statusFilter").addEventListener("change", function () { state.status = this.value; renderList(); });
         document.addEventListener("click", function (e) {

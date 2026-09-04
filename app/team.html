@@ -696,7 +696,7 @@
       <p id="capacityLine" hidden></p>
 
       <h2 data-i18n="membersTitle">أعضاء الفريق</h2>
-      <p><button type="button" class="chat-option-btn" id="exportMembersBtn" data-i18n="exportCsv">تصدير CSV</button></p>
+      <p><button type="button" class="chat-option-btn" id="exportMembersXlsxBtn" data-i18n="exportXlsx">تصدير إكسل</button> <button type="button" class="chat-option-btn" id="exportMembersBtn" data-i18n="exportCsv">تصدير CSV</button></p>
       <p class="login-note" id="readOnlyNote" data-i18n="readOnlyNote" hidden>يمكن للمالك والمشرفين فقط إدارة الأعضاء والدعوات.</p>
       <div class="features-grid" id="membersGrid" role="list"></div>
       <p id="membersEmpty" data-i18n="membersEmpty" hidden>لا يوجد أعضاء بعد.</p>
@@ -789,7 +789,7 @@
     <!-- الدردشة داخل الفريق -->
     <div class="content chat-card" id="chatCard" hidden>
       <h2 data-i18n="chatTitle">تواصل الفريق</h2>
-      <p><button type="button" class="chat-option-btn" id="exportChatBtn" data-i18n="exportCsv">تصدير CSV</button></p>
+      <p><button type="button" class="chat-option-btn" id="exportChatXlsxBtn" data-i18n="exportXlsx">تصدير إكسل</button> <button type="button" class="chat-option-btn" id="exportChatBtn" data-i18n="exportCsv">تصدير CSV</button></p>
       <div class="chat-shell">
         <aside class="chat-threads" aria-label="المحادثات">
           <div class="chat-threads-title" data-i18n="chatThreads">المحادثات</div>
@@ -848,6 +848,11 @@
   <script>
     const translations = {
       ar: {
+        exportXlsx: "تصدير إكسل",
+        colDate: "التاريخ",
+        colFrom: "من",
+        colTo: "إلى",
+        colMessage: "الرسالة",
         exportCsv: "تصدير CSV",
         fCase: "القضية",
         title: "إدارة الفريق",
@@ -987,6 +992,11 @@
         dark: "داكن"
       },
       en: {
+        exportXlsx: "Export Excel",
+        colDate: "Date",
+        colFrom: "From",
+        colTo: "To",
+        colMessage: "Message",
         exportCsv: "Export CSV",
         fCase: "Case",
         title: "Team management",
@@ -1126,6 +1136,11 @@
         dark: "Dark"
       },
       fr: {
+        exportXlsx: "Exporter Excel",
+        colDate: "Date",
+        colFrom: "De",
+        colTo: "À",
+        colMessage: "Message",
         exportCsv: "Exporter CSV",
         fCase: "Affaire",
         title: "Gestion de l'équipe",
@@ -1265,6 +1280,11 @@
         dark: "Sombre"
       },
       ur: {
+        exportXlsx: "ایکسل ایکسپورٹ",
+        colDate: "تاریخ",
+        colFrom: "منجانب",
+        colTo: "بنام",
+        colMessage: "پیغام",
         exportCsv: "CSV برآمد",
         fCase: "مقدمہ",
         title: "ٹیم کا انتظام",
@@ -2246,23 +2266,38 @@
         $("membersGrid").addEventListener("change", onMembersChange);
         $("membersGrid").addEventListener("change", onPersonChange);
         $("invitationsList").addEventListener("click", onInvitationsClick);
-        $("exportMembersBtn").addEventListener("click", function () {
-          app.exportCsv("team-" + new Date().toISOString().slice(0, 10) + ".csv", state.members, [
+        function memberColumns() {
+          return [
             { label: t("membersTitle"), get: memberName },
             { label: t("emailLabel"), get: memberEmail },
             { label: t("roleLabel"), get: function (m) { return roleName(m.role); } },
+            { label: t("personKindLabel"), get: function (m) { return personKindName(m.person_kind); } },
+            { label: t("jobTitleLabel"), get: function (m) { return m.job_title || ""; } },
             { label: t("joinedLabel"), get: function (m) { return fmtDate(m.created_at); } }
-          ]);
+          ];
+        }
+        function stamp(ext) { return "team-" + new Date().toISOString().slice(0, 10) + "." + ext; }
+
+        $("exportMembersBtn").addEventListener("click", function () {
+          app.exportCsv(stamp("csv"), state.members, memberColumns());
+        });
+        $("exportMembersXlsxBtn").addEventListener("click", function () {
+          var b = $("exportMembersXlsxBtn"); b.disabled = true;
+          app.exportXlsx(stamp("xlsx"), state.members, memberColumns(), t("membersTitle"))
+            .catch(function () { toast(t("genericError"), "error"); })
+            .then(function () { b.disabled = false; });
         });
         $("exportChatBtn").addEventListener("click", function () {
           app.listTeamMessages(5000).then(function (rows) {
-            app.exportCsv("chat-" + new Date().toISOString().slice(0, 10) + ".csv", rows || [], [
-              { label: "date", get: function (m) { return fmtDate(m.created_at, { withTime: true }); } },
-              { label: "from", get: function (m) { return nameOf(m.author_id); } },
-              { label: "to", get: function (m) { return m.to_user_id ? nameOf(m.to_user_id) : t("chatTeam"); } },
-              { label: "message", get: function (m) { return m.body; } }
-            ]);
+            app.exportCsv("chat-" + new Date().toISOString().slice(0, 10) + ".csv", rows || [], chatColumns());
           }).catch(function (err) { toast(errorMessage(err), "error"); });
+        });
+        $("exportChatXlsxBtn").addEventListener("click", function () {
+          var b = $("exportChatXlsxBtn"); b.disabled = true;
+          app.listTeamMessages(5000).then(function (rows) {
+            return app.exportXlsx("chat-" + new Date().toISOString().slice(0, 10) + ".xlsx", rows || [], chatColumns(), t("chatTitle"));
+          }).catch(function (err) { toast(errorMessage(err), "error"); })
+            .then(function () { b.disabled = false; });
         });
         $("wlBoard").addEventListener("change", onAssignChange);
         wireDrag($("wlBoard"));
@@ -2276,6 +2311,15 @@
           wrap.hidden = !wrap.hidden;
           $("rasiToggle").textContent = t(wrap.hidden ? "rasiShowMatrix" : "rasiHideMatrix");
         });
+      function chatColumns() {
+        return [
+          { label: t("colDate"), get: function (m) { return fmtDate(m.created_at, { withTime: true }); } },
+          { label: t("colFrom"), get: function (m) { return nameOf(m.author_id); } },
+          { label: t("colTo"), get: function (m) { return m.to_user_id ? nameOf(m.to_user_id) : t("chatTeam"); } },
+          { label: t("colMessage"), get: function (m) { return m.body; } }
+        ];
+      }
+
       /* البحث عن مستخدم مسجل ثم دعوته بنقرة */
       function renderLookup(rows) {
         var box = $("lookupResult");
