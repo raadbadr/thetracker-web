@@ -2614,11 +2614,17 @@
     (function () {
       "use strict";
 
-      /* قاموس الصفحة ولغتها عامّان، أما دالتا الترجمة فتعيشان في نطاق آخر:
-         تُعرَّفان هنا وإلا توقف تدفق الاستيراد عند أول نص. */
+      /* t وfmt مستقلتان تماماً هنا: الاعتماد على translations/l من سكربت آخر
+         كان يرمي ReferenceError عند أول ملف يُرفع، فيموت الاستيراد كله قبل أي
+         طلب شبكة. القراءة الآن عبر مسار آمن لا يرمي أبداً. */
       function t(key) {
-        const d = translations[l] || translations.ar;
-        return d[key] || translations.ar[key] || key;
+        try {
+          var currentLang = typeof lang === "function" ? lang() : "ar";
+          var dict = (typeof translations !== "undefined" && (translations[currentLang] || translations.ar)) || null;
+          if (dict && dict[key] != null) return dict[key];
+          if (typeof translations !== "undefined" && translations.ar && translations.ar[key] != null) return translations.ar[key];
+        } catch (e) { /* السكربت المشترك لم يُحمَّل بعد؛ الرجوع للمفتاح نفسه */ }
+        return key;
       }
       function fmt(key, vars) {
         return String(t(key)).replace(/\{(\w+)\}/g, function (_, k) {
