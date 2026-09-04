@@ -2672,8 +2672,9 @@
           ["pStatValid", counts.valid, ""], ["pStatExpiring", counts.expiring, "status-open"],
           ["pStatExpired", counts.expired, "status-overdue"], ["pStatMissing", counts.missing, "status-overdue"]
         ].map(function (c) {
-          return '<div class="platform-stat-card"><div class="platform-stat-value ' + c[2] + '">' + c[1] +
-                 '</div><div class="platform-stat-label">' + esc(t(c[0])) + "</div></div>";
+          /* نفس ترتيب بطاقات الموقع: التسمية أولا ثم الرقم تحتها */
+          return '<div class="platform-stat-card"><h3 class="platform-stat-label">' + esc(t(c[0])) +
+                 '</h3><span class="platform-stat-value ' + c[2] + '">' + c[1] + "</span></div>";
         }).join("");
 
         var body = $("papersBody"); body.innerHTML = "";
