@@ -1,6 +1,5 @@
 .DS_Store
 *.zip
-.claude/
+.claude/*
 !.claude/skills/
-!.claude/skills/**
 .wrangler/
