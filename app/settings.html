@@ -1689,6 +1689,7 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
       var expanded = {};
       var state = {
         loaded: false,
+        linksLoaded: false,
         links: [],
         trackers: [],
         rules: [],
@@ -1848,8 +1849,11 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
       function reloadLinks() {
         return app.channelLinks().then(function (rows) {
           state.links = rows || [];
+          state.linksLoaded = true;
           renderChannels();
         }).catch(function (err) {
+          state.linksLoaded = true;      /* حتى مع الفشل تُرسم البطاقات مرة واحدة */
+          renderChannels();
           toast(errorMessage(err), "error");
         });
       }
@@ -1985,7 +1989,8 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
       }
 
       function renderChannels() {
-        if (!state.loaded) return;
+        /* القنوات بيانات: لا تُرسم قبل وصول حدود الباقة وروابط المستخدم */
+        if (!state.loaded || !state.limits || !state.linksLoaded) return;
         /* لا نعرض إلا القنوات التي تسمح بها الباقة (حاليا تيليغرام وحده). */
         var allowed = allowedChannels();
         CHANNELS.forEach(function (ch) {
@@ -2550,7 +2555,6 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
           state.loaded = true;
           fillProfile();
           fillOrgProfile();
-          renderChannels();
 
           el("profileForm").addEventListener("submit", saveProfile);
           el("orgProfileForm").addEventListener("submit", saveOrgProfile);
