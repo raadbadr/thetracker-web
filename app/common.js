@@ -512,6 +512,74 @@
     });
   }
 
+  /* ---------- مكتبة الإجراءات وسجل المخاطر ---------- */
+
+  function listProcesses() {
+    return run(function (client) {
+      var orgId = requireOrg();
+      return client.from("processes").select("*").eq("org_id", orgId).order("updated_at", { ascending: false }).then(unwrap);
+    });
+  }
+
+  function saveProcess(row) {
+    return run(function (client) {
+      var orgId = requireOrg();
+      var r = row || {};
+      var clean = {
+        name: String(r.name || "").trim(), area: r.area || null, description: r.description || null,
+        trigger_text: r.trigger_text || null, inputs: r.inputs || null, outputs: r.outputs || null,
+        frequency: r.frequency || null, owner_id: r.owner_id || null,
+        steps: Array.isArray(r.steps) ? r.steps : [], status: r.status || "draft"
+      };
+      if (!clean.name) throw new Error("name required");
+      if (r.id) return client.from("processes").update(clean).eq("id", r.id).eq("org_id", orgId).select("*").single().then(unwrap);
+      clean.org_id = orgId; clean.created_by = app.user.id;
+      return client.from("processes").insert(clean).select("*").single().then(unwrap);
+    });
+  }
+
+  function deleteProcess(id) {
+    return run(function (client) {
+      var orgId = requireOrg();
+      return client.from("processes").delete().eq("id", id).eq("org_id", orgId).then(unwrap);
+    });
+  }
+
+  function listRisks() {
+    return run(function (client) {
+      var orgId = requireOrg();
+      return client.from("risks").select("*").eq("org_id", orgId).order("updated_at", { ascending: false }).then(unwrap);
+    });
+  }
+
+  function saveRisk(row) {
+    return run(function (client) {
+      var orgId = requireOrg();
+      var r = row || {};
+      var n = function (v) { var x = parseInt(v, 10); return x >= 1 && x <= 5 ? x : null; };
+      var clean = {
+        title: String(r.title || "").trim(), category: r.category || null, client_name: r.client_name || null,
+        case_number: r.case_number || null, process_id: r.process_id || null, owner_id: r.owner_id || null,
+        description: r.description || null, identified_at: r.identified_at || null, review_at: r.review_at || null,
+        root_cause: r.root_cause || null, consequences: r.consequences || null, existing_controls: r.existing_controls || null,
+        likelihood: n(r.likelihood), impact: n(r.impact), res_likelihood: n(r.res_likelihood), res_impact: n(r.res_impact),
+        strategy: r.strategy || "mitigate", status: r.status || "open",
+        actions: Array.isArray(r.actions) ? r.actions : []
+      };
+      if (!clean.title) throw new Error("title required");
+      if (r.id) return client.from("risks").update(clean).eq("id", r.id).eq("org_id", orgId).select("*").single().then(unwrap);
+      clean.org_id = orgId; clean.created_by = app.user.id;
+      return client.from("risks").insert(clean).select("*").single().then(unwrap);
+    });
+  }
+
+  function deleteRisk(id) {
+    return run(function (client) {
+      var orgId = requireOrg();
+      return client.from("risks").delete().eq("id", id).eq("org_id", orgId).then(unwrap);
+    });
+  }
+
   function caseBundle(caseNumber) {
     return run(function (client) {
       var orgId = requireOrg();
@@ -1349,6 +1417,12 @@
     { href: "/app/documents.html", path: "documents",
       icon: '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2z"/>',
       labels: { ar: "المستندات", en: "Documents", fr: "Documents", ur: "دستاویزات" } },
+    { href: "/app/processes.html", path: "processes",
+      icon: '<path d="M3 5h8v4H3V5zm10 0h8v4h-8V5zM3 15h8v4H3v-4zm10 0h8v4h-8v-4zM7 9v6h2V9H7zm10 0v6h2V9h-2z"/>',
+      labels: { ar: "مكتبة الإجراءات", en: "Process library", fr: "Bibliothèque des procédures", ur: "طریقہ کار لائبریری" } },
+    { href: "/app/risks.html", path: "risks",
+      icon: '<path d="M12 2L2 7v6c0 5.25 3.75 10.15 10 11.5C18.25 23.15 22 18.25 22 13V7l-10-5zm-1 6h2v6h-2V8zm0 8h2v2h-2v-2z"/>',
+      labels: { ar: "إدارة المخاطر", en: "Risk management", fr: "Gestion des risques", ur: "خطرات کا انتظام" } },
     { href: "/app/team.html", path: "team",
       icon: '<path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>',
       labels: { ar: "الفريق", en: "Team", fr: "Équipe", ur: "ٹیم" } },
@@ -1530,6 +1604,12 @@
   app.isPlatformAdmin = isPlatformAdmin;
   app.activityFeed = activityFeed;
   app.achievements = achievements;
+  app.listProcesses = listProcesses;
+  app.saveProcess = saveProcess;
+  app.deleteProcess = deleteProcess;
+  app.listRisks = listRisks;
+  app.saveRisk = saveRisk;
+  app.deleteRisk = deleteRisk;
   app.caseBundle = caseBundle;
   app.listAttachments = listAttachments;
   app.uploadAttachment = uploadAttachment;
