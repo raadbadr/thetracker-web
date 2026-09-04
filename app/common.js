@@ -1421,7 +1421,7 @@
   var BELL_SEEN_KEY = "tracker_bell_seen";
 
   var TOPBAR_CSS = [
-    ".app-topbar{position:fixed;inset-block-start:52px;inset-inline:0;height:64px;box-sizing:border-box;z-index:45;display:flex;align-items:center;",
+    ".app-topbar{position:fixed;inset-block-start:var(--site-header-h,61px);inset-inline:0;height:64px;box-sizing:border-box;z-index:45;display:flex;align-items:center;",
     "justify-content:space-between;gap:1.5rem;padding:0 1.75rem;background:var(--glass);-webkit-backdrop-filter:blur(20px);",
     ".app-topbar>*{max-height:40px}",
     "backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-border);box-shadow:0 6px 18px rgba(0,0,0,.12)}",
@@ -1479,10 +1479,10 @@
     ".app-menu-panel.is-open{display:block}",
     ".app-menu-panel a{display:block;padding:.6rem .75rem;border-radius:10px;color:var(--text-secondary);font-size:.9rem;font-weight:600;text-decoration:none}",
     ".app-menu-panel a:hover{background:var(--glass-border);color:var(--text-primary)}",
-    "body.has-app-topbar{padding-top:116px}",
+    "body.has-app-topbar{padding-top:calc(var(--site-header-h,61px) + 64px)}",
     "body.has-app-topbar .container>.header{display:none}",   /* العناوين الكبيرة (لوحة التحكم/القضايا…) لا داعي لها: الموقع واضح من الشريطين */
     "body.has-app-topbar .container{padding-top:2rem}",
-    "body.has-app-topbar .app-sidebar{inset-block-start:116px}",
+    "body.has-app-topbar .app-sidebar{inset-block-start:calc(var(--site-header-h,61px) + 64px)}",
     "@media(max-width:900px){.app-topbar{position:static;height:auto;flex-wrap:wrap;padding:.5rem .75rem;gap:.5rem}",
     ".app-topnav{overflow-x:auto}",
     "body.has-app-topbar{padding-top:52px}.app-username{max-width:150px}",
@@ -1789,9 +1789,17 @@
     }
   }
 
+  function syncSiteHeaderHeight() {
+    var h = document.querySelector(".site-header");
+    var px = h ? Math.round(h.getBoundingClientRect().height) : 61;
+    if (px > 0) document.documentElement.style.setProperty("--site-header-h", px + "px");
+  }
+
   function mountTopbar() {
     if (document.getElementById("appTopbar")) return;
     if (!/^\/app\//.test(String(window.location.pathname || ""))) return;
+    syncSiteHeaderHeight();
+    window.addEventListener("resize", syncSiteHeaderHeight);
     var style = document.createElement("style");
     style.textContent = TOPBAR_CSS;
     document.head.appendChild(style);
