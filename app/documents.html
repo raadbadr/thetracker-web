@@ -667,7 +667,7 @@
     .import-details[open] summary { margin-bottom: .75rem; }
 
     /* معاينة الملف الخام: صغيرة، مكثفة، تتمرر داخل حدودها ولا تكسر البطاقة.
-       العمود الأول يبقى ظاهراً أثناء التمرير الأفقي. */
+       العمود الأول يبقى ظاهرا أثناء التمرير الأفقي. */
     .preview-wrap { max-height: 260px; overflow-y: auto; border: 1px solid var(--glass-border); border-radius: 12px; }
     .preview-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
     .preview-table th, .preview-table td {
@@ -738,7 +738,7 @@
     @media (max-width: 900px) {
       .container { max-width: 100%; padding: 1rem 0.75rem; }
       .content { padding: 1.25rem 1rem; }
-      /* كل شبكة متعددة الأعمدة تصير عموداً واحداً */
+      /* كل شبكة متعددة الأعمدة تصير عمودا واحدا */
       .dash-grid, .dash-grid--single, .ind-grid, .svc-grid, .dash-grid--single .svc-grid,
       .form-grid, .features-grid, .totals-row, .ach-row, .filters-row, .settings-grid {
         grid-template-columns: minmax(0, 1fr) !important;
@@ -746,7 +746,7 @@
       .stats-section .platform-stats-list,
       .stats-section.stats-top .platform-stats-list,
       .dash-side .platform-stats-list { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
-      /* كل جدول يتمرر أفقياً داخل حاويته ولا يمدّ الصفحة */
+      /* كل جدول يتمرر أفقيا داخل حاويته ولا يمد الصفحة */
       .table-wrap, .rasi-wrap, .preview-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
       .content table { max-width: none; }
       /* الحقول والأزرار بمقاس الإصبع، وخط 16 بكسل يمنع تكبير iOS التلقائي */
@@ -810,7 +810,7 @@
       <!-- (1) رفع مستند وفهمه -->
       <div class="content" id="uploadCard">
         <h2 data-i18n="docAddTitle">إضافة مستند أو جدول</h2>
-        <p data-i18n="docAddIntro">مستند يُقرأ، أو جدول تُستورد صفوفه.</p>
+        <p data-i18n="docAddIntro">المستند يقرأه النظام، والجدول تستورد صفوفه.</p>
         <div class="feature-card drop-zone" id="docDrop" tabindex="0" role="button">
           <svg class="drop-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 15v4H5v-4H3v6h18v-6h-2zM11 3v9.17l-2.59-2.58L7 11l5 5 5-5-1.41-1.41L13 12.17V3h-2z"/></svg>
           <p data-i18n="docDropHint">اسحب الملف أو اختره</p>
@@ -1004,8 +1004,8 @@
   <script>
     const translations = {
       ar: {
-        orgCreatedFromDoc: "أُنشئت «{name}» من السجل.",
-        orgProfileFilled: "حُدّثت بيانات المنشأة من المستند.",
+        orgCreatedFromDoc: "أنشئت «{name}» من السجل.",
+        orgProfileFilled: "حدثت بيانات المنشأة من المستند.",
         exportXlsx: "تصدير إكسل",
         templateBtn: "تنزيل القالب",
         importTitle: "استيراد من Excel",
@@ -1103,7 +1103,7 @@
         fCase: "القضية",
         title: "المستندات",
         docAddTitle: "إضافة مستند أو جدول",
-        docAddIntro: "مستند يُقرأ، أو جدول تُستورد صفوفه.",
+        docAddIntro: "المستند يقرأه النظام، والجدول تستورد صفوفه.",
         docDropHint: "اسحب الملف أو اختره",
         docChoose: "اختيار ملف",
         docDrive: "اختيار من Google Drive",
@@ -1136,13 +1136,15 @@
         papersNote: "الناقص والمنتهي يظهران هنا، والتذكير على تيليغرام.",
         papersState: "الحالة",
         pMissing: "ناقص",
-        pValid: "سارٍ",
+        pValid: "ساري",
         pExpiring: "ينتهي قريبا",
-        pExpired: "منتهٍ",
+        pExpired: "منته",
         pStored: "محفوظ بلا تاريخ",
         pRequired: "مطلوب",
         pOptional: "اختياري",
         pAdd: "أضف",
+        pOpen: "عرض",
+        pDownload: "تنزيل",
         pOpen: "افتح",
         pStatValid: "سارية",
         pStatExpiring: "تنتهي قريبا",
@@ -1441,6 +1443,8 @@
         pRequired: "Required",
         pOptional: "Optional",
         pAdd: "Add",
+        pOpen: "View",
+        pDownload: "Download",
         pOpen: "Open",
         pStatValid: "Valid",
         pStatExpiring: "Expiring",
@@ -1739,6 +1743,8 @@
         pRequired: "Obligatoire",
         pOptional: "Facultatif",
         pAdd: "Ajouter",
+        pOpen: "Voir",
+        pDownload: "Télécharger",
         pOpen: "Ouvrir",
         pStatValid: "Valides",
         pStatExpiring: "Bientôt expirés",
@@ -1991,7 +1997,7 @@
         kind_bylaws: "بنیادی قواعد",
         kind_chamber_certificate: "چیمبر آف کامرس سرٹیفکیٹ",
         kind_gosi_certificate: "GOSI سرٹیفکیٹ",
-        kind_zakat_certificate: "زکوٰۃ سرٹیفکیٹ",
+        kind_zakat_certificate: "زکوۃ سرٹیفکیٹ",
         kind_saudization_certificate: "سعودائزیشن سرٹیفکیٹ",
         kind_lease_contract: "کرایہ نامہ",
         fCase: "مقدمہ",
@@ -2037,6 +2043,8 @@
         pRequired: "لازمی",
         pOptional: "اختیاری",
         pAdd: "شامل کریں",
+        pOpen: "دیکھیں",
+        pDownload: "ڈاؤن لوڈ",
         pOpen: "کھولیں",
         pStatValid: "مؤثر",
         pStatExpiring: "جلد ختم",
@@ -2408,7 +2416,7 @@
 
       function handleFile(file) {
         if (!file) return;
-        /* جدول بيانات يذهب إلى الاستيراد، والمستند يُقرأ ويُحفظ: منطقة رفع واحدة تكفي */
+        /* جدول بيانات يذهب إلى الاستيراد، والمستند يقرأ ويحفظ: منطقة رفع واحدة تكفي */
         if (isSheetFile(file)) {
           state.pendingKind = null;
           setStatus("");
@@ -2482,7 +2490,7 @@
         return saveProfileFields(f, map, name, number);
       }
 
-      /* تُملأ الحقول الفارغة فقط: ما أدخله المستخدم لا يُمس */
+      /* تملأ الحقول الفارغة فقط: ما أدخله المستخدم لا يمس */
       function saveProfileFields(f, map, name, number) {
         return app.orgProfile().then(function (current) {
           var have = current || {};
@@ -2629,6 +2637,21 @@
         expiring: { key: "pExpiring", cls: "status-open" }, valid: { key: "pValid", cls: "status-done" },
         stored: { key: "pStored", cls: "" } };
 
+      /* ملف الورقة المحفوظ: أول مرفق للعنصر الذي تمثله */
+      function paperFile(p) {
+        if (!p || !p.item_id) return null;
+        var list = state.attachments[p.item_id] || [];
+        return list.length ? list[0] : null;
+      }
+
+      function attachmentById(id) {
+        var found = null;
+        Object.keys(state.attachments).forEach(function (k) {
+          state.attachments[k].forEach(function (a) { if (a.id === id) found = a; });
+        });
+        return found;
+      }
+
       function renderPapers() {
         var data = state.papers;
         if (!data || !data.papers || !data.papers.length) { show("papersCard", false); return; }
@@ -2661,6 +2684,8 @@
             '<td><span class="' + st.cls + '">' + esc(p.state === "missing" ? "-" : left) + "</span></td>" +
             '<td><span class="' + st.cls + '">' + esc(t(st.key)) + "</span></td>" +
             '<td><div class="chat-options row-actions">' +
+              (paperFile(p) ? '<button type="button" class="chat-option-btn" data-paper-open="' + esc(paperFile(p).id) + '">' + esc(t("pOpen")) + "</button>" +
+                              '<button type="button" class="chat-option-btn" data-paper-get="' + esc(paperFile(p).id) + '">' + esc(t("pDownload")) + "</button>" : "") +
               '<button type="button" class="chat-option-btn" data-paper-add="' + esc(p.kind) + '">' +
                 esc(t(p.state === "missing" ? "pAdd" : "docReplace")) + "</button>" +
             "</div></td>";
@@ -2748,6 +2773,20 @@
           state.pendingKind = btn.getAttribute("data-paper-add");
           $("docFile").click();
         });
+        $("papersBody").addEventListener("click", function (e) {
+          var open = e.target.closest("[data-paper-open]"), get = e.target.closest("[data-paper-get]");
+          if (!open && !get) return;
+          e.preventDefault();
+          var att = attachmentById((open || get).getAttribute(open ? "data-paper-open" : "data-paper-get"));
+          if (!att) return;
+          app.attachmentUrl(att).then(function (u) {
+            if (!u) return;
+            if (open) { window.open(u, "_blank", "noopener"); return; }
+            var a = document.createElement("a");
+            a.href = u; a.download = att.name || "document";
+            document.body.appendChild(a); a.click(); a.remove();
+          }).catch(function () { setStatus(t("docFailed"), "error"); });
+        });
         $("docsBody").addEventListener("click", function (e) {
           var o = e.target.closest("[data-open]"), d = e.target.closest("[data-del]");
           if (o) {
@@ -2786,16 +2825,16 @@
     (function () {
       "use strict";
 
-      /* t وfmt مستقلتان تماماً هنا: الاعتماد على translations/l من سكربت آخر
-         كان يرمي ReferenceError عند أول ملف يُرفع، فيموت الاستيراد كله قبل أي
-         طلب شبكة. القراءة الآن عبر مسار آمن لا يرمي أبداً. */
+      /* t وfmt مستقلتان تماما هنا: الاعتماد على translations/l من سكربت آخر
+         كان يرمي ReferenceError عند أول ملف يرفع، فيموت الاستيراد كله قبل أي
+         طلب شبكة. القراءة الآن عبر مساري آمن لا يرمي أبدا. */
       function t(key) {
         try {
           var currentLang = typeof lang === "function" ? lang() : "ar";
           var dict = (typeof translations !== "undefined" && (translations[currentLang] || translations.ar)) || null;
           if (dict && dict[key] != null) return dict[key];
           if (typeof translations !== "undefined" && translations.ar && translations.ar[key] != null) return translations.ar[key];
-        } catch (e) { /* السكربت المشترك لم يُحمَّل بعد؛ الرجوع للمفتاح نفسه */ }
+        } catch (e) { /* السكربت المشترك لم يحمل بعد؛ الرجوع للمفتاح نفسه */ }
         return key;
       }
       function fmt(key, vars) {
@@ -2935,7 +2974,7 @@
           try {
             let wb;
             if (ext === "json") {
-              /* JSON: مصفوفة كائنات، أو {rows|items|data: [...]} — تتحول إلى ورقة فيمر بالمسار نفسه */
+              /* JSON: مصفوفة كائنات، أو {rows|items|data: [...]} — تتحول إلى ورقة فيمر بالمساري نفسه */
               const body = JSON.parse(String(reader.result || "").replace(/^\ufeff/, ""));
               const rows = Array.isArray(body) ? body : (body.rows || body.items || body.data || []);
               if (!Array.isArray(rows) || !rows.length) throw new Error("no rows");
@@ -2997,7 +3036,7 @@
         return null;
       }
 
-      /* أسطر مرشحة ليكون أحدها صف العناوين، تُعرض على المستخدم حين لا نثق بالتخمين */
+      /* أسطر مرشحة ليكون أحدها صف العناوين، تعرض على المستخدم حين لا نثق بالتخمين */
       function candidateHeaderRows(aoa) {
         const scanTo = Math.min(aoa.length, 15);
         const out = [];
@@ -3053,7 +3092,7 @@
           for (let c = 0; c < width; c++) row[c] = c < src.length ? src[c] : null;
           rows.push(row);
         }
-        /* واثقون إن حُدّد الصف يدوياً، أو إن أغلب الأعمدة حملت نصاً حقيقياً لا أسماء احتياطية */
+        /* واثقون إن حدد الصف يدويا، أو إن أغلب الأعمدة حملت نصا حقيقيا لا أسماء احتياطية */
         const confident = typeof forcedRow === "number" || (width > 0 && fallbackCount / width <= 0.3);
         return { headers: headers, rows: rows, confident: confident, headerRow: hi, candidates: candidateHeaderRows(aoa) };
       }
@@ -3102,7 +3141,7 @@
         setMsg(els.importProgress, "");
       }
 
-      /* الصف لم يُلتقط بثقة: تنبيه واحد + منتقي صفوف بديل، بدل ترك المستخدم
+      /* الصف لم يلتقط بثقة: تنبيه واحد + منتقي صفوف بديل، بدل ترك المستخدم
          أمام أعمدة "عمود 1، عمود 2..." بلا معنى. */
       function renderHeaderPicker(confident) {
         if (!els.headerPicker) return;
@@ -3242,7 +3281,7 @@
         }
       }
 
-      /* الحقول الأساسية تظهر مباشرة، والباقي تحت "تفاصيل إضافية" — الواجهة تنظّم
+      /* الحقول الأساسية تظهر مباشرة، والباقي تحت "تفاصيل إضافية" — الواجهة تنظم
          حسب حقولنا نحن لا حسب فوضى الملف الوارد. */
       function renderMapping() {
         els.mappingGrid.innerHTML = "";
@@ -3448,7 +3487,7 @@
       async function runImport() {
         if (state.busy) return;
         const m = state.mapping;
-        /* في وضع المخالفات يُبنى العنوان من رقم المخالفة، فلا يلزم عمود عنوان */
+        /* في وضع المخالفات يبنى العنوان من رقم المخالفة، فلا يلزم عمود عنوان */
         var needsTitle = state.mode !== "violations";
         if ((needsTitle && m.title < 0) || m.due < 0) {
           setMsg(els.importProgress, t(needsTitle ? "mappingRequired" : "mappingRequiredDue"), "error"); return;
@@ -3615,7 +3654,7 @@
         els.importAnotherBtn.addEventListener("click", resetFlow);
       }
 
-      /* عناصر الاستيراد تُجمع مرة واحدة، وتُطلب عند أول ملف حتى لو تعثر الإقلاع */
+      /* عناصر الاستيراد تجمع مرة واحدة، وتطلب عند أول ملف حتى لو تعثر الإقلاع */
       function buildEls() {
         if (els && els.importFlow) return els;
         els = {
@@ -3637,7 +3676,7 @@
         return els;
       }
 
-      /* الجسر يُعرَّف فوراً لا داخل الإقلاع: الجدول يُقرأ حتى لو تعثر أي شيء آخر */
+      /* الجسر يعرف فورا لا داخل الإقلاع: الجدول يقرأ حتى لو تعثر أي شيء آخر */
       window.trackerImport = {
         extensions: ALLOWED_EXT.slice(),
         accept: function (file) {

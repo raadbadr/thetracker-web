@@ -845,7 +845,7 @@
     @media (max-width: 900px) {
       .container { max-width: 100%; padding: 1rem 0.75rem; }
       .content { padding: 1.25rem 1rem; }
-      /* كل شبكة متعددة الأعمدة تصير عموداً واحداً */
+      /* كل شبكة متعددة الأعمدة تصير عمودا واحدا */
       .dash-grid, .dash-grid--single, .ind-grid, .svc-grid, .dash-grid--single .svc-grid,
       .form-grid, .features-grid, .totals-row, .ach-row, .filters-row, .settings-grid {
         grid-template-columns: minmax(0, 1fr) !important;
@@ -853,7 +853,7 @@
       .stats-section .platform-stats-list,
       .stats-section.stats-top .platform-stats-list,
       .dash-side .platform-stats-list { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
-      /* كل جدول يتمرر أفقياً داخل حاويته ولا يمدّ الصفحة */
+      /* كل جدول يتمرر أفقيا داخل حاويته ولا يمد الصفحة */
       .table-wrap, .rasi-wrap, .preview-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
       .content table { max-width: none; }
       /* الحقول والأزرار بمقاس الإصبع، وخط 16 بكسل يمنع تكبير iOS التلقائي */
@@ -2670,7 +2670,7 @@
         return app.fmtDate(iso);
       }
 
-      /* شريط باركينزي: المسار زمني، المعالم علامات ملونة، والمقبض يقف على "الان" */
+      /* شريط باركينزي: المساري زمني، المعالم علامات ملونة، والمقبض يقف على "الان" */
       var TLX_STEPS = 10000;
       var TLX_THUMB_W = 36;
 
@@ -2868,7 +2868,7 @@
       }
 
       /* الأرقام تظهر مرة واحدة بعد وصولها كلها، لا صفرا ثم قيمة */
-      /* لا يُعاد رسم بطاقة بمحتوى مطابق، ولا تظهر بطاقة قبل محتواها */
+      /* لا يعاد رسم بطاقة بمحتوى مطابق، ولا تظهر بطاقة قبل محتواها */
       function paintEl(el) {
         return {
           set html(v) {
@@ -3487,7 +3487,7 @@
           '<div class="total-card"><span class="total-label">' + esc(T("expDue")) + '</span><span class="total-value">' + money(t.due) + "</span></div>";
       }
 
-      /* أعمدة الأشهر بالمبالغ لا بالعدد: المصروف يُقرأ بالريال */
+      /* أعمدة الأشهر بالمبالغ لا بالعدد: المصروف يقرأ بالريال */
       function monthBarsHtml(values) {
         var max = Math.max.apply(null, values.concat([1]));
         var bars = '<div class="chart-bars">';
