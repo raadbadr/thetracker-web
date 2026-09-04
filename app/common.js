@@ -543,6 +543,58 @@
 
   app.ready = init();
 
+  /* ------------------------------------------------------------
+   * حارس الرسم: لا ارتعاش ولا ظهور من الأسفل. الصفحة تبقى على بطاقة التحميل وحدها
+   * حتى تصل بياناتها ويهدأ رسمها، ثم تظهر كاملة مرة واحدة من أعلى الصفحة.
+   * (أمر المهندس رعد: «تحميل الصفحة يكتمل ويظهر من فوق، ما أبغى حركات الارتعاش»)
+   * ------------------------------------------------------------ */
+  var BOOT_CLASS = "app-booting";
+  function bootGuardStart() {
+    if (!/^\/app\//.test(String(window.location.pathname || ""))) return;
+    try { if ("scrollRestoration" in history) history.scrollRestoration = "manual"; } catch (e) { /* ignore */ }
+    document.documentElement.classList.add(BOOT_CLASS);
+    var style = document.createElement("style");
+    style.id = "appBootGuard";
+    style.textContent =
+      "html." + BOOT_CLASS + " .container>*:not(#loadingCard),html." + BOOT_CLASS + " #appTopbar,html." + BOOT_CLASS + " #appSidebar{visibility:hidden!important}" +
+      "html." + BOOT_CLASS + " #loadingCard,html." + BOOT_CLASS + " #loadingCard[hidden]{display:block!important;visibility:visible!important}" +
+      "html." + BOOT_CLASS + " *{transition:none!important;animation-duration:0s!important}";
+    document.head.appendChild(style);
+    /* لا تُترك الصفحة مخفية أبدا: مهما حدث تظهر بعد 8 ثوان */
+    setTimeout(function () { bootGuardReveal(); }, 8000);
+  }
+  var revealed = false;
+  function bootGuardReveal() {
+    if (revealed) return;
+    revealed = true;
+    var finish = function () {
+      document.documentElement.classList.remove(BOOT_CLASS);
+      var hash = String(window.location.hash || "").slice(1);
+      var target = hash ? document.getElementById(hash) : null;
+      if (target && target.scrollIntoView) target.scrollIntoView({ block: "start" });
+      else window.scrollTo(0, 0);
+      var style = document.getElementById("appBootGuard");
+      if (style) setTimeout(function () { style.remove(); }, 50);
+    };
+    if (window.requestAnimationFrame) requestAnimationFrame(function () { requestAnimationFrame(finish); }); else finish();
+  }
+  /* يهدأ الرسم = لا تغيير في الشجرة لمدة 300ms بعد جاهزية البيانات (وبحد أقصى 3 ثوان) */
+  function settleThenReveal() {
+    if (revealed) return;
+    var timer = null;
+    var done = function () { if (obs) obs.disconnect(); bootGuardReveal(); };
+    var arm = function () { clearTimeout(timer); timer = setTimeout(done, 300); };
+    var obs = window.MutationObserver ? new MutationObserver(arm) : null;
+    if (obs) obs.observe(document.body, { childList: true, subtree: true, characterData: true });
+    arm();
+    setTimeout(done, 3000);
+  }
+  bootGuardStart();
+  app.ready.then(function (res) {
+    if (!res || res.unavailable) { bootGuardReveal(); return; }
+    settleThenReveal();
+  }, function () { bootGuardReveal(); });
+
   /* ============================================================
    * Organizations & plans
    * ============================================================ */
