@@ -449,6 +449,21 @@ async function handleTelegramCallback(env, cq) {
     let out;
     try { out = await executeAction(env, owner, intent, lang); }
     catch (e) { out = { text: /PLAN_LIMIT/.test(String((e && e.message) || e)) ? b.importLimit : b.importFailed, extra: menuKeyboard(lang) }; }
+    if (out.keepDraft) { try { await rpc(env, "telegram_draft_put", { p_secret: env.WORKER_SECRET, p_chat_id: String(chatId), p_user_id: owner, p_payload: { type: "action", intent } }); } catch {} }
+    try { await sendTelegram(env, chatId, out.text, out.extra); } catch {}
+    return json({ ok: true });
+  }
+  // اختيار القضية/المخالفة التي تتبعها المهمة
+  if (data.startsWith("par:")) {
+    let draft = null;
+    try { draft = await rpc(env, "telegram_draft_take", { p_secret: env.WORKER_SECRET, p_chat_id: String(chatId) }); } catch {}
+    const intent = draft && draft.payload && draft.payload.type === "action" ? draft.payload.intent : null;
+    if (!intent || String(draft.user_id) !== String(owner)) { try { await sendTelegram(env, chatId, b.importExpired, menuKeyboard(lang)); } catch {} return json({ ok: true }); }
+    intent.item = intent.item || {}; intent.item.parent_id = data.slice(4);
+    await sendChatAction(env, chatId, "typing");
+    let out;
+    try { out = await executeAction(env, owner, intent, lang); }
+    catch (e) { out = { text: /PLAN_LIMIT/.test(String((e && e.message) || e)) ? b.importLimit : b.importFailed, extra: menuKeyboard(lang) }; }
     try { await sendTelegram(env, chatId, out.text, out.extra); } catch {}
     return json({ ok: true });
   }

@@ -229,6 +229,7 @@
     .rasi-code { direction: ltr; unicode-bidi: isolate; }
     #rasiMatrixWrap { margin-top: 1rem; }
     .quick-add { grid-template-columns: minmax(0, 1fr) 170px auto; margin-bottom: 0.5rem; }
+    .quick-parent { margin-bottom: 0.5rem; }
     @media (max-width: 720px) { .quick-add { grid-template-columns: 1fr; } }
     .user-row {
       display: grid;
@@ -735,6 +736,10 @@
         <select class="waitlist-input" id="quickAddMember" aria-label="المنفّذ"></select>
         <button type="submit" class="waitlist-btn" id="quickAddBtn" data-i18n="quickAddBtn">إضافة</button>
       </form>
+      <div class="invite-row quick-parent" id="quickParentRow" hidden>
+        <select class="waitlist-input" id="quickAddParent" aria-label="القضية أو المخالفة"></select>
+        <button type="button" class="waitlist-btn" id="quickParentBtn" data-i18n="quickAddLink">اربط وسجّل</button>
+      </div>
       <p class="waitlist-msg" id="quickAddMsg" role="status" aria-live="polite" hidden></p>
 
       <h3 class="invite-block-title" data-i18n="quickTitle">توزيع سريع</h3>
@@ -870,6 +875,8 @@
         quickAddParsing: "جارٍ الفهم…",
         quickAddDone: "سُجّلت «{title}»{who}.",
         quickAddNoTitle: "لم أفهم مهمة من هذا النص — اكتب عنوانها على الأقل.",
+        quickAddNeedsParent: "لأي قضية أو مخالفة تتبع هذه المهمة؟ — لا مهمة بلا أصل.",
+        quickAddLink: "اربط وسجّل",
         unassignedTitle: "أعمال بلا صاحب",
         unassignedEmpty: "كل الأعمال مُسندة.",
         wlOpen: "جارية",
@@ -989,6 +996,8 @@
         quickAddParsing: "Understanding…",
         quickAddDone: "Recorded \"{title}\"{who}.",
         quickAddNoTitle: "I could not read a task from that — at least give it a title.",
+        quickAddNeedsParent: "Which case or violation does this task belong to? — no task stands alone.",
+        quickAddLink: "Link and record",
         unassignedTitle: "Unassigned work",
         unassignedEmpty: "All work is assigned.",
         wlOpen: "Open",
@@ -1108,6 +1117,8 @@
         quickAddParsing: "Analyse…",
         quickAddDone: "« {title} » enregistrée{who}.",
         quickAddNoTitle: "Aucune tâche lisible dans ce texte — donnez au moins un titre.",
+        quickAddNeedsParent: "À quelle affaire ou infraction cette tâche appartient-elle ? — aucune tâche isolée.",
+        quickAddLink: "Lier et enregistrer",
         unassignedTitle: "Travail non attribué",
         unassignedEmpty: "Tout le travail est attribué.",
         wlOpen: "En cours",
@@ -1227,6 +1238,8 @@
         quickAddParsing: "سمجھ رہا ہوں…",
         quickAddDone: "«{title}» درج ہو گیا{who}۔",
         quickAddNoTitle: "اس متن سے کوئی کام سمجھ نہیں آیا — کم از کم عنوان لکھیں۔",
+        quickAddNeedsParent: "یہ کام کس مقدمے یا خلاف ورزی سے متعلق ہے؟ — کوئی کام الگ نہیں۔",
+        quickAddLink: "منسلک کریں اور درج کریں",
         unassignedTitle: "بغیر ذمہ دار کام",
         unassignedEmpty: "تمام کام تفویض ہو چکے ہیں۔",
         wlOpen: "جاری",
@@ -1875,27 +1888,60 @@
         return null;
       }
 
+      /* قاعدة: المهمة تتبع قضية أو مخالفة دائماً؛ إن لم يُعرف الأصل من النص تُعرض المرشّحات للاختيار */
+      var pendingAdd = null;
+
+      function submitQuickAdd(payload, assignee) {
+        var input = $("quickAddText"), msg = $("quickAddMsg");
+        return app.quickAddItem(payload, assignee).then(function (res) {
+          if (res && res.status === "needs_parent") {
+            pendingAdd = { payload: payload, assignee: assignee };
+            var sel = $("quickAddParent");
+            sel.innerHTML = (res.candidates || []).map(function (c) {
+              var label = [c.title, c.client_name, c.case_number ? t("fCase") + " " + c.case_number : "", c.violation_number ? "#" + c.violation_number : ""].filter(Boolean).join(" — ");
+              return '<option value="' + esc(c.id) + '">' + esc(label) + "</option>";
+            }).join("");
+            show("quickParentRow", true);
+            msg.className = "waitlist-msg"; msg.textContent = t("quickAddNeedsParent");
+            return null;
+          }
+          var who = assignee ? " — " + nameOf(assignee) : "";
+          var title = (res && res.title) || payload.title;
+          msg.className = "waitlist-msg success"; msg.textContent = tf("quickAddDone", { title: title, who: who });
+          toast(tf("quickAddDone", { title: title, who: who }), "success");
+          pendingAdd = null; show("quickParentRow", false);
+          input.value = ""; $("quickAddMember").value = "";
+          return loadWork();
+        });
+      }
+
       function onQuickAdd(ev) {
         ev.preventDefault();
         var input = $("quickAddText"), btn = $("quickAddBtn"), msg = $("quickAddMsg");
         var text = String(input.value || "").trim();
         if (!text) { input.focus(); return; }
         btn.disabled = true; msg.hidden = false; msg.className = "waitlist-msg"; msg.textContent = t("quickAddParsing");
+        show("quickParentRow", false); pendingAdd = null;
         app.parseIntent(text).then(function (intent) {
           var it = (intent && intent.item) || {};
           if (!it.title) it.title = text.slice(0, 160);
           var chosen = $("quickAddMember").value || null;
           var m = !chosen && intent && intent.member ? memberByName(intent.member) : null;
           var assignee = chosen || (m ? m.user_id : null);
-          return app.quickAddItem({ kind: it.kind || "task", title: it.title, due_at: it.due_at || null, amount: it.amount, client_name: it.client_name, case_number: it.case_number, violation_number: it.violation_number, location: it.location, notes: it.notes }, assignee)
-            .then(function (res) {
-              var who = assignee ? " — " + nameOf(assignee) : "";
-              msg.className = "waitlist-msg success"; msg.textContent = tf("quickAddDone", { title: (res && res.title) || it.title, who: who });
-              toast(tf("quickAddDone", { title: (res && res.title) || it.title, who: who }), "success");
-              input.value = ""; $("quickAddMember").value = "";
-              return loadWork();
-            });
+          return submitQuickAdd({ kind: it.kind || "task", title: it.title, due_at: it.due_at || null, amount: it.amount, client_name: it.client_name, case_number: it.case_number, violation_number: it.violation_number, location: it.location, notes: it.notes }, assignee);
         }).catch(function (err) {
+          msg.className = "waitlist-msg error"; msg.textContent = errorMessage(err);
+        }).then(function () { btn.disabled = false; });
+      }
+
+      function onQuickParent() {
+        if (!pendingAdd) return;
+        var sel = $("quickAddParent"), btn = $("quickParentBtn"), msg = $("quickAddMsg");
+        if (!sel.value) return;
+        btn.disabled = true;
+        var payload = {}; for (var k in pendingAdd.payload) if (Object.prototype.hasOwnProperty.call(pendingAdd.payload, k)) payload[k] = pendingAdd.payload[k];
+        payload.parent_id = sel.value;
+        submitQuickAdd(payload, pendingAdd.assignee).catch(function (err) {
           msg.className = "waitlist-msg error"; msg.textContent = errorMessage(err);
         }).then(function () { btn.disabled = false; });
       }
@@ -2031,6 +2077,7 @@
         $("rasiSearch").addEventListener("input", function () { renderRasi(); });
         $("quickList").addEventListener("click", onQuickClick);
         $("quickAddForm").addEventListener("submit", onQuickAdd);
+        $("quickParentBtn").addEventListener("click", onQuickParent);
         $("rasiToggle").addEventListener("click", function () {
           var wrap = $("rasiMatrixWrap");
           wrap.hidden = !wrap.hidden;

@@ -118,6 +118,12 @@ export async function executeAction(env, userId, intent, lang) {
   const b = botText(lang);
   if (intent.action === "add") {
     const r = await rpc(env, "telegram_add_item", { p_secret: env.WORKER_SECRET, p_user_id: userId, p_item: intent.item || {} });
+    if (r && r.status === "needs_parent") {
+      const cands = Array.isArray(r.candidates) ? r.candidates.slice(0, 6) : [];
+      if (!cands.length) return { text: b.noParents, extra: menuKeyboard(lang) };
+      const rows = cands.map((c) => [{ text: [c.title, c.client_name, c.case_number ? `${b.fCase} ${c.case_number}` : null].filter(Boolean).join(" — ").slice(0, 60), callback_data: "par:" + c.id }]);
+      return { text: b.needsParent, extra: { reply_markup: { inline_keyboard: rows } }, keepDraft: true };
+    }
     return { text: b.actSaved(r && r.item_number, (intent.item && intent.item.title) || "", r && r.tracker_name, !!(r && r.tracker_new)), extra: urlButton(b.openDash, DASHBOARD_URL) };
   }
   if (intent.action === "done") {
