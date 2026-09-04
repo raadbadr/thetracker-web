@@ -6,6 +6,7 @@
 
 import { handleAssistantRequest, askAssistant } from "./assistant.js";
 import { handleTranslate } from "./translate.js";
+import { serveBundle } from "./bundles.js";
 import { handleCalendar } from "./calendar.js";
 import { handleDocumentAnalyze } from "./documents.js";
 import { runNotificationCron, linkChannelByCode, notifyTarget, sendTelegram, sendWhatsapp, sendSms, sendEmail, rpc, t as channelText,
@@ -720,7 +721,14 @@ export default {
     }
 
     // Only handle /api/* routes — everything else is static assets
-    if (!path.startsWith("/api/")) return env.ASSETS.fetch(request);
+    if (!path.startsWith("/api/")) {
+      /* ملف مقسم أجزاء؟ يُجمَّع كما هو؛ وإلا يُخدم من الأصول الثابتة */
+      if (/\.(js|css)$/.test(path)) {
+        try { const bundled = await serveBundle(request, env, url); if (bundled) return bundled; }
+        catch (e) { console.log("bundle error", path, String(e && e.message || e)); }
+      }
+      return env.ASSETS.fetch(request);
+    }
 
     // CORS preflight
     if (request.method === "OPTIONS") {

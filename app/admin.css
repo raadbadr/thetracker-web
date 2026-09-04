@@ -1,0 +1,451 @@
+    /* Cross-browser reset + font enforcement (verbatim from login.html) */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    html {
+      -webkit-text-size-adjust: 100%;
+      -moz-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+    button, input, select, textarea, optgroup {
+      font-family: inherit;
+      font-size: inherit;
+      line-height: inherit;
+      color: inherit;
+      margin: 0;
+    }
+    button, [type="button"], [type="reset"], [type="submit"] {
+      -webkit-appearance: button;
+      appearance: button;
+    }
+    img, svg, video, canvas {
+      display: block;
+      max-width: 100%;
+    }
+    a { color: inherit; }
+
+    /* Theme tokens (verbatim from login.html; --secondary/--accent/--warning/--text-dim added verbatim from index.html
+       because the feature-card gradient border references them) */
+    :root, [data-theme="light"] {
+      --primary: rgb(0, 104, 184);
+      --btn-ink: rgb(255, 255, 255);
+      --primary-light: rgb(25, 140, 220);
+      --primary-dark: rgb(0, 88, 160);
+      --secondary: rgb(0, 130, 190);
+      --accent: rgb(50, 150, 200);
+      --text-primary: rgb(26, 26, 38);
+      --text-secondary: rgb(77, 77, 89);
+      --text-tertiary: rgb(100, 112, 128);
+      --text-dim: rgb(125, 135, 150);
+      --bg-top: rgb(250, 252, 255);
+      --bg-mid: rgb(242, 247, 252);
+      --bg-bottom: rgb(237, 245, 250);
+      --glass: rgba(255,255,255,0.85);
+      --glass-border: rgba(0,0,0,0.08);
+      --glass-strong: rgba(255, 255, 255, 0.95);
+      --shadow-light: rgba(255, 255, 255, 0.3);
+      --shadow-dark: rgba(0, 0, 0, 0.08);
+      --white: #ffffff;
+      --primary-shadow: rgba(0, 104, 184, 0.3);
+      --success: rgb(52, 199, 89);
+      --warning: rgb(255, 159, 10);
+      --error: rgb(255, 59, 48);
+    }
+    [data-theme="dark"] {
+      --primary: rgb(0, 160, 210);
+      --btn-ink: rgb(16, 32, 42);
+      --primary-light: rgb(40, 180, 220);
+      --primary-dark: rgb(0, 140, 190);
+      --secondary: rgb(0, 160, 210);
+      --accent: rgb(50, 160, 210);
+      --text-primary: rgb(255, 255, 255);
+      --text-secondary: rgba(255, 255, 255, 0.7);
+      --text-tertiary: rgba(255, 255, 255, 0.55);
+      --text-dim: rgba(255, 255, 255, 0.4);
+      --bg-top: rgb(31, 46, 56);
+      --bg-mid: rgb(26, 41, 51);
+      --bg-bottom: rgb(20, 36, 46);
+      --glass: rgba(255,255,255,0.08);
+      --glass-border: rgba(255,255,255,0.15);
+      --glass-strong: rgba(255, 255, 255, 0.12);
+      --shadow-light: rgba(255, 255, 255, 0.05);
+      --shadow-dark: rgba(5, 10, 15, 0.3);
+      --primary-shadow: rgba(0, 160, 210, 0.35);
+      --success: rgb(52, 199, 89);
+      --warning: rgb(255, 159, 10);
+      --error: rgb(255, 59, 48);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { background: var(--bg-bottom); }
+    body {
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      background: linear-gradient(135deg, var(--bg-top), var(--bg-bottom));
+      color: var(--text-primary);
+      line-height: 1.8;
+      min-height: 100vh;
+    }
+    .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+    body.has-site-header { padding-top: 52px; }
+    .header {
+      text-align: center;
+      padding: 3rem 2rem;
+      background: var(--glass);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      margin-bottom: 2rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+    [data-theme="dark"] .header { box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .content {
+      background: var(--glass);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      padding: 3rem;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+    [data-theme="dark"] .content { box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+    h2 {
+      font-size: 1.8rem;
+      margin: 2rem 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--primary);
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    h2:first-of-type { margin-top: 0; }
+    p { margin-bottom: 1rem; color: var(--text-secondary); }
+    .content a { color: var(--primary); text-decoration: none; }
+    .content a:hover { text-decoration: underline; }
+    .highlight { font-weight: 600; color: var(--primary); }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: var(--white);
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px var(--primary-shadow);
+    }
+    .back-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px var(--primary-shadow);
+    }
+    /* Form controls (verbatim from index.html / login.html) */
+    .waitlist-form {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+    .waitlist-input {
+      flex: 1;
+      min-width: 140px;
+      padding: 0.7rem 0.85rem;
+      border-radius: 10px;
+      border: 1px solid var(--glass-border);
+      background: var(--glass);
+      color: var(--text-primary);
+      font-size: 0.9rem;
+    }
+    .waitlist-input::placeholder { color: var(--text-tertiary); }
+    .waitlist-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(0, 160, 210, 0.2);
+    }
+    /* Native <select> popups ignore the glass background; keep the options readable with the theme tokens only. */
+    .waitlist-input option { color: var(--text-primary); background: var(--bg-mid); }
+    .waitlist-btn {
+      padding: 0.7rem 1.2rem;
+      border-radius: 10px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .waitlist-btn:hover { background: var(--primary-light); transform: translateY(-1px); }
+    .waitlist-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+    .waitlist-msg { margin-top: 0.5rem; font-size: 0.85rem; }
+    .waitlist-msg.success { color: var(--success); }
+    .waitlist-msg.error { color: var(--error); }
+    /* Card layout (verbatim from login.html) */
+    .login-intro { text-align: center; }
+    .login-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+    .login-stack .waitlist-msg { text-align: center; margin-bottom: 0; }
+    .login-note { text-align: center; font-size: 0.85rem; margin-top: 1.5rem; margin-bottom: 0; }
+    .login-note + .login-note { margin-top: 0.5rem; }
+
+    /* ============================================
+       Feature Cards - Neumorphic Glass Cards
+       (verbatim from index.html / pricing.html)
+       ============================================ */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .feature-card {
+      background: var(--glass);
+      backdrop-filter: blur(30px) saturate(180%);
+      -webkit-backdrop-filter: blur(30px) saturate(180%);
+      padding: 2rem; /* NeumorphicTheme.Spacing.cardPadding = 20px */
+      border-radius: 24px; /* NeumorphicTheme.CornerRadius.xxxl */
+      box-shadow:
+        0 8px 32px var(--shadow-dark),
+        0 0 0 1px var(--glass-border),
+        inset 0 0 0 1px rgba(255,255,255,0.1);
+      border: 1px solid var(--glass-border);
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      transform-style: preserve-3d;
+    }
+
+    /* Gradient Border Effect */
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 24px;
+      padding: 2px;
+      background: linear-gradient(
+        135deg,
+        var(--primary),
+        var(--primary-light),
+        var(--secondary),
+        var(--accent)
+      );
+      -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      z-index: -1;
+    }
+
+    /* Shine Effect */
+    .feature-card::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(255,255,255,0.1) 50%,
+        transparent 70%
+      );
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-8px) scale(1.02) rotateX(2deg);
+      box-shadow:
+        0 20px 60px rgba(0,104,184,0.25),
+        0 0 40px rgba(0,104,184,0.15),
+        inset 0 0 0 1px rgba(255,255,255,0.2);
+      border-color: var(--primary);
+    }
+
+    .feature-card:hover::before {
+      opacity: 1;
+    }
+
+    .feature-card:hover::after {
+      transform: translateX(100%);
+    }
+
+    [data-theme="dark"] .feature-card {
+      box-shadow:
+        0 8px 32px rgba(0,0,0,0.6),
+        0 0 0 1px var(--glass-border),
+        inset 0 0 0 1px rgba(255,255,255,0.05);
+    }
+
+    [data-theme="dark"] .feature-card:hover {
+      box-shadow:
+        0 20px 60px rgba(0,160,210,0.3),
+        0 0 50px rgba(0,160,210,0.2),
+        inset 0 0 0 1px rgba(255,255,255,0.15);
+    }
+
+    .feature-card h3 {
+      color: var(--text-primary);
+      margin-bottom: 0.75rem;
+      font-weight: 700;
+      font-size: 1.4rem;
+      transition: all 0.3s ease;
+    }
+
+    .feature-card:hover h3 {
+      color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    [data-theme="dark"] .feature-card:hover h3 {
+      color: var(--primary-light);
+    }
+
+    .feature-card p {
+      color: var(--text-secondary);
+      line-height: 1.7;
+      transition: color 0.3s ease;
+    }
+
+    .feature-card:hover p {
+      color: var(--text-primary);
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .feature-card {
+      animation: fadeInUp 0.6s ease-out backwards;
+    }
+
+    .feature-card:nth-child(1) { animation-delay: 0.1s; }
+    .feature-card:nth-child(2) { animation-delay: 0.2s; }
+    .feature-card:nth-child(3) { animation-delay: 0.3s; }
+
+    /* Label / value rows (verbatim from index.html .platform-stat-card family) */
+    .platform-stat-detail-row {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.4rem 0;
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+    }
+    .platform-stat-detail-row span:first-child {
+      flex: 1;
+      text-align: start;
+    }
+    .platform-stat-detail-val {
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-primary);
+      min-width: 2ch;
+      text-align: end;
+      display: inline-block;
+      transform-origin: center center;
+    }
+
+    /* Pill buttons (verbatim from index.html chat) */
+    .chat-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .chat-option-btn {
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      border: 1.5px solid var(--primary);
+      background: transparent;
+      color: var(--primary);
+      font-family: inherit;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .chat-option-btn:hover {
+      background: var(--primary);
+      color: var(--white);
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 768px) {
+      .container { padding: 1rem; margin: 0 auto; }
+      .content { padding: 2rem 1.5rem; }
+      .header, .content h1, .content h2 { text-align: center; }
+      h1 { font-size: 2rem; }
+      h2 { font-size: 1.5rem; }
+    }
+
+    /* ===== نظام الأزرار الموحد (شكل واحد + تباين مقروء) ===== */
+    /* كل الأزرار بزوايا واحدة ووزن خط واحد وارتفاع واحد؛ الحد الشفاف في الزر
+       الممتلئ يجعل ارتفاعه مطابقا للزر المحدد صاحب الإطار 1.5px. */
+    .waitlist-btn, .chat-option-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.65rem 1.2rem;
+      border-radius: 12px;
+      border-width: 1.5px;
+      border-style: solid;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      line-height: 1.25;
+      text-decoration: none;
+    }
+    .waitlist-btn { border-color: transparent; }
+    .waitlist-input { border-radius: 12px; }
+    /* الرابط داخل .content يرث الأزرق، فيختفي نصه فوق الزر الأزرق الممتلئ */
+    .content a.waitlist-btn,
+    .content a.waitlist-btn:hover { color: var(--btn-ink); text-decoration: none; }
+    .waitlist-btn:focus-visible,
+    .chat-option-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+    /* الوضع الداكن: الأبيض فوق الأزرق الفاتح تباينه 3:1 فقط (دون معيار AA)،
+       فحبر الزر الممتلئ داكن (5.5:1)، والزر المحدد يأخذ الأزرق الأفتح (4.9:1). */
+    .waitlist-btn, .back-btn, .content a.back-btn { color: var(--btn-ink); }
+    [data-theme="dark"] .chat-option-btn:not(.is-danger),
+    [data-theme="dark"] .content a.chat-option-btn:not(.is-danger) {
+      color: var(--primary-light);
+      border-color: var(--primary-light);
+    }
+    [data-theme="dark"] .chat-option-btn:not(.is-danger):hover,
+    [data-theme="dark"] .content a.chat-option-btn:not(.is-danger):hover,
+    [data-theme="dark"] .chat-option-btn.is-active,
+    [data-theme="dark"] .cal-mode.is-active {
+      background: var(--primary-light);
+      color: var(--btn-ink);
+    }
+  
