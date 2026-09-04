@@ -18,7 +18,7 @@ def write(p, s):
     os.makedirs(os.path.dirname(p) or ".", exist_ok=True)
     io.open(p, "w", encoding="utf-8").write(s)
 
-def safe_cut_points(lines, kind):
+def safe_cut_points(lines, kind, max_indent=8):
     """مواضع يمكن القطع قبلها بأمان: بعد سطر فارغ، وخارج التعليقات الكتلية والقوالب النصية،
     والسطر التالي يبدأ بمسافة بادئة قليلة (مستوى أعلى)."""
     pts = []
@@ -39,22 +39,24 @@ def safe_cut_points(lines, kind):
         if line.strip() == "" and i + 1 < len(lines):
             nxt = lines[i + 1]
             indent = len(nxt) - len(nxt.lstrip(" "))
-            if nxt.strip() and indent <= 8: pts.append(i + 1)  # دوال داخل IIFE تبدأ عند 6
+            if nxt.strip() and indent <= max_indent: pts.append(i + 1)  # دوال داخل IIFE تبدأ عند 6
     return pts
 
 def split_text(text, kind):
     lines = text.splitlines(keepends=True)
     if len(lines) <= LIMIT: return [text]
-    pts = safe_cut_points(lines, kind)
     parts = []; start = 0
     while len(lines) - start > TARGET:
         want = start + TARGET
-        cands = [p for p in pts if start + 200 <= p <= want]
-        if not cands:
+        cut = None
+        # إغلاق بمسافة بادئة عميقة: نوسّع حد المسافة تدريجيا؛ الضمان الحقيقي هو «خارج التعليقات والقوالب» وتطابق التجميع
+        for max_indent in (8, 12, 999):
+            pts = safe_cut_points(lines, kind, max_indent)
+            cands = [p for p in pts if start + 200 <= p <= want]
+            if cands: cut = cands[-1]; break
             cands = [p for p in pts if want < p <= start + LIMIT - 1]
-            if not cands: raise SystemExit("no safe cut point after line %d" % start)
-            cut = cands[0]
-        else: cut = cands[-1]
+            if cands: cut = cands[0]; break
+        if cut is None: raise SystemExit("no safe cut point after line %d" % start)
         parts.append("".join(lines[start:cut])); start = cut
     parts.append("".join(lines[start:]))
     assert "".join(parts) == text
