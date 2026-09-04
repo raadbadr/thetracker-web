@@ -159,17 +159,40 @@
         return (state.viewType || "items") + "-" + new Date().toISOString().slice(0, 10) + "." + ext;
       }
 
-      $("exportCsvBtn").addEventListener("click", function () {
-        var exportData = exportColumns();
-        app.exportCsv(exportName("csv"), exportData.items, exportData.cols);
-      });
+      /* زر تصدير واحد: يُضغط فيسأل عن نوع الملف، بلا زرين متجاورين */
+      function exportMenu(btn, run) {
+        var wrap = btn.parentNode;
+        var open = wrap.querySelector(".export-menu");
+        if (open) { open.remove(); return; }
+        var box = document.createElement("div");
+        box.className = "export-menu";
+        box.innerHTML =
+          '<button type="button" data-fmt="xlsx">' + esc(T("exportXlsx")) + "</button>" +
+          '<button type="button" data-fmt="csv">' + esc(T("exportCsv")) + "</button>";
+        wrap.appendChild(box);
+        box.addEventListener("click", function (ev) {
+          var pick = ev.target.closest("[data-fmt]");
+          if (!pick) return;
+          box.remove();
+          run(pick.getAttribute("data-fmt"));
+        });
+        setTimeout(function () {
+          document.addEventListener("click", function away(e) {
+            if (!wrap.contains(e.target)) { box.remove(); document.removeEventListener("click", away); }
+          });
+        }, 0);
+      }
 
-      $("exportXlsxBtn").addEventListener("click", function () {
-        var exportData = exportColumns();
-        var btn = $("exportXlsxBtn"); btn.disabled = true;
-        app.exportXlsx(exportName("xlsx"), exportData.items, exportData.cols, T(VIEW_TYPES[state.viewType] ? VIEW_TYPES[state.viewType].titleKey : "appName"))
-          .catch(function () { toast("genericError", "error"); })
-          .then(function () { btn.disabled = false; });
+      $("exportBtn").addEventListener("click", function () {
+        var btn = this;
+        exportMenu(btn, function (fmt) {
+          var data = exportColumns();
+          if (fmt === "csv") { app.exportCsv(exportName("csv"), data.items, data.cols); return; }
+          btn.disabled = true;
+          app.exportXlsx(exportName("xlsx"), data.items, data.cols, T(VIEW_TYPES[state.viewType] ? VIEW_TYPES[state.viewType].titleKey : "appName"))
+            .catch(function () { toast("genericError", "error"); })
+            .then(function () { btn.disabled = false; });
+        });
       });
       $("filterTracker").addEventListener("change", function () { state.filters.tracker = this.value; loadItems(); });
       $("filterStatus").addEventListener("change", function () { state.filters.status = this.value; loadItems(); });

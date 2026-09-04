@@ -76,7 +76,7 @@
 
       function countText(orgId, field) {
         const c = counts[orgId];
-        if (!c || c[field] === undefined) return "…";
+        if (!c || c[field] === undefined) return "-";
         if (c[field] === null) return "—";
         return String(c[field]);
       }

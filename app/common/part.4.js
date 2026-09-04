@@ -223,13 +223,15 @@
     /* لا سهم على أي قائمة: كان يرسم فوق النص ويتداخل معه (أمر المهندس رعد) */
     ".app-orgselect{max-width:190px;padding:.3rem .5rem;border:0;border-radius:10px;background:transparent;background-image:none;",
     "color:var(--text-primary);font:inherit;font-size:.88rem;font-weight:700;cursor:pointer;-webkit-appearance:none;appearance:none;",
-    "text-overflow:ellipsis}",
+    "text-overflow:clip}",
     ".app-orgselect option{color:#12212b;background:#fff}",
     "body select,body .waitlist-input select,body select.waitlist-input{-webkit-appearance:none;appearance:none;background-image:none}",
     "body select::-ms-expand{display:none}",
     /* اسم المستخدم رابط إلى ملفه الشخصي في الإعدادات (طلب المهندس رعد) */
     ".app-username{display:inline-flex;align-items:center;gap:.5rem;max-width:240px;height:40px;box-sizing:border-box;padding:0 1rem;border-radius:14px;",
-    "background:var(--glass-border);color:var(--text-primary);font-size:.85rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:none;cursor:pointer}",
+    "background:var(--glass-border);color:var(--text-primary);font-size:.85rem;font-weight:700;white-space:nowrap;overflow-x:auto;scrollbar-width:none;text-overflow:clip;text-decoration:none;cursor:pointer}",
+    /* لا قص بثلاث نقاط في أي مكان (قاعدة المهندس رعد): الاسم الطويل يتمرر أفقيا ويبقى كاملا */
+    ".app-username::-webkit-scrollbar{display:none}",
     ".app-username:hover{background:var(--primary);color:var(--btn-ink,#fff)}",
     ".app-iconbtn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;box-sizing:border-box;padding:0;border:1px solid var(--glass-border);",
     "[dir=rtl] #topSignOut svg{transform:scaleX(-1)}",

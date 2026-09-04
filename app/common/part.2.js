@@ -202,6 +202,8 @@
             error_callback: function () { reject(new Error("denied")); }
           });
           tc.requestAccessToken({ prompt: driveToken ? "" : "consent" });
+          /* نافذة الإذن قد تُحجب بصمت (سفاري) فلا يصل أي رد: لا ننتظر إلى الأبد */
+          setTimeout(function () { reject(new Error("drive_timeout")); }, 25000);
         });
       });
   }
@@ -510,11 +512,12 @@
         })).select("*").single().then(unwrap);
       });
     }).catch(function (err) {
-      if (err && /^drive_|^no_token$|^denied$|^load_failed$/.test(String(err.message || ""))) {
-        toast(DRIVE_FALLBACK_TEXT[lang()] || DRIVE_FALLBACK_TEXT.ar, "error");
-        return viaPlatform();
-      }
-      throw err;
+      /* أي فشل في مسار درايف (إذن محجوب، واجهة غير مفعلة، شبكة…): الملف لا يضيع أبدا — يُحفظ على المنصة،
+         ويُعاد وضع التخزين إلى المنصة كي لا يتكرر الفشل مع كل رفع؛ يعيد المستخدم تفعيل درايف من الإعدادات متى شاء */
+      if (window.console) console.warn("drive upload failed, saving to platform:", err && (err.message || err));
+      toast(DRIVE_FALLBACK_TEXT[lang()] || DRIVE_FALLBACK_TEXT.ar, "error");
+      try { if (app.profile && app.profile.storage_mode === "drive") updateProfile({ storage_mode: "platform" }).catch(function () { /* ignore */ }); } catch (e) { /* ignore */ }
+      return viaPlatform();
     });
   }
 

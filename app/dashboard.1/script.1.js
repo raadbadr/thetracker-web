@@ -1,6 +1,7 @@
     const translations = {
       ar: {
         exportXlsx: "تصدير إكسل",
+        exportBtn: "تصدير",
         appName: "TheTracker",
         exportCsv: "تصدير CSV",
         title: "لوحة التحكم",
@@ -240,6 +241,7 @@
       },
       en: {
         exportXlsx: "Export Excel",
+        exportBtn: "Export",
         appName: "TheTracker",
         exportCsv: "Export CSV",
         title: "Dashboard",
@@ -479,6 +481,7 @@
       },
       fr: {
         exportXlsx: "Exporter Excel",
+        exportBtn: "Exporter",
         appName: "TheTracker",
         exportCsv: "Exporter CSV",
         title: "Tableau de bord",
@@ -718,6 +721,7 @@
       },
       ur: {
         exportXlsx: "ایکسل ایکسپورٹ",
+        exportBtn: "ایکسپورٹ",
         appName: "TheTracker",
         exportCsv: "CSV برآمد",
         title: "ڈیش بورڈ",

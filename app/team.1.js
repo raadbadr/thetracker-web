@@ -1,6 +1,7 @@
     const translations = {
       ar: {
         exportXlsx: "تصدير إكسل",
+        exportBtn: "تصدير",
         colDate: "التاريخ",
         colFrom: "من",
         colTo: "إلى",
@@ -153,6 +154,7 @@
       },
       en: {
         exportXlsx: "Export Excel",
+        exportBtn: "Export",
         colDate: "Date",
         colFrom: "From",
         colTo: "To",
@@ -305,6 +307,7 @@
       },
       fr: {
         exportXlsx: "Exporter Excel",
+        exportBtn: "Exporter",
         colDate: "Date",
         colFrom: "De",
         colTo: "À",
@@ -457,6 +460,7 @@
       },
       ur: {
         exportXlsx: "ایکسل ایکسپورٹ",
+        exportBtn: "ایکسپورٹ",
         colDate: "تاریخ",
         colFrom: "منجانب",
         colTo: "بنام",

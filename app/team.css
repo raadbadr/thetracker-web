@@ -693,3 +693,13 @@
     .content .items-table .row-actions .chat-option-btn { min-height: 32px; padding: .28rem .7rem;
       font-size: .8rem; white-space: nowrap; width: auto; flex: 0 0 auto; }
     .content .items-table td, .content .items-table th { vertical-align: middle; }
+
+    /* قائمة نوع التصدير: تظهر تحت الزر بعد الضغط */
+    .export-wrap { position: relative; display: inline-flex; }
+    .export-menu { position: absolute; inset-block-start: calc(100% + .35rem); inset-inline-start: 0; z-index: 60;
+      display: flex; flex-direction: column; min-width: 9rem; padding: .3rem; gap: .2rem;
+      background: var(--glass-strong); border: 1px solid var(--glass-border); border-radius: 12px;
+      box-shadow: 0 10px 26px var(--shadow-dark); backdrop-filter: blur(20px); }
+    .export-menu button { padding: .5rem .7rem; min-height: 38px; border: 0; border-radius: 9px; background: transparent;
+      color: var(--text-primary); font-family: inherit; font-size: .85rem; text-align: start; cursor: pointer; }
+    .export-menu button:hover, .export-menu button:focus-visible { background: var(--primary); color: var(--btn-ink, #fff); }

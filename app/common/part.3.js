@@ -646,7 +646,7 @@
     "html body.drawer-open .app-drawer-backdrop{opacity:1;pointer-events:auto}",
     "html body.drawer-open{overflow:hidden}",
     ".app-drawer-head{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.25rem .25rem 1rem;color:var(--text-primary);font-weight:700;font-size:.95rem}",
-    ".app-drawer-head a{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:inherit;text-decoration:none;padding:.5rem .25rem}",
+    ".app-drawer-head a{min-width:0;white-space:normal;overflow-wrap:anywhere;color:inherit;text-decoration:none;padding:.5rem .25rem}",
     ".app-drawer-nav{display:flex;flex-direction:column;gap:.25rem;margin-bottom:.75rem;padding-bottom:.75rem;border-bottom:1px solid var(--glass-border)}",
     ".app-sidebar a,.app-sidebar button{min-height:44px;font-size:1rem}",
     "html body.has-app-sidebar .container,html body.sidebar-off.has-app-sidebar .container{max-width:100%;padding-inline:1rem}",
