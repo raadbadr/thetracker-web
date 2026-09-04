@@ -39,7 +39,7 @@ def safe_cut_points(lines, kind):
         if line.strip() == "" and i + 1 < len(lines):
             nxt = lines[i + 1]
             indent = len(nxt) - len(nxt.lstrip(" "))
-            if nxt.strip() and indent <= 4: pts.append(i + 1)
+            if nxt.strip() and indent <= 8: pts.append(i + 1)  # دوال داخل IIFE تبدأ عند 6
     return pts
 
 def split_text(text, kind):
