@@ -1063,6 +1063,40 @@
     });
   }
 
+  /* توزيع بضغطة: mode = "R" (منفّذ + مكلَّف، والموزِّع معتمد A تلقائياً) | "S" (مساند) | null (إزالة) */
+  function distributeItem(itemId, userId, mode) {
+    return run(function (client) {
+      requireOrg();
+      return client.rpc("distribute_item", { p_item: itemId, p_user: userId, p_mode: mode || "clear" }).then(unwrap);
+    });
+  }
+
+  /* سطر الإدخال الذكي: النص ← نيّة (عنوان/نوع/موعد/عميل/رقم دعوى/اسم المنفّذ) عبر الـ Worker بجلسة المستخدم */
+  function parseIntent(text) {
+    return app.ready.then(function () {
+      requireClient();
+      return window.trackerAuth.getSession();
+    }).then(function (session) {
+      var jwt = session && session.access_token;
+      if (!jwt) return redirectToLogin();
+      return fetch("/api/intent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json", Authorization: "Bearer " + jwt },
+        body: JSON.stringify({ text: String(text || "") })
+      }).then(function (res) { return res.json().catch(function () { return { action: "none" }; }); });
+    });
+  }
+
+  /* إنشاء عنصر في متتبع نوعه وتوزيعه على المنفّذ في خطوة واحدة */
+  function quickAddItem(item, assigneeId) {
+    return run(function (client) {
+      var orgId = requireOrg();
+      var payload = {}; for (var k in item) if (Object.prototype.hasOwnProperty.call(item, k)) payload[k] = item[k];
+      payload.org_id = orgId;
+      return client.rpc("quick_add_item", { p_item: payload, p_assignee: assigneeId || null }).then(unwrap);
+    });
+  }
+
   function unlinkChannel(channel) {
     return run(function (client) {
       return client.from("channel_links").delete().eq("user_id", app.user.id).eq("channel", channel).then(unwrap);
@@ -1319,7 +1353,14 @@
     "body h2{margin-top:var(--gap)}",
     "body .content>h2:first-child,body .content>h2:first-of-type{margin-top:0}",
     "body.sidebar-off .app-sidebar{display:none}",
-    "body.sidebar-off.has-app-sidebar .container{padding-inline-start:1rem}"
+    "body.sidebar-off.has-app-sidebar .container{padding-inline-start:1rem}",
+    /* الإيقاع العمودي داخل البطاقات — قاعدة عامة لكل صفحات التطبيق (لا إصلاحات متفرقة):
+       عنوان القسم يأخذ هواءً فوقه، وآخر عنصر في البطاقة لا يلتصق بحافتها، والقوائم والشبكات تُفصل عمّا بعدها */
+    ".content h3{margin:1.75rem 0 .75rem}",
+    ".content h2+h3,.content h3:first-child{margin-top:.25rem}",
+    ".content>:last-child{margin-bottom:0}",
+    ".content .features-grid+h3,.content .user-list+h3,.content table+h3,.content .table-wrap+h3{margin-top:2rem}",
+    ".content .features-grid+p,.content .user-list+p{margin-top:1rem}",
   ].join("");
 
   function sidebarLabel(map) {
@@ -1433,6 +1474,9 @@
   app.unlinkChannel = unlinkChannel;
   app.listItemRoles = listItemRoles;
   app.setItemRole = setItemRole;
+  app.distributeItem = distributeItem;
+  app.parseIntent = parseIntent;
+  app.quickAddItem = quickAddItem;
   app.linkTelegramByToken = linkTelegramByToken;
   app.testChannel = testChannel;
   app.calendarToken = calendarToken;

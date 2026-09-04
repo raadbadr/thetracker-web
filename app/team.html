@@ -180,12 +180,14 @@
     /* بطاقة الدعوة — نفس لغة النيومورفيك: مسافات منتظمة وظل ناعم */
     .invite-block { margin-top: 1.75rem; }
     .invite-block:first-of-type { margin-top: 1.25rem; }
+    /* عنوان قسم داخل بطاقة: مسافة واضحة عمّا قبله (قاعدة الإيقاع العمودي) */
     .invite-block-title {
-      margin: 0 0 0.75rem;
+      margin: 1.75rem 0 0.75rem;
       font-size: 0.95rem;
       font-weight: 700;
       color: var(--text-secondary);
     }
+    h2 + .invite-block-title, .content > .invite-block-title:first-child { margin-top: 0.25rem; }
     .invite-row {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
@@ -218,6 +220,16 @@
     .is-A { background: var(--success); color: #fff; border-color: transparent; }
     .is-S { background: var(--warning); color: #1a1a26; border-color: transparent; }
     .is-I { background: var(--glass-strong); color: var(--text-primary); border-color: var(--glass-border); }
+    .rasi-legend { justify-content: flex-end; }
+    .rasi-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: flex-end; }
+    .rasi-chip { padding: 0.35rem 0.75rem; border-radius: 999px; border: 1.5px solid var(--glass-border); background: transparent; color: var(--text-secondary); font-family: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: transform .12s ease; }
+    .rasi-chip:hover { transform: translateY(-1px); }
+    .rasi-chip:disabled { opacity: 0.6; cursor: wait; }
+    .rasi-chip b { margin-inline-start: 0.4em; font-weight: 800; }
+    .rasi-code { direction: ltr; unicode-bidi: isolate; }
+    #rasiMatrixWrap { margin-top: 1rem; }
+    .quick-add { grid-template-columns: minmax(0, 1fr) 170px auto; margin-bottom: 0.5rem; }
+    @media (max-width: 720px) { .quick-add { grid-template-columns: 1fr; } }
     .user-row {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
@@ -707,17 +719,36 @@
     <div class="content" id="rasiCard" hidden>
       <h2 data-i18n="rasiTitle">مصفوفة RASI</h2>
       <p data-i18n="rasiIntro">لكل قضية أو مخالفة أو مهمة: من ينفّذ (R)، من يعتمد ويُساءل (A — واحد فقط)، من يساند (S)، ومن يُبلَّغ (I). اضغط الخلية لتبديل الدور، ويصل صاحبه تنبيه فوراً.</p>
-      <div class="rasi-legend">
+      <!-- الحروف R A S I مصطلح لاتيني فتُقرأ من اليسار إلى اليمين دائماً -->
+      <div class="rasi-legend" dir="ltr">
         <span><b class="is-R">R</b> <span data-i18n="rasiLegendR">المنفّذ المسؤول</span></span>
         <span><b class="is-A">A</b> <span data-i18n="rasiLegendA">المعتمد والمساءل</span></span>
         <span><b class="is-S">S</b> <span data-i18n="rasiLegendS">المساند</span></span>
         <span><b class="is-I">I</b> <span data-i18n="rasiLegendI">المُبلَّغ</span></span>
       </div>
-      <div class="rasi-tools">
-        <input type="search" class="waitlist-input" id="rasiSearch" placeholder="ابحث بالعنوان أو الرقم" autocomplete="off">
-      </div>
-      <div class="rasi-wrap"><table class="rasi-table" id="rasiTable"><thead></thead><tbody></tbody></table></div>
+
+      <!-- التوزيع السريع: ضغطة على اسم العضو تكفي -->
+      <h3 class="invite-block-title" data-i18n="quickAddTitle">إدخال سريع</h3>
+      <p class="settings-note" data-i18n="quickAddHint">اكتب المهمة كما تقولها: «جلسة القضية 4521 لشركة الأبراج الأحد 10 صباحاً لأحمد» — يُفهم النوع والموعد والعميل ورقم الدعوى ومن ينفّذ، ويُسجَّل ويُوزَّع بضغطة واحدة.</p>
+      <form class="invite-row quick-add" id="quickAddForm" novalidate>
+        <input type="text" class="waitlist-input" id="quickAddText" maxlength="500" autocomplete="off" placeholder="اكتب المهمة ومن ينفّذها وموعدها…">
+        <select class="waitlist-input" id="quickAddMember" aria-label="المنفّذ"></select>
+        <button type="submit" class="waitlist-btn" id="quickAddBtn" data-i18n="quickAddBtn">إضافة</button>
+      </form>
+      <p class="waitlist-msg" id="quickAddMsg" role="status" aria-live="polite" hidden></p>
+
+      <h3 class="invite-block-title" data-i18n="quickTitle">توزيع سريع</h3>
+      <p class="settings-note" data-i18n="quickHint">اضغط اسم العضو على العنصر: ضغطة واحدة = هو المنفّذ المسؤول (R) وأنت المعتمد (A) تلقائياً، ضغطة ثانية = مساند (S)، ثالثة = إزالة.</p>
+      <div class="user-list" id="quickList"></div>
       <p class="waitlist-msg" id="rasiEmpty" data-i18n="rasiEmpty" hidden>لا عناصر مفتوحة لعرضها.</p>
+
+      <div class="chat-options"><button type="button" class="chat-option-btn" id="rasiToggle" data-i18n="rasiShowMatrix">عرض المصفوفة الكاملة</button></div>
+      <div id="rasiMatrixWrap" hidden>
+        <div class="rasi-tools">
+          <input type="search" class="waitlist-input" id="rasiSearch" placeholder="ابحث بالعنوان أو الرقم" autocomplete="off">
+        </div>
+        <div class="rasi-wrap"><table class="rasi-table" id="rasiTable"><thead></thead><tbody></tbody></table></div>
+      </div>
     </div>
 
     <!-- الدردشة داخل الفريق -->
@@ -827,6 +858,18 @@
         rasiItemCol: "العنصر",
         rasiSaved: "حُفظ الدور.",
         rasiNoMembers: "أضف أعضاء إلى الفريق أولاً.",
+        quickTitle: "توزيع سريع",
+        quickHint: "اضغط اسم العضو على العنصر: ضغطة واحدة = هو المنفّذ المسؤول (R) وأنت المعتمد (A) تلقائياً، ضغطة ثانية = مساند (S)، ثالثة = إزالة.",
+        rasiShowMatrix: "عرض المصفوفة الكاملة",
+        rasiHideMatrix: "إخفاء المصفوفة",
+        quickAddTitle: "إدخال سريع",
+        quickAddHint: "اكتب المهمة كما تقولها: «جلسة القضية 4521 لشركة الأبراج الأحد 10 صباحاً لأحمد» — يُفهم النوع والموعد والعميل ورقم الدعوى ومن ينفّذ، ويُسجَّل ويُوزَّع بضغطة واحدة.",
+        quickAddBtn: "إضافة",
+        quickAddPh: "اكتب المهمة ومن ينفّذها وموعدها…",
+        quickAddNobody: "بلا منفّذ (أنا لاحقاً)",
+        quickAddParsing: "جارٍ الفهم…",
+        quickAddDone: "سُجّلت «{title}»{who}.",
+        quickAddNoTitle: "لم أفهم مهمة من هذا النص — اكتب عنوانها على الأقل.",
         unassignedTitle: "أعمال بلا صاحب",
         unassignedEmpty: "كل الأعمال مُسندة.",
         wlOpen: "جارية",
@@ -934,6 +977,18 @@
         rasiItemCol: "Item",
         rasiSaved: "Role saved.",
         rasiNoMembers: "Add team members first.",
+        quickTitle: "Quick distribution",
+        quickHint: "Tap a member on an item: one tap = Responsible (R) with you as Approver (A) automatically, second tap = Support (S), third = remove.",
+        rasiShowMatrix: "Show the full matrix",
+        rasiHideMatrix: "Hide the matrix",
+        quickAddTitle: "Quick entry",
+        quickAddHint: "Type it the way you would say it: \"Hearing for case 4521, Al-Abraj, Sunday 10 AM, for Ahmad\" — kind, date, client, case number and who does it are understood, recorded and distributed in one tap.",
+        quickAddBtn: "Add",
+        quickAddPh: "Type the task, who does it and when…",
+        quickAddNobody: "No responsible yet",
+        quickAddParsing: "Understanding…",
+        quickAddDone: "Recorded \"{title}\"{who}.",
+        quickAddNoTitle: "I could not read a task from that — at least give it a title.",
         unassignedTitle: "Unassigned work",
         unassignedEmpty: "All work is assigned.",
         wlOpen: "Open",
@@ -1041,6 +1096,18 @@
         rasiItemCol: "Élément",
         rasiSaved: "Rôle enregistré.",
         rasiNoMembers: "Ajoutez d’abord des membres.",
+        quickTitle: "Répartition rapide",
+        quickHint: "Touchez un membre sur un élément : un clic = Responsable (R) et vous Approbateur (A) automatiquement, deuxième clic = Soutien (S), troisième = retirer.",
+        rasiShowMatrix: "Afficher la matrice complète",
+        rasiHideMatrix: "Masquer la matrice",
+        quickAddTitle: "Saisie rapide",
+        quickAddHint: "Écrivez-la comme vous la diriez : « Audience affaire 4521, Al-Abraj, dimanche 10 h, pour Ahmad » — type, date, client, numéro d’affaire et responsable sont compris, enregistrés et répartis en un clic.",
+        quickAddBtn: "Ajouter",
+        quickAddPh: "Tapez la tâche, qui la fait et quand…",
+        quickAddNobody: "Sans responsable",
+        quickAddParsing: "Analyse…",
+        quickAddDone: "« {title} » enregistrée{who}.",
+        quickAddNoTitle: "Aucune tâche lisible dans ce texte — donnez au moins un titre.",
         unassignedTitle: "Travail non attribué",
         unassignedEmpty: "Tout le travail est attribué.",
         wlOpen: "En cours",
@@ -1148,6 +1215,18 @@
         rasiItemCol: "آئٹم",
         rasiSaved: "کردار محفوظ ہو گیا۔",
         rasiNoMembers: "پہلے ٹیم میں ارکان شامل کریں۔",
+        quickTitle: "فوری تقسیم",
+        quickHint: "آئٹم پر رکن کا نام دبائیں: ایک بار = ذمہ دار (R) اور آپ خود بخود منظور کنندہ (A)، دوسری بار = معاون (S)، تیسری بار = ہٹائیں۔",
+        rasiShowMatrix: "مکمل میٹرکس دکھائیں",
+        rasiHideMatrix: "میٹرکس چھپائیں",
+        quickAddTitle: "فوری اندراج",
+        quickAddHint: "جیسے آپ کہتے ہیں ویسے لکھیں: «مقدمہ 4521 کی سماعت، الابراج، اتوار 10 بجے، احمد کے لیے» — قسم، تاریخ، کلائنٹ، مقدمہ نمبر اور ذمہ دار سمجھ کر ایک ہی بار میں درج اور تقسیم ہو جاتا ہے۔",
+        quickAddBtn: "شامل کریں",
+        quickAddPh: "کام، ذمہ دار اور وقت لکھیں…",
+        quickAddNobody: "ابھی کوئی ذمہ دار نہیں",
+        quickAddParsing: "سمجھ رہا ہوں…",
+        quickAddDone: "«{title}» درج ہو گیا{who}۔",
+        quickAddNoTitle: "اس متن سے کوئی کام سمجھ نہیں آیا — کم از کم عنوان لکھیں۔",
         unassignedTitle: "بغیر ذمہ دار کام",
         unassignedEmpty: "تمام کام تفویض ہو چکے ہیں۔",
         wlOpen: "جاری",
@@ -1749,11 +1828,108 @@
         }).slice(0, 150);
       }
 
+      /* التوزيع السريع: صف لكل عنصر مفتوح وشرائح بأسماء الأعضاء */
+      function renderQuick() {
+        var list = $("quickList");
+        if (!list) return;
+        var members = state.members.filter(function (m) { return m.status === "active"; });
+        var rows = state.work.filter(function (it) { return it.status === "open"; }).slice(0, 100);
+        renderQuickAddMembers();
+        if (!members.length || !rows.length) { list.innerHTML = ""; return; }
+        list.innerHTML = rows.map(function (it) {
+          var meta = [it.item_number ? '<span class="rasi-code">' + esc(it.item_number) + "</span>" : "", it.due_at ? esc(fmtDate(it.due_at)) : ""].filter(Boolean).join(" · ");
+          var chips = members.map(function (m) {
+            var role = (state.roles[it.id] || {})[m.user_id] || "";
+            return '<button type="button" class="rasi-chip' + (role ? " is-" + role : "") + '" data-q-item="' + esc(it.id) + '" data-q-user="' + esc(m.user_id) + '">' +
+                   esc(memberName(m)) + (role ? "<b>" + role + "</b>" : "") + "</button>";
+          }).join("");
+          return '<div class="user-row"><div><strong>' + esc(it.title || "-") + "</strong>" + (meta ? "<span>" + meta + "</span>" : "") + "</div>" +
+                 '<div class="rasi-chips">' + chips + "</div></div>";
+        }).join("");
+      }
+
+      function renderQuickAddMembers() {
+        var sel = $("quickAddMember");
+        if (!sel) return;
+        var keep = sel.value;
+        var members = state.members.filter(function (m) { return m.status === "active"; });
+        sel.innerHTML = '<option value="">' + esc(t("quickAddNobody")) + "</option>" +
+          members.map(function (m) { return '<option value="' + esc(m.user_id) + '">' + esc(memberName(m)) + "</option>"; }).join("");
+        if (keep) sel.value = keep;
+        var input = $("quickAddText"); if (input) input.placeholder = t("quickAddPh");
+      }
+
+      /* اسم المنفّذ الذي فهمه المحلل ("لأحمد") ← عضو من الفريق */
+      function memberByName(name) {
+        var q = String(name || "").trim().toLowerCase();
+        if (!q) return null;
+        var members = state.members.filter(function (m) { return m.status === "active"; });
+        for (var i = 0; i < members.length; i++) {
+          var n = memberName(members[i]).toLowerCase(), e = String((members[i].profiles || {}).email || "").toLowerCase();
+          if (n === q || e === q) return members[i];
+        }
+        for (var j = 0; j < members.length; j++) {
+          var nn = memberName(members[j]).toLowerCase();
+          if (nn.indexOf(q) !== -1 || q.indexOf(nn.split(" ")[0]) !== -1) return members[j];
+        }
+        return null;
+      }
+
+      function onQuickAdd(ev) {
+        ev.preventDefault();
+        var input = $("quickAddText"), btn = $("quickAddBtn"), msg = $("quickAddMsg");
+        var text = String(input.value || "").trim();
+        if (!text) { input.focus(); return; }
+        btn.disabled = true; msg.hidden = false; msg.className = "waitlist-msg"; msg.textContent = t("quickAddParsing");
+        app.parseIntent(text).then(function (intent) {
+          var it = (intent && intent.item) || {};
+          if (!it.title) it.title = text.slice(0, 160);
+          var chosen = $("quickAddMember").value || null;
+          var m = !chosen && intent && intent.member ? memberByName(intent.member) : null;
+          var assignee = chosen || (m ? m.user_id : null);
+          return app.quickAddItem({ kind: it.kind || "task", title: it.title, due_at: it.due_at || null, amount: it.amount, client_name: it.client_name, case_number: it.case_number, violation_number: it.violation_number, location: it.location, notes: it.notes }, assignee)
+            .then(function (res) {
+              var who = assignee ? " — " + nameOf(assignee) : "";
+              msg.className = "waitlist-msg success"; msg.textContent = tf("quickAddDone", { title: (res && res.title) || it.title, who: who });
+              toast(tf("quickAddDone", { title: (res && res.title) || it.title, who: who }), "success");
+              input.value = ""; $("quickAddMember").value = "";
+              return loadWork();
+            });
+        }).catch(function (err) {
+          msg.className = "waitlist-msg error"; msg.textContent = errorMessage(err);
+        }).then(function () { btn.disabled = false; });
+      }
+
+      function onQuickClick(ev) {
+        var btn = ev.target.closest("[data-q-item]");
+        if (!btn || btn.disabled) return;
+        var itemId = btn.getAttribute("data-q-item"), userId = btn.getAttribute("data-q-user");
+        var current = (state.roles[itemId] || {})[userId] || "";
+        var mode = current === "R" ? "S" : current === "S" ? null : "R";
+        btn.disabled = true;
+        app.distributeItem(itemId, userId, mode).then(function (res) {
+          state.roles[itemId] = (res && res.roles) || {};
+          state.work.forEach(function (it) {
+            if (it.id !== itemId) return;
+            if (mode === "R") it.assignee_id = userId;
+            else if (it.assignee_id === userId) it.assignee_id = null;
+          });
+          renderQuick();
+          renderRasi();
+          renderWorkload();
+          toast(t("rasiSaved"), "success");
+        }).catch(function (err) {
+          btn.disabled = false;
+          toast(errorMessage(err), "error");
+        });
+      }
+
       function renderRasi() {
         var card = $("rasiCard");
         if (!card) return;
         show("rasiCard", state.loaded);
         if (!state.loaded) return;
+        renderQuick();
         var members = state.members.filter(function (m) { return m.status === "active"; });
         var rows = rasiRows();
         var table = $("rasiTable");
@@ -1853,6 +2029,13 @@
         $("unassignedList").addEventListener("change", onAssignChange);
         $("rasiTable").addEventListener("click", onRasiClick);
         $("rasiSearch").addEventListener("input", function () { renderRasi(); });
+        $("quickList").addEventListener("click", onQuickClick);
+        $("quickAddForm").addEventListener("submit", onQuickAdd);
+        $("rasiToggle").addEventListener("click", function () {
+          var wrap = $("rasiMatrixWrap");
+          wrap.hidden = !wrap.hidden;
+          $("rasiToggle").textContent = t(wrap.hidden ? "rasiShowMatrix" : "rasiHideMatrix");
+        });
       /* البحث عن مستخدم مسجّل ثم دعوته بنقرة */
       function renderLookup(rows) {
         var box = $("lookupResult");

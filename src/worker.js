@@ -476,6 +476,18 @@ async function handleTelegramCallback(env, cq) {
   return json({ ok: true });
 }
 
+/** POST /api/intent { text } — سطر الإدخال الذكي في الموقع: نفس مستخرِج النيّة الذي يستخدمه البوت */
+async function handleIntent(request, env) {
+  const user = await authedUser(request, env);
+  if (!user) return json({ error: "unauthorized" }, 401);
+  let body;
+  try { body = await request.json(); } catch { body = {}; }
+  const text = String((body && body.text) || "").slice(0, 1000).trim();
+  if (!text) return json({ action: "none" });
+  if (tgAiRateLimited("web:" + user.id)) return json({ error: "rate_limited" }, 429);
+  try { return json(await extractIntent(env, text, null)); } catch { return json({ action: "none" }); }
+}
+
 /** POST /api/telegram/link { token } — المستخدم المسجَّل يربط محادثة البوت بضغطة الزر الذي أرسله البوت */
 async function handleTelegramLink(request, env) {
   const user = await authedUser(request, env);
@@ -575,6 +587,7 @@ export default {
       if (path === "/api/notify/test" && request.method === "POST") return await handleNotifyTest(request, env);
       if (path === "/api/telegram/webhook" && request.method === "POST") return await handleTelegramWebhook(request, env);
       if (path === "/api/telegram/link" && request.method === "POST") return await handleTelegramLink(request, env);
+      if (path === "/api/intent" && request.method === "POST") return await handleIntent(request, env);
       if (path === "/api/whatsapp/webhook") return await handleWhatsappWebhook(request, env, url);
       return json({ error: "not found" }, 404);
     } catch (err) {
