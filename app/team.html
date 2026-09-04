@@ -199,6 +199,25 @@
     .invite-row .waitlist-input { width: 100%; min-width: 0; }
     .invite-row .waitlist-btn { white-space: nowrap; }
     .user-list { display: grid; gap: 0.75rem; margin-top: 1rem; }
+    /* مصفوفة RASI */
+    .rasi-legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; font-size: 0.85rem; color: var(--text-secondary); margin: 0.25rem 0 0.9rem; }
+    .rasi-legend b { display: inline-block; min-width: 1.7em; text-align: center; border-radius: 6px; padding: 0.05em 0.35em; }
+    .rasi-tools { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+    .rasi-tools .waitlist-input { flex: 1 1 220px; }
+    .rasi-wrap { overflow-x: auto; margin-top: 1rem; }
+    .rasi-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.85rem; min-width: 560px; }
+    .rasi-table th, .rasi-table td { padding: 0.45rem 0.5rem; border-bottom: 1px solid var(--glass-border); text-align: center; vertical-align: middle; }
+    .rasi-table th:first-child, .rasi-table td:first-child { text-align: start; position: sticky; inset-inline-start: 0; z-index: 1; min-width: 220px; background: var(--glass-strong); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    .rasi-table th { color: var(--text-secondary); font-weight: 600; white-space: nowrap; }
+    .rasi-item { display: flex; flex-direction: column; gap: 0.15rem; }
+    .rasi-item small { color: var(--text-secondary); }
+    .rasi-cell { width: 40px; height: 34px; border-radius: 10px; border: 1.5px solid var(--glass-border); background: transparent; color: var(--text-tertiary); font-weight: 700; font-family: inherit; cursor: pointer; transition: transform .12s ease; }
+    .rasi-cell:hover { transform: scale(1.08); }
+    .rasi-cell:disabled { opacity: 0.6; cursor: wait; }
+    .is-R { background: var(--primary); color: var(--btn-ink); border-color: transparent; }
+    .is-A { background: var(--success); color: #fff; border-color: transparent; }
+    .is-S { background: var(--warning); color: #1a1a26; border-color: transparent; }
+    .is-I { background: var(--glass-strong); color: var(--text-primary); border-color: var(--glass-border); }
     .user-row {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
@@ -684,6 +703,23 @@
       <p id="unassignedEmpty" data-i18n="unassignedEmpty" hidden>كل الأعمال مُسندة.</p>
     </div>
 
+    <!-- مصفوفة RASI: أدوار الأعضاء على كل عنصر -->
+    <div class="content" id="rasiCard" hidden>
+      <h2 data-i18n="rasiTitle">مصفوفة RASI</h2>
+      <p data-i18n="rasiIntro">لكل قضية أو مخالفة أو مهمة: من ينفّذ (R)، من يعتمد ويُساءل (A — واحد فقط)، من يساند (S)، ومن يُبلَّغ (I). اضغط الخلية لتبديل الدور، ويصل صاحبه تنبيه فوراً.</p>
+      <div class="rasi-legend">
+        <span><b class="is-R">R</b> <span data-i18n="rasiLegendR">المنفّذ المسؤول</span></span>
+        <span><b class="is-A">A</b> <span data-i18n="rasiLegendA">المعتمد والمساءل</span></span>
+        <span><b class="is-S">S</b> <span data-i18n="rasiLegendS">المساند</span></span>
+        <span><b class="is-I">I</b> <span data-i18n="rasiLegendI">المُبلَّغ</span></span>
+      </div>
+      <div class="rasi-tools">
+        <input type="search" class="waitlist-input" id="rasiSearch" placeholder="ابحث بالعنوان أو الرقم" autocomplete="off">
+      </div>
+      <div class="rasi-wrap"><table class="rasi-table" id="rasiTable"><thead></thead><tbody></tbody></table></div>
+      <p class="waitlist-msg" id="rasiEmpty" data-i18n="rasiEmpty" hidden>لا عناصر مفتوحة لعرضها.</p>
+    </div>
+
     <!-- الدردشة داخل الفريق -->
     <div class="content chat-card" id="chatCard" hidden>
       <h2 data-i18n="chatTitle">تواصل الفريق</h2>
@@ -780,6 +816,17 @@
         inviteCreated: "أُضيفت الدعوة لـ {email}، وسينضم تلقائياً عند تسجيل دخوله.",
         workloadTitle: "توزيع الأعمال",
         workloadIntro: "عبء كل عضو الآن، والأعمال التي لا صاحب لها بانتظار من تُسند إليه.",
+        rasiTitle: "مصفوفة RASI",
+        rasiIntro: "لكل قضية أو مخالفة أو مهمة: من ينفّذ (R)، من يعتمد ويُساءل (A — واحد فقط)، من يساند (S)، ومن يُبلَّغ (I). اضغط الخلية لتبديل الدور، ويصل صاحبه تنبيه فوراً.",
+        rasiLegendR: "المنفّذ المسؤول",
+        rasiLegendA: "المعتمد والمساءل",
+        rasiLegendS: "المساند",
+        rasiLegendI: "المُبلَّغ",
+        rasiSearch: "ابحث بالعنوان أو الرقم",
+        rasiEmpty: "لا عناصر مفتوحة لعرضها.",
+        rasiItemCol: "العنصر",
+        rasiSaved: "حُفظ الدور.",
+        rasiNoMembers: "أضف أعضاء إلى الفريق أولاً.",
         unassignedTitle: "أعمال بلا صاحب",
         unassignedEmpty: "كل الأعمال مُسندة.",
         wlOpen: "جارية",
@@ -876,6 +923,17 @@
         inviteCreated: "Invitation added for {email}. They will join automatically when they sign in.",
         workloadTitle: "Work distribution",
         workloadIntro: "Each member's current load, and the work with no owner waiting to be assigned.",
+        rasiTitle: "RASI Matrix",
+        rasiIntro: "For every case, violation or task: who does it (R), who approves and answers for it (A — exactly one), who supports (S), who is kept informed (I). Click a cell to cycle the role; the person is notified instantly.",
+        rasiLegendR: "Responsible",
+        rasiLegendA: "Approver / accountable",
+        rasiLegendS: "Support",
+        rasiLegendI: "Informed",
+        rasiSearch: "Search by title or number",
+        rasiEmpty: "No open items to show.",
+        rasiItemCol: "Item",
+        rasiSaved: "Role saved.",
+        rasiNoMembers: "Add team members first.",
         unassignedTitle: "Unassigned work",
         unassignedEmpty: "All work is assigned.",
         wlOpen: "Open",
@@ -972,6 +1030,17 @@
         inviteCreated: "Invitation ajoutée pour {email}. Cette personne rejoindra l'équipe automatiquement lors de sa connexion.",
         workloadTitle: "Répartition du travail",
         workloadIntro: "La charge actuelle de chaque membre, et le travail sans responsable en attente d'affectation.",
+        rasiTitle: "Matrice RASI",
+        rasiIntro: "Pour chaque affaire, infraction ou tâche : qui exécute (R), qui approuve et répond (A — un seul), qui soutient (S), qui est informé (I). Cliquez une case pour changer le rôle ; la personne est notifiée aussitôt.",
+        rasiLegendR: "Responsable",
+        rasiLegendA: "Approbateur",
+        rasiLegendS: "Soutien",
+        rasiLegendI: "Informé",
+        rasiSearch: "Rechercher par titre ou numéro",
+        rasiEmpty: "Aucun élément ouvert à afficher.",
+        rasiItemCol: "Élément",
+        rasiSaved: "Rôle enregistré.",
+        rasiNoMembers: "Ajoutez d’abord des membres.",
         unassignedTitle: "Travail non attribué",
         unassignedEmpty: "Tout le travail est attribué.",
         wlOpen: "En cours",
@@ -1068,6 +1137,17 @@
         inviteCreated: "{email} کے لیے دعوت شامل کر دی گئی، سائن ان کرتے ہی وہ خود بخود شامل ہو جائے گا۔",
         workloadTitle: "کام کی تقسیم",
         workloadIntro: "ہر رکن کا موجودہ بوجھ، اور وہ کام جن کا کوئی ذمہ دار نہیں۔",
+        rasiTitle: "RASI میٹرکس",
+        rasiIntro: "ہر مقدمے، خلاف ورزی یا کام کے لیے: کون کرتا ہے (R)، کون منظور اور جواب دہ ہے (A — صرف ایک)، کون معاونت کرتا ہے (S)، کسے مطلع رکھا جائے (I)۔ کردار بدلنے کے لیے خانہ دبائیں؛ متعلقہ شخص کو فوراً اطلاع ملتی ہے۔",
+        rasiLegendR: "ذمہ دار",
+        rasiLegendA: "منظور کنندہ",
+        rasiLegendS: "معاون",
+        rasiLegendI: "مطلع",
+        rasiSearch: "عنوان یا نمبر سے تلاش",
+        rasiEmpty: "دکھانے کے لیے کوئی کھلا آئٹم نہیں۔",
+        rasiItemCol: "آئٹم",
+        rasiSaved: "کردار محفوظ ہو گیا۔",
+        rasiNoMembers: "پہلے ٹیم میں ارکان شامل کریں۔",
         unassignedTitle: "بغیر ذمہ دار کام",
         unassignedEmpty: "تمام کام تفویض ہو چکے ہیں۔",
         wlOpen: "جاری",
@@ -1245,7 +1325,8 @@
       var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
       var app = null;
-      var state = { loaded: false, error: null, canManage: false, members: [], invitations: [], limits: {}, work: [] };
+      var state = { loaded: false, error: null, canManage: false, members: [], invitations: [], limits: {}, work: [], roles: {} };
+      var RASI_CYCLE = ["", "R", "A", "S", "I"];
 
       function $(id) { return document.getElementById(id); }
 
@@ -1645,7 +1726,70 @@
         return app.teamWorkItems().then(function (rows) {
           state.work = rows || [];
           renderWorkload();
+          return loadRoles();
         }).catch(function () { /* الأعمال ليست حرجة لعرض الفريق */ });
+      }
+
+      /* ---------- مصفوفة RASI ---------- */
+      function loadRoles() {
+        return app.listItemRoles().then(function (rows) {
+          var map = {};
+          (rows || []).forEach(function (r) { (map[r.item_id] = map[r.item_id] || {})[r.user_id] = r.role; });
+          state.roles = map;
+          renderRasi();
+        }).catch(function () { renderRasi(); });
+      }
+
+      function rasiRows() {
+        var q = String(($("rasiSearch") && $("rasiSearch").value) || "").trim().toLowerCase();
+        return state.work.filter(function (it) {
+          if (it.status !== "open") return false;
+          if (!q) return true;
+          return String(it.title || "").toLowerCase().indexOf(q) !== -1 || String(it.item_number || "").toLowerCase().indexOf(q) !== -1;
+        }).slice(0, 150);
+      }
+
+      function renderRasi() {
+        var card = $("rasiCard");
+        if (!card) return;
+        show("rasiCard", state.loaded);
+        if (!state.loaded) return;
+        var members = state.members.filter(function (m) { return m.status === "active"; });
+        var rows = rasiRows();
+        var table = $("rasiTable");
+        var placeholder = $("rasiSearch"); if (placeholder) placeholder.placeholder = t("rasiSearch");
+        if (!members.length) { table.tHead.innerHTML = ""; table.tBodies[0].innerHTML = ""; $("rasiEmpty").textContent = t("rasiNoMembers"); show("rasiEmpty", true); return; }
+        if (!rows.length) { table.tHead.innerHTML = ""; table.tBodies[0].innerHTML = ""; $("rasiEmpty").textContent = t("rasiEmpty"); show("rasiEmpty", true); return; }
+        show("rasiEmpty", false);
+        table.tHead.innerHTML = "<tr><th>" + esc(t("rasiItemCol")) + "</th>" +
+          members.map(function (m) { return "<th>" + esc(memberName(m)) + "</th>"; }).join("") + "</tr>";
+        table.tBodies[0].innerHTML = rows.map(function (it) {
+          var meta = [it.item_number || "", it.due_at ? fmtDate(it.due_at) : ""].filter(Boolean).join(" · ");
+          var cells = members.map(function (m) {
+            var role = (state.roles[it.id] || {})[m.user_id] || "";
+            return '<td><button type="button" class="rasi-cell' + (role ? " is-" + role : "") + '" data-rasi-item="' + esc(it.id) + '" data-rasi-user="' + esc(m.user_id) + '" aria-label="' + esc(memberName(m)) + '">' + (role || "—") + "</button></td>";
+          }).join("");
+          return '<tr><td><div class="rasi-item"><strong>' + esc(it.title || "-") + "</strong>" + (meta ? "<small>" + esc(meta) + "</small>" : "") + "</div></td>" + cells + "</tr>";
+        }).join("");
+      }
+
+      function onRasiClick(ev) {
+        var btn = ev.target.closest("[data-rasi-item]");
+        if (!btn || btn.disabled) return;
+        var itemId = btn.getAttribute("data-rasi-item"), userId = btn.getAttribute("data-rasi-user");
+        var current = (state.roles[itemId] || {})[userId] || "";
+        var next = RASI_CYCLE[(RASI_CYCLE.indexOf(current) + 1) % RASI_CYCLE.length];
+        btn.disabled = true;
+        app.setItemRole(itemId, userId, next || null).then(function () {
+          var row = state.roles[itemId] = state.roles[itemId] || {};
+          if (next === "A") Object.keys(row).forEach(function (u) { if (row[u] === "A" && u !== userId) delete row[u]; });
+          if (next) row[userId] = next; else delete row[userId];
+          renderRasi();
+          toast(t("rasiSaved"), "success");
+        }).catch(function (err) {
+          btn.disabled = false;
+          toast(errorMessage(err), "error");
+        });
       }
 
       function render() {
@@ -1656,6 +1800,7 @@
         renderMembers();
         renderInvite();
         renderWorkload();
+        renderRasi();
         show("chatLinkCard", state.loaded);
       }
 
@@ -1682,6 +1827,7 @@
         show("teamCard", false);
         show("inviteCard", false);
         show("workloadCard", false);
+        show("rasiCard", false);
         show("chatLinkCard", false);
         show("noOrgCard", false);
         show("unavailableCard", true);
@@ -1691,6 +1837,7 @@
         show("teamCard", false);
         show("inviteCard", false);
         show("workloadCard", false);
+        show("rasiCard", false);
         show("chatLinkCard", false);
         show("unavailableCard", false);
         show("noOrgCard", true);
@@ -1704,6 +1851,8 @@
         $("membersGrid").addEventListener("change", onMembersChange);
         $("invitationsList").addEventListener("click", onInvitationsClick);
         $("unassignedList").addEventListener("change", onAssignChange);
+        $("rasiTable").addEventListener("click", onRasiClick);
+        $("rasiSearch").addEventListener("input", function () { renderRasi(); });
       /* البحث عن مستخدم مسجّل ثم دعوته بنقرة */
       function renderLookup(rows) {
         var box = $("lookupResult");

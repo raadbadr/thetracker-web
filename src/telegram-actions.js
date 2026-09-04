@@ -107,7 +107,8 @@ export function formatSearch(lang, query, rows) {
     if (r.client_name) bits.push(r.client_name);
     if (r.case_number) bits.push(`${b.fCase} ${r.case_number}`);
     const tail = [r.due_at ? fmtWhen(r.due_at, lang) : null, r.amount != null ? money(r.amount) : null, r.status === "done" ? b.statusDone : null, r.attachments ? `📎${r.attachments}` : null].filter(Boolean).join(" · ");
-    return `${i + 1}. ${bits.filter(Boolean).join(" — ")}${r.item_number ? ` (${r.item_number})` : ""}${tail ? `\n   ${tail}` : ""}`;
+    const roles = r.roles ? `\n   👥 ${r.roles}` : "";
+    return `${i + 1}. ${bits.filter(Boolean).join(" — ")}${r.item_number ? ` (${r.item_number})` : ""}${tail ? `\n   ${tail}` : ""}${roles}`;
   });
   return `${b.searchTitle(query)}\n\n${lines.join("\n")}`;
 }

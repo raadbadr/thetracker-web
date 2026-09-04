@@ -1034,6 +1034,35 @@
     });
   }
 
+  /* ---------- مصفوفة RASI: أدوار الأعضاء على العناصر ---------- */
+  function listItemRoles(itemIds) {
+    return run(function (client) {
+      var orgId = requireOrg();
+      var q = client.from("item_roles").select("item_id,user_id,role,updated_at").eq("org_id", orgId);
+      if (Array.isArray(itemIds) && itemIds.length) q = q.in("item_id", itemIds);
+      return q.then(unwrap).then(function (rows) { return rows || []; });
+    });
+  }
+
+  /* role: "R" | "A" | "S" | "I" | null (حذف). المعتمد A واحد لكل عنصر: يُزال السابق أولاً. */
+  function setItemRole(itemId, userId, role) {
+    return run(function (client) {
+      var orgId = requireOrg();
+      if (!role) {
+        return client.from("item_roles").delete().eq("org_id", orgId).eq("item_id", itemId).eq("user_id", userId).then(unwrap);
+      }
+      var pre = role === "A"
+        ? client.from("item_roles").delete().eq("org_id", orgId).eq("item_id", itemId).eq("role", "A").neq("user_id", userId).then(unwrap)
+        : Promise.resolve();
+      return pre.then(function () {
+        return client.from("item_roles")
+          .upsert({ org_id: orgId, item_id: itemId, user_id: userId, role: role, set_by: app.user.id, updated_at: new Date().toISOString() },
+                  { onConflict: "item_id,user_id" })
+          .select("item_id,user_id,role").single().then(unwrap);
+      });
+    });
+  }
+
   function unlinkChannel(channel) {
     return run(function (client) {
       return client.from("channel_links").delete().eq("user_id", app.user.id).eq("channel", channel).then(unwrap);
@@ -1402,6 +1431,8 @@
   app.requestChannelCode = requestChannelCode;
   app.setSmsPhone = setSmsPhone;
   app.unlinkChannel = unlinkChannel;
+  app.listItemRoles = listItemRoles;
+  app.setItemRole = setItemRole;
   app.linkTelegramByToken = linkTelegramByToken;
   app.testChannel = testChannel;
   app.calendarToken = calendarToken;
