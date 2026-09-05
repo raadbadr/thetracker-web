@@ -148,6 +148,14 @@ is("المهام المنجزة هذا الشهر", { tool: "tracker_items", kin
   check("an empty window lists the nearest by date, soonest first", /الأقرب:\naليوم|الأقرب:\nاليوم/.test(composeAnswer(u("ايش عندي بعد غد"), [{ title: "اليوم", due_at: day(0) }], "ar", txt, "x", "Asia/Riyadh")));
 }
 
+/* بيانات المنصة كلها: لمدير المنصة وحده، ولا تخلط بالفريق */
+is("كم المسجلين في الموقع", { tool: "tracker_platform" });
+is("كم عدد المستخدمين", { tool: "tracker_platform" });
+is("المشتركين في المنصة", { tool: "tracker_platform" });
+is("how many users on the site", { tool: "tracker_platform" });
+is("في الموقع بالكامل", { tool: "tracker_platform" });
+is("الفريق", { tool: "tracker_team" });
+
 /* التطبيع */
 check("normalize: hamza, taa marbuta, diacritics, punctuation", normalize("الشَّهادةُ الضريبيّة؟ أإآ ى") === "الشهاده الضريبيه ااا ي", normalize("الشَّهادةُ الضريبيّة؟ أإآ ى"));
 /* تركيب الجواب */

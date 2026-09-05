@@ -47,7 +47,10 @@ const EXPENSES = S("مصاريف", "مصروفات", "مصروف", "نفقات",
 const COMPANY = S("شركه", "شركات", "منشاه", "موسسه", "كيان", "company", "societe", "entreprise", "کمپنی", "بياناتي", "بياناتنا", "بيانات");
 const COMPANY_FIELDS = S("ضريبي", "ضريبيه", "ضريبه", "ايبان", "iban", "موحد", "موحده", "بنكي", "بنك", "بنكيه", "باقه", "اشتراك", "اشتراكي", "vat", "cr", "plan", "subscription", "bank", "abonnement");
 const COMPANY_PHRASES = [/رقم\s+(?:ال)?سجل/, /سجل\s*(?:نا|كم|هم)?\s+(?:ال)?تجاري/, /(?:ال)?رقم\s+(?:ال)?ضريبي/, /رقم\s+ضريب/, /(?:ال)?رقم\s+(?:ال)?موحد/, /رقم\s+(?:ال)?حساب/, /(?:ال)?حساب\s*(?:نا|كم)?\s+(?:ال)?بنكي/, /(?:ال)?عنوان\s*(?:نا|كم)?\s+(?:ال)?وطني/, /cr\s*number/, /vat\s*number/, /tax\s*number/, /commercial\s*regist/, /national\s*address/, /bank\s*account/, /unified\s*number/];
-const ALL = S("الكل", "كلها", "كله", "everything", "all", "ملخص", "وضعنا", "وضعي", "الوضع", "نظره", "summary", "overview", "status", "dashboard", "لوحه", "resume");
+/* أسئلة المنصة كلها: عدد المسجلين والشركات والاشتراكات (لمدير المنصة وحده) */
+const PLATFORM_WHO = S("مسجلين", "مسجل", "مشتركين", "مشترك", "مستخدمين", "مستخدم", "users", "user", "subscribers", "signups", "registrations", "accounts");
+const SITE = S("الموقع", "موقع", "المنصه", "منصه", "النظام", "platform", "site", "system");
+const ALL = S("الكل", "كلها", "كله", "بالكامل", "كامل", "everything", "all", "ملخص", "وضعنا", "وضعي", "الوضع", "نظره", "summary", "overview", "status", "dashboard", "لوحه", "resume");
 const ALL_STATUS = ["بشكل عام", "عام", "كلها", "الكل", "السابقه", "سابقه", "قديمه", "القديمه", "history", "ever", "all time", "منذ البدايه", "حتي الان"];
 const COUNT = S("كم", "عدد", "اجمالي", "مجموع", "count", "how", "many", "total", "combien");
 /* النوافذ الزمنية بكل اللهجات: اليوم، غدا، بعد غد، الأسبوع، الشهر */
@@ -156,6 +159,8 @@ export function understand(text, lang) {
   /* ورقة رسمية: كلمة ورقة أو كلمة نوعها أو سؤال عن انتهاء أو إصدار ← المستندات */
   if (kind === "document" || paper || docKeyword || (expiry && !wantsCompany && !companyField)) return docs(docKeyword);
   if (companyPhrase || companyField || (wantsCompany && !kind)) return company;
+  /* «كم المسجلين في الموقع» ليست سؤال فريق: بيانات المنصة كلها */
+  if (has(PLATFORM_WHO) || (has(SITE) && (count || has(ALL)))) return { tool: "tracker_platform", args: {}, label: "platform" };
   if (has(TEAM) && (!kind || /مسوول|مسؤول|مسئول|who/.test(n))) return { tool: "tracker_team", args: {}, label: "team" };
   if (has(EXPENSES) && !kind) {
     const period = window === "week" ? "week" : window === "month" ? "month" : /سنه|سنوي|year|annual|annee/.test(spaced) ? "year" : statusAll ? "all" : "month";

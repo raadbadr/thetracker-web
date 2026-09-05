@@ -6,7 +6,7 @@ import { understand, composeAnswer } from "./telegram-understand.js";
 
 const MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const LANG_NAMES = { ar: "العربية الفصحى", en: "English", fr: "français", ur: "اردو" };
-const AGENT_TOOLS = TOOLS.filter((t) => ["tracker_company", "tracker_items", "tracker_search", "tracker_list", "tracker_add", "tracker_complete", "tracker_assign", "tracker_team", "tracker_remind", "tracker_expenses", "tracker_overview"].includes(t.name));
+const AGENT_TOOLS = TOOLS.filter((t) => ["tracker_company", "tracker_items", "tracker_search", "tracker_list", "tracker_add", "tracker_complete", "tracker_assign", "tracker_team", "tracker_remind", "tracker_expenses", "tracker_overview", "tracker_platform"].includes(t.name));
 
 export { VERBS, writeGate } from "./notify.js";
 
@@ -22,7 +22,7 @@ function systemPrompt(ctx) {
     `أسئلة بيانات الشركة (رقم السجل التجاري، الرقم الضريبي، الآيبان، العنوان، الباقة، الأوراق المرفوعة) تجاب من tracker_company بالرقم نفسه كما هو مسجل.`,
     `كلمة واحدة تكفي: «قضايا» = tracker_items(case)، «مخالفات» = (violation)، «مهام» = (task)، «مستندات» = (document)، «المنجز» = (status done)، «مواعيد/القادم» = tracker_list(upcoming)، «متأخر» = tracker_list(overdue)، «الكل/ملخص/وضعنا» = tracker_overview، «مصاريف/المصاريف/كم صرفنا» = tracker_expenses(period)، أي اسم أو رقم = tracker_search. والكلام الطويل تفهم منه المطلوب نفسه.`,
     `إن لم يوجد شيء من النوع المطلوب فلا تكرر النفي نفسه: انقل ما تقوله الأداة عن الموجود فعلا (المنجز سابقا، ما يحمل الكلمة في عنوانه، النظرة العامة على المتتبعات) لكي يفهم المستخدم صورة بياناته. «بشكل عام» أو «السابقة» أو «الكل» تعني status=all.`,
-    `لا تخترع شيئا أبدا: كل رقم وكل اسم في ردك يجب أن يكون قد جاء حرفيا من نتيجة أداة في هذه المحادثة. إن لم تعد الأداة المعلومة فقل إنك لا تملكها ولا تقدر عليها، ولا تخمن عددا ولا اسما ولا تاريخا. أسئلة عن المنصة كلها (عدد المسجلين في الموقع، كل المستخدمين، الاشتراكات) ليست ضمن بيانات المستخدم: قل إنك لا تملكها.`,
+    `لا تخترع شيئا أبدا: كل رقم وكل اسم في ردك يجب أن يكون قد جاء حرفيا من نتيجة أداة في هذه المحادثة. إن لم تعد الأداة المعلومة فقل إنك لا تملكها ولا تقدر عليها، ولا تخمن عددا ولا اسما ولا تاريخا. أسئلة المنصة كلها (عدد المسجلين في الموقع، كل المستخدمين، الاشتراكات) من tracker_platform، وهي لمدير المنصة وحده.`,
     `لا تذكر أبدا أسماء حقول أو مفاتيح تقنية (مثل due_at أو client_name) ولا JSON ولا معرفات داخلية ولا صيغ تقنية (ISO 8601)؛ تكلم بلغة إنسان عادي فقط.`,
     `لا تعرض الرقم القياسي الداخلي (ITM-…) للمستخدم أبدا؛ اعرض رقم السجل أو القضية أو المخالفة أو الورقة نفسه كما هو مسجل، وتواريخ الإصدار والانتهاء.`,
     `صيغة الرد: مختصرة جدا وبلغة إنسان. للقوائم سطر لكل عنصر بلا مقدمة ولا خاتمة، منسوخ من نص الأداة كما هو: الورقة الرسمية «نوعها — رقمها — إصدار يوم-شهر-سنة — ينتهي يوم-شهر-سنة»، والقضية أو المخالفة أو المهمة «العنوان — قضية/مخالفة رقم … — العميل — الموعد». الرقم الوحيد الذي يظهر هو رقم الورقة أو القضية أو المخالفة كما هو مسجل؛ أي رمز يبدأ بـ ITM أو ORG أو USR ممنوع. التواريخ يوم-شهر-سنة (مثل 31-10-2026) بلا وقت إلا إن كان موعدا بساعة. إن لم يوجد شيء فجملة واحدة. للأسئلة: الجواب فقط. لا شرح لما فعلت ولا ذكر لأسماء الأدوات.`,
@@ -95,7 +95,7 @@ function rowsText(rows) {
     return [r.title, r.case_number ? "قضية " + r.case_number : null, r.violation_number ? "مخالفة " + r.violation_number : null, r.client_name, r.due_at ? dmy(r.due_at) : null].filter(Boolean).join(" | ");
   }).join("\n");
 }
-const TEXT_TOOLS = new Set(["tracker_company", "tracker_team", "tracker_expenses", "tracker_overview"]);
+const TEXT_TOOLS = new Set(["tracker_company", "tracker_team", "tracker_expenses", "tracker_overview", "tracker_platform"]);
 /* الرسائل البديهية تُفهم وتُجاب من البيانات مباشرة بلا نموذج (telegram-understand.js) */
 async function oneWord(env, ctx) {
   const u = understand(ctx.text, ctx.lang);

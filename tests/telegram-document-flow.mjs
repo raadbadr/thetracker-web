@@ -169,6 +169,11 @@ try {
     check("MCP: a Telegram user from another company is not acted for", foreign.structuredContent.status === "not_member" && !calls.includes("telegram_items_by_kind"), JSON.stringify(foreign.structuredContent));
     const link = await callTool("tracker_link_telegram", { telegram_user_id: "999" }, ctx);
     check("MCP: linking needs the site code — no phone, no key-owner fallback", link.isError === true && !calls.includes("link_channel_direct") && !calls.includes("link_channel_by_phone"));
+    const plat = { status: "ok", users: 3, orgs: 3, items: 6, active_subscriptions: 0, signups_this_week: 0, latest_users: [{ name: "Ahdab Badr", email_masked: "hd***@gmail.com", created_at: "2026-09-05" }] };
+    const p1 = await callTool("tracker_platform", {}, { ...ctx, rpc: async () => plat });
+    check("platform numbers read as a sentence with day-month-year", p1.content[0].text.startsWith("المنصة: 3 مسجل، 3 شركة، 6 عنصر، 0 اشتراك مدفوع، 0 تسجيل هذا الأسبوع.") && p1.content[0].text.includes("Ahdab Badr — hd***@gmail.com — 05-09-2026"), p1.content[0].text);
+    const p2 = await callTool("tracker_platform", {}, { ...ctx, rpc: async () => ({ status: "forbidden" }) });
+    check("a non-admin is told plainly, with no numbers", p2.content[0].text === "بيانات المنصة كلها متاحة لمدير المنصة وحده." && !/\d/.test(p2.content[0].text));
     /* «هل توجد مخالفات؟» with none of that kind: the tool looks wider instead of a bare no */
     const rsk = { id: "r1", title: "RSK-05092026-0001 · عدم ارتكاب المخالفة والالتزام بالإجراءات", status: "open", tracker_name: "إدارة المخاطر", category: "معالجة خطر", due_at: "2026-09-07T06:00:00+00:00" };
     const doc = { id: "d1", title: "السجل التجاري لشركة أبراج الكهرباء", status: "open", tracker_name: "المستندات", document_kind: "commercial_register", doc_number: "7012345678" };

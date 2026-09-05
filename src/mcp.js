@@ -63,6 +63,8 @@ export const TOOLS = [
     inputSchema: { type: "object", properties: { user_message: { type: "string", description: "The person's exact words that ask for this action (required)" }, confirm: { type: "boolean", description: "true only after the person confirmed the needs_confirmation preview" }, telegram_user_id: { type: "string", description: "Telegram user id of the person talking (Telegram only)" }, query: { type: "string", description: "Item number, title or case number" }, member: { type: "string", description: "Member name or email" } }, required: ["query", "member"], additionalProperties: false } },
   { name: "tracker_team", description: "The company's team: each member's name, role, department, open and overdue counts, next due date and their nearest items. Use for 'who is responsible for…', 'what is on Ahmed this week', 'the team'.",
     inputSchema: { type: "object", properties: { telegram_user_id: { type: "string" } }, additionalProperties: false } },
+  { name: "tracker_platform", description: "Platform-wide numbers for the platform administrator only: registered users, companies, items, paid subscriptions, sign-ups this week and the latest registrations. Anyone else gets status=forbidden. Use for 'how many are registered on the site', 'كم المسجلين في الموقع'.",
+    inputSchema: { type: "object", properties: { telegram_user_id: { type: "string" } }, additionalProperties: false } },
   { name: "tracker_overview", description: "Counts of everything in the user's company: total, open and done, per tracker with the nearest due date, and per kind. Use for 'what do we have', 'summary', 'status', 'everything'.",
     inputSchema: { type: "object", properties: { telegram_user_id: { type: "string" } }, additionalProperties: false } },
   { name: "tracker_expenses", description: "Operating expenses of the user's company for a period: total in SAR, count, top categories and the latest expenses. Use for 'how are my expenses', 'what did we spend this month/week/year'.",
@@ -242,6 +244,13 @@ export async function callTool(name, args, ctx) {
         return head + "\n   " + load + (items ? "\n" + items : "");
       });
       return result(r, (r.org && r.org.name ? r.org.name + "\n" : "") + (lines.length ? lines.join("\n") : "لا أعضاء."));
+    }
+    case "tracker_platform": {
+      const r = await ctx.rpc("telegram_platform", { p_secret: secret, p_user_id: user });
+      if (!r || r.status === "forbidden") return result({ status: "forbidden" }, "بيانات المنصة كلها متاحة لمدير المنصة وحده.");
+      const latest = (r.latest_users || []).map((x) => "• " + [x.name, x.email_masked, x.created_at ? dmy(x.created_at) : null].filter(Boolean).join(" — ")).join("\n");
+      const head = "المنصة: " + (r.users || 0) + " مسجل، " + (r.orgs || 0) + " شركة، " + (r.items || 0) + " عنصر، " + (r.active_subscriptions || 0) + " اشتراك مدفوع، " + (r.signups_this_week || 0) + " تسجيل هذا الأسبوع.";
+      return result(r, head + (latest ? "\nآخر المسجلين:\n" + latest : ""));
     }
     case "tracker_overview": {
       const r = await ctx.rpc("telegram_overview", { p_secret: secret, p_user_id: user });
