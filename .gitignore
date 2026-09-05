@@ -4,3 +4,4 @@
 !.claude/skills/
 .wrangler/
 node_modules
+.measure-shots/

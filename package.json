@@ -4,5 +4,8 @@
   "description": "TheTracker — Cloudflare Worker + static site (appmails.net)",
   "dependencies": {
     "xlsx": "0.18.5"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^23.11.1"
   }
 }
