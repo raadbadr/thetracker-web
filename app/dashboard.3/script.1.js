@@ -631,7 +631,7 @@
         /* التقويم يخرج من التبويبات ويظهر دائما في العمود الجانبي */
         var calCard = document.createElement("div");
         calCard.className = "content cal-card";
-        calCard.innerHTML = "<h2>" + esc(T("calendarCardTitle")) + "</h2>";
+        /* بلا عنوان للبطاقة: التقويم يعرف نفسه (أمر المهندس رعد) */
 
         dash.insertBefore(grid, dash.firstChild);
 

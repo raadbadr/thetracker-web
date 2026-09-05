@@ -137,7 +137,8 @@
       </section>
 
       <div class="content">
-        <div class="chat-options tabs-row" role="tablist">
+        <!-- التقويم دائم الظهور بأمر ثابت من المهندس رعد: لا تبويب يخفيه ولا يعود تبويبا -->
+        <div class="chat-options tabs-row" role="tablist" hidden>
           <button type="button" class="chat-option-btn is-active" id="tabListBtn" data-tab="list" role="tab" aria-selected="true" data-i18n="tabList">القائمة</button>
           <button type="button" class="chat-option-btn" id="tabCalendarBtn" data-tab="calendar" role="tab" aria-selected="false" data-i18n="tabCalendar">التقويم</button>
         </div>
@@ -297,7 +298,7 @@
           <p class="empty-note" id="emptyList" data-i18n="noItems" hidden>لا توجد عناصر مطابقة.</p>
         </div>
 
-        <div id="calendarPanel" role="tabpanel" hidden>
+        <div id="calendarPanel">
           <div class="cal-nav">
             <div class="cal-nav-group">
               <button type="button" class="chat-option-btn" id="calPrevBtn" data-i18n="calPrev">الشهر السابق</button>

@@ -105,9 +105,10 @@
           $("calendarPanel").hidden = false;
           return;
         }
-        state.tab = tab === "calendar" ? "calendar" : "list";
-        $("listPanel").hidden = state.tab !== "list";
-        $("calendarPanel").hidden = state.tab !== "calendar";
+        /* التقويم لا يُخفى في أي حال: القائمة والتقويم يظهران معا */
+        state.tab = "list";
+        $("listPanel").hidden = false;
+        $("calendarPanel").hidden = false;
         [$("tabListBtn"), $("tabCalendarBtn")].forEach(function (b) {
           var active = b.dataset.tab === state.tab;
           b.classList.toggle("is-active", active);
