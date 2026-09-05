@@ -90,6 +90,64 @@ is("أسند القضية 4471 إلى أحمد", null);
 is("تأكد", null);
 is("ليش", null);
 is("ابغى اعرف الفرق بين القضية والدعوى", null);
+/* ما سقط في تدقيق العبارات الواسع (وكلاء يولدون رسائل واقعية بلهجات مختلفة) */
+is("national address", { tool: "tracker_company" });
+is("رقم سجلنا التجاري", { tool: "tracker_company" });
+is("commercial registration number", { tool: "tracker_company" });
+is("رقم ضريبة القيمة المضافة", { tool: "tracker_company" });
+is("رقمنا الموحد", { tool: "tracker_company" });
+is("حسابنا البنكي", { tool: "tracker_company" });
+is("رقم الحساب", { tool: "tracker_company" });
+is("عنواننا الوطني", { tool: "tracker_company" });
+is("باقتنا", { tool: "tracker_company" });
+is("المؤسسة", { tool: "tracker_company" });
+is("société", { tool: "tracker_company" });
+is("کمپنی", { tool: "tracker_company" });
+is("متى ينتهي سجل الشركة", { tool: "tracker_items", kind: "document", kw: true });
+is("كم يوم باقي للسجل", { tool: "tracker_items", kind: "document", kw: true });
+is("شهادة القيمة المضافة", { tool: "tracker_items", kind: "document", kw: true });
+is("تأمين الموظفين", { tool: "tracker_items", kind: "document", kw: true });
+is("اشتراك الغرفة التجارية", { tool: "tracker_items", kind: "document", kw: true });
+is("صورة السجل التجاري", { tool: "tracker_items", kind: "document", kw: true });
+/* النوافذ الزمنية بكل اللهجات */
+is("ايش عندي بعد غد", { tool: "tracker_list", mode: "upcoming", window: "day_after" });
+is("وش عندي بعد بكرة", { tool: "tracker_list", mode: "upcoming", window: "day_after" });
+is("النهارده عندي ايه", { tool: "tracker_list", mode: "upcoming", window: "today" });
+is("وش عندي باكر", { tool: "tracker_list", mode: "upcoming", window: "tomorrow" });
+is("what do i have tommorow", { tool: "tracker_list", mode: "upcoming", window: "tomorrow" });
+is("whats on tmrw", { tool: "tracker_list", mode: "upcoming", window: "tomorrow" });
+is("شي لليوم؟", { tool: "tracker_list", mode: "upcoming", window: "today" });
+is("عندي شي الليلة", { tool: "tracker_list", mode: "upcoming", window: "today" });
+is("مواعيد هالاسبوع", { tool: "tracker_list", mode: "upcoming", window: "week" });
+is("هاليوم وش عندي", { tool: "tracker_list", mode: "upcoming", window: "today" });
+is("وش عندي هذا الشهر", { tool: "tracker_list", mode: "upcoming", window: "month" });
+is("اليومين الجاية", { tool: "tracker_list", mode: "upcoming" });
+is("وش عندي اليوم وبكرة", { tool: "tracker_list", mode: "upcoming", window: "today_tomorrow" });
+is("مواعيد الاسبوع الماضي", { tool: "tracker_list", mode: "overdue" });
+is("متى اقرب جلسة", { tool: "tracker_list", mode: "upcoming" });
+is("متى الجلسة القادمة", { tool: "tracker_list", mode: "upcoming" });
+is("when is the next hearing", { tool: "tracker_list", mode: "upcoming" });
+is("qu'est-ce que j'ai aujourd'hui", { tool: "tracker_list", mode: "upcoming", window: "today" });
+is("rendez-vous demain", { tool: "tracker_list", mode: "upcoming", window: "tomorrow" });
+is("échéances cette semaine", { tool: "tracker_list", mode: "upcoming", window: "week" });
+is("آج کیا ہے", { tool: "tracker_list", mode: "upcoming", window: "today" });
+is("اس ہفتے کی تاریخیں", { tool: "tracker_list", mode: "upcoming", window: "week" });
+is("وش ينتهي هذا الاسبوع", { tool: "tracker_items", kind: "document", window: "week" });
+is("المستندات اللي تنتهي هذا الاسبوع", { tool: "tracker_items", kind: "document", window: "week" });
+is("4471", { tool: "tracker_search" });
+is("رقم 4471", { tool: "tracker_search" });
+is("٤٤٧١", { tool: "tracker_search" });
+is("المهام المنجزة هذا الشهر", { tool: "tracker_items", kind: "task", status: "done" });
+/* نوافذ التركيب: بعد غد، اليوم وغدا، الشهر */
+{
+  const day = (k) => new Date(Date.now() + k * 86400000).toISOString();
+  const rows = [{ title: "اليوم", due_at: day(0) }, { title: "غدا", due_at: day(1) }, { title: "بعد غد", due_at: day(2) }];
+  const txt = (r) => r.map((x) => x.title).join(",");
+  check("«بعد غد» keeps only the day after tomorrow", composeAnswer(u("ايش عندي بعد غد"), rows, "ar", txt, "x", "Asia/Riyadh") === "بعد غد");
+  check("«اليوم وبكرة» keeps both days", composeAnswer(u("وش عندي اليوم وبكرة"), rows, "ar", txt, "x", "Asia/Riyadh") === "اليوم,غدا");
+  check("an empty window lists the nearest by date, soonest first", /الأقرب:\naليوم|الأقرب:\nاليوم/.test(composeAnswer(u("ايش عندي بعد غد"), [{ title: "اليوم", due_at: day(0) }], "ar", txt, "x", "Asia/Riyadh")));
+}
+
 /* التطبيع */
 check("normalize: hamza, taa marbuta, diacritics, punctuation", normalize("الشَّهادةُ الضريبيّة؟ أإآ ى") === "الشهاده الضريبيه ااا ي", normalize("الشَّهادةُ الضريبيّة؟ أإآ ى"));
 /* تركيب الجواب */
