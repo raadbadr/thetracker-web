@@ -550,6 +550,7 @@
             '<td><span class="' + st.cls + '">' + esc(p.state === "missing" ? "-" : left) + "</span></td>" +
             '<td><span class="' + st.cls + '">' + esc(t(st.key)) + "</span></td>" +
             '<td><div class="chat-options row-actions">' +
+              (paperDetails(p) ? iconBtn("details", t("docDetailsOf"), "data-paper-details", p.item_id) : "") +
               (paperFile(p) ? iconBtn("open", t("pOpen"), "data-paper-open", paperFile(p).id) +
                               iconBtn("download", t("pDownload"), "data-paper-get", paperFile(p).id) : "") +
               (p.item_id && !paperFile(p)
@@ -557,7 +558,28 @@
                 : iconBtn(p.state === "missing" ? "plus" : "replace", t(p.state === "missing" ? "pAdd" : "docReplace"), "data-paper-add", p.kind)) +
             "</div></td>";
           body.appendChild(tr);
+          var read = paperDetails(p);
+          if (read) {
+            var line = document.createElement("tr");
+            line.className = "detail-line";
+            line.hidden = true;
+            line.setAttribute("data-paper-details-for", p.item_id);
+            line.innerHTML = '<td colspan="6"><div class="detail-rows">' + detailRowsHtml(read.details, read.labels) + "</div></td>";
+            body.appendChild(line);
+          }
         });
+      }
+
+      /* الورقة تعرض ما قُرئ منها: بياناتها محفوظة مع عنصرها في الجدول نفسه */
+      function paperDetails(p) {
+        if (!p || !p.item_id) return null;
+        for (var i = 0; i < state.items.length; i++) {
+          if (state.items[i].id !== p.item_id) continue;
+          var d = state.items[i].data || {};
+          if (!d.details || !Object.keys(d.details).length) return null;
+          return { details: d.details, labels: d.detail_labels };
+        }
+        return null;
       }
 
       function loadPapers() {
@@ -648,6 +670,15 @@
         });
         $("filterKind").addEventListener("change", function () { state.kind = this.value; render(); });
         $("filterSearch").addEventListener("input", function () { state.search = this.value.trim(); render(); });
+        $("papersBody").addEventListener("click", function (e) {
+          var btn = e.target.closest("[data-paper-details]");
+          if (!btn) return;
+          e.preventDefault();
+          var line = $("papersBody").querySelector('[data-paper-details-for="' + btn.getAttribute("data-paper-details") + '"]');
+          if (!line) return;
+          line.hidden = !line.hidden;
+          btn.setAttribute("aria-expanded", line.hidden ? "false" : "true");
+        });
         $("papersStats").addEventListener("click", function (e) {
           var tile = e.target.closest("[data-paper-state]");
           if (!tile) return;

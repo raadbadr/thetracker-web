@@ -134,7 +134,7 @@ const seen = await page.evaluate(() => ({
   fileLinks: document.querySelectorAll("#docsBody [data-open]").length,
   downloads: document.querySelectorAll("#docsBody [data-get]").length,
   attaches: document.querySelectorAll("#docsBody [data-attach]").length,
-  papersRows: document.querySelectorAll("#papersBody tr").length,
+  papersRows: document.querySelectorAll("#papersBody tr:not(.detail-line)").length,
   paperOpen: document.querySelectorAll("#papersBody [data-paper-open]").length,
   paperGet: document.querySelectorAll("#papersBody [data-paper-get]").length,
   paperAttach: document.querySelectorAll("#papersBody [data-paper-attach]").length,
@@ -196,7 +196,7 @@ const filtered = await page.evaluate(() => {
   const after = document.querySelector('#papersStats [data-paper-state="missing"]');
   return {
     pressed: after.getAttribute("aria-pressed"),
-    papers: [...document.querySelectorAll("#papersBody tr")].length,
+    papers: [...document.querySelectorAll("#papersBody tr:not(.detail-line)")].length,
     docs: [...document.querySelectorAll("#docsBody tr:not(.detail-line)")].length,
   };
 });
@@ -204,7 +204,7 @@ check("pressing a tile filters both tables to that state", filtered.papers === 1
 
 const cleared = await page.evaluate(() => {
   document.querySelector('#papersStats [data-paper-state="missing"]').click();
-  return { papers: document.querySelectorAll("#papersBody tr").length, docs: document.querySelectorAll("#docsBody tr:not(.detail-line)").length };
+  return { papers: document.querySelectorAll("#papersBody tr:not(.detail-line)").length, docs: document.querySelectorAll("#docsBody tr:not(.detail-line)").length };
 });
 check("pressing the same tile again clears the filter", cleared.papers === 3 && cleared.docs === 2, JSON.stringify(cleared));
 
@@ -243,6 +243,22 @@ check("the details list every field with its label", (details.rows || []).length
 check("dates in the details read day-month-year", (details.rows || []).some((r) => r.val === "01-09-2027"), JSON.stringify((details.rows || []).map((r) => r.val)));
 check("no detail value is cut", !(details.rows || []).some((r) => r.cut), "some values truncate");
 check("pressing details again folds the row", details.afterHidden === true, "stayed open");
+
+/* بطاقة الأوراق تعرض ما قُرئ من الورقة نفسها */
+const paperDetails = await page.evaluate(() => {
+  const btn = document.querySelector("#papersBody [data-paper-details]");
+  if (!btn) return { missing: true };
+  const line = document.querySelector("#papersBody [data-paper-details-for]");
+  const before = line.hidden;
+  btn.click();
+  const rows = [...line.querySelectorAll(".detail-row")].length;
+  const shown = !line.hidden;
+  btn.click();
+  return { before, rows, shown, folded: line.hidden };
+});
+check("a paper shows what was read from it", !paperDetails.missing && paperDetails.before === true && paperDetails.shown, JSON.stringify(paperDetails));
+check("the paper's details list every field", paperDetails.rows === 5, "n=" + paperDetails.rows);
+check("pressing it again folds the paper's details", paperDetails.folded === true, "stayed open");
 
 /* المسار الحقيقي: صورة تُرفع من حقل الملف، والمحلل يرد بعقده الجديد */
 await page.evaluate(() => {
