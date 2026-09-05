@@ -175,7 +175,7 @@ export function bot(lang) { return BOT[lang] || BOT.ar; }
 /* لوحة الأزرار الدائمة أسفل المحادثة */
 export function menuKeyboard(lang) {
   const b = bot(lang);
-  return { reply_markup: { keyboard: [[{ text: b.upcoming }, { text: b.overdue }], [{ text: b.dashboard }]], resize_keyboard: true, is_persistent: true } };
+  return { reply_markup: { keyboard: [[{ text: b.dashboard }], [{ text: b.upcoming }, { text: b.overdue }]], resize_keyboard: true, is_persistent: true } };
 }
 
 /* أي زر ضغطه المستخدم بأي لغة؟ يعيد upcoming/overdue/dashboard/help أو null */
