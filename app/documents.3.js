@@ -540,14 +540,14 @@
           return (p.state === "stored" ? "valid" : p.state) === state.paperState;
         }).forEach(function (p) {
           var st = PAPER_STATE[p.state] || PAPER_STATE.stored;
-          var left = p.days_left == null ? "-" : (p.days_left < 0 ? t("docExpired") : (p.days_left + " " + t("docDays")));
+          var left = expiryBadge(p.days_left, st.cls);
           var tr = document.createElement("tr");
           tr.innerHTML =
             '<td><div class="cell-stack"><span class="item-title">' + esc(kindLabel(p.kind)) + "</span>" +
               '<span class="item-cat">' + esc(t(p.required ? "pRequired" : "pOptional")) + "</span></div></td>" +
             '<td dir="ltr">' + esc(p.number || "-") + "</td>" +
             "<td>" + (p.expires_at ? esc(app.fmtDate(p.expires_at)) : "-") + "</td>" +
-            '<td><span class="' + st.cls + '">' + esc(p.state === "missing" ? "-" : left) + "</span></td>" +
+            "<td>" + (p.state === "missing" ? "-" : left) + "</td>" +
             '<td><span class="' + st.cls + '">' + esc(t(st.key)) + "</span></td>" +
             '<td><div class="chat-options row-actions">' +
               (paperDetails(p) ? iconBtn("details", t("docDetailsOf"), "data-paper-details", p.item_id) : "") +
@@ -581,6 +581,20 @@
         }
         return null;
       }
+
+      /* «ينتهي خلال 12 يوما» و«منتهية منذ 5 أيام»: الكلمة توضح ما يعنيه الرقم،
+         واللون كما هو في بقية الصفحة — برتقالي دون شهر وأحمر بعد الانتهاء. */
+      function expiryBadge(daysLeft, cls) {
+        if (daysLeft == null) return '<span class="' + cls + '">-</span>';
+        var n = Number(daysLeft);
+        if (!isFinite(n)) return '<span class="' + cls + '">-</span>';
+        var text = n < 0 ? fmtCount("pExpiredSince", Math.abs(n))
+                 : (n === 0 ? t("pEndsToday") : fmtCount("pEndsIn", n));
+        var tone = n < 0 ? "status-overdue" : (n <= 30 ? "status-open" : "status-done");
+        return '<span class="expiry-badge ' + tone + '">' + esc(text) + "</span>";
+      }
+
+      function fmtCount(key, n) { return String(t(key)).replace("{n}", n); }
 
       function loadPapers() {
         return app.orgDocumentsStatus().then(function (d) {

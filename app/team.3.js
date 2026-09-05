@@ -400,6 +400,13 @@
         return m ? memberName(m) : "";
       }
 
+      /* الرقم القياسي (ITM-) داخلي لا يُعرض: يظهر رقم القضية أو المخالفة أو المستند */
+      function shownNumber(it) {
+        var d = it.data || {};
+        return String(it.case_number || d.number || d.violation_number ||
+                      d["رقم المخالفة"] || d["رقم الدعوى"] || d["رقم القضية"] || "").trim();
+      }
+
       function workload() {
         var now = Date.now();
         var by = {};
@@ -460,7 +467,7 @@
                      (c.id ? " · " + esc(t("wlDone")) + " " + done : "") + "</span></div>";
           var list = mine.map(function (it) {
             var isLate = it.due_at && new Date(it.due_at).getTime() < now;
-            var meta = [it.item_number || "", it.due_at ? fmtDate(it.due_at) : t("noDue")].filter(Boolean).join(" · ");
+            var meta = [shownNumber(it), it.due_at ? fmtDate(it.due_at) : t("noDue")].filter(Boolean).join(" · ");
             return '<div class="wl-card' + (isLate ? " is-late" : "") + '" data-item="' + esc(it.id) + '">' +
                      '<b data-tr>' + esc(it.title || "-") + "</b><span>" + esc(meta) + "</span>" +
                      memberDots(it.id, it.assignee_id || "") +
@@ -525,7 +532,9 @@
         return state.work.filter(function (it) {
           if (it.status !== "open") return false;
           if (!q) return true;
-          return String(it.title || "").toLowerCase().indexOf(q) !== -1 || String(it.item_number || "").toLowerCase().indexOf(q) !== -1;
+          return String(it.title || "").toLowerCase().indexOf(q) !== -1 ||
+                 String(shownNumber(it)).toLowerCase().indexOf(q) !== -1 ||
+                 String(it.item_number || "").toLowerCase().indexOf(q) !== -1;
         }).slice(0, 150);
       }
 
@@ -538,7 +547,8 @@
         renderQuickAddMembers();
         if (!members.length || !rows.length) { list.innerHTML = ""; return; }
         list.innerHTML = rows.map(function (it) {
-          var meta = [it.item_number ? '<span class="rasi-code">' + esc(it.item_number) + "</span>" : "", it.due_at ? esc(fmtDate(it.due_at)) : ""].filter(Boolean).join(" · ");
+          var num = shownNumber(it);
+          var meta = [num ? '<span class="rasi-code">' + esc(num) + "</span>" : "", it.due_at ? esc(fmtDate(it.due_at)) : ""].filter(Boolean).join(" · ");
           var chips = members.map(function (m) {
             var role = (state.roles[it.id] || {})[m.user_id] || "";
             return '<button type="button" class="rasi-chip' + (role ? " is-" + role : "") + '" data-q-item="' + esc(it.id) + '" data-q-user="' + esc(m.user_id) + '">' +
@@ -674,7 +684,7 @@
         table.tHead.innerHTML = "<tr><th>" + esc(t("rasiItemCol")) + "</th>" +
           members.map(function (m) { return "<th>" + esc(memberName(m)) + "</th>"; }).join("") + "</tr>";
         table.tBodies[0].innerHTML = rows.map(function (it) {
-          var meta = [it.item_number || "", it.due_at ? fmtDate(it.due_at) : ""].filter(Boolean).join(" · ");
+          var meta = [shownNumber(it), it.due_at ? fmtDate(it.due_at) : ""].filter(Boolean).join(" · ");
           var cells = members.map(function (m) {
             var role = (state.roles[it.id] || {})[m.user_id] || "";
             var word = roleWord(role);

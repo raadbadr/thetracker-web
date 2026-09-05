@@ -36,6 +36,8 @@ function stub(url) {
       { kind: "vat_certificate", required: true, item_id: WITH_FILE, title: "الشهادة الضريبية", expires_at: "2027-01-01T09:00:00Z", days_left: 300, state: "valid" },
       { kind: "commercial_register", required: true, item_id: NO_FILE, title: "السجل التجاري", expires_at: "2027-09-01T09:00:00Z", days_left: 500, state: "valid" },
       { kind: "gosi_certificate", required: true, item_id: null, state: "missing" },
+      { kind: "chamber_certificate", required: true, item_id: null, title: "شهادة الغرفة", expires_at: "2026-09-20T09:00:00Z", days_left: 12, state: "expiring" },
+      { kind: "license", required: false, item_id: null, title: "الرخصة", expires_at: "2026-08-01T09:00:00Z", days_left: -35, state: "expired" },
     ], extra: [] };
   }
   if (p.includes("/rest/v1/rpc/save_org_profile")) return { org_id: ORG.id };
@@ -146,7 +148,7 @@ check("the documents table lists both papers", seen.rows === 2, "rows=" + seen.r
 check("the stored file is listed by name", seen.fileName.includes(".pdf"), seen.fileName);
 check("a download button sits beside the file", seen.downloads === 1, "n=" + seen.downloads);
 check("every document offers attach", seen.attaches === 2, "n=" + seen.attaches);
-check("the papers card lists the expected papers", seen.papersRows === 3, "rows=" + seen.papersRows);
+check("the papers card lists the expected papers", seen.papersRows === 5, "rows=" + seen.papersRows);
 check("the paper with a file offers view and download", seen.paperOpen === 1 && seen.paperGet === 1, "open=" + seen.paperOpen + " get=" + seen.paperGet);
 check("papers without a file offer attach", seen.paperAttach === 1, "n=" + seen.paperAttach);
 check("nothing is cut with an ellipsis", seen.ellipsis === 0, "n=" + seen.ellipsis);
@@ -206,7 +208,7 @@ const cleared = await page.evaluate(() => {
   document.querySelector('#papersStats [data-paper-state="missing"]').click();
   return { papers: document.querySelectorAll("#papersBody tr:not(.detail-line)").length, docs: document.querySelectorAll("#docsBody tr:not(.detail-line)").length };
 });
-check("pressing the same tile again clears the filter", cleared.papers === 3 && cleared.docs === 2, JSON.stringify(cleared));
+check("pressing the same tile again clears the filter", cleared.papers === 5 && cleared.docs === 2, JSON.stringify(cleared));
 
 await page.setViewport({ width: 375, height: 812, deviceScaleFactor: 2 });
 await new Promise((r) => setTimeout(r, 400));
@@ -243,6 +245,12 @@ check("the details list every field with its label", (details.rows || []).length
 check("dates in the details read day-month-year", (details.rows || []).some((r) => r.val === "01-09-2027"), JSON.stringify((details.rows || []).map((r) => r.val)));
 check("no detail value is cut", !(details.rows || []).some((r) => r.cut), "some values truncate");
 check("pressing details again folds the row", details.afterHidden === true, "stayed open");
+
+/* الشارة تقول متى تنتهي الورقة بالكلمات لا بالرقم وحده */
+const badges = await page.evaluate(() => [...document.querySelectorAll("#papersBody .expiry-badge")].map((b) => b.textContent.trim() + "|" + b.className.replace("expiry-badge ", "")));
+check("a paper about to expire says so in words", badges.some((b) => /ينتهي خلال 12/.test(b) && /status-open/.test(b)), JSON.stringify(badges));
+check("an expired paper says how long ago", badges.some((b) => /منتهية منذ 35/.test(b) && /status-overdue/.test(b)), JSON.stringify(badges));
+check("a valid paper stays calm", badges.some((b) => /status-done/.test(b)), JSON.stringify(badges));
 
 /* بطاقة الأوراق تعرض ما قُرئ من الورقة نفسها */
 const paperDetails = await page.evaluate(() => {
