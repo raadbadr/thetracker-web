@@ -1,7 +1,7 @@
     (function () {
       "use strict";
       var app = null;
-      var state = { items: [], attachments: {}, file: null, fields: null, tracker: null, kind: "", search: "", papers: null, pendingKind: null, wantedKind: null };
+      var state = { items: [], attachments: {}, file: null, fields: null, tracker: null, kind: "", search: "", papers: null, paperState: "", pendingKind: null, wantedKind: null };
       var PDF_SRC = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
       var PDF_WORKER = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
       var KINDS = ["commercial_register","articles_of_association","bylaws","chamber_certificate","gosi_certificate","zakat_certificate","saudization_certificate","vat_certificate","license","lease_contract","contract","case_filing","court_ruling","hearing_notice","violation","invoice","power_of_attorney","id_document","passport","driving_license","vehicle_registration","insurance_policy","employment_contract","other"];
@@ -281,10 +281,20 @@
         if (!iso) return null;
         return Math.ceil((new Date(iso).getTime() - Date.now()) / 86400000);
       }
+      /* حالة الورقة كما حسبتها القاعدة، حتى يتفق الجدول مع البلاطات */
+      function paperStateOf(itemId) {
+        var list = (state.papers && state.papers.papers) || [];
+        for (var i = 0; i < list.length; i++) {
+          if (list[i].item_id === itemId) return list[i].state === "stored" ? "valid" : list[i].state;
+        }
+        return "";
+      }
+
       function render() {
         var rows = state.items.filter(function (it) {
           var d = it.data || {};
           if (state.kind && d.document_kind !== state.kind) return false;
+          if (state.paperState && paperStateOf(it.id) !== state.paperState) return false;
           if (state.search) {
             var hay = ((it.title || "") + " " + (d.number || "") + " " + (it.client_name || "")).toLowerCase();
             if (hay.indexOf(state.search.toLowerCase()) === -1) return false;
@@ -359,6 +369,13 @@
       var PLUS_ICON = '<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z\"/></svg>';
       var TRASH_ICON = '<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z\"/></svg>';
 
+      var PAPER_ICON = {
+        valid: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>',
+        expiring: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 11H8v-2h3V6h2v7z"/></svg>',
+        expired: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 1 21h22L12 2zm1 15h-2v-2h2v2zm0-4h-2V9h2v4z"/></svg>',
+        missing: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 16h-2v-2h2v2zm0-4h-2V8h2v6z"/></svg>'
+      };
+
       function renderPapers() {
         var data = state.papers;
         if (!data || !data.papers || !data.papers.length) { show("papersCard", false); return; }
@@ -370,17 +387,26 @@
           else if (p.state === "expiring") counts.expiring += 1;
           else counts.valid += 1;
         });
+        /* بلاطات بنمط لوحة التحكم: أيقونة ثم التسمية ثم الرقم، والبلاطة زر يفلتر الجدول */
         $("papersStats").innerHTML = [
-          ["pStatValid", counts.valid, ""], ["pStatExpiring", counts.expiring, "status-open"],
-          ["pStatExpired", counts.expired, "status-overdue"], ["pStatMissing", counts.missing, "status-overdue"]
+          { s: "valid",    k: "pStatValid",    n: counts.valid,    c: "status-done",    a: "cars" },
+          { s: "expiring", k: "pStatExpiring", n: counts.expiring, c: "status-open",    a: "spots" },
+          { s: "expired",  k: "pStatExpired",  n: counts.expired,  c: "status-overdue", a: "overdue" },
+          { s: "missing",  k: "pStatMissing",  n: counts.missing,  c: "status-overdue", a: "overdue" }
         ].map(function (c) {
-          /* نفس ترتيب بطاقات الموقع: التسمية أولا ثم الرقم تحتها */
-          return '<div class="platform-stat-card"><h3 class="platform-stat-label">' + esc(t(c[0])) +
-                 '</h3><span class="platform-stat-value ' + c[2] + '">' + c[1] + "</span></div>";
+          var on = state.paperState === c.s;
+          return '<button type="button" class="platform-stat-card paper-tile' + (on ? " is-on" : "") + '"' +
+                 ' data-paper-state="' + c.s + '" data-accent="' + c.a + '" aria-pressed="' + (on ? "true" : "false") + '">' +
+                 '<span class="platform-stat-icon">' + PAPER_ICON[c.s] + "</span>" +
+                 '<span class="platform-stat-label">' + esc(t(c.k)) + "</span>" +
+                 '<span class="platform-stat-value ' + c.c + '">' + c.n + "</span></button>";
         }).join("");
 
         var body = $("papersBody"); body.innerHTML = "";
-        data.papers.forEach(function (p) {
+        data.papers.filter(function (p) {
+          if (!state.paperState) return true;
+          return (p.state === "stored" ? "valid" : p.state) === state.paperState;
+        }).forEach(function (p) {
           var st = PAPER_STATE[p.state] || PAPER_STATE.stored;
           var left = p.days_left == null ? "-" : (p.days_left < 0 ? t("docExpired") : (p.days_left + " " + t("docDays")));
           var tr = document.createElement("tr");
@@ -475,6 +501,15 @@
         $("docCancelBtn").addEventListener("click", function () { show("docForm", false); state.file = null; state.driveDoc = null; $("docFile").value = ""; setStatus(""); });
         $("filterKind").addEventListener("change", function () { state.kind = this.value; render(); });
         $("filterSearch").addEventListener("input", function () { state.search = this.value.trim(); render(); });
+        $("papersStats").addEventListener("click", function (e) {
+          var tile = e.target.closest("[data-paper-state]");
+          if (!tile) return;
+          e.preventDefault();
+          var pick = tile.getAttribute("data-paper-state");
+          state.paperState = state.paperState === pick ? "" : pick;
+          renderPapers();
+          render();
+        });
         $("papersBody").addEventListener("click", function (e) {
           var btn = e.target.closest("[data-paper-add]");
           if (!btn) return;

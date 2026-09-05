@@ -748,6 +748,13 @@ export default {
 
     // Only handle /api/* routes — everything else is static assets
     if (path === "/mcp" || path === "/mcp/") return await handleMcp(request, env, url, { authenticate: mcpAuthenticate, importRows: importRowsWithKey });
+    /* الشكل نفسه الذي رُبط به خادم باركينزي في هرمس (رابط فقط بلا ترويسة): المفتاح داخل المسار /mcp/tt_live_… */
+    const mcpKeyInPath = path.match(/^\/mcp\/(tt_live_[a-f0-9]{48})\/?$/i);
+    if (mcpKeyInPath) {
+      const withKey = new Request(request, { headers: new Headers(request.headers) });
+      withKey.headers.set("Authorization", "Bearer " + mcpKeyInPath[1]);
+      return await handleMcp(withKey, env, url, { authenticate: mcpAuthenticate, importRows: importRowsWithKey });
+    }
     if (!path.startsWith("/api/")) {
       /* ملف مقسم أجزاء؟ يُجمَّع كما هو؛ وإلا يُخدم من الأصول الثابتة */
       if (/\.(js|css)$/.test(path)) {
