@@ -19,6 +19,7 @@ description: تجميد تصميم TheTracker: لا عبث بالتصميم ول
 3. بعده المربعات الأربعة، ثم المؤشرات، ثم الخدمات، ثم القائمة.
 
 ## التحقق الإلزامي قبل أي نشر يمس صفحة
+- جرد العناصر الظاهرة قبل وبعد أي تعديل يمس تخطيط صفحة (شبكة، تبويبات، ترتيب بطاقات): `node tools/inventory.mjs snap <pages> --size desktop --out .inv/before.json` قبل، ونفسه إلى after.json بعد، ثم `node tools/inventory.mjs diff .inv/before.json .inv/after.json` — أي «اختفى» يمنع النشر (يخرج بالرمز 1).
 - `node tools/measure.mjs <page>` على 375/768/1280: overflow=no، err=0، loading=false، booting=false، scrollY=0، وللوحة التحكم `calendar=visible-first`.
 - لقطة قبل/بعد تُقارن بالعين: لا عنصر اختفى ولا تحرك ولا تغير لونه.
 - `node tests/analyzer-cases.mjs` إن مُس التعرف على المستندات، و`node tests/documents-flow.mjs` إن مُست صفحة المستندات.
