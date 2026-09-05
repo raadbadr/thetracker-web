@@ -452,7 +452,9 @@
 
         var ms = "";
         events.forEach(function (ev, i) {
-          var label = T(TL_KINDS[ev.kind] || "tlCreated") + (ev.title ? " — " + ev.title : "");
+          /* الرقم القياسي (RSK-/ITM-/ORG-…) داخلي: يحذف من أول العنوان إن سبقه */
+          var shownTitle = String(ev.title || "").replace(/^\s*[A-Z]{2,4}-\d{6,8}-\d{3,5}\s*[·—–-]?\s*/, "").trim();
+          var label = T(TL_KINDS[ev.kind] || "tlCreated") + (shownTitle ? " — " + shownTitle : "");
           ms += '<div class="tlx-ms" role="button" tabindex="0" data-idx="' + i + '" title="' + esc(label + " · " + tlxShortDate(ev.ms)) + '" data-kind="' + esc(ev.kind) + '" data-step="' + Math.round(ratioOf(ev.ms) * TLX_STEPS) + '" style="left:' + tlxLeft(ratioOf(ev.ms), isRtl) + '">' +
                 '<span class="tlx-ms-label">' + esc(label) + "</span>" +
                 '<span class="tlx-ms-date">' + esc(tlxShortDate(ev.ms)) + "</span>" +
@@ -591,6 +593,14 @@
         }
         if (prev) prev.addEventListener("click", function () { jump(-1); });
         if (next) next.addEventListener("click", function () { jump(1); });
+        /* العنوان يظهر كاملا: الحشو العلوي للمسطرة يتسع لأطول عنوان (3 أسطر أو أكثر) وتاريخه */
+        if (sc) {
+          var maxH = 0;
+          marks.forEach(function (m) { var l = m.querySelector(".tlx-ms-label"); if (l && l.offsetHeight > maxH) maxH = l.offsetHeight; });
+          var need = Math.ceil(maxH + 28);   /* قاعدة العنوان تعلو مركز المسار 30px، وهامش 4px فوق أعلى سطر */
+          var pad = Math.max(61, need) + "px";
+          if (sc.style.paddingTop !== pad) sc.style.paddingTop = pad;
+        }
         apply(todayStep);
         scrollTo(todayStep);
       }
