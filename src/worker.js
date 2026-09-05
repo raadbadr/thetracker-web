@@ -455,6 +455,8 @@ const HUMANIZE_EMPTY = { ar: "لم أفهم الطلب، أعد صياغته ب�
 function humanize(text, lang) {
   let t = String(text || "");
   t = t.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, "");
+  /* الأرقام القياسية الداخلية (ITM-/ORG-/USR-) لا تصل إلى المستخدم أبدا، حتى لو قلّد النموذج ردا قديما */
+  t = t.replace(/\b(?:ITM|ORG|USR)-\d{8}-\d{4}\b\s*[|—-]?\s*/g, "");
   const lines = t.split("\n").filter((line) => {
     const l = line.trim();
     if (!l) return true;

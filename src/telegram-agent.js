@@ -112,7 +112,7 @@ export async function agentReply(env, ctx) {
   for (const h of history.slice(-10)) {
     if (!h || !h.body) continue;
     if (h.body === ctx.text && h.role === "user") continue; /* الرسالة الحالية سجلت قبل الرد؛ لا نكررها */
-    messages.push({ role: h.role === "assistant" ? "assistant" : "user", content: String(h.body).slice(0, 1500) });
+    messages.push({ role: h.role === "assistant" ? "assistant" : "user", content: String(h.body).replace(/\b(?:ITM|ORG|USR)-\d{8}-\d{4}\b\s*[|—-]?\s*/g, "").slice(0, 1500) });
   }
   messages.push({ role: "user", content: String(ctx.text || "").slice(0, 3000) });
 
