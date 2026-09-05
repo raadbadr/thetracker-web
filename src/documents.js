@@ -796,14 +796,27 @@ export function mergeRules(model, rules) {
   if (rules.kind && (rules.strong || merged.kind == null || merged.kind === "other")) merged.kind = rules.kind;
   delete merged.strong;
   if (!merged.title && rules.kind) {
-    const names = { commercial_register: "السجل التجاري", vat_certificate: "الشهادة الضريبية", license: "الرخصة",
-      articles_of_association: "عقد التأسيس", bylaws: "النظام الأساسي", chamber_certificate: "شهادة الغرفة التجارية",
-      gosi_certificate: "شهادة التأمينات الاجتماعية", zakat_certificate: "شهادة الزكاة", saudization_certificate: "شهادة السعودة", lease_contract: "عقد الإيجار",
-      power_of_attorney: "الوكالة", court_ruling: "الحكم", case_filing: "صحيفة الدعوى", hearing_notice: "إشعار الجلسة", violation: "المخالفة", invoice: "الفاتورة", id_document: "الهوية", passport: "جواز السفر", driving_license: "رخصة القيادة",
-      vehicle_registration: "استمارة المركبة", insurance_policy: "وثيقة التأمين", employment_contract: "عقد العمل", contract: "العقد" };
-    merged.title = (names[rules.kind] || "مستند") + (rules.party ? " — " + rules.party : rules.number ? " " + rules.number : "");
+    merged.title = (KIND_LABELS_AR[rules.kind] || "مستند") + (rules.party ? " — " + rules.party : rules.number ? " " + rules.number : "");
   }
   return merged;
+}
+
+/* الاسم العربي لكل نوع ورقة: عنوان العنصر وتصنيفه في المستندات، ورسائل البوت */
+export const KIND_LABELS_AR = { commercial_register: "السجل التجاري", vat_certificate: "الشهادة الضريبية", license: "الرخصة",
+  articles_of_association: "عقد التأسيس", bylaws: "النظام الأساسي", chamber_certificate: "شهادة الغرفة التجارية",
+  gosi_certificate: "شهادة التأمينات الاجتماعية", zakat_certificate: "شهادة الزكاة", saudization_certificate: "شهادة السعودة", lease_contract: "عقد الإيجار",
+  power_of_attorney: "الوكالة", court_ruling: "الحكم", case_filing: "صحيفة الدعوى", hearing_notice: "إشعار الجلسة", violation: "المخالفة", invoice: "الفاتورة", id_document: "الهوية", passport: "جواز السفر", driving_license: "رخصة القيادة",
+  vehicle_registration: "استمارة المركبة", insurance_policy: "وثيقة التأمين", employment_contract: "عقد العمل", contract: "العقد" };
+
+/* التحليل بالقواعد وحدها بلا نموذج (بوت تيليغرام وكل من يملك النص جاهزا): يعيد كائن الحقول نفسه الذي
+   يعيده المسار السريع في handleDocumentAnalyze؛ kind = "other" حين لا تعرف القواعد الورقة، و null لنص أقصر من أن يقرأ. */
+export function analyzeTextOffline(rawText) {
+  const text = normalizeArabicText(String(rawText || "")).slice(0, MAX_TEXT);
+  if (text.trim().length < 12) return null;
+  const rules = rulesExtract(text);
+  const merged = mergeRules(null, rules);
+  merged.summary = merged.title; merged.confidence = rules.strong ? 0.9 : (rules.kind ? 0.6 : 0);
+  return clean(merged);
 }
 
 function isFastPathRequested(request) { try { return new URL(request.url).searchParams.get("fast") === "1"; } catch { return false; } }

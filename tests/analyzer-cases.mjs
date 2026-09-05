@@ -4,19 +4,7 @@
 import fs from "fs";
 import { normalizeArabicText, rulesExtract, mergeRules, clean } from "../src/documents.js";
 const fx = (name) => fs.readFileSync(new URL("./fixtures/" + name, import.meta.url), "utf8");
-const VAT_BILINGUAL = `TIN 3149839002 الرقم المميز
-Certificate No. 100261181562796 رقم الشهادة
-Certificate date 31/08/2026 تاريخ الشهادة
-هيئة الزكاة والضريبة والجمارك Zakat, Tax and Customs Authority
-شهادة تسجيل في ضريبة القيمة المضافة
-VAT Registration Certificate
-Taxpayer Name PARKINZI Company اسم المكلف
-VAT Registration Number 314983900200003 رقم التسجيل الضريبي
-Effective Registration Date 2026/09/01 تاريخ نفاذ التسجيل
-Taxpayer Address 75,22254 جامعة الملك عبدالعزيز, Jeddah, King Abdulaziz University عنوان المكلف
-CR / License Contact / ID No 7055060102 رقم السجل التجاري / الرخصة / العقد / الهوية
-Tax Period Quarterly - ربع سنوي الفترة الضريبية
-First Filing due date 2026/10/31 تاريخ استحقاق أول إقرار ضريبي`;
+const VAT_BILINGUAL = fx("vat-bilingual.txt").trimEnd(); /* النص نفسه يستعمله tests/telegram-document-flow.mjs */
 const CASES = [
   { name: "commercial register — Arabic PDF text (visual order)", text: fx("cr-ar.txt"), kind: "commercial_register", number: "7055060102", party: "شركة باركينزي", issue: "2026-08-24",
     details: { cr_number: "7055060102", unified_number: "7055060102", company_name: "شركة باركينزي", issue_date: "2026-08-24", status: "نشط" },
