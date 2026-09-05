@@ -32,25 +32,25 @@ const TEXT = {
         linked: (name, org) => `مرحبا ${name || ""}${org ? "\nالشركة: " + org : ""}`,
         badCode: "الرمز غير صحيح أو منته. افتح الإعدادات في TheTracker وانسخ الرمز الجديد.",
         needCode: "لربط حسابك: افتح الإعدادات في TheTracker ← تيليجرام ← «توليد رمز»، ثم أرسل الرمز هنا أو امسح رمز QR.",
-        alreadyLinked: (name) => `أنت مرتبط${name ? " يا " + name : ""}. اكتب طلبك أو استعمل الأزرار.`,
+        alreadyLinked: (name) => `أنت مرتبط${name ? " يا " + name : ""}.`,
         test: "✅ رسالة تجريبية من TheTracker: هذه القناة تعمل." },
   en: { reminder: (t, due, tr) => `⏰ TheTracker reminder\n${t}\nDue: ${due}${tr ? `\nTracker: ${tr}` : ""}\nhttps://appmails.net/app/dashboard.html`,
         linked: (name, org) => `Hello ${name || ""}${org ? "\nCompany: " + org : ""}`,
         badCode: "Invalid or expired code. Open Settings in TheTracker and copy a new code.",
         needCode: "To link your account: open Settings in TheTracker → Telegram → “Generate code”, then send the code here or scan the QR code.",
-        alreadyLinked: (name) => `You are linked${name ? ", " + name : ""}. Type your request or use the buttons.`,
+        alreadyLinked: (name) => `You are linked${name ? ", " + name : ""}.`,
         test: "✅ Test message from TheTracker: this channel works." },
   fr: { reminder: (t, due, tr) => `⏰ Rappel TheTracker\n${t}\nÉchéance : ${due}${tr ? `\nSuivi : ${tr}` : ""}\nhttps://appmails.net/app/dashboard.html`,
         linked: (name, org) => `Bonjour ${name || ""}${org ? "\nSociete : " + org : ""}`,
         badCode: "Code invalide ou expiré. Ouvrez Paramètres dans TheTracker et copiez un nouveau code.",
         needCode: "Pour lier votre compte : ouvrez Paramètres dans TheTracker → Telegram → « Générer un code », puis envoyez le code ici ou scannez le QR code.",
-        alreadyLinked: (name) => `Compte lie${name ? ", " + name : ""}. Ecrivez votre demande ou utilisez les boutons.`,
+        alreadyLinked: (name) => `Compte lie${name ? ", " + name : ""}.`,
         test: "✅ Message de test TheTracker : ce canal fonctionne." },
   ur: { reminder: (t, due, tr) => `⏰ TheTracker یاد دہانی\n${t}\nآخری تاریخ: ${due}${tr ? `\nٹریکر: ${tr}` : ""}\nhttps://appmails.net/app/dashboard.html`,
         linked: (name, org) => `خوش آمدید ${name || ""}${org ? "\nکمپنی: " + org : ""}`,
         badCode: "کوڈ غلط یا ختم ہو چکا ہے۔ TheTracker کی ترتیبات کھول کر نیا کوڈ کاپی کریں۔",
         needCode: "اکاؤنٹ منسلک کرنے کے لیے: TheTracker کی ترتیبات ← ٹیلیگرام ← «کوڈ بنائیں»، پھر کوڈ یہاں بھیجیں یا QR کوڈ اسکین کریں۔",
-        alreadyLinked: (name) => `${name ? name + "، " : ""}آپ منسلک ہیں۔ اپنی درخواست لکھیں یا بٹن استعمال کریں۔`,
+        alreadyLinked: (name) => `${name ? name + "، " : ""}آپ منسلک ہیں۔`,
         test: "✅ TheTracker سے آزمائشی پیغام: یہ چینل کام کر رہا ہے۔" },
 };
 export function t(lang) { return TEXT[lang] || TEXT.ar; }
@@ -175,7 +175,7 @@ export function bot(lang) { return BOT[lang] || BOT.ar; }
 /* لوحة الأزرار الدائمة أسفل المحادثة */
 export function menuKeyboard(lang) {
   const b = bot(lang);
-  return { reply_markup: { keyboard: [[{ text: b.upcoming }, { text: b.overdue }], [{ text: b.dashboard }, { text: b.help }]], resize_keyboard: true, is_persistent: true } };
+  return { reply_markup: { keyboard: [[{ text: b.upcoming }, { text: b.overdue }], [{ text: b.dashboard }]], resize_keyboard: true, is_persistent: true } };
 }
 
 /* أي زر ضغطه المستخدم بأي لغة؟ يعيد upcoming/overdue/dashboard/help أو null */
