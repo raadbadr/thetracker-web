@@ -127,22 +127,22 @@
     <!-- مصفوفة RASI: أدوار الأعضاء على كل عنصر -->
     <div class="content" id="rasiCard" hidden>
       <h2 data-i18n="rasiTitle">مصفوفة RASI</h2>
-      <p data-i18n="rasiIntro">لكل قضية أو مخالفة أو مهمة: من ينفذ (R)، من يعتمد ويساءل (A — واحد فقط)، من يساند (S)، ومن يبلغ (I). اختر الحرف ثم انقر الخانة، ويصل صاحبه تنبيه فورا.</p>
-      <!-- الحروف R A S I مصطلح لاتيني فتقرأ من اليساري إلى اليمين دائما -->
-      <div class="rasi-legend" dir="ltr">
-        <span><b class="is-R">R</b> <span data-i18n="rasiLegendR">المنفذ المسؤول</span></span>
-        <span><b class="is-A">A</b> <span data-i18n="rasiLegendA">المعتمد والمساءل</span></span>
-        <span><b class="is-S">S</b> <span data-i18n="rasiLegendS">المساند</span></span>
-        <span><b class="is-I">I</b> <span data-i18n="rasiLegendI">المبلغ</span></span>
+      <p data-i18n="rasiIntro">لكل قضية أو مخالفة أو مهمة: من ينفذها، ومن يعتمدها ويُساءل عنها (واحد فقط)، ومن يساند، ومن يُطلَع عليها. اختر الدور ثم انقر الخانة، ويصل صاحبه تنبيه فورا.</p>
+      <!-- الدور بكلمته الكاملة: لا حروف ولا اختصارات في أي مكان -->
+      <div class="rasi-legend">
+        <span><i class="rasi-dot is-R"></i> <span data-i18n="rasiLegendR">المنفذ المسؤول</span></span>
+        <span><i class="rasi-dot is-A"></i> <span data-i18n="rasiLegendA">المعتمد والمساءل</span></span>
+        <span><i class="rasi-dot is-S"></i> <span data-i18n="rasiLegendS">المساند</span></span>
+        <span><i class="rasi-dot is-I"></i> <span data-i18n="rasiLegendI">المبلغ</span></span>
       </div>
 
-      <!-- الأدوار تسحب وتسقط: يمسك الحرف ويوضع على تقاطع الشخص والمهمة -->
-      <div class="rasi-palette" id="rasiPalette" dir="ltr" role="group">
-        <button type="button" class="rasi-chip is-R" data-role="R" draggable="false">R</button>
-        <button type="button" class="rasi-chip is-A" data-role="A" draggable="false">A</button>
-        <button type="button" class="rasi-chip is-S" data-role="S" draggable="false">S</button>
-        <button type="button" class="rasi-chip is-I" data-role="I" draggable="false">I</button>
-        <button type="button" class="rasi-chip is-clear" data-role="" draggable="false" dir="auto">✕</button>
+      <!-- يُختار الدور بكلمته ثم تُنقر الخانة -->
+      <div class="rasi-palette" id="rasiPalette" role="group">
+        <button type="button" class="rasi-chip is-R" data-role="R" draggable="false" data-i18n="rasiWordR">مسؤول</button>
+        <button type="button" class="rasi-chip is-A" data-role="A" draggable="false" data-i18n="rasiWordA">معتمد</button>
+        <button type="button" class="rasi-chip is-S" data-role="S" draggable="false" data-i18n="rasiWordS">مساند</button>
+        <button type="button" class="rasi-chip is-I" data-role="I" draggable="false" data-i18n="rasiWordI">مطلع</button>
+        <button type="button" class="rasi-chip is-clear" data-role="" draggable="false" data-i18n="rasiWordNone">بلا دور</button>
       </div>
 
       <!-- التوزيع السريع: ضغطة على اسم العضو تكفي -->
@@ -160,7 +160,7 @@
       <p class="waitlist-msg" id="quickAddMsg" role="status" aria-live="polite" hidden></p>
 
       <h3 class="invite-block-title" data-i18n="quickTitle">توزيع سريع</h3>
-      <p class="settings-note" data-i18n="quickHint">اضغط اسم العضو على العنصر: ضغطة واحدة = هو المنفذ المسؤول (R) وأنت المعتمد (A) تلقائيا، ضغطة ثانية = مساند (S)، ثالثة = إزالة.</p>
+      <p class="settings-note" data-i18n="quickHint">اضغط اسم العضو على العنصر: ضغطة واحدة تجعله المسؤول وتجعلك المعتمد تلقائيا، وضغطة ثانية تجعله مساندا، وثالثة تزيل الدور.</p>
       <div class="user-list" id="quickList"></div>
       <p class="waitlist-msg" id="rasiEmpty" data-i18n="rasiEmpty" hidden>لا عناصر مفتوحة لعرضها.</p>
 

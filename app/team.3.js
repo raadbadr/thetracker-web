@@ -416,15 +416,17 @@
         return by;
       }
 
-      /* صف دوائر الأعضاء: نقرة تسند، نقرة على غيره تنقل، نقرة على المسند تلغي */
+      /* الدور بكلمته الكاملة بلغة الواجهة: لا R ولا A ولا حرفان من الاسم */
+      function roleWord(role) { return role ? t("rasiWord" + role) : ""; }
+
+      /* شرائح الأعضاء بالاسم الكامل: نقرة تسند، نقرة على غيره تنقل، نقرة على المسند تلغي */
       function memberDots(itemId, assigned) {
         var dots = state.members.filter(function (m) { return m.status === "active"; }).map(function (m) {
           var on = m.user_id === assigned;
-          return '<button type="button" class="mdot' + (on ? " is-on" : "") + '"' +
+          return '<button type="button" class="mchip' + (on ? " is-on" : "") + '"' +
                  ' data-assign-item="' + esc(itemId) + '" data-assign-user="' + esc(m.user_id) + '"' +
-                 ' aria-pressed="' + (on ? "true" : "false") + '"' +
-                 ' title="' + esc(memberName(m)) + '" aria-label="' + esc(memberName(m)) + '">' +
-                 esc(initials(memberName(m)).toUpperCase()) + "</button>";
+                 ' aria-pressed="' + (on ? "true" : "false") + '">' +
+                 esc(memberName(m)) + "</button>";
         }).join("");
         return '<div class="mdots" role="group" aria-label="' + esc(t("assignTo")) + '">' + dots + "</div>";
       }
@@ -540,7 +542,7 @@
           var chips = members.map(function (m) {
             var role = (state.roles[it.id] || {})[m.user_id] || "";
             return '<button type="button" class="rasi-chip' + (role ? " is-" + role : "") + '" data-q-item="' + esc(it.id) + '" data-q-user="' + esc(m.user_id) + '">' +
-                   esc(memberName(m)) + (role ? "<b>" + role + "</b>" : "") + "</button>";
+                   esc(memberName(m)) + (role ? "<b>" + esc(roleWord(role)) + "</b>" : "") + "</button>";
           }).join("");
           return '<div class="user-row"><div><strong>' + esc(it.title || "-") + "</strong>" + (meta ? "<span>" + meta + "</span>" : "") + "</div>" +
                  '<div class="rasi-chips">' + chips + "</div></div>";
@@ -675,7 +677,8 @@
           var meta = [it.item_number || "", it.due_at ? fmtDate(it.due_at) : ""].filter(Boolean).join(" · ");
           var cells = members.map(function (m) {
             var role = (state.roles[it.id] || {})[m.user_id] || "";
-            return '<td><button type="button" class="rasi-cell' + (role ? " is-" + role : "") + '" data-rasi-item="' + esc(it.id) + '" data-rasi-user="' + esc(m.user_id) + '" title="' + esc(t("rasiDragHint")) + '" aria-label="' + esc(memberName(m)) + '">' + (role || "—") + "</button></td>";
+            var word = roleWord(role);
+            return '<td><button type="button" class="rasi-cell' + (role ? " is-" + role : "") + '" data-rasi-item="' + esc(it.id) + '" data-rasi-user="' + esc(m.user_id) + '" title="' + esc(t("rasiDragHint")) + '" aria-label="' + esc(memberName(m) + (word ? " — " + word : "")) + '">' + esc(word || "—") + "</button></td>";
           }).join("");
           return '<tr><td><div class="rasi-item"><strong>' + esc(it.title || "-") + "</strong>" + (meta ? "<small>" + esc(meta) + "</small>" : "") + "</div></td>" + cells + "</tr>";
         }).join("");

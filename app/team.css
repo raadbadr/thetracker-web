@@ -211,6 +211,8 @@
     .rasi-item small { color: var(--text-secondary); }
     /* لوحة الأدوار: حروف تمسك وتسحب، باللمس وبالفأرة */
     .rasi-palette { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin: .25rem 0 1rem; }
+    .rasi-palette .rasi-chip { width: auto; min-height: 44px; padding: .4rem 1rem; border-radius: 999px; font-size: .85rem; }
+    .rasi-dot { width: .7rem; height: .7rem; border-radius: 50%; display: inline-block; vertical-align: -1px; }
     .rasi-chip { width: 44px; height: 44px; border-radius: 12px; border: 1.5px solid var(--glass-border);
       background: var(--glass); color: var(--text-primary); font-family: inherit; font-weight: 700; font-size: 1rem;
       cursor: pointer; user-select: none; -webkit-user-select: none; }
@@ -218,12 +220,17 @@
     .rasi-chip.is-armed { outline: 2px solid var(--primary); outline-offset: 2px; transform: translateY(-1px); }
     /* دوائر الأعضاء على بطاقة العمل: نقرة واحدة تسند أو تنقل أو تلغي */
     .mdots { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .45rem; }
+    .mchip { min-height: 34px; padding: .3rem .7rem; border-radius: 999px; border: 1.5px solid var(--glass-border);
+      background: transparent; color: var(--text-secondary); font-family: inherit; font-size: .8rem; font-weight: 600;
+      cursor: pointer; white-space: normal; overflow-wrap: anywhere; text-align: center; max-width: 100%; }
+    .mchip.is-on { background: var(--primary); color: var(--btn-ink, #fff); border-color: transparent; }
+    .mchip:disabled { opacity: .6; cursor: wait; }
     .mdot { width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--glass-border);
       background: var(--glass); color: var(--text-secondary); font-family: inherit; font-weight: 700;
       font-size: .78rem; cursor: pointer; line-height: 1; }
     .mdot.is-on { background: var(--primary); color: var(--btn-ink, #fff); border-color: transparent; }
     .mdot:disabled { opacity: .6; cursor: wait; }
-    .rasi-cell { width: 40px; height: 34px; border-radius: 10px; border: 1.5px solid var(--glass-border); background: transparent; color: var(--text-tertiary); font-weight: 700; font-family: inherit; cursor: pointer; transition: transform .12s ease; }
+    .rasi-cell { min-width: 5.5rem; min-height: 34px; padding: .25rem .55rem; border-radius: 10px; border: 1.5px solid var(--glass-border); background: transparent; color: var(--text-tertiary); font-weight: 700; font-size: .8rem; font-family: inherit; cursor: pointer; white-space: nowrap; transition: transform .12s ease; }
     .rasi-cell:hover { transform: scale(1.08); }
     .rasi-cell:disabled { opacity: 0.6; cursor: wait; }
     .is-R { background: var(--primary); color: var(--btn-ink); border-color: transparent; }
@@ -567,8 +574,9 @@
     .chat-thread.is-active .chat-thread-sub, .chat-thread.is-active .chat-avatar { color: inherit; opacity: .85; }
     .chat-avatar {
       width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
-      background: var(--glass-strong); border: 1px solid var(--glass-border); font-weight: 700; font-size: 0.95rem; color: var(--primary);
+      background: var(--glass-strong); border: 1px solid var(--glass-border); color: var(--primary);
     }
+    .chat-avatar svg { width: 22px; height: 22px; display: block; fill: currentColor; }
     .chat-thread.is-active .chat-avatar { background: rgba(255,255,255,.2); border-color: transparent; }
     .chat-thread-name { display: block; font-weight: 600; font-size: 0.95rem; overflow-wrap: break-word; word-break: break-word; }
     .chat-thread-sub { display: block; font-size: 0.75rem; opacity: .8; overflow-wrap: break-word; word-break: break-word; }

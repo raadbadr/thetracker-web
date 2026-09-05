@@ -23,7 +23,10 @@
 
       function memberById(id) { for (var i = 0; i < state.members.length; i++) if (state.members[i].user_id === id) return state.members[i]; return null; }
       function nameOf(id) { var m = memberById(id); if (!m) return "-"; var p = m.profiles || {}; return p.full_name || p.email || m.invited_email || "-"; }
-      function initials(name) { var parts = String(name || "").trim().split(/\s+/); return (parts[0] ? parts[0].charAt(0) : "") + (parts[1] ? parts[1].charAt(0) : ""); }
+      /* لا حروف أولى: أيقونة شخص للمحادثة الفردية وأيقونة مجموعة لمحادثة الفريق،
+         والاسم الكامل مكتوب بجانبها كما هو. */
+      var PERSON_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4.42 0-8 2.24-8 5v3h16v-3c0-2.76-3.58-5-8-5z"/></svg>';
+      var GROUP_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 11a4 4 0 100-8 4 4 0 000 8zm-8 0a4 4 0 100-8 4 4 0 000 8zm0 2c-3.33 0-6 1.79-6 4v3h12v-3c0-2.21-2.67-4-6-4zm8 0c-.83 0-1.6.12-2.3.32C15.1 14.2 16 15.5 16 17v3h6v-3c0-2.21-2.67-4-6-4z"/></svg>';
 
       function loadSeen() { try { state.seen = JSON.parse(localStorage.getItem(SEEN_KEY) || "{}") || {}; } catch (e) { state.seen = {}; } }
       function markSeen(thread) {
@@ -68,7 +71,7 @@
           var sub = last ? (last.author_id === me() ? "" : "") + String(last.body || "").replace(/\s+/g, " ").slice(0, 60) : r.sub;
           var unread = unreadCount(r.id);
           return '<button type="button" class="chat-thread' + (state.thread === r.id ? " is-active" : "") + '" data-thread="' + esc(r.id) + '" role="listitem">' +
-                   '<span class="chat-avatar">' + (r.star ? "★" : esc(initials(r.name).toUpperCase())) + "</span>" +
+                   '<span class="chat-avatar">' + (r.star ? GROUP_ICON : PERSON_ICON) + "</span>" +
                    "<span><span class=\"chat-thread-name\">" + esc(r.name) + "</span><span class=\"chat-thread-sub\">" + esc(sub) + "</span></span>" +
                    (unread ? '<span class="chat-badge" aria-label="' + esc(tf("chatUnread", { n: unread })) + '">' + unread + "</span>" : "<span></span>") +
                  "</button>";
@@ -78,7 +81,7 @@
 
       function renderHead() {
         var isTeam = state.thread === TEAM;
-        $("paneAvatar").textContent = isTeam ? "★" : initials(nameOf(state.thread)).toUpperCase();
+        $("paneAvatar").innerHTML = isTeam ? GROUP_ICON : PERSON_ICON;
         $("paneName").textContent = isTeam ? t("chatTeam") : nameOf(state.thread);
         $("paneSub").textContent = isTeam ? t("chatTeamHint") : t("chatPrivate");
       }
