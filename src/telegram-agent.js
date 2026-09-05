@@ -26,8 +26,13 @@ function systemPrompt(ctx) {
   ].filter(Boolean).join("\n");
 }
 
+/* داخل تيليغرام المستخدم معروف من الربط: لا يُعرض على النموذج معامل telegram_user_id كي لا يخترع رقما (فعلها: "123456") */
 function toolDefs() {
-  return AGENT_TOOLS.map((t) => ({ type: "function", function: { name: t.name, description: t.description, parameters: t.inputSchema } }));
+  return AGENT_TOOLS.map((t) => {
+    const params = JSON.parse(JSON.stringify(t.inputSchema || {}));
+    if (params.properties) delete params.properties.telegram_user_id;
+    return { type: "function", function: { name: t.name, description: t.description, parameters: params } };
+  });
 }
 
 function extractCalls(res) {
@@ -120,6 +125,7 @@ export async function agentReply(env, ctx) {
     for (let i = 0; i < calls.length; i++) {
       const c = calls[i];
       let out;
+      if (c.args && typeof c.args === "object") delete c.args.telegram_user_id; /* الهوية من الربط لا من النموذج */
       try { out = await callTool(c.name, c.args, toolCtx); } catch (e) { out = { content: [{ type: "text", text: "tool error: " + String(e && e.message || e).slice(0, 200) }], isError: true }; }
       toolsUsed.push(c.name);
       console.log("agent: tool", c.name, JSON.stringify(c.args).slice(0, 200), "→", (out && out.isError) ? "error" : "ok");
