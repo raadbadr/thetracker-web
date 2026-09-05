@@ -133,7 +133,9 @@
       function wireCalFilters() {
         var box = $("calFilters");
         if (!box) return;
-        box.hidden = !!state.viewType;   /* الرئيسية فقط: هي التقويم الماستر */
+        /* الرئيسية فقط: هي التقويم الماستر. تُقرأ الوجهة من الرابط لا من state،
+           لأن هذه الدالة تُنادى عند تحميل السكربت قبل أن يُحدَّد viewType. */
+        box.hidden = !!currentViewType();
         box.addEventListener("click", function (ev) {
           var btn = ev.target.closest("[data-cal-filter]");
           if (!btn) return;

@@ -679,6 +679,11 @@
         dash.insertBefore(timeline, grid);
         /* الرئيسية: المربعات الأربعة أولا ثم التقويم تحتها مباشرة (أمر المهندس رعد)؛ بقية الصفحات: التقويم أولا */
         var statsTop = dash.querySelector(".stats-section.stats-top");
+        /* الفلاتر للرئيسية وحدها: تُخفى هنا لا عند تحميل السكربت، لأن viewType
+           لا يُعرف إلا بعد قراءة ?type= من الرابط. */
+        var calFilters = document.getElementById("calFilters");
+        if (calFilters) calFilters.hidden = !!state.viewType;
+
         /* مصاريف التشغيل بلا تقويم: مواعيدها ليست جلسات ولا مخالفات (أمر المهندس رعد) */
         if (state.viewType === "expenses") calCard.remove();
         else if (statsTop && statsTop.parentNode === dash) dash.insertBefore(calCard, statsTop.nextSibling);
