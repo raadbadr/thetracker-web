@@ -26,10 +26,10 @@
           var html = rows.map(function (p) {
             var name = (p.names && (p.names[l] || p.names.ar)) || p.key;
             var hint = (p.hints && (p.hints[l] || p.hints.ar)) || "";
-            return '<div class="svc-card' + (p.key === window.__wantedPack ? " is-on" : "") + '" data-pack="' + esc(p.key) + '">' +
-                   '<span class="svc-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + esc(p.icon || "") + '"/></svg></span>' +
-                   "<h3>" + esc(name) + "</h3><p>" + esc(hint) + "</p>" +
-                   '<button type="button" class="waitlist-btn" data-pack-pick="' + esc(p.key) + '">' + esc(T("packChoose")) + "</button></div>";
+            return '<button type="button" class="pack-card' + (p.key === window.__wantedPack ? " is-on" : "") + '" data-pack="' + esc(p.key) + '" data-pack-pick="' + esc(p.key) + '" aria-pressed="' + (p.key === window.__wantedPack ? "true" : "false") + '">' +
+                   '<span class="pack-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + esc(p.icon || "") + '"/></svg></span>' +
+                   '<span class="pack-name">' + esc(name) + "</span>" +
+                   '<span class="pack-hint">' + esc(hint) + "</span></button>";
           }).join("");
           if (box.innerHTML !== html) box.innerHTML = html;
           box.hidden = false; if (line) line.hidden = false;
@@ -40,7 +40,9 @@
         if (!btn) return;
         window.__wantedPack = btn.getAttribute("data-pack-pick");
         this.querySelectorAll("[data-pack]").forEach(function (card) {
-          card.classList.toggle("is-on", card.getAttribute("data-pack") === window.__wantedPack);
+          var on = card.getAttribute("data-pack") === window.__wantedPack;
+          card.classList.toggle("is-on", on);
+          card.setAttribute("aria-pressed", on ? "true" : "false");
         });
         var nameInp = $("createOrgName"); if (nameInp) nameInp.focus();
       });

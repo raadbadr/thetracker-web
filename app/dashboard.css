@@ -652,8 +652,19 @@
       margin-bottom: 1.25rem;
     }
     .inline-form h3 { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem; }
-    /* بطاقة الواجهة المختارة عند بدء الحساب: إطار العلامة، بلا لون جديد */
-    .svc-card.is-on { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary) inset; }
+    /* اختيار الواجهة: بطاقة واحدة = زر واحد، نقرة واحدة تختار. أربع أو خمس في الصف، واثنتان على الجوال. */
+    .pack-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 0.75rem; margin: 0.5rem 0 1rem; }
+    .pack-card { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; padding: 0.9rem 0.75rem;
+      border-radius: 14px; border: 1.5px solid var(--glass-border); background: var(--glass); color: var(--text-primary);
+      font-family: inherit; text-align: center; cursor: pointer; min-height: 128px; }
+    .pack-card:hover { border-color: var(--primary); }
+    .pack-card.is-on { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary) inset; }
+    .pack-icon { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%;
+      background: var(--primary); color: var(--btn-ink, #fff); flex: 0 0 40px; }
+    .pack-icon svg { width: 22px; height: 22px; fill: currentColor; }
+    .pack-name { font-size: 0.92rem; font-weight: 700; overflow-wrap: anywhere; }
+    .pack-hint { font-size: 0.74rem; color: var(--text-secondary); line-height: 1.35; overflow-wrap: anywhere; }
+    @media (max-width: 600px) { .pack-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pack-hint { display: none; } .pack-card { min-height: 104px; } }
 
     /* نموذج العنصر: شبكة اثني عشر عمودا تجمع الحقول بمعناها — العنوان يتصدر بنصف الصف،
        والحقول المتشابهة في صف واحد، وكل خانة بارتفاعها هي (المدة والعدّاد تحت الموعد

@@ -1,0 +1,11 @@
+-- اثنتا عشرة واجهة بأمر المهندس رعد 2026-09-06 (طُبقت على القاعدة في الجلسة نفسها):
+-- شخص، كيان تجاري، محاماة وإدارة قانونية (الافتراضية)، مدرب أو محاضر، عيادة، مهندس أو مكتب هندسي،
+-- موارد بشرية، مالية، مبيعات، مشتريات، تسويق، تصاميم.
+-- كلها صفوف بيانات فوق النواة نفسها (لوحة التحكم + مصاريف التشغيل + المستندات + الإعدادات)؛ لا سطر شيفرة لأي منها.
+-- النص الكامل للبذر في سجل الهجرات الحي (supabase migrations: packs_clinic_and_engineer،
+-- packs_departments_hr_finance_sales_procurement_marketing_design)، والمرجع المقروء هنا:
+--   select u.sort_order, u.key, u.names->>\'ar\',
+--          (select string_agg(coalesce(s.label->>\'ar\', s.service), \' · \' order by s.sort_order)
+--             from public.pack_services s where s.pack_key = u.key)
+--     from public.ui_packs u where u.active order by u.sort_order;
+-- أي واجهة جديدة بعدها = صف في ui_packs وصفوف في pack_services، بلا نشر برمجي.

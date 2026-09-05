@@ -24,24 +24,33 @@ function stub(url) {
   if (p.endsWith("/auth/v1/user")) return { user: USER };
   if (p.endsWith("/auth/v1/token")) return { access_token: "stub", token_type: "bearer", expires_in: 36000, refresh_token: "r", user: USER };
   if (p.includes("/rest/v1/rpc/my_services")) return ["dashboard", "cases", "violations", "team", "settings", "documents", "processes", "risks", "expenses"];
-  /* حزمة الواجهة: PACK=individual|trainer يبدل الشريط الجانبي كما تفعل القاعدة */
+  /* حزم الواجهة كما في القاعدة: PACK=<key> يبدل الشريط الجانبي، والبطاقات تأتي من القائمة نفسها */
+  const PACK_ROWS = [
+    ["individual", "شخص", "أوراقك الرسمية ومواعيدها ومهامك ومصاريفك", "M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4.42 0-8 2.24-8 5v3h16v-3c0-2.76-3.58-5-8-5z", [["dashboard","لوحتي"],["documents","أوراقي الرسمية"],["expenses","مصاريفي"],["settings",null]]],
+    ["business", "كيان تجاري", "وثيقة عمل حر أو مؤسسة أو شركة", "M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10z", [["dashboard",null],["expenses",null],["documents",null],["team",null],["processes",null],["risks",null],["settings",null]]],
+    ["legal", "محاماة وإدارة قانونية", "قضايا ومخالفات ومستندات وفريق وإجراءات ومخاطر", "M12 3l9 4v6c0 5.25-3.75 10.15-9 11.5C6.75 23.15 3 18.25 3 13V7l9-4z", [["dashboard",null],["cases",null],["violations",null],["expenses",null],["documents",null],["processes",null],["risks",null],["team",null],["settings",null]]],
+    ["trainer", "مدرب أو محاضر", "دوراتك وجلساتها ومتدربوك وشهاداتك وفواتيرك", "M18 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2zm0 18H6V4h2v7l2-1.5L12 11V4h6v16z", [["dashboard",null],["cases","الدورات"],["expenses","الفواتير والمصاريف"],["documents","الشهادات والمستندات"],["team","المدربون والمساعدون"],["settings",null]]],
+    ["clinic", "عيادة", "مواعيد المراجعين وتراخيص المنشأة وفواتيرها وطاقمها", "M19 8h-2V3H7v5H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2v-9a2 2 0 00-2-2zM9 5h6v3H9V5z", [["dashboard",null],["cases","المراجعون والمواعيد"],["expenses","الفواتير والمصاريف"],["documents","التراخيص والمستندات"],["team","الطاقم الطبي"],["settings",null]]],
+    ["engineer", "مهندس أو مكتب هندسي", "مشاريعك ومستخلصاتها ورخصها ومخاطرها وفريقها", "M22 9L12 2 2 9h3v11h5v-6h4v6h5V9h3z", [["dashboard",null],["cases","المشاريع"],["expenses","المستخلصات والمصاريف"],["documents","الرخص والمخططات"],["risks","مخاطر المشاريع"],["team","فريق المشروع"],["settings",null]]],
+    ["hr", "موارد بشرية", "الموظفون وعقودهم ووثائقهم ورواتبهم وإجراءات التوظيف", "M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3z", [["dashboard",null],["team","الموظفون"],["expenses","الرواتب والمصاريف"],["documents","العقود والوثائق"],["processes","إجراءات التوظيف"],["settings",null]]],
+    ["finance", "مالية", "المصاريف والإيرادات والفواتير والمستحقات والمخاطر المالية", "M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21z", [["dashboard",null],["expenses","المصاريف والإيرادات"],["documents","الفواتير والمستندات"],["risks","المخاطر المالية"],["team",null],["settings",null]]],
+    ["sales", "مبيعات", "العملاء والصفقات وعروض الأسعار والعقود والفواتير", "M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z", [["dashboard",null],["cases","العملاء والصفقات"],["expenses","الفواتير والتحصيل"],["documents","العقود والعروض"],["team","فريق المبيعات"],["settings",null]]],
+    ["procurement", "مشتريات", "أوامر الشراء والموردون وعقودهم ومدفوعاتهم", "M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5a2 2 0 00-2 2v12a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2z", [["dashboard",null],["cases","أوامر الشراء"],["expenses","المدفوعات والمصاريف"],["documents","عقود الموردين"],["team",null],["settings",null]]],
+    ["marketing", "تسويق", "الحملات وميزانياتها ومواعيدها وموادها", "M18 11v2h4v-2h-4zm-2 6.61c.96.71 2.21 1.65 3.2 2.39.4-.53.8-1.07 1.2-1.6-.99-.74-2.24-1.68-3.2-2.4z", [["dashboard",null],["cases","الحملات"],["expenses","ميزانية الحملات"],["documents","المواد والمستندات"],["team","فريق التسويق"],["settings",null]]],
+    ["design", "تصاميم", "طلبات التصميم ومواعيد تسليمها وملفاتها وفواتيرها", "M12 2l-5.5 9h11L12 2zm5.5 11a4.5 4.5 0 100 9 4.5 4.5 0 000-9zM3 21.5h8v-8H3v8z", [["dashboard",null],["cases","طلبات التصميم"],["expenses","الفواتير والمصاريف"],["documents","الملفات والمخرجات"],["team",null],["settings",null]]]
+  ];
   if (p.includes("/rest/v1/rpc/my_pack_config")) {
     const k = process.env.PACK || "legal";
-    const svc = {
-      legal: [["dashboard",1,null],["cases",2,null],["violations",3,null],["expenses",4,null],["documents",5,null],["processes",6,null],["risks",7,null],["team",8,null],["settings",9,null]],
-      individual: [["dashboard",1,{ar:"لوحتي",en:"My board",fr:"Mon tableau",ur:"میرا بورڈ"}],["documents",2,{ar:"أوراقي الرسمية",en:"My papers",fr:"Mes papiers",ur:"میرے کاغذات"}],["expenses",3,{ar:"مصاريفي",en:"My expenses",fr:"Mes depenses",ur:"میرے اخراجات"}],["settings",4,null]],
-      business: [["dashboard",1,null],["expenses",2,null],["documents",3,null],["team",4,null],["processes",5,null],["risks",6,null],["settings",7,null]],
-      trainer: [["dashboard",1,null],["cases",2,{ar:"الدورات",en:"Courses",fr:"Formations",ur:"کورسز"}],["expenses",3,{ar:"الفواتير والمصاريف",en:"Invoices and expenses",fr:"Factures et depenses",ur:"رسیدیں اور اخراجات"}],["documents",4,{ar:"الشهادات والمستندات",en:"Certificates and documents",fr:"Attestations et documents",ur:"اسناد اور دستاویزات"}],["team",5,{ar:"المدربون والمساعدون",en:"Trainers and assistants",fr:"Formateurs et assistants",ur:"ٹرینرز اور معاونین"}],["settings",6,null]]
-    }[k] || [];
-    return { pack: k, names: { ar: k, en: k, fr: k, ur: k }, labels: {}, is_default: k === "legal",
-             services: svc.map(([service, sort, label]) => ({ service, sort, label })) };
+    const row = PACK_ROWS.filter((r) => r[0] === k)[0] || PACK_ROWS.filter((r) => r[0] === "legal")[0];
+    return { pack: row[0], names: { ar: row[1], en: row[0], fr: row[0], ur: row[1] }, labels: {}, is_default: row[0] === "legal",
+             services: row[4].map(([service, label], i) => ({ service, sort: i + 1, label: label ? { ar: label, en: label, fr: label, ur: label } : null })) };
   }
-  if (p.includes("/rest/v1/rpc/list_ui_packs")) return [
-    { key: "individual", names: { ar: "شخص", en: "Individual", fr: "Particulier", ur: "فرد" }, hints: { ar: "أوراقك الرسمية ومواعيدها ومهامك ومصاريفك", en: "Your papers, dates, tasks and expenses", fr: "Vos papiers et depenses", ur: "آپ کے کاغذات اور اخراجات" }, icon: "M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4.42 0-8 2.24-8 5v3h16v-3c0-2.76-3.58-5-8-5z", entity_default: "individual", entity_choices: ["individual"], is_default: false },
-    { key: "business", names: { ar: "كيان تجاري", en: "Business entity", fr: "Entite commerciale", ur: "تجارتی ادارہ" }, hints: { ar: "وثيقة عمل حر أو مؤسسة أو شركة: لوحة ومصاريف ومستندات وفريق", en: "Freelance permit, establishment or company", fr: "Permis freelance, etablissement ou societe", ur: "فری لانس، ادارہ یا کمپنی" }, icon: "M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10z", entity_default: "company", entity_choices: ["company", "establishment", "freelance"], is_default: false },
-    { key: "trainer", names: { ar: "مدرب أو محاضر", en: "Trainer", fr: "Formateur", ur: "ٹرینر" }, hints: { ar: "دوراتك وجلساتها ومتدربوك وشهاداتك وفواتيرك", en: "Courses, sessions, attendees and invoices", fr: "Formations et factures", ur: "کورسز اور رسیدیں" }, icon: "M18 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2zm0 18H6V4h2v7l2-1.5L12 11V4h6v16z", entity_default: "freelance", entity_choices: ["freelance", "establishment", "company", "individual"], is_default: false },
-    { key: "legal", names: { ar: "إدارة قانونية", en: "Legal department", fr: "Service juridique", ur: "قانونی شعبہ" }, hints: { ar: "قضايا ومخالفات ومستندات وفريق وإجراءات ومخاطر", en: "Cases, violations, documents, team", fr: "Affaires et documents", ur: "مقدمات اور دستاویزات" }, icon: "M12 3l9 4v6c0 5.25-3.75 10.15-9 11.5C6.75 23.15 3 18.25 3 13V7l9-4zm-1 6v2H9v2h2v2h2v-2h2v-2h-2V9h-2z", entity_default: "company", entity_choices: ["company", "establishment", "nonprofit", "government", "freelance"], is_default: true }
-  ];
+  if (p.includes("/rest/v1/rpc/list_ui_packs")) return PACK_ROWS.map((r) => ({
+    key: r[0], names: { ar: r[1], en: r[0], fr: r[0], ur: r[1] }, hints: { ar: r[2], en: r[2], fr: r[2], ur: r[2] },
+    icon: r[3], entity_default: r[0] === "individual" ? "individual" : "company",
+    entity_choices: r[0] === "individual" ? ["individual"] : ["company", "establishment", "freelance"], is_default: r[0] === "legal"
+  }));
+
 
 
   if (p.includes("/rest/v1/rpc/")) return [];
