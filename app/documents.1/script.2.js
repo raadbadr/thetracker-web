@@ -191,6 +191,7 @@
         remindWeek: "ایک ہفتہ",
         remind2Weeks: "دو ہفتے",
         remindMonth: "ایک مہینہ",
+        docFirstFiling: "پہلی گوشواری",
         pEndsIn: "{n} دن میں ختم",
         pEndsToday: "آج ختم",
         pExpiredSince: "{n} دن پہلے ختم",

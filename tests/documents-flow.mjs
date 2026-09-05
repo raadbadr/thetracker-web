@@ -16,7 +16,10 @@ const WITH_FILE = "33333333-3333-4333-8333-333333333333";
 const NO_FILE = "44444444-4444-4444-8444-444444444444";
 const ITEMS = [
   { id: WITH_FILE, org_id: ORG.id, title: "الشهادة الضريبية", category: "شهادة ضريبية", status: "open",
-    due_at: "2027-01-01T09:00:00Z", client_name: "شركة الاختبار", data: { document_kind: "vat_certificate", number: "300000000000003" } },
+    due_at: "2027-01-01T09:00:00Z", client_name: "شركة الاختبار",
+    data: { document_kind: "vat_certificate", number: "300000000000003",
+            details: { tin: "300000000000003", first_filing_due: "2026-10-31" },
+            detail_labels: { tin: { ar: "الرقم الضريبي", en: "TIN" }, first_filing_due: { ar: "أول إقرار مستحق", en: "First filing due" } } } },
   { id: NO_FILE, org_id: ORG.id, title: "السجل التجاري", category: "سجل تجاري", status: "open",
     due_at: "2027-09-01T09:00:00Z", client_name: "شركة الاختبار",
     data: { document_kind: "commercial_register", number: "7055060102",
@@ -226,10 +229,10 @@ await page.setViewport({ width: 1280, height: 900, deviceScaleFactor: 1 });
 await new Promise((r) => setTimeout(r, 300));
 
 /* تفاصيل المستند: زر يفتح صفا يعرض كل بيان بتسميته وقيمته كاملة */
-const details = await page.evaluate(() => {
-  const btn = document.querySelector("#docsBody [data-details]");
+const details = await page.evaluate((id) => {
+  const btn = document.querySelector('#docsBody [data-details="' + id + '"]');
   if (!btn) return { missing: true };
-  const line = document.querySelector("#docsBody [data-details-for]");
+  const line = document.querySelector('#docsBody [data-details-for="' + id + '"]');
   const before = line.hidden;
   btn.click();
   const rows = [...line.querySelectorAll(".detail-row")].map((r) => ({
@@ -239,12 +242,23 @@ const details = await page.evaluate(() => {
   }));
   btn.click();
   return { before, afterHidden: line.hidden, rows };
-});
+}, NO_FILE);
 check("a document with read fields offers its details", !details.missing && details.before === true, JSON.stringify(details).slice(0, 120));
 check("the details list every field with its label", (details.rows || []).length === 5, "n=" + (details.rows || []).length);
 check("dates in the details read day-month-year", (details.rows || []).some((r) => r.val === "01-09-2027"), JSON.stringify((details.rows || []).map((r) => r.val)));
 check("no detail value is cut", !(details.rows || []).some((r) => r.cut), "some values truncate");
 check("pressing details again folds the row", details.afterHidden === true, "stayed open");
+
+/* الشهادة الضريبية لا تنتهي: تاريخها يُسمى أول إقرار */
+const filing = await page.evaluate(() => {
+  const rows = [...document.querySelectorAll("#docsBody tr:not(.detail-line)")];
+  const vat = rows.find((r) => /ضريبية/.test(r.textContent));
+  const other = rows.find((r) => /سجل تجاري/.test(r.textContent));
+  const label = (r) => { const c = r.children[4]; return c ? c.textContent.replace(/\s+/g, " ").trim() : ""; };
+  return { vat: vat ? label(vat) : "", other: other ? label(other) : "" };
+});
+check("the VAT date is named first filing", /أول إقرار/.test(filing.vat), JSON.stringify(filing));
+check("other papers keep their plain date", !/أول إقرار/.test(filing.other), JSON.stringify(filing));
 
 /* الشارة تقول متى تنتهي الورقة بالكلمات لا بالرقم وحده */
 const badges = await page.evaluate(() => [...document.querySelectorAll("#papersBody .expiry-badge")].map((b) => b.textContent.trim() + "|" + b.className.replace("expiry-badge ", "")));
@@ -253,17 +267,17 @@ check("an expired paper says how long ago", badges.some((b) => /منتهية م�
 check("a valid paper stays calm", badges.some((b) => /status-done/.test(b)), JSON.stringify(badges));
 
 /* بطاقة الأوراق تعرض ما قُرئ من الورقة نفسها */
-const paperDetails = await page.evaluate(() => {
-  const btn = document.querySelector("#papersBody [data-paper-details]");
+const paperDetails = await page.evaluate((id) => {
+  const btn = document.querySelector('#papersBody [data-paper-details="' + id + '"]');
   if (!btn) return { missing: true };
-  const line = document.querySelector("#papersBody [data-paper-details-for]");
+  const line = document.querySelector('#papersBody [data-paper-details-for="' + id + '"]');
   const before = line.hidden;
   btn.click();
   const rows = [...line.querySelectorAll(".detail-row")].length;
   const shown = !line.hidden;
   btn.click();
   return { before, rows, shown, folded: line.hidden };
-});
+}, NO_FILE);
 check("a paper shows what was read from it", !paperDetails.missing && paperDetails.before === true && paperDetails.shown, JSON.stringify(paperDetails));
 check("the paper's details list every field", paperDetails.rows === 5, "n=" + paperDetails.rows);
 check("pressing it again folds the paper's details", paperDetails.folded === true, "stayed open");

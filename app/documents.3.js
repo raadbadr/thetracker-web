@@ -323,7 +323,10 @@
         $("fCase").value = f.case_number || "";
         $("fCourt").value = f.court || "";
         $("fSummary").textContent = f.summary || "";
-        if (!$("fExpiry").value) $("fExpiry").value = dueFromDetails(f);
+        /* موعد الشهادة الضريبية هو أول إقرار لا الانتهاء المفترض */
+        var filing = (f && f.details && isDateValue(f.details.first_filing_due)) ? f.details.first_filing_due : "";
+        if (kind === "vat_certificate" && filing) $("fExpiry").value = filing;
+        else if (!$("fExpiry").value) $("fExpiry").value = dueFromDetails(f);
         fillRemind(f && f.remind_before);
         state.details = (f && f.details) || null;
         state.detailLabels = (f && f.detail_labels) || null;
@@ -424,6 +427,20 @@
         return "";
       }
 
+      /* الشهادة الضريبية لا تنتهي: تاريخها هو استحقاق أول إقرار، فيسمى باسمه */
+      function firstFilingOf(data) {
+        var d = data || {};
+        var details = d.details || {};
+        if (d.document_kind !== "vat_certificate") return "";
+        return isDateValue(details.first_filing_due) ? details.first_filing_due : "";
+      }
+
+      function dueCell(dateText, isFiling) {
+        if (!isFiling) return dateText;
+        return '<div class="cell-stack"><span>' + dateText + "</span>" +
+               '<span class="item-cat">' + esc(t("docFirstFiling")) + "</span></div>";
+      }
+
       function render() {
         var rows = state.items.filter(function (it) {
           var d = it.data || {};
@@ -448,7 +465,7 @@
             '<td><span class="item-title" data-tr>' + esc(it.title) + "</span></td>" +
             '<td dir="ltr">' + esc(d.number || "-") + "</td>" +
             '<td data-tr>' + esc((app.clientDisplayName ? app.clientDisplayName(it) : it.client_name) || "-") + "</td>" +
-            "<td>" + (it.due_at ? esc(app.fmtDate(it.due_at)) : "-") + "</td>" +
+            "<td>" + dueCell(it.due_at ? esc(app.fmtDate(it.due_at)) : "-", !!firstFilingOf(d)) + "</td>" +
             '<td><span class="' + cls + '">' + esc(leftText) + "</span></td>" +
             "<td>" + (files.length
               ? files.map(function (a) {
@@ -573,7 +590,7 @@
             '<td><div class="cell-stack"><span class="item-title">' + esc(kindLabel(p.kind)) + "</span>" +
               '<span class="item-cat">' + esc(t(p.required ? "pRequired" : "pOptional")) + "</span></div></td>" +
             '<td dir="ltr">' + esc(p.number || "-") + "</td>" +
-            "<td>" + (p.expires_at ? esc(app.fmtDate(p.expires_at)) : "-") + "</td>" +
+            "<td>" + dueCell(p.expires_at ? esc(app.fmtDate(p.expires_at)) : "-", !!paperFirstFiling(p)) + "</td>" +
             "<td>" + (p.state === "missing" ? "-" : left) + "</td>" +
             '<td><span class="' + st.cls + '">' + esc(t(st.key)) + "</span></td>" +
             '<td><div class="chat-options row-actions">' +
@@ -622,6 +639,14 @@
       }
 
       function fmtCount(key, n) { return String(t(key)).replace("{n}", n); }
+
+      function paperFirstFiling(p) {
+        if (!p || !p.item_id || p.kind !== "vat_certificate") return "";
+        for (var i = 0; i < state.items.length; i++) {
+          if (state.items[i].id === p.item_id) return firstFilingOf(state.items[i].data);
+        }
+        return "";
+      }
 
       function loadPapers() {
         return app.orgDocumentsStatus().then(function (d) {
