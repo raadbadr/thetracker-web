@@ -24,6 +24,23 @@ function stub(url) {
   if (p.endsWith("/auth/v1/user")) return { user: USER };
   if (p.endsWith("/auth/v1/token")) return { access_token: "stub", token_type: "bearer", expires_in: 36000, refresh_token: "r", user: USER };
   if (p.includes("/rest/v1/rpc/my_services")) return ["dashboard", "cases", "violations", "team", "settings", "documents", "processes", "risks", "expenses"];
+  /* حزمة الواجهة: PACK=individual|trainer يبدل الشريط الجانبي كما تفعل القاعدة */
+  if (p.includes("/rest/v1/rpc/my_pack_config")) {
+    const k = process.env.PACK || "legal";
+    const svc = {
+      legal: [["dashboard",1,null],["cases",2,null],["violations",3,null],["expenses",4,null],["documents",5,null],["processes",6,null],["risks",7,null],["team",8,null],["settings",9,null]],
+      individual: [["dashboard",1,{ar:"لوحتي",en:"My board",fr:"Mon tableau",ur:"میرا بورڈ"}],["documents",2,{ar:"أوراقي الرسمية",en:"My papers",fr:"Mes papiers",ur:"میرے کاغذات"}],["expenses",3,{ar:"مصاريفي",en:"My expenses",fr:"Mes depenses",ur:"میرے اخراجات"}],["settings",4,null]],
+      trainer: [["dashboard",1,null],["cases",2,{ar:"الدورات",en:"Courses",fr:"Formations",ur:"کورسز"}],["documents",3,{ar:"الشهادات والمستندات",en:"Certificates and documents",fr:"Attestations et documents",ur:"اسناد اور دستاویزات"}],["expenses",4,{ar:"الفواتير والمصاريف",en:"Invoices and expenses",fr:"Factures et depenses",ur:"رسیدیں اور اخراجات"}],["team",5,{ar:"المدربون والمساعدون",en:"Trainers and assistants",fr:"Formateurs et assistants",ur:"ٹرینرز اور معاونین"}],["settings",6,null]]
+    }[k] || [];
+    return { pack: k, names: { ar: k, en: k, fr: k, ur: k }, labels: {}, is_default: k === "legal",
+             services: svc.map(([service, sort, label]) => ({ service, sort, label })) };
+  }
+  if (p.includes("/rest/v1/rpc/list_ui_packs")) return [
+    { key: "legal", names: { ar: "شركة أو إدارة قانونية", en: "Company or legal department", fr: "Entreprise", ur: "کمپنی" }, hints: { ar: "قضايا ومخالفات ومستندات وفريق وإجراءات ومخاطر", en: "Cases, violations, documents, team", fr: "Affaires et documents", ur: "مقدمات اور دستاویزات" }, icon: "M20 6h-3V4a2 2 0 00-2-2H9a2 2 0 00-2 2v2H4a2 2 0 00-2 2v11a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2zM9 4h6v2H9V4zm11 15H4V8h16v11z", entity_default: "company", entity_choices: ["company"], is_default: true },
+    { key: "individual", names: { ar: "شخص", en: "Individual", fr: "Particulier", ur: "فرد" }, hints: { ar: "أوراقك الرسمية ومواعيدها ومهامك ومصاريفك", en: "Your papers, dates, tasks and expenses", fr: "Vos papiers et depenses", ur: "آپ کے کاغذات اور اخراجات" }, icon: "M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4.42 0-8 2.24-8 5v3h16v-3c0-2.76-3.58-5-8-5z", entity_default: "individual", entity_choices: ["individual"], is_default: false },
+    { key: "trainer", names: { ar: "مدرب أو محاضر", en: "Trainer", fr: "Formateur", ur: "ٹرینر" }, hints: { ar: "دوراتك وجلساتها ومتدربوك وشهاداتك وفواتيرك", en: "Courses, sessions, attendees and invoices", fr: "Formations et factures", ur: "کورسز اور رسیدیں" }, icon: "M18 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2zm0 18H6V4h2v7l2-1.5L12 11V4h6v16z", entity_default: "freelance", entity_choices: ["freelance"], is_default: false }
+  ];
+
   if (p.includes("/rest/v1/rpc/")) return [];
   if (p.includes("/rest/v1/profiles")) return u.searchParams.has("id") && !u.searchParams.get("id").includes("in.") ? PROFILE : [PROFILE];
   if (p.includes("/rest/v1/org_members")) return [MEMBER];

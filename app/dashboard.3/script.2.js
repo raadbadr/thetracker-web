@@ -15,6 +15,36 @@
         createOrgFlow($("createOrgName").value, "createOrgMsg", sel ? sel.value : "company");
       });
 
+      /* بطاقات الواجهات: الاختيار يحدد نوع الحساب المقترح ويكتب على الحساب بعد إنشائه */
+      window.__renderPackCards = function () {
+        var box = $("createOrgPacks"), line = $("createOrgPackLine");
+        if (!box || !app || !app.listPacks) return;
+        app.listPacks().then(function (rows) {
+          if (!rows || rows.length < 2) { box.hidden = true; if (line) line.hidden = true; return; }
+          var def = rows.filter(function (p) { return p.is_default; })[0] || rows[0];
+          window.__wantedPack = window.__wantedPack || def.key;
+          var html = rows.map(function (p) {
+            var name = (p.names && (p.names[l] || p.names.ar)) || p.key;
+            var hint = (p.hints && (p.hints[l] || p.hints.ar)) || "";
+            return '<div class="svc-card' + (p.key === window.__wantedPack ? " is-on" : "") + '" data-pack="' + esc(p.key) + '">' +
+                   '<span class="svc-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + esc(p.icon || "") + '"/></svg></span>' +
+                   "<h3>" + esc(name) + "</h3><p>" + esc(hint) + "</p>" +
+                   '<button type="button" class="waitlist-btn" data-pack-pick="' + esc(p.key) + '">' + esc(T("packChoose")) + "</button></div>";
+          }).join("");
+          if (box.innerHTML !== html) box.innerHTML = html;
+          box.hidden = false; if (line) line.hidden = false;
+        }).catch(function () { box.hidden = true; if (line) line.hidden = true; });
+      };
+      $("createOrgPacks").addEventListener("click", function (ev) {
+        var btn = ev.target.closest("[data-pack-pick]");
+        if (!btn) return;
+        window.__wantedPack = btn.getAttribute("data-pack-pick");
+        this.querySelectorAll("[data-pack]").forEach(function (card) {
+          card.classList.toggle("is-on", card.getAttribute("data-pack") === window.__wantedPack);
+        });
+        var nameInp = $("createOrgName"); if (nameInp) nameInp.focus();
+      });
+
       /* أنواع الحسابات تأتي من النواة المشتركة، والاسم يتبع النوع المختار. */
       window.__fillOrgTypes = function () {
         var sel = $("createOrgType");

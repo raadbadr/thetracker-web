@@ -652,6 +652,9 @@
       margin-bottom: 1.25rem;
     }
     .inline-form h3 { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem; }
+    /* بطاقة الواجهة المختارة عند بدء الحساب: إطار العلامة، بلا لون جديد */
+    .svc-card.is-on { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary) inset; }
+
     /* نموذج العنصر: شبكة اثني عشر عمودا تجمع الحقول بمعناها — العنوان يتصدر بنصف الصف،
        والحقول المتشابهة في صف واحد، وكل خانة بارتفاعها هي (المدة والعدّاد تحت الموعد
        لا يمددان جيرانه). الامتداد بأصناف span-3/4/6 لا بحساب في كل صفحة. */

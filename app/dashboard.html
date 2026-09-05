@@ -94,6 +94,9 @@
     <div class="content" id="createOrgCard" hidden>
       <h2 data-i18n="createOrgTitle">ابدأ حسابك</h2>
       <p data-i18n="createOrgIntro">اختر نوع الحساب: شركة أو مؤسسة أو وثيقة عمل حر، أو شخصا يريد ترتيب أوراقه.</p>
+      <!-- اختيار الواجهة التي تناسب التخصص: تظهر حين تكون هناك أكثر من واجهة -->
+      <p class="inline-hint" id="createOrgPackLine" data-i18n="packPickLine" hidden>اختر الواجهة التي تناسب تخصصك.</p>
+      <div class="svc-grid" id="createOrgPacks" hidden></div>
       <form class="waitlist-form" id="createOrgForm" novalidate>
         <select class="waitlist-input" id="createOrgType" aria-label="نوع الحساب"></select>
         <input type="text" class="waitlist-input" id="createOrgName" placeholder="اسم الجهة" maxlength="120" autocomplete="organization" dir="auto">
@@ -361,12 +364,12 @@
     </p>
   </footer>
 
-  <script src="/app/dashboard.1.js?v=1"></script>
+  <script src="/app/dashboard.1.js?v=2"></script>
   <script src="/app/dashboard.2.js?v=1"></script>
-  <script src="/app/dashboard.3.js?v=1"></script>
+  <script src="/app/dashboard.3.js?v=2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 <script src="/app.js?v=4" defer></script>
-<script src="/app/common.js?v=24" defer></script>
+<script src="/app/common.js?v=25" defer></script>
 <script src="/brand-logo.js?v=4" defer></script>
 </body>
 </html>

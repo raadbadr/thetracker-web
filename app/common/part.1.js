@@ -526,6 +526,10 @@
           return loadServices(app.client, app.org);
         }).then(function (services) {
           app.services = services; /* null = غير معروف (لا تصفية)، مصفوفة = المسموح فقط */
+          initStep = "pack";
+          return loadPack(app.client, app.org);
+        }).then(function (pack) {
+          app.pack = pack;   /* حزمة الواجهة: null = الافتراضية، فكل شيء كما هو */
           initStep = "done";
           return { user: app.user, profile: app.profile, orgs: app.orgs, org: app.org, services: app.services };
         });
@@ -723,6 +727,37 @@
     return row ? (row[lang()] || row.ar) : "";
   }
 
+  /* حزمة الواجهة التي اختارها صاحب الحساب: تسمياتها وخدماتها بترتيبها.
+     فشلها لا يوقف شيئا — الواجهة تعود إلى سلوكها الافتراضي حرفيا. */
+  function loadPack(client, org) {
+    if (!org) return Promise.resolve(null);
+    return client.rpc("my_pack_config", { p_org: org.id }).then(unwrap)
+      .then(function (cfg) { return cfg && cfg.pack ? cfg : null; })
+      .catch(function () { return null; });
+  }
+
+  /* الحزم المتاحة للاختيار (إنشاء حساب أو تغيير واجهته) */
+  function listPacks() {
+    return run(function (client) { return client.rpc("list_ui_packs").then(unwrap); })
+      .then(function (rows) { return Array.isArray(rows) ? rows : []; })
+      .catch(function () { return []; });
+  }
+
+  function setOrgPack(packKey) {
+    return run(function (client) {
+      var orgId = requireOrg();
+      return client.rpc("set_org_pack", { p_org: orgId, p_pack: packKey || null }).then(unwrap);
+    });
+  }
+
+  /* تسمية من تسميات الحزمة إن وجدت، وإلا الأصل (لا نص يختفي) */
+  function packLabel(key, fallback) {
+    var labels = app.pack && app.pack.labels ? app.pack.labels : null;
+    var row = labels && labels[key];
+    if (!row) return fallback;
+    return row[lang()] || row.ar || fallback;
+  }
+
   /* خدمات المستخدم في الشركة الحالية — من القاعدة، لا من الواجهة */
   function loadServices(client, org) {
     if (!org) return Promise.resolve(null);
@@ -732,6 +767,10 @@
       .then(function (list) { return (Array.isArray(list) && list.length) ? list : null; })
       .catch(function () { return null; });
   }
+
+  app.listPacks = listPacks;
+  app.setOrgPack = setOrgPack;
+  app.packLabel = packLabel;
 
   function orgProfile() {
     return run(function (client) {

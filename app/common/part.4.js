@@ -581,11 +581,16 @@
       var btn = this;
       btn.disabled = true;
       createOrg(name, type, reg, expiry, nameEn).then(function (org) {
-        /* الملف نفسه يرفع مرفقا على مستند التسجيل الذي أنشأته القاعدة */
-        if (file && org && org.item_id) {
-          return uploadAttachment(org.item_id, file).catch(function () { err.textContent = rt.fileFailed; return null; });
-        }
-        return null;
+        /* واجهة الحساب كما اختارها صاحبه في بطاقة البدء (إن اختار) */
+        var wanted = window.__wantedPack || null;
+        var after = wanted && app.setOrgPack ? app.setOrgPack(wanted).catch(function () { return null; }) : Promise.resolve(null);
+        return after.then(function () {
+          /* الملف نفسه يرفع مرفقا على مستند التسجيل الذي أنشأته القاعدة */
+          if (file && org && org.item_id) {
+            return uploadAttachment(org.item_id, file).catch(function () { err.textContent = rt.fileFailed; return null; });
+          }
+          return null;
+        });
       }).then(function () {
         window.location.href = "/app/dashboard.html";
       }).catch(function (e) {

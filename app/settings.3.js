@@ -847,9 +847,29 @@
           });
           if (el("opShortAddress")) el("opShortAddress").value = addr.short || "";
           var canEdit = ["owner", "admin"].indexOf(app.role ? app.role() : "") !== -1;
+          fillPacks(p);
           el("orgProfileForm").querySelectorAll("input,select,button").forEach(function (n) { n.disabled = !canEdit; });
           if (!canEdit) setMsg("opMsg", t("opAdminOnly"), "");
         }).catch(function () { /* بطاقة اختيارية: لا تعطل بقية الإعدادات */ });
+      }
+
+      /* واجهة الحساب: تظهر القائمة فقط حين تكون هناك أكثر من واجهة متاحة */
+      var packsLoaded = null;
+      function fillPacks(profile) {
+        var sel = el("opPack"), field = el("opPackField");
+        if (!sel || !field || !app.listPacks) return;
+        (packsLoaded ? Promise.resolve(packsLoaded) : app.listPacks()).then(function (rows) {
+          packsLoaded = rows || [];
+          if (packsLoaded.length < 2) { field.hidden = true; return; }
+          var cur = (profile && profile.ui_pack) || (app.pack && app.pack.pack) || "";
+          var html = packsLoaded.map(function (pk) {
+            var name = (pk.names && (pk.names[app.lang()] || pk.names.ar)) || pk.key;
+            return '<option value="' + esc(pk.key) + '"' + (pk.key === cur ? " selected" : "") + ">" + esc(name) + "</option>";
+          }).join("");
+          if (sel.innerHTML !== html) sel.innerHTML = html;
+          sel.value = cur || sel.value;
+          field.hidden = false;
+        }).catch(function () { field.hidden = true; });
       }
 
       /* الحساب الفردي: شخص يرتب أوراقه، فلا تعرض عليه حقول المنشآت التجارية. */
@@ -883,9 +903,16 @@
           COMMERCIAL_ONLY.forEach(function (id) { row[OP_FIELDS[id]] = ""; });
         }
         row.iban = iban; row.vat_number = vat;
+        var packSel = el("opPack");
+        var packWanted = packSel && !el("opPackField").hidden ? packSel.value : null;
+        var packChanged = !!packWanted && packWanted !== ((app.pack && app.pack.pack) || "");
         el("opSaveBtn").disabled = true;
         app.saveOrgProfile(row).then(function (saved) {
           state.orgProfile = saved;
+          if (!packChanged) return null;
+          /* الواجهة تتبدل كاملة، فتعاد الصفحة مرة واحدة بدل إعادة رسم كل شيء أمام المستخدم */
+          return app.setOrgPack(packWanted).then(function () { window.location.reload(); });
+        }).then(function () {
           setMsg("opMsg", t("opSaved"), "success");
         }).catch(function () {
           setMsg("opMsg", t("genericError"), "error");

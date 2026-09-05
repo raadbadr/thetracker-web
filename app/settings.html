@@ -272,6 +272,12 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
               <option value="government" data-i18n="opTypeGovernment">جهة حكومية</option>
             </select>
           </div>
+          <!-- واجهة هذا الحساب: حزمة تحدد الشريط الجانبي وتسمياته (شركة أو شخص أو مدرب) -->
+          <div class="settings-field" id="opPackField" hidden>
+            <label for="opPack" data-i18n="opPack">واجهة هذا الحساب</label>
+            <select class="waitlist-input" id="opPack"></select>
+            <p class="waitlist-note" id="opPackHint" data-i18n="opPackNote">تحدد الخدمات التي تظهر في القائمة الجانبية وتسمياتها في هذا الحساب.</p>
+          </div>
           <div class="settings-field">
             <label for="opLegalName" data-i18n="opLegalName">الاسم النظامي</label>
             <input type="text" class="waitlist-input" id="opLegalName" maxlength="200" autocomplete="organization" dir="auto">
@@ -364,14 +370,14 @@ curl -H "Authorization: Bearer tt_live_..." "https://appmails.net/api/v1/items?t
     </p>
   </footer>
 
-  <script src="/app/settings.1.js?v=1"></script>
+  <script src="/app/settings.1.js?v=2"></script>
   <script src="/app/settings.2.js?v=1"></script>
-  <script src="/app/settings.3.js?v=1"></script>
+  <script src="/app/settings.3.js?v=2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 <!-- رمز QR لربط تيليجرام من الجوال (qrcode-generator من cdnjs — مسموح في CSP) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <script src="/app.js?v=4" defer></script>
-<script src="/app/common.js?v=24" defer></script>
+<script src="/app/common.js?v=25" defer></script>
 <script src="/brand-logo.js?v=4" defer></script>
 </body>
 </html>

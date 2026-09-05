@@ -814,6 +814,42 @@
     return app.services.indexOf(key) !== -1;
   }
 
+  /* ــ حزمة الواجهة ــ
+     الحزمة تقول أي الخدمات تظهر في الشريط وبأي ترتيب وبأي تسمية. الحزمة الافتراضية
+     بلا خدمات مخصصة، فيبقى الشريط كما هو حرفيا. الصلاحية تبقى للقاعدة (my_services). */
+  function packServices() {
+    var list = app && app.pack && Array.isArray(app.pack.services) ? app.pack.services : null;
+    return list && list.length ? list : null;
+  }
+  function packOrdered(items) {
+    var list = packServices();
+    if (!list) return items;
+    var order = {}, seen = {};
+    list.forEach(function (row, i) { order[row.service] = i; });
+    var out = [];
+    items.forEach(function (item) {
+      if (item.adminOnly) { out.push(item); return; }             /* إدارة المنصة فوق كل حزمة */
+      if (!item.service || !(item.service in order)) return;      /* ليس من خدمات هذه الواجهة */
+      if (seen[item.service]) return;
+      seen[item.service] = true;
+      out.push(item);
+    });
+    out.sort(function (a, b) {
+      if (a.adminOnly) return 1;
+      if (b.adminOnly) return -1;
+      return (order[a.service] === undefined ? 99 : order[a.service]) - (order[b.service] === undefined ? 99 : order[b.service]);
+    });
+    return out;
+  }
+  function packNavLabel(item) {
+    var list = packServices();
+    if (!list || !item.service) return item.labels;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].service === item.service && list[i].label) return list[i].label;
+    }
+    return item.labels;
+  }
+
   /* الصفحة الحالية ليست من خدمات قسمه؟ إلى لوحة التحكم (المسموحة للجميع) */
   function enforceServiceAccess() {
     if (!app || !Array.isArray(app.services)) return;
@@ -838,7 +874,7 @@
     enforceServiceAccess();
     var here = String(window.location.pathname || "");
     var html = drawerHeadHtml() + '<div class="app-sidebar-title">' + escapeHtml(sidebarLabel({ ar: "الخدمات", en: "Services", fr: "Services", ur: "خدمات" })) + "</div>";
-    NAV_ITEMS.forEach(function (item) {
+    packOrdered(NAV_ITEMS).forEach(function (item) {
       if (item.adminOnly && !nav.dataset.admin) return;
       if (!serviceAllowed(item.service)) return;
       var qs = String(window.location.search || "");
@@ -854,7 +890,7 @@
         ? '<span class="app-sidebar-sar" aria-hidden="true"></span>'
         : '<svg viewBox="0 0 24 24" aria-hidden="true">' + item.icon + "</svg>";
       html += '<a class="app-sidebar-link' + active + '" href="' + item.href + '">' +
-              glyph + "<span>" + escapeHtml(sidebarLabel(item.labels)) + "</span></a>";
+              glyph + "<span>" + escapeHtml(sidebarLabel(packNavLabel(item))) + "</span></a>";
     });
     if (html === sidebarHtml) return;
     sidebarHtml = html;
