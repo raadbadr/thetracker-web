@@ -653,13 +653,14 @@
         if (!state.viewType) {
           /* الرئيسية: التقويم بكامل العرض، ثم الخدمات متجاورة تحته، ثم القائمة */
           grid.classList.add("dash-grid--single");
-          mainCol.appendChild(calCard);
+          /* التقويم أول اللوحة بعرض الصفحة كاملا (أمر المهندس رعد)، لا داخل العمود */
+          calCard.classList.add("cal-card--top");
           mainCol.appendChild(services);
           mainCol.appendChild(main);
         } else {
-          /* القضايا والمخالفات: القائمة في العمود الرئيسي والتقويم جانبا، بلا بطاقة خدمات */
+          /* القضايا والمخالفات والمصاريف: التقويم نفسه الكبير أول الصفحة بعرضها (أمر المهندس رعد)، ثم القائمة */
+          calCard.classList.add("cal-card--top");
           mainCol.appendChild(main);
-          sideCol.appendChild(calCard);
         }
         /* لوحة التحكم الرئيسية: المربعات الأربعة أول شيء فوق بعرض الصفحة */
         if (stats) {
@@ -676,6 +677,7 @@
         timeline.id = "timelineCard";
         timeline.hidden = true;   /* يظهر مع أول رسم له */
         dash.insertBefore(timeline, grid);
+        dash.insertBefore(calCard, dash.firstChild);   /* التقويم قبل كل شيء في كل الصفحات */
 
         var tabs = dash.querySelector(".tabs-row");
         if (tabs) tabs.hidden = true;

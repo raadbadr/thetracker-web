@@ -450,7 +450,8 @@
     .dash-main { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--gap); align-content: start; }
     .dash-main > *, .dash-side > * { min-width: 0; max-width: 100%; }
     /* على الجوال: البطاقات الرئيسية أولا والتقويم تحتها، وعلى الحاسب يتصدر بعرض اللوحة */
-    @media (max-width: 900px) { .dash-main > .cal-card { order: 2; } .dash-main > * { order: 1; } }
+    /* التقويم أول اللوحة على كل المقاسات (أمر المهندس رعد) */
+    .cal-card--top { width: 100%; }
     .dash-side { display: grid; gap: var(--gap); align-content: start; }
     /* التقويم داخل العمود الجانبي: خلايا مضغوطة وأزرار في سطر واحد */
     .dash-side .cal-nav { gap: 0.4rem; }
@@ -677,6 +678,10 @@
       gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem;
     }
     .cal-nav-group { display: flex; align-items: center; gap: 0.5rem; }
+    /* اليوم والشهر والتقويمان في سطر واحد على ارتفاع واحد 40px */
+    .cal-nav .chat-option-btn, .cal-nav .cal-modes, .cal-nav .cal-title { height: 40px; box-sizing: border-box; display: inline-flex; align-items: center; margin: 0; }
+    .cal-nav .cal-modes { padding: 0 0.2rem; }
+    .cal-nav .cal-mode { height: 32px; display: inline-flex; align-items: center; }
     .cal-nav .chat-option-btn { margin: 0; }
     .cal-title {
       font-size: 1.15rem; font-weight: 700; color: var(--text-primary);
