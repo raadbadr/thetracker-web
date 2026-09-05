@@ -127,7 +127,11 @@ export async function callTool(name, args, ctx) {
         if (o.iban) lines.push("الآيبان: " + o.iban);
         if (o.national_address && o.national_address.short) lines.push("العنوان المختصر: " + o.national_address.short);
         if (o.plan) lines.push("الباقة: " + o.plan + (o.plan_expires_at ? " حتى " + String(o.plan_expires_at).slice(0, 10) : ""));
-        for (const d of o.documents || []) lines.push("• " + (d.title || d.kind) + (d.number ? " — " + d.number : "") + (d.expires_at ? " — ينتهي " + String(d.expires_at).slice(0, 10) : "") + (d.files ? " (ملف مرفوع)" : " (بلا ملف)"));
+        for (const d of o.documents || []) {
+          const det = d.details || {};
+          const issue = det.issue_date || det.certificate_date || det.effective_date || null;
+          lines.push("• " + (d.title || d.kind) + (d.number ? " — رقم " + d.number : "") + (issue ? " — إصدار " + String(issue).slice(0, 10) : "") + (d.expires_at ? " — ينتهي " + String(d.expires_at).slice(0, 10) : "") + (d.files ? "" : " (بلا ملف)"));
+        }
       }
       const others = orgs.filter((o) => !shown.includes(o));
       if (others.length) lines.push("عضو أيضا في: " + others.map((o) => o.name).join("، "));

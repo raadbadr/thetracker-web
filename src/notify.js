@@ -57,7 +57,7 @@ export function t(lang) { return TEXT[lang] || TEXT.ar; }
 
 // ---------- بوت تلغرام: قائمة الأزرار ونصوصها ----------
 const BOT = {
-  ar: { upcoming: "📅 مواعيدي القادمة", overdue: "⏰ المتأخرات", dashboard: "🌐 لوحة التحكم", help: "❓ مساعدة",
+  ar: { company: "🏢 الشركة", upcoming: "📅 مواعيدي القادمة", overdue: "⏰ المتأخرات", dashboard: "🌐 لوحة التحكم", help: "❓ مساعدة",
         linkBtn: "🔗 ربط حسابي", openDash: "فتح لوحة التحكم",
         phoneBtn: "📱 ربط برقم جوالي", phoneHint: "أو شارك رقم جوالك المسجل في TheTracker بالزر بالأسفل فيتم الربط فورا.",
         phoneNotFound: "لم نجد حسابا بهذا الرقم. سجل الدخول إلى الموقع واضغط زر الربط أعلاه.",
@@ -85,7 +85,7 @@ const BOT = {
         upcomingTitle: "📅 مواعيدك القادمة:", overdueTitle: "⏰ المواعيد المتأخرة:",
         noUpcoming: "لا مواعيد قادمة 👌", noOverdue: "لا مواعيد متأخرة 👌",
         help: "اكتب طلبك بكلامك: ابحث، مواعيدي، أضف مهمة، أنجز، أسند. أو استعمل الأزرار." },
-  en: { upcoming: "📅 Upcoming", overdue: "⏰ Overdue", dashboard: "🌐 Dashboard", help: "❓ Help",
+  en: { company: "🏢 Company", upcoming: "📅 Upcoming", overdue: "⏰ Overdue", dashboard: "🌐 Dashboard", help: "❓ Help",
         linkBtn: "🔗 Link my account", openDash: "Open dashboard",
         phoneBtn: "📱 Link with my phone number", phoneHint: "Or share the phone number registered in TheTracker with the button below — the link completes instantly.",
         phoneNotFound: "No account has this number. Sign in on the website and tap the link button above.",
@@ -113,7 +113,7 @@ const BOT = {
         upcomingTitle: "📅 Your upcoming due dates:", overdueTitle: "⏰ Overdue items:",
         noUpcoming: "Nothing upcoming 👌", noOverdue: "Nothing overdue 👌",
         help: "Just type: search, my dates, add a task, done, assign. Or use the buttons." },
-  fr: { upcoming: "📅 À venir", overdue: "⏰ En retard", dashboard: "🌐 Tableau de bord", help: "❓ Aide",
+  fr: { company: "🏢 Societe", upcoming: "📅 À venir", overdue: "⏰ En retard", dashboard: "🌐 Tableau de bord", help: "❓ Aide",
         linkBtn: "🔗 Lier mon compte", openDash: "Ouvrir le tableau de bord",
         phoneBtn: "📱 Lier avec mon numéro", phoneHint: "Ou partagez le numéro enregistré dans TheTracker avec le bouton ci-dessous : la liaison est immédiate.",
         phoneNotFound: "Aucun compte avec ce numéro. Connectez-vous sur le site et appuyez sur le bouton de liaison ci-dessus.",
@@ -141,7 +141,7 @@ const BOT = {
         upcomingTitle: "📅 Vos échéances à venir :", overdueTitle: "⏰ Éléments en retard :",
         noUpcoming: "Rien à venir 👌", noOverdue: "Rien en retard 👌",
         help: "Ecrivez simplement : recherche, mes echeances, ajouter une tache, termine, assigner. Ou utilisez les boutons." },
-  ur: { upcoming: "📅 آنے والی تاریخیں", overdue: "⏰ تاخیر شدہ", dashboard: "🌐 ڈیش بورڈ", help: "❓ مدد",
+  ur: { company: "🏢 کمپنی", upcoming: "📅 آنے والی تاریخیں", overdue: "⏰ تاخیر شدہ", dashboard: "🌐 ڈیش بورڈ", help: "❓ مدد",
         linkBtn: "🔗 میرا اکاؤنٹ منسلک کریں", openDash: "ڈیش بورڈ کھولیں",
         phoneBtn: "📱 فون نمبر سے منسلک کریں", phoneHint: "یا نیچے دیے بٹن سے TheTracker میں رجسٹرڈ فون نمبر شیئر کریں — منسلکی فورا مکمل ہو جائے گی۔",
         phoneNotFound: "اس نمبر سے کوئی اکاؤنٹ نہیں ملا۔ ویب سائٹ پر سائن ان کر کے اوپر والا لنک بٹن دبائیں۔",
@@ -175,7 +175,7 @@ export function bot(lang) { return BOT[lang] || BOT.ar; }
 /* لوحة الأزرار الدائمة أسفل المحادثة */
 export function menuKeyboard(lang) {
   const b = bot(lang);
-  return { reply_markup: { keyboard: [[{ text: b.dashboard }], [{ text: b.upcoming }, { text: b.overdue }]], resize_keyboard: true, is_persistent: true } };
+  return { reply_markup: { keyboard: [[{ text: b.company }, { text: b.dashboard }], [{ text: b.upcoming }, { text: b.overdue }]], resize_keyboard: true, is_persistent: true } };
 }
 
 /* أي زر ضغطه المستخدم بأي لغة؟ يعيد upcoming/overdue/dashboard/help أو null */
@@ -183,7 +183,7 @@ export function menuAction(text) {
   const s = String(text || "").trim();
   if (/^\/(upcoming|overdue|dashboard|help|menu)$/.test(s)) return s.slice(1);
   for (const lang of Object.keys(BOT)) {
-    for (const key of ["upcoming", "overdue", "dashboard", "help"]) if (BOT[lang][key] === s) return key;
+    for (const key of ["company", "upcoming", "overdue", "dashboard", "help"]) if (BOT[lang][key] === s) return key;
   }
   return null;
 }

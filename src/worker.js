@@ -353,6 +353,8 @@ async function runMenu(env, chatId, userId, action) {
     try { await sendTelegram(env, chatId, text, menuKeyboard(lang)); } catch {}
   } else if (action === "dashboard") {
     try { await sendTelegram(env, chatId, b.openDash, urlButton(b.openDash, "https://appmails.net/app/dashboard.html")); } catch {}
+  } else if (action === "company") {
+    await companyMenu(env, chatId, userId, lang);
   } else {
     try { await sendTelegram(env, chatId, b.help, menuKeyboard(lang)); } catch {}
   }
@@ -466,6 +468,36 @@ async function smartReply(env, chatId, userId, text, lang, tgName, attachment, p
   if (!reply) reply = attachment ? b.fileUnreadable : channelText(lang).alreadyLinked(tgName);
   try { await sendTelegram(env, chatId, pre + reply, menuKeyboard(lang)); } catch {}
   await logBotReply(env, chatId, userId, reply);
+}
+
+/* أكثر من شركة؟ يختار مرة واحدة بأزرار، وتحفظ الشركة النشطة للمحادثة؛ زر «الشركة» أو كلمة «الشركات» تعيد الاختيار */
+const ORG_WORDS = /^(الشركات|شركاتي|بدل الشركة|غير الشركة|تغيير الشركة|companies|switch company|change company)$/i;
+const ORG_TEXT = {
+  ar: { pick: "أي شركة نتكلم عنها؟", set: (n) => "الشركة الآن: " + n },
+  en: { pick: "Which company are we talking about?", set: (n) => "Company now: " + n },
+  fr: { pick: "De quelle societe parlons-nous ?", set: (n) => "Societe : " + n },
+  ur: { pick: "کس کمپنی کی بات کریں؟", set: (n) => "کمپنی اب: " + n },
+};
+async function orgChoices(env, userId) {
+  try { return (await rpc(env, "telegram_org_choices", { p_secret: env.WORKER_SECRET, p_user_id: userId })) || []; } catch { return []; }
+}
+async function sendOrgChooser(env, chatId, lang, choices) {
+  const t = ORG_TEXT[lang] || ORG_TEXT.ar;
+  const rows = choices.map((o) => [{ text: (o.active ? "✓ " : "") + o.name, callback_data: "org:" + o.id }]);
+  await sendTelegram(env, chatId, t.pick, { reply_markup: { inline_keyboard: rows } });
+}
+async function needsOrgChoice(env, chatId, userId, lang) {
+  const choices = await orgChoices(env, userId);
+  if (choices.length <= 1 || choices.some((o) => o.active)) return false;
+  await sendOrgChooser(env, chatId, lang, choices);
+  return true;
+}
+/* زر «الشركة»: أكثر من شركة → اختيار؛ شركة واحدة → بياناتها المفيدة مباشرة */
+async function companyMenu(env, chatId, userId, lang) {
+  const choices = await orgChoices(env, userId);
+  if (choices.length > 1) { await sendOrgChooser(env, chatId, lang, choices); return; }
+  const out = await agentReply(env, { chatId, userId, text: "الشركة", lang });
+  try { await sendTelegram(env, chatId, (out && out.text) || "-", menuKeyboard(lang)); } catch {}
 }
 
 /* رد البوت يسجل كالرسائل الواردة: ذاكرة للوكيل، ورؤية للإدارة (من كلم البوت وبماذا رد) */
@@ -598,6 +630,8 @@ async function handleTelegramWebhook(request, env) {
   try { target = await notifyTarget(env, owner, "telegram"); } catch {}
   const lang = (target && target.lang) || tgLang;
   const userTimeZone = (target && target.tz) || "Asia/Riyadh";
+  if (ORG_WORDS.test(text)) { await companyMenu(env, chatId, owner, lang); return json({ ok: true }); }
+  if (await needsOrgChoice(env, chatId, owner, lang)) return json({ ok: true });
   await sendChatAction(env, chatId, "typing");
   await smartReply(env, chatId, owner, text, lang, targetDisplayName(target, lang, tgName), null, "", userTimeZone);
   return json({ ok: true });
@@ -625,6 +659,13 @@ async function handleTelegramCallback(env, cq) {
   try { target = await notifyTarget(env, owner, "telegram"); } catch {}
   const lang = (target && target.lang) || tgLang;
   const b = botText(lang);
+  if (data.indexOf("org:") === 0) {
+    let r = null;
+    try { r = await rpc(env, "telegram_set_org", { p_secret: env.WORKER_SECRET, p_user_id: owner, p_org: data.slice(4) }); } catch {}
+    const t = ORG_TEXT[lang] || ORG_TEXT.ar;
+    try { await sendTelegram(env, chatId, r && r.status === "ok" ? t.set(r.name) : t.pick, menuKeyboard(lang)); } catch {}
+    return json({ ok: true });
+  }
   if (data === "act:n") {
     try { await rpc(env, "telegram_draft_take", { p_secret: env.WORKER_SECRET, p_chat_id: String(chatId) }); } catch {}
     try { await sendTelegram(env, chatId, b.importCancelled, menuKeyboard(lang)); } catch {}
