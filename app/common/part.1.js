@@ -590,6 +590,25 @@
     setTimeout(done, 3000);
   }
   bootGuardStart();
+
+  /* اتجاه حقول النص يتبع لغة ما يُكتب فيها لا لغة الصفحة (أمر المهندس رعد): كل حقل نص بلا dir صريح يأخذ dir=auto؛
+     المعرفات (بريد، رابط، هاتف، أرقام، تواريخ) تبقى كما حددتها صفحتها */
+  var AUTO_DIR_SKIP = /^(email|url|tel|number|date|time|datetime-local|month|week|color|range|file|checkbox|radio|hidden|submit|button|reset|image|password)$/i;
+  function autoDirInputs(root) {
+    var scope = root && root.querySelectorAll ? root : document;
+    scope.querySelectorAll("input:not([dir]),textarea:not([dir])").forEach(function (el) {
+      if (el.tagName === "INPUT" && AUTO_DIR_SKIP.test(el.getAttribute("type") || "text")) return;
+      if (el.getAttribute("inputmode") === "numeric" || el.getAttribute("inputmode") === "decimal") { el.setAttribute("dir", "ltr"); return; }
+      el.setAttribute("dir", "auto");
+    });
+  }
+  if (/^\/app\//.test(String(window.location.pathname || ""))) {
+    var autoDirTimer = null;
+    var scheduleAutoDir = function () { clearTimeout(autoDirTimer); autoDirTimer = setTimeout(function () { autoDirInputs(document); }, 60); };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", scheduleAutoDir); else scheduleAutoDir();
+    if (window.MutationObserver) new MutationObserver(scheduleAutoDir).observe(document.documentElement, { childList: true, subtree: true });
+  }
+  app.autoDirInputs = autoDirInputs;
   app.ready.then(function (res) {
     if (!res || res.unavailable) { bootGuardReveal(); return; }
     settleThenReveal();
@@ -631,7 +650,8 @@
   /* رقم المستند الرسمي بحسب نوع الجهة (نفس قواعد القاعدة) */
   function registrationRule(entityType) {
     var type = entityTypeValue(entityType);
-    if (type === "company" || type === "establishment") return { kind: "commercial_register", pattern: /^[1247][0-9]{9}$/ };
+    /* السجل التجاري للشركات والمؤسسات: 10 أرقام تبدأ بـ 700 (قاعدة المهندس رعد؛ لا مجرد عدد الأرقام) */
+    if (type === "company" || type === "establishment") return { kind: "commercial_register", pattern: /^700[0-9]{7}$/ };
     if (type === "individual") return { kind: "id_document", pattern: /^[12][0-9]{9}$/ };
     return { kind: "license", pattern: /^[A-Za-z0-9\-\/]{4,30}$/ };
   }

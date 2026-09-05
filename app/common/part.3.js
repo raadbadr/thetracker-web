@@ -662,6 +662,11 @@
     "@media(max-width:600px){.waitlist-input,.content select,.content textarea,.content input:not([type=checkbox]):not([type=radio]){font-size:16px}",
     ".waitlist-btn,.chat-option-btn,.app-iconbtn{min-height:44px}.app-iconbtn{min-width:44px}}",
     ":root{--gap:1.5rem}",
+    /* أزرار الأفعال في صف واحد بمسافات متساوية (أمر المهندس رعد): لا هامش فرديا لأي زر، والأيقونات بحجم واحد */
+    ".content .chat-options,.content .doc-actions,.content .row-actions,.content .paper-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem}",
+    ".content .chat-options>*,.content .doc-actions>*,.content .row-actions>*,.content .paper-actions>*{margin:0!important}",
+    ".content .chat-options>a:not([class]){display:inline-flex;align-items:center}",
+    ".content button.icon-btn,.content a.icon-btn,.content .chat-option-btn.icon-only{width:44px;height:44px;padding:0;display:inline-flex;align-items:center;justify-content:center}",
     /* ــ تناسق عناصر الإدخال في كل صفحات التطبيق ــ
        المتصفح يفرض شكله على input[type=search] وعلى select فيخرجان بارتفاع
        واستدارة مختلفين عن بقية الحقول والأزرار. هنا يلغى ذلك مرة واحدة:
