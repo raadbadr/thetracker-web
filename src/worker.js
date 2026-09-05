@@ -317,6 +317,30 @@ async function readLinkToken(env, token) {
 }
 
 /** الترحيب بعد الربط: باسم المستخدم وشركته وبلغة ملفه، مع لوحة الأزرار */
+/* تنبيهات الإدارة على تيليغرام: ربط جديد، أو شخص غير مرتبط يكتب للبوت (أمر المهندس رعد: «أعرف من تواصل معه») */
+const ADMIN_TEXT = {
+  ar: { linked: (n, o, u) => "ربط جديد على البوت: " + n + (o ? " — " + o : "") + (u ? " (@" + u + ")" : ""), stranger: (n, u, t) => "شخص غير مرتبط كتب للبوت: " + (n || "-") + (u ? " (@" + u + ")" : "") + "\n«" + t + "»" },
+  en: { linked: (n, o, u) => "New bot link: " + n + (o ? " — " + o : "") + (u ? " (@" + u + ")" : ""), stranger: (n, u, t) => "Unlinked person wrote to the bot: " + (n || "-") + (u ? " (@" + u + ")" : "") + "\n«" + t + "»" },
+  fr: { linked: (n, o, u) => "Nouveau lien au bot : " + n + (o ? " — " + o : "") + (u ? " (@" + u + ")" : ""), stranger: (n, u, t) => "Personne non liee a ecrit au bot : " + (n || "-") + (u ? " (@" + u + ")" : "") + "\n«" + t + "»" },
+  ur: { linked: (n, o, u) => "بوٹ پر نیا لنک: " + n + (o ? " — " + o : "") + (u ? " (@" + u + ")" : ""), stranger: (n, u, t) => "غیر منسلک شخص نے بوٹ کو لکھا: " + (n || "-") + (u ? " (@" + u + ")" : "") + "\n«" + t + "»" },
+};
+let adminChatsCache = { at: 0, rows: [] };
+const strangerAlertAt = new Map();
+async function notifyAdmins(env, kind, info) {
+  if (!env.WORKER_SECRET) return;
+  try {
+    if (Date.now() - adminChatsCache.at > 60_000) { adminChatsCache = { at: Date.now(), rows: (await rpc(env, "platform_admin_chats", { p_secret: env.WORKER_SECRET })) || [] }; }
+    for (const a of adminChatsCache.rows) {
+      if (info.actorUserId && a.user_id === info.actorUserId) continue;
+      if (String(a.chat_id) === String(info.chatId)) continue;
+      if (kind === "stranger") { const k = a.chat_id + ":" + info.chatId; const last = strangerAlertAt.get(k) || 0; if (Date.now() - last < 600_000) continue; strangerAlertAt.set(k, Date.now()); }
+      const t = ADMIN_TEXT[a.lang] || ADMIN_TEXT.ar;
+      const text = kind === "linked" ? t.linked(info.name || "-", info.org || "", info.username || "") : t.stranger(info.name || "", info.username || "", String(info.text || "").slice(0, 200));
+      try { await sendTelegram(env, a.chat_id, text); } catch {}
+    }
+  } catch (e) { console.log("admin alert failed", String(e && e.message || e).slice(0, 120)); }
+}
+
 async function greetLinked(env, chatId, userId, fallbackLang, fallbackName) {
   let target = null;
   try { target = await notifyTarget(env, userId, "telegram"); } catch {}
@@ -594,7 +618,11 @@ async function handleTelegramWebhook(request, env) {
   if (m) {
     userId = await linkChannelByCode(env, "telegram", m[1], chatId);
     action = userId ? "linked" : "bad_code";
-    if (userId) await greetLinked(env, chatId, userId, tgLang, tgName);
+    if (userId) {
+      await greetLinked(env, chatId, userId, tgLang, tgName);
+      let tgt = null; try { tgt = await notifyTarget(env, userId, "telegram"); } catch {}
+      await notifyAdmins(env, "linked", { chatId, actorUserId: userId, name: targetDisplayName(tgt, tgLang, tgName), org: (tgt && tgt.org_name) || "", username: from.username || "" });
+    }
     else { try { await sendTelegram(env, chatId, channelText(tgLang).badCode); } catch {} }
     await logMessage();
     return json({ ok: true });
@@ -606,7 +634,11 @@ async function handleTelegramWebhook(request, env) {
     userId = null;
     try { userId = await linkChannelByPhone(env, "telegram", contact.phone_number, chatId); } catch {}
     action = userId ? "linked" : "bad_code";
-    if (userId) await greetLinked(env, chatId, userId, tgLang, tgName);
+    if (userId) {
+      await greetLinked(env, chatId, userId, tgLang, tgName);
+      let tgt = null; try { tgt = await notifyTarget(env, userId, "telegram"); } catch {}
+      await notifyAdmins(env, "linked", { chatId, actorUserId: userId, name: targetDisplayName(tgt, tgLang, tgName), org: (tgt && tgt.org_name) || "", username: from.username || "" });
+    }
     else { try { await sendTelegram(env, chatId, botText(tgLang).phoneNotFound, { reply_markup: { remove_keyboard: true } }); } catch {} }
     await logMessage();
     return json({ ok: true });
@@ -631,7 +663,11 @@ async function handleTelegramWebhook(request, env) {
     } catch { return null; }
   })();
   const menu = menuAction(text);
-  if (!owner) { await askToLink(env, chatId, tgLang); return json({ ok: true }); }
+  if (!owner) {
+    await askToLink(env, chatId, tgLang);
+    await notifyAdmins(env, "stranger", { chatId, name: tgName, username: from.username || "", text });
+    return json({ ok: true });
+  }
 
   // 3-أ) صوت: نفهمه ثم نجيب كأنه نص
   if (voice || doc || photo) {
