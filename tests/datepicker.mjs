@@ -105,7 +105,7 @@ async function openPage(pagePath, width, height) {
              total: document.querySelectorAll('input[type=date],input[type=datetime-local]').length, enhancedCount: document.querySelectorAll('input[data-dp]').length };
   });
   check("dashboard: every date input is enhanced", enhanced.hasWrap && enhanced.hasDisplay && enhanced.total === enhanced.enhancedCount, enhanced);
-  check("dashboard: native input hidden, display is rtl for Arabic", enhanced.nativeHidden === true && enhanced.displayDir === "rtl", enhanced);
+  check("dashboard: native input hidden, display reads left-to-right (numbers)", enhanced.nativeHidden === true && enhanced.displayDir === "ltr", enhanced);
 
   /* الصفحة تكتب القيمة مباشرة؛ حقل العرض يجب أن يتبعها بلا حدث */
   const synced = await page.evaluate(() => {
@@ -114,8 +114,17 @@ async function openPage(pagePath, width, height) {
     const wrap = native.closest(".dp-wrap");
     return { display: wrap.querySelector(".dp-input").value, sub: wrap.querySelector(".dp-sub").textContent };
   });
-  check("dashboard: display follows programmatic value (Gregorian + Hijri, Western digits)",
-    /22 سبتمبر 2026 09:30/.test(synced.display) && /1448 هـ$/.test(synced.sub) && !/[٠-٩]/.test(synced.display + synced.sub), synced);
+  check("dashboard: (a)+(c) programmatic el.value repaints the display as day-month-year like fmtDate, with the Hijri line, Western digits",
+    synced.display === "22-09-2026 09:30" && /^11 ربيع الآخر 1448 هـ$/.test(synced.sub) && !/[\u0660-\u0669\u06F0-\u06F9]/.test(synced.display + synced.sub), synced);
+
+  /* (d) form.reset() يعيد الرسم */
+  const reset = await page.evaluate(() => new Promise((resolve) => {
+    const native = document.getElementById("addDue");
+    const display = native.closest(".dp-wrap").querySelector(".dp-input");
+    native.form.reset();
+    setTimeout(() => resolve({ native: native.value, display: display.value, sub: native.closest(".dp-wrap").querySelector(".dp-sub").textContent }), 30);
+  }));
+  check("dashboard: (d) form.reset() clears the native input and repaints the display", reset.native === "" && reset.display === "" && reset.sub === "", reset);
 
   /* نفتح لوحة الإضافة كما يفعل المستخدم ثم ننقر الحقل */
   await page.click("#addItemBtn");
@@ -134,11 +143,15 @@ async function openPage(pagePath, width, height) {
     const inp = document.getElementById("addDue").closest(".dp-wrap").querySelector(".dp-input").getBoundingClientRect();
     const clear = r.top >= inp.bottom || r.bottom <= inp.top || r.left >= inp.right || r.right <= inp.left;
     const noRoom = inp.bottom + 6 + r.height > window.innerHeight - 8 && inp.top - 6 - r.height < 8 && inp.left - 8 - r.width < 8 && inp.right + 8 + r.width > window.innerWidth - 8;
-    return { isSheet: pop.classList.contains("is-sheet"), clearOfInput: clear || noRoom, popHeight: Math.round(r.height), insideViewport: r.left >= 0 && r.right <= window.innerWidth && r.bottom <= window.innerHeight,
+    const cs = getComputedStyle(pop); const alpha = (cs.backgroundColor.match(/rgba?\(([^)]+)\)/) || [])[1]; const a = alpha ? (alpha.split(",")[3] === undefined ? 1 : parseFloat(alpha.split(",")[3])) : 0;
+    return { isSheet: pop.classList.contains("is-sheet"), clearOfInput: clear || noRoom, popHeight: Math.round(r.height), zIndex: +cs.zIndex, opaque: a === 1, background: cs.backgroundColor, insideViewport: r.left >= 0 && r.right <= window.innerWidth && r.bottom <= window.innerHeight,
              days: pop.querySelectorAll(".dp-day").length, dows: pop.querySelectorAll(".dp-dow").length, timeVisible: !pop.querySelector(".dp-time").hidden, month: pop.querySelector(".dp-month").textContent,
              pills: Array.from(pop.querySelectorAll(".dp-pill")).map((b) => b.textContent), todayMarked: pop.querySelectorAll(".dp-day.is-today").length };
   });
   check("desktop: popover beside its input (below, above, or alongside) without covering it, inside the viewport, 42 days, time row shown", !popState.isSheet && popState.clearOfInput && popState.insideViewport && popState.days === 42 && popState.dows === 7 && popState.timeVisible && popState.todayMarked === 1, popState);
+  check("desktop: floating layer is opaque (--bg-mid) with z-index of at least 200", popState.opaque && popState.zIndex >= 200, { zIndex: popState.zIndex, background: popState.background });
+  const dows = await page.evaluate(() => Array.from(document.querySelectorAll(".dp-dow")).map((d) => d.textContent));
+  check("desktop: weekday headers are written out, no two-letter codes", dows.length === 7 && dows.every((w) => w.length >= 3), dows);
 
   await page.click(".dp-pop .dp-day:not(.is-out)");
   await new Promise((r) => setTimeout(r, 100));
@@ -178,12 +191,19 @@ async function openPage(pagePath, width, height) {
   check("desktop: typed Hijri 1448/03/10 08:15 converts to Gregorian ISO with time", /^\d{4}-\d{2}-\d{2}T08:15$/.test(typed.hijri), typed);
   check("desktop: typed 25/12/2026 keeps the previous time", typed.greg === "2026-12-25T08:15", typed);
 
+  /* (b) الكتابة بالقناع: أرقام فقط والفواصل تظهر وحدها */
+  await page.evaluate(() => { const n = document.getElementById("addDue"); n.value = ""; const d = n.closest(".dp-wrap").querySelector(".dp-input"); d.focus(); });
+  await page.keyboard.type("240820260915");
+  const masked = await page.evaluate(() => ({ display: document.getElementById("addDue").closest(".dp-wrap").querySelector(".dp-input").value, native: document.getElementById("addDue").value }));
+  check("desktop: (b) typing 240820260915 masks to 24-08-2026 09:15 and writes the ISO value at once", masked.display === "24-08-2026 09:15" && masked.native === "2026-08-24T09:15", masked);
+  await page.keyboard.press("Escape");
+
   /* الأسهم تحرك اليوم والهروب يغلق */
   await page.evaluate(() => { const d = document.getElementById("addDue").closest(".dp-wrap").querySelector(".dp-input"); d.focus(); });
   await page.keyboard.press("Escape");
   await page.keyboard.press("ArrowDown");
   const arrowed = await page.evaluate(() => ({ value: document.getElementById("addDue").value, open: document.querySelector(".dp-pop").classList.contains("is-open") }));
-  check("desktop: ArrowDown moves seven days forward", arrowed.value === "2027-01-01T08:15", arrowed);
+  check("desktop: ArrowDown moves seven days forward", arrowed.value === "2026-08-31T09:15", arrowed);
 
   check("dashboard: no page errors", errors.length === 0, errors);
   await page.close();
@@ -209,6 +229,11 @@ async function openPage(pagePath, width, height) {
   const after = await page.evaluate(() => ({ value: document.getElementById("fIssue").value, change: window.__dpChange, open: document.querySelector(".dp-pop").classList.contains("is-open") }));
   const today = new Date(); const iso = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0") + "-" + String(today.getDate()).padStart(2, "0");
   check("documents: Today writes ISO date, fires change, and closes", after.value === iso && after.change === 1 && after.open === false, after);
+  await page.evaluate(() => { const n = document.getElementById("fIssue"); n.value = ""; n.closest(".dp-wrap").querySelector(".dp-input").focus(); });
+  await page.keyboard.type("05/01/2027");
+  const typedDoc = await page.evaluate(() => ({ display: document.getElementById("fIssue").closest(".dp-wrap").querySelector(".dp-input").value, native: document.getElementById("fIssue").value, change: window.__dpChange }));
+  check("documents: (b) typing 05/01/2027 is masked to 05-01-2027 and committed without Enter", typedDoc.display === "05-01-2027" && typedDoc.native === "2027-01-05" && typedDoc.change >= 2, typedDoc);
+  await page.keyboard.press("Escape");
   check("documents: no page errors", errors.length === 0, errors);
   await page.close();
 }

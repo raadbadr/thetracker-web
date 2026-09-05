@@ -3,24 +3,24 @@
    * منتقي المتصفح الأصلي لا يخدم الثيم (أمر المهندس رعد)، فكل حقل
    * input[type=date] أو input[type=datetime-local] يخفى ويبقى حاملا للقيمة
    * بصيغة ISO (YYYY-MM-DD أو YYYY-MM-DDTHH:MM) كي لا يتغير منطق الصفحات،
-   * ويظهر مكانه حقل عرض بلغة الواجهة وبأرقام غربية مع المقابل الهجري (أم القرى)
-   * تحته، ونافذة زجاجية واحدة مشتركة بشبكة ميلادية أو هجرية.
+   * ويظهر مكانه حقل عرض يوم-شهر-سنة بأرقام غربية (صيغة fmtDate في الجداول) مع المقابل
+   * الهجري (أم القرى) تحته، ونافذة معتمة واحدة مشتركة بشبكة ميلادية أو هجرية.
    * ============================================================ */
 
   var DP_TEXT = {
     ar: { today: "اليوم", clear: "مسح", done: "تم", prev: "الشهر السابق", next: "الشهر التالي", gregorian: "ميلادي", hijri: "هجري",
-          hour: "الساعة", minute: "الدقيقة", am: "ص", pm: "م", era: "هـ", pick: "اختيار التاريخ", weekStart: 0,
+          hour: "الساعة", minute: "الدقيقة", am: "AM", pm: "PM", era: "هـ", pick: "اختيار التاريخ", weekStart: 0,
           days: ["أحد", "اثنين", "ثلاثاء", "أربعاء", "خميس", "جمعة", "سبت"],
           monthsG: ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"],
           monthsH: ["محرم", "صفر", "ربيع الأول", "ربيع الآخر", "جمادى الأولى", "جمادى الآخرة", "رجب", "شعبان", "رمضان", "شوال", "ذو القعدة", "ذو الحجة"] },
     en: { today: "Today", clear: "Clear", done: "Done", prev: "Previous month", next: "Next month", gregorian: "Gregorian", hijri: "Hijri",
           hour: "Hour", minute: "Minute", am: "AM", pm: "PM", era: "AH", pick: "Pick a date", weekStart: 1,
-          days: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
+          days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
           monthsG: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
           monthsH: ["Muharram", "Safar", "Rabi I", "Rabi II", "Jumada I", "Jumada II", "Rajab", "Shaban", "Ramadan", "Shawwal", "Dhu al-Qadah", "Dhu al-Hijjah"] },
     fr: { today: "Aujourd'hui", clear: "Effacer", done: "OK", prev: "Mois précédent", next: "Mois suivant", gregorian: "Grégorien", hijri: "Hégirien",
           hour: "Heure", minute: "Minute", am: "AM", pm: "PM", era: "AH", pick: "Choisir une date", weekStart: 1,
-          days: ["di", "lu", "ma", "me", "je", "ve", "sa"],
+          days: ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"],
           monthsG: ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"],
           monthsH: ["Mouharram", "Safar", "Rabi I", "Rabi II", "Joumada I", "Joumada II", "Rajab", "Chaabane", "Ramadan", "Chawwal", "Dhou al-Qida", "Dhou al-Hijja"] },
     ur: { today: "آج", clear: "صاف کریں", done: "ہو گیا", prev: "پچھلا مہینہ", next: "اگلا مہینہ", gregorian: "عیسوی", hijri: "ہجری",
@@ -34,18 +34,17 @@
     /* حقل العرض يحل محل الحقل الأصلي في مكانه نفسه ويرث ارتفاع الحقول واستدارتها من القاعدة العامة */
     ".dp-wrap{position:relative;display:block;flex:1 1 auto;min-width:0;max-width:100%}",
     ".dp-wrap>.dp-native{display:none!important}",
-    ".dp-wrap>.dp-input{width:100%;min-width:0;cursor:pointer;padding-inline-end:2.4rem;",
+    ".dp-wrap>.dp-input{width:100%;min-width:0;cursor:pointer;padding-right:2.6rem;padding-left:.9rem;text-align:left;",
     "background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238A97A3' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='3'/%3E%3Cpath d='M3 10h18M8 3v4M16 3v4'/%3E%3C/svg%3E\");",
     "background-repeat:no-repeat;background-size:17px 17px;background-position:right .8rem center}",
-    "[dir=rtl] .dp-wrap>.dp-input{background-position:left .8rem center}",
     ".dp-wrap>.dp-input[readonly]{cursor:pointer}",
     ".dp-sub{margin-top:.2rem;font-size:.72rem;line-height:1.25;color:var(--text-secondary);text-align:start;overflow-wrap:anywhere}",
     ".dp-sub:empty{display:none}",
     /* النافذة: بطاقة زجاجية واحدة مشتركة، فوق الشريطين وتحت بوابة الملف الشخصي */
-    ".dp-backdrop{position:fixed;inset:0;z-index:74;background:rgba(0,0,0,.45);display:none}",
+    ".dp-backdrop{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.45);display:none}",
     ".dp-backdrop.is-open{display:block}",
-    ".dp-pop{position:fixed;top:0;left:0;z-index:75;width:min(330px,calc(100vw - 16px));box-sizing:border-box;padding:.85rem;",
-    "border-radius:16px;background:var(--bg-mid,#1a2933);border:1px solid var(--glass-border);box-shadow:0 18px 40px var(--shadow-dark);",
+    ".dp-pop{position:fixed;top:0;left:0;z-index:201;width:min(400px,calc(100vw - 16px));box-sizing:border-box;padding:.85rem;",
+    "border-radius:16px;background:var(--bg-mid,#1a2933);border:1px solid var(--glass-border);box-shadow:0 16px 40px rgba(0,0,0,.45),0 0 0 1px var(--glass-border);",
     "color:var(--text-primary);display:none;flex-direction:column;gap:.5rem}",
     ".dp-pop.is-open{display:flex}",
     ".dp-head{display:flex;align-items:center;justify-content:space-between;gap:.5rem}",
@@ -63,7 +62,8 @@
     ".dp-pill:hover{color:var(--text-primary)}",
     ".dp-pill.is-active{background:var(--primary);color:var(--btn-ink,#fff)}",
     ".dp-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px}",
-    ".dp-dow{height:24px;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700;color:var(--text-secondary);white-space:nowrap}",
+    ".dp-dow{min-height:24px;display:flex;align-items:center;justify-content:center;padding:0 1px;font-size:.56rem;line-height:1.1;font-weight:600;letter-spacing:-.01em;",
+    "color:var(--text-secondary);text-align:center;white-space:normal;overflow-wrap:anywhere;-webkit-hyphens:auto;hyphens:auto}",
     ".dp-day{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;height:36px;padding:0;border:0;border-radius:10px;",
     "background:transparent;color:var(--text-primary);font:inherit;font-size:.9rem;font-weight:600;line-height:1;cursor:pointer;-webkit-appearance:none;appearance:none}",
     ".dp-day small{font-size:.58rem;font-weight:500;line-height:1;color:var(--text-secondary);margin-top:3px}",
@@ -140,7 +140,20 @@
     var s = y + "-" + dpPad(m + 1) + "-" + dpPad(d);
     return kind === "datetime" ? s + "T" + dpPad(hh || 0) + ":" + dpPad(mm || 0) : s;
   }
-  function dpGregText(t, y, m, d) { return d + " " + t.monthsG[m] + " " + y; }
+  /* يوم-شهر-سنة بأرقام غربية كما تكتبه fmtDate في كل الجداول */
+  function dpDmy(y, m, d) { return dpPad(d) + "-" + dpPad(m + 1) + "-" + y; }
+  /* الكتابة تقنع نفسها: الأرقام تفصل تلقائيا يوم-شهر-سنة (أو سنة-شهر-يوم إن بدأت بسنة ميلادية أو هجرية) ثم ساعة:دقيقة */
+  function dpMask(raw, withTime) {
+    var d = String(raw || "").replace(/[^0-9]/g, "").slice(0, withTime ? 12 : 8);
+    var y4 = +d.slice(0, 4);
+    var yearFirst = d.length >= 4 && ((y4 >= 1300 && y4 < 1600) || (y4 >= 1900 && y4 < 2200)) && +d.slice(2, 4) > 12;
+    var out;
+    if (yearFirst) { out = d.slice(0, 4); if (d.length > 4) out += "-" + d.slice(4, 6); if (d.length > 6) out += "-" + d.slice(6, 8); }
+    else { out = d.slice(0, 2); if (d.length > 2) out += "-" + d.slice(2, 4); if (d.length > 4) out += "-" + d.slice(4, 8); }
+    if (withTime && d.length > 8) out += " " + d.slice(8, 10);
+    if (withTime && d.length > 10) out += ":" + d.slice(10, 12);
+    return out;
+  }
   function dpHijriText(t, y, m, d) {
     var h = dpHijri(y, m, d);
     return h ? h.day + " " + t.monthsH[h.month - 1] + " " + h.year + " " + t.era : "";
@@ -156,7 +169,7 @@
     if (m) p = { y: +m[1], m: +m[2] - 1, d: +m[3], hh: m[4] ? +m[4] : null, mm: m[5] ? +m[5] : 0 };
     else if (s) { var d = new Date(s); if (!isNaN(d.getTime())) p = { y: d.getFullYear(), m: d.getMonth(), d: d.getDate(), hh: d.getHours(), mm: d.getMinutes() }; }
     if (!p) return { gregorian: "", hijri: "" };
-    var g = dpGregText(t, p.y, p.m, p.d);
+    var g = dpDmy(p.y, p.m, p.d);
     if (p.hh !== null) g += " " + dpTimeText(t, p.hh, p.mm);
     return { gregorian: g, hijri: dpHijriText(t, p.y, p.m, p.d) };
   }
@@ -171,6 +184,8 @@
     style.id = "dpStyle";
     style.textContent = DP_CSS;
     document.head.appendChild(style);
+    /* form.reset() لا يمر بأي حدث على الحقل نفسه، فنعيد الرسم بعده */
+    document.addEventListener("reset", function () { setTimeout(function () { dpRecords.forEach(function (r) { dpRefresh(r); }); }, 0); }, true);
   }
 
   function enhanceDateInputs(root) {
@@ -194,11 +209,14 @@
     var display = document.createElement("input");
     display.type = "text";
     display.className = "waitlist-input dp-input";
+    display.dir = "ltr";
     display.setAttribute("autocomplete", "off");
     display.setAttribute("spellcheck", "false");
+    display.setAttribute("inputmode", "numeric");
+    display.maxLength = rec.kind === "datetime" ? 16 : 10;
     display.setAttribute("aria-haspopup", "dialog");
     display.setAttribute("aria-expanded", "false");
-    if (native.getAttribute("placeholder")) display.setAttribute("placeholder", native.getAttribute("placeholder"));
+    display.setAttribute("placeholder", native.getAttribute("placeholder") || (rec.kind === "datetime" ? "31-12-2026 14:30" : "31-12-2026"));
     var sub = document.createElement("div");
     sub.className = "dp-sub";
     /* حقل العرض أولا ليكون هو ما تشير إليه بطاقة label عند النقر عليها */
@@ -232,18 +250,17 @@
   }
 
   function dpRefresh(rec) {
-    var t = dpText(), l = lang(), p = dpParseValue(rec.native);
-    rec.dirty = false;
-    rec.display.dir = (l === "ar" || l === "ur") ? "rtl" : "ltr";
+    var t = dpText(), p = dpParseValue(rec.native);
+    var typing = rec.dirty && document.activeElement === rec.display;
     rec.display.readOnly = dpIsNarrow() || rec.native.readOnly;
     rec.display.disabled = rec.native.disabled;
     rec.display.setAttribute("aria-label", t.pick);
     var text = "", hijri = "";
     if (p) {
-      text = dpGregText(t, p.y, p.m, p.d) + (rec.kind === "datetime" ? " " + dpTimeText(t, p.hh, p.mm) : "");
+      text = dpDmy(p.y, p.m, p.d) + (rec.kind === "datetime" ? " " + dpTimeText(t, p.hh, p.mm) : "");
       hijri = dpHijriText(t, p.y, p.m, p.d);
     } else if (rec.native.value) text = String(rec.native.value);
-    if (rec.display.value !== text) rec.display.value = text;
+    if (!typing) { rec.dirty = false; if (rec.display.value !== text) rec.display.value = text; }
     if (rec.sub.textContent !== hijri) rec.sub.textContent = hijri;
   }
 
@@ -294,7 +311,14 @@
       dpOpen(rec);
     });
     display.addEventListener("click", function () { if (dp.active !== rec) dpOpen(rec); });
-    display.addEventListener("input", function () { rec.dirty = true; });
+    display.addEventListener("input", function () {
+      rec.dirty = true;
+      if (/[^0-9\-\/. :]/.test(display.value)) return;
+      var masked = dpMask(display.value, rec.kind === "datetime");
+      if (masked !== display.value) display.value = masked;
+      var complete = rec.kind === "datetime" ? /^\d{2}-\d{2}-\d{4} \d{2}:\d{2}$/.test(masked) : /^\d{2}-\d{2}-\d{4}$/.test(masked);
+      if (complete) dpCommitTyped(rec);
+    });
     display.addEventListener("blur", function () { if (rec.dirty) dpCommitTyped(rec); });
     display.addEventListener("keydown", function (e) {
       var k = e.key;
@@ -430,9 +454,9 @@
       var above = r.top - 6 - ph;
       if (above >= 8) top = above;
       else {
-        /* لا مكان تحت الحقل ولا فوقه: بجانبه إن اتسع العرض، وإلا داخل الشاشة فحسب */
-        var beside = rtl ? r.left - 8 - pw : r.right + 8;
-        if (beside >= 8 && beside + pw <= vw - 8) left = beside;
+        /* لا مكان تحت الحقل ولا فوقه: بجانبه (جهة نهاية السطر أولا) إن اتسع العرض، وإلا داخل الشاشة فحسب */
+        var sides = rtl ? [r.left - 8 - pw, r.right + 8] : [r.right + 8, r.left - 8 - pw];
+        for (var s = 0; s < sides.length; s++) { if (sides[s] >= 8 && sides[s] + pw <= vw - 8) { left = sides[s]; break; } }
         top = Math.max(8, Math.min(r.top, vh - ph - 8));
       }
     }
@@ -558,6 +582,7 @@
     pop.querySelector(".dp-prev").setAttribute("aria-label", t.prev);
     pop.querySelector(".dp-next").setAttribute("aria-label", t.next);
     pop.setAttribute("aria-label", t.pick);
+    pop.setAttribute("lang", lang());
     Array.prototype.forEach.call(pop.querySelectorAll(".dp-pill"), function (b) {
       var isH = b.getAttribute("data-cal") === "h";
       b.textContent = isH ? t.hijri : t.gregorian;
@@ -569,7 +594,7 @@
     cells.forEach(function (c) {
       var isToday = c.y === now.getFullYear() && c.m === now.getMonth() && c.d === now.getDate();
       var isSel = !!(cur && cur.y === c.y && cur.m === c.m && cur.d === c.d);
-      var label = dpGregText(t, c.y, c.m, c.d) + (c.h ? " - " + c.h.day + " " + t.monthsH[c.h.month - 1] + " " + c.h.year + " " + t.era : "");
+      var label = dpDmy(c.y, c.m, c.d) + (c.h ? " - " + c.h.day + " " + t.monthsH[c.h.month - 1] + " " + c.h.year + " " + t.era : "");
       html += '<button type="button" class="dp-day' + (c.inMonth ? "" : " is-out") + (isToday ? " is-today" : "") + (isSel ? " is-selected" : "") +
         '" role="gridcell" data-y="' + c.y + '" data-m="' + c.m + '" data-d="' + c.d + '" aria-label="' + escapeHtml(label) + '"' +
         (isToday ? ' aria-current="date"' : "") + (isSel ? ' aria-pressed="true"' : "") + ">" + c.main + "<small>" + c.small + "</small></button>";
