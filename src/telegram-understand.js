@@ -88,7 +88,7 @@ export function understand(text, lang) {
   const has = (set) => bares.some((b, i) => set.has(b) || set.has(toks[i]));
   const numbers = (raw.match(/\d{3,}/g) || []);
   /* سؤال مفهومي (الفرق، كيف، لماذا، اشرح) ليس طلب بيانات؛ يجيبه النموذج */
-  if (/(الفرق|يعني|معني|كيف|لماذا|ليش|اشرح|شرح|تعريف|ما هي |what is|difference|explain|how do|how to|why)/.test(" " + n + " ")) return null;
+  if (/(الفرق|معني|كيف|لماذا|ليش|اشرح|شرح|تعريف|difference|explain|how do|how to|why)/.test(" " + n + " ")) return null;
   /* فعل كتابة صريح مع هدف ← ليس سؤالا؛ يبقى للمسار المؤكد. «السجل» و«سجل تجاري» أسماء لا فعل «سجّل» */
   const noNouns = raw.replace(/السجل|سجل(?:ات)? (?:ال)?تجاري|سجلات|السجلات/g, "");
   if (VERBS.add.test(noNouns) || VERBS.assign.test(raw) || VERBS.remind.test(raw)) return null;
