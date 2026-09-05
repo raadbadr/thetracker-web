@@ -92,6 +92,9 @@ for (const name of pages) {
       return { calendarState, booting: document.documentElement.classList.contains("app-booting"), scrollY: window.scrollY, dbg, scrollWidth: de.scrollWidth, innerWidth: vw, overflow: de.scrollWidth > vw + 1, wide: wide.slice(0, 12), wideCount: wide.length, smallTargets: small.slice(0, 10), smallCount: small.length, tinyInputs: tiny.slice(0, 8), sidebar: !!document.getElementById("appSidebar"), topbar: !!document.getElementById("appTopbar") && document.getElementById("appTopbar").children.length, loading: !!(document.getElementById("loadingCard") && document.getElementById("loadingCard").offsetParent), bodyText: document.body.innerText.slice(0, 80).replace(/\s+/g, " ") };
     });
     await page.screenshot({ path: `${OUT}/${name}-${label}.png`, fullPage: false });
+    /* لقطة عنصر بعينه للتحقق البصري: SHOT_SEL=#id، وقبلها PREP_JS يجهز الحالة (مثل إظهار عنوان إنجاز) */
+    if (process.env.PREP_JS) { try { await page.evaluate(process.env.PREP_JS); await new Promise((r) => setTimeout(r, 250)); } catch (e) { errors.push("prep: " + e.message.slice(0, 120)); } }
+    if (process.env.SHOT_SEL) { const el = await page.$(process.env.SHOT_SEL); if (el) { await el.evaluate((n) => n.scrollIntoView({ block: "center" })); await new Promise((r) => setTimeout(r, 200)); await el.screenshot({ path: `${OUT}/${name}-${label}-el.png` }); } }
     /* زر الإغلاق الدائري: يقاس بعد اللقطة بفتح اللوحات المخفية — دائرة 40 على بداية الاتجاه */
     const closeX = await page.evaluate(() => {
       ["editPanel", "addItemPanel", "docForm", "editorCard", "renameOrgForm", "newOrgForm", "newTrackerForm"].forEach((id) => { const el = document.getElementById(id); if (el) el.hidden = false; });

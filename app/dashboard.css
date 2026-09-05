@@ -509,7 +509,8 @@
       border: 1px solid rgba(255,255,255,0.72); box-shadow: 0 12px 40px rgba(0,80,140,0.1), inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(0,60,100,0.06); }
     .tlx-nav-row { display: flex; align-items: center; gap: 0.6rem; }
     .tlx-title { margin: 0 0 0.5rem; font-weight: 700; color: var(--text-primary); font-size: 1rem; }
-    .tlx-scroll { flex: 1 1 auto; min-width: 0; overflow-x: auto; overflow-y: visible; padding: 2.4rem 0 1.4rem; scrollbar-width: thin; }
+    /* المسطرة تتمرر أفقيا فتقص عموديا أيضا؛ الحشو العلوي يسع اسم الإنجاز على سطرين وتاريخه (كان النص يُقص من أعلاه) */
+    .tlx-scroll { flex: 1 1 auto; min-width: 0; overflow-x: auto; overflow-y: visible; padding: 3.8rem 0 1.4rem; scrollbar-width: thin; }
     .tlx-scroll .tlx-range-wrap { min-width: max(100%, calc(var(--tlx-days, 30) * 56px)); }
     .tlx-day-tick { position: absolute; top: calc(50% - 5px); width: 1px; height: 10px; background: rgba(255,255,255,0.18); transform: translateX(-50%); pointer-events: none; z-index: 1; }
     [data-theme="light"] .tlx-day-tick { background: rgba(0,60,100,0.15); }
@@ -554,7 +555,7 @@
     .tlx-ms-tick { width: 3px; height: 26px; border-radius: 2px; opacity: 0.5; transition: opacity .16s ease, transform .16s ease;
       background: linear-gradient(180deg, #ffd180 0%, #ff9100 45%, #e65100 100%); box-shadow: 0 0 10px rgba(255,145,0,0.5), 0 0 3px rgba(255,180,80,0.8), inset 0 1px 0 rgba(255,255,255,0.45); }
     .tlx-ms.is-active .tlx-ms-tick { opacity: 1; transform: scaleY(1.35); }
-    .tlx-ms-label { position: absolute; bottom: calc(50% + 30px); left: 50%; transform: translateX(-50%); white-space: normal; max-width: 15rem; text-align: center; font-size: 0.68rem; font-weight: 700; line-height: 1; color: #ffb347; letter-spacing: 0.03em; text-shadow: 0 1px 3px rgba(0,0,0,0.55); opacity: 0; transition: opacity .16s ease; }
+    .tlx-ms-label { position: absolute; bottom: calc(50% + 30px); left: 50%; transform: translateX(-50%); white-space: normal; max-width: 15rem; text-align: center; font-size: 0.68rem; font-weight: 700; line-height: 1.2; color: #ffb347; letter-spacing: 0.03em; text-shadow: 0 1px 3px rgba(0,0,0,0.55); opacity: 0; transition: opacity .16s ease; }
     .tlx-ms-date { position: absolute; bottom: calc(50% + 16px); left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 0.58rem; font-weight: 600; line-height: 1; color: rgba(255,179,71,0.7); opacity: 0; transition: opacity .16s ease; }
     .tlx-ms.is-active .tlx-ms-label, .tlx-ms.is-active .tlx-ms-date { opacity: 1; }
     [data-theme="light"] .tlx-ms-label { color: #c2410c; text-shadow: 0 1px 0 rgba(255,255,255,0.9); }

@@ -243,6 +243,15 @@
     .rasi-chip:hover { transform: translateY(-1px); }
     .rasi-chip:disabled { opacity: 0.6; cursor: wait; }
     .rasi-chip b { margin-inline-start: 0.4em; font-weight: 800; }
+    /* شرائح التوزيع السريع: الاسم كاملا في شريحة تلتف (لا دائرة 44 تحشر الاسم)، والدور بجانبه في السطر نفسه */
+    .rasi-chips .rasi-chip { width: auto; height: auto; min-height: 36px; padding: .35rem .85rem; border-radius: 999px;
+      display: inline-flex; align-items: center; justify-content: center; gap: .4em; max-width: 100%;
+      white-space: normal; overflow-wrap: anywhere; text-align: center; line-height: 1.25; font-size: .82rem; }
+    .rasi-chips .rasi-chip b { margin: 0; white-space: nowrap; }
+    .rasi-chips .rasi-chip.is-R { background: var(--primary); color: var(--btn-ink); border-color: transparent; }
+    .rasi-chips .rasi-chip.is-A { background: var(--success); color: #fff; border-color: transparent; }
+    .rasi-chips .rasi-chip.is-S { background: var(--warning); color: #1a1a26; border-color: transparent; }
+    .rasi-chips .rasi-chip.is-I { background: var(--glass-strong); color: var(--text-primary); border-color: var(--glass-border); }
     .rasi-code { direction: ltr; unicode-bidi: isolate; }
     #rasiMatrixWrap { margin-top: 1rem; }
     .quick-add { grid-template-columns: minmax(0, 1fr) 170px auto; margin-bottom: 0.5rem; }
