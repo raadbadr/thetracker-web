@@ -70,7 +70,14 @@ function fail(msg, obj) { return { content: [{ type: "text", text: String(msg) }
 
 function describeRows(rows) {
   if (!rows || !rows.length) return "No items.";
-  return rows.map((r) => [r.item_number, r.title, r.status, r.client_name, r.case_number, r.due_at ? "due " + String(r.due_at).slice(0, 16) : null, r.amount != null ? r.amount + " SAR" : null].filter(Boolean).join(" | ")).join("\n");
+  return rows.map((r) => {
+    if (r.document_kind || r.doc_number) {
+      /* ورقة رسمية: رقمها هي (السجل/الضريبي…) لا الرقم القياسي للعنصر */
+      return [r.title, r.doc_number ? "رقم " + r.doc_number : null, r.issue_date ? "إصدار " + String(r.issue_date).slice(0, 10) : null, r.due_at ? "ينتهي " + String(r.due_at).slice(0, 10) : null].filter(Boolean).join(" — ");
+    }
+    /* الرقم القياسي (ITM-…) داخلي للإدارة؛ المستخدم يرى رقم القضية أو المخالفة أو الورقة */
+    return [r.title, r.case_number ? "قضية " + r.case_number : null, r.violation_number ? "مخالفة " + r.violation_number : null, r.client_name, r.status === "open" ? null : r.status, r.due_at ? "الموعد " + String(r.due_at).slice(0, 10) : null, r.amount != null ? r.amount + " ريال" : null].filter(Boolean).join(" | ");
+  }).join("\n");
 }
 
 async function resolveActor(ctx, a) {

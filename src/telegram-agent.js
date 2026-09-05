@@ -17,6 +17,7 @@ function systemPrompt(ctx) {
     `لا تحيي ولا تذكر اسمه أو شركته في كل رد؛ المحادثة مستمرة، فادخل في الجواب مباشرة. لا تكرر جملة قلتها قبل قليل، ولا تختم بعبارات مجاملة.`,
     `أسئلة بيانات الشركة (رقم السجل التجاري، الرقم الضريبي، الآيبان، العنوان، الباقة، الأوراق المرفوعة) تجاب من tracker_company بالرقم نفسه كما هو مسجل.`,
     `كلمة واحدة تكفي: «قضايا» = tracker_items(case)، «مخالفات» = (violation)، «مهام» = (task)، «مستندات» = (document)، «المنجز» = (status done)، «مواعيد/القادم» = tracker_list(upcoming)، «متأخر» = tracker_list(overdue)، أي اسم أو رقم = tracker_search. والكلام الطويل تفهم منه المطلوب نفسه.`,
+    `لا تعرض الرقم القياسي الداخلي (ITM-…) للمستخدم أبدا؛ اعرض رقم السجل أو القضية أو المخالفة أو الورقة نفسه كما هو مسجل، وتواريخ الإصدار والانتهاء.`,
     `صيغة الرد: مختصرة جدا. للقوائم: سطر لكل عنصر «الرقم | العنوان | العميل | الموعد» بلا مقدمة ولا خاتمة، وإن لم يوجد شيء فجملة واحدة. للأسئلة: الجواب فقط. لا شرح لما فعلت ولا ذكر لأسماء الأدوات.`,
     `لكل سؤال عن بياناته (قضايا، مخالفات، مهام، مواعيد، متأخر، عميل، رقم) استعمل الأدوات ولا تخمن ولا تختلق. tracker_list للمواعيد القادمة والمتأخرة، tracker_search للبحث بأي كلمة أو رقم.`,
     `حين يطلب إضافة أو إنجاز أو إسناد بصيغة واضحة نفذ بالأداة مباشرة ثم أخبره بما تم برقم العنصر. إن كانت المهمة بلا قضية أو مخالفة تنتمي إليها فاعرض المرشحين الذين تعيدهم الأداة واطلب اختيار واحد. إن كان الطلب غامضا اسأل سؤالا واحدا قصيرا.`,
@@ -70,11 +71,14 @@ const ONE_WORD = [
   [/^(مواعيد|مواعيدي|القادم|القادمة|upcoming|dates?)$/i, { tool: "tracker_list", args: { mode: "upcoming" } }],
   [/^(متأخر|المتأخر|متأخرات|المتأخرات|overdue|late)$/i, { tool: "tracker_list", args: { mode: "overdue" } }],
   [/^(الكل|كل شيء|everything|all)$/i, { tool: "tracker_items", args: { kind: "all", status: "open", limit: 20 } }],
-  [/^(الشركة|شركتي|بياناتي|بيانات الشركة|السجل|رقم السجل|السجل التجاري|رقم السجل التجاري|الرقم الضريبي|الايبان|الآيبان|company|my company|cr|vat|iban)$/i, { tool: "tracker_company", args: {} }],
+  [/^(الشركة|شركتي|بياناتي|بيانات الشركة|السجل|رقم السجل|السجل التجاري|رقم السجل التجاري|الرقم الضريبي|الايبان|الآيبان|متى ينتهي|متى تنتهي|الانتهاء|تاريخ الانتهاء|تاريخ الاصدار|تاريخ الإصدار|company|my company|cr|vat|iban|expiry|when does it expire)$/i, { tool: "tracker_company", args: {} }],
 ];
 const EMPTY = { ar: "لا يوجد.", en: "Nothing.", fr: "Rien.", ur: "کچھ نہیں۔" };
 function rowsText(rows) {
-  return (rows || []).map((r) => [r.item_number, r.title, r.client_name, r.due_at ? String(r.due_at).slice(0, 10) : null].filter(Boolean).join(" | ")).join("\n");
+  return (rows || []).map((r) => {
+    if (r.document_kind || r.doc_number) return [r.title, r.doc_number ? "رقم " + r.doc_number : null, r.issue_date ? "إصدار " + String(r.issue_date).slice(0, 10) : null, r.due_at ? "ينتهي " + String(r.due_at).slice(0, 10) : null].filter(Boolean).join(" — ");
+    return [r.title, r.case_number ? "قضية " + r.case_number : null, r.violation_number ? "مخالفة " + r.violation_number : null, r.client_name, r.due_at ? String(r.due_at).slice(0, 10) : null].filter(Boolean).join(" | ");
+  }).join("\n");
 }
 async function oneWord(env, ctx) {
   const t = String(ctx.text || "").trim().replace(/[؟?!.،,]+$/, "").replace(/^(كم|ما|ماهو|ما هو|وش|ايش|إيش)\s+/, "");
