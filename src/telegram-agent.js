@@ -140,7 +140,8 @@ export async function agentReply(env, ctx) {
       try { out = await callTool(c.name, c.args, toolCtx); } catch (e) { out = { content: [{ type: "text", text: "tool error: " + String(e && e.message || e).slice(0, 200) }], isError: true }; }
       toolsUsed.push(c.name);
       console.log("agent: tool", c.name, JSON.stringify(c.args).slice(0, 200), "→", (out && out.isError) ? "error" : "ok");
-      const payload = out && out.structuredContent ? JSON.stringify(out.structuredContent).slice(0, 6000) : String((out && out.content && out.content[0] && out.content[0].text) || "").slice(0, 6000);
+      const stripInternal = (v) => { if (Array.isArray(v)) return v.map(stripInternal); if (v && typeof v === "object") { const o = {}; for (const k of Object.keys(v)) if (k !== "item_number" && k !== "org_id" && k !== "user_id") o[k] = stripInternal(v[k]); return o; } return v; };
+      const payload = out && out.structuredContent ? JSON.stringify(stripInternal(out.structuredContent)).slice(0, 6000) : String((out && out.content && out.content[0] && out.content[0].text) || "").slice(0, 6000);
       messages.push({ role: "tool", tool_call_id: assistantMsg.tool_calls[i].id, name: c.name, content: payload });
     }
   }

@@ -215,7 +215,7 @@ export function formatSearch(lang, query, rows, userTimeZone, userHour12) {
     if (r.case_number) bits.push(`${b.fCase} ${r.case_number}`);
     const tail = [r.due_at ? fmtWhen(r.due_at, lang, userTimeZone, userHour12) : null, r.amount != null ? money(r.amount) : null, r.status === "done" ? b.statusDone : null, r.attachments ? `📎${r.attachments}` : null].filter(Boolean).join(" · ");
     const roles = r.roles ? `\n   👥 ${r.roles}` : "";
-    return `${i + 1}. ${bits.filter(Boolean).join(" — ")}${r.item_number ? ` (${r.item_number})` : ""}${tail ? `\n   ${tail}` : ""}${roles}`;
+    return `${i + 1}. ${bits.filter(Boolean).join(" — ")}${tail ? `\n   ${tail}` : ""}${roles}`;
   });
   return `${b.searchTitle(query)}\n\n${lines.join("\n")}`;
 }
@@ -231,16 +231,16 @@ export async function executeAction(env, userId, intent, lang) {
       const rows = cands.map((c) => [{ text: [c.title, c.client_name, c.case_number ? `${b.fCase} ${c.case_number}` : null].filter(Boolean).join(" — ").slice(0, 60), callback_data: "par:" + c.id }]);
       return { text: b.needsParent, extra: { reply_markup: { inline_keyboard: rows } }, keepDraft: true };
     }
-    return { text: b.actSaved(r && r.item_number, (intent.item && intent.item.title) || "", r && r.tracker_name, !!(r && r.tracker_new)), extra: urlButton(b.openDash, DASHBOARD_URL) };
+    return { text: b.actSaved(null, (intent.item && intent.item.title) || "", r && r.tracker_name, !!(r && r.tracker_new)), extra: urlButton(b.openDash, DASHBOARD_URL) };
   }
   if (intent.action === "done") {
     const r = await rpc(env, "telegram_complete", { p_secret: env.WORKER_SECRET, p_user_id: userId, p_query: intent.query || "", p_item_id: intent.item_id || null });
     if (!r || r.status === "not_found") return { text: b.notFound(intent.query || ""), extra: menuKeyboard(lang) };
     if (r.status === "ambiguous") {
-      const rows = (r.candidates || []).map((c) => `${c.item_number ? c.item_number + " — " : ""}${c.title}${c.client_name ? " — " + c.client_name : ""}`);
+      const rows = (r.candidates || []).map((c) => `${c.title}${c.client_name ? " — " + c.client_name : ""}`);
       return { text: b.manyFound + "\n" + rows.map((x, i) => `${i + 1}. ${x}`).join("\n") + "\n\n" + b.manyHint, extra: menuKeyboard(lang) };
     }
-    return { text: b.actDoneOk(r.item_number, r.title), extra: menuKeyboard(lang) };
+    return { text: b.actDoneOk(null, r.title), extra: menuKeyboard(lang) };
   }
   if (intent.action === "assign") {
     const r = await rpc(env, "telegram_assign", { p_secret: env.WORKER_SECRET, p_user_id: userId, p_query: intent.query || "", p_member: intent.member || "" });
@@ -249,7 +249,7 @@ export async function executeAction(env, userId, intent, lang) {
     if (r.status === "no_member") return { text: b.noMember(intent.member || ""), extra: menuKeyboard(lang) };
     if (r.member_chat) {
       const ml = botText(r.member_lang || "ar");
-      try { await sendTelegram(env, r.member_chat, ml.assignedToYou(r.title, r.item_number), urlButton(ml.openDash, DASHBOARD_URL)); } catch {}
+      try { await sendTelegram(env, r.member_chat, ml.assignedToYou(r.title, null), urlButton(ml.openDash, DASHBOARD_URL)); } catch {}
     }
     return { text: b.actAssignOk(r.title, r.member_name, !!r.member_chat), extra: menuKeyboard(lang) };
   }

@@ -158,7 +158,7 @@ export async function callTool(name, args, ctx) {
       const r = await ctx.rpc("telegram_add_item", { p_secret: secret, p_user_id: user, p_item: item });
       if (r && r.status === "needs_parent") return result(r, "needs_parent: a task must belong to a case or violation. Candidates:\n" + describeRows(r.candidates || []) + "\nCall tracker_add again with parent_id.");
       if (r && r.status && r.status !== "ok" && r.status !== "created") return fail("Could not add: " + r.status, r);
-      return result(r, `Added ${item.kind}: ${item.title}` + (r && r.item_number ? ` (${r.item_number})` : ""));
+      return result(r, `Added ${item.kind}: ${item.title}`);
     }
     case "tracker_complete": {
       const r = await ctx.rpc("telegram_complete", { p_secret: secret, p_user_id: user, p_query: String(a.query || ""), p_item_id: a.item_id || null });

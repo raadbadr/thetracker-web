@@ -86,7 +86,9 @@ for (const name of pages) {
       const dbg = { topbar: tbr ? { pos: tbs.position, x: Math.round(tbr.left), w: Math.round(tbr.width), parent: tb.parentElement.tagName.toLowerCase() + (tb.parentElement.id ? "#" + tb.parentElement.id : "") + "." + String(tb.parentElement.className).split(" ")[0] } : null, bodyW: document.body.scrollWidth, widest };
       const cal = document.getElementById("calendarPanel"); const calRect = cal && cal.offsetParent ? cal.getBoundingClientRect() : null;
       const statsEl = document.querySelector(".stats-section"); const statsTop = statsEl && statsEl.offsetParent ? statsEl.getBoundingClientRect().top + window.scrollY : null;
-      const calendarState = !cal ? "n/a" : (!calRect ? "HIDDEN" : (statsTop !== null && (calRect.top + window.scrollY) > statsTop ? "visible-not-first" : "visible-first"));
+      /* المطلوب: المربعات الأربعة ثم التقويم مباشرة (أمر المهندس رعد)؛ أي شيء آخر بينهما أو إخفاء = خطأ */
+      let calendarState = !cal ? "n/a" : (!calRect ? "HIDDEN" : "visible");
+      if (calRect && statsEl && statsEl.offsetParent) { let n = statsEl.nextElementSibling; while (n && n.hidden) n = n.nextElementSibling; calendarState = n && n.contains(cal) ? "visible-after-tiles" : "visible-WRONG-PLACE"; }
       return { calendarState, booting: document.documentElement.classList.contains("app-booting"), scrollY: window.scrollY, dbg, scrollWidth: de.scrollWidth, innerWidth: vw, overflow: de.scrollWidth > vw + 1, wide: wide.slice(0, 12), wideCount: wide.length, smallTargets: small.slice(0, 10), smallCount: small.length, tinyInputs: tiny.slice(0, 8), sidebar: !!document.getElementById("appSidebar"), topbar: !!document.getElementById("appTopbar") && document.getElementById("appTopbar").children.length, loading: !!(document.getElementById("loadingCard") && document.getElementById("loadingCard").offsetParent), bodyText: document.body.innerText.slice(0, 80).replace(/\s+/g, " ") };
     });
     await page.screenshot({ path: `${OUT}/${name}-${label}.png`, fullPage: false });
