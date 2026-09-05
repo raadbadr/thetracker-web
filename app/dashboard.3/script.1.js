@@ -15,6 +15,7 @@
         members: [],
         names: {},
         items: [],
+        week: null,
         calItems: [],
         viewType: "",
         clientFilter: "",
@@ -809,12 +810,12 @@
           });
           renderSelects();
         }).catch(function (err) { fail(err); }).then(function () {
-          return Promise.all([loadStats(), loadItems(), loadCalendar()]);
+          return Promise.all([loadStats(), loadItems(), loadCalendar(), loadWeek().then(renderWeek)]);
         });
       }
 
       function refresh() {
-        return Promise.all([loadStats(), loadItems(), loadCalendar()]);
+        return Promise.all([loadStats(), loadItems(), loadCalendar(), loadWeek().then(renderWeek)]);
       }
 
       /* ---------- top bar / organizations ---------- */

@@ -670,7 +670,9 @@
             '<td><span class="item-title" data-tr>' + esc(item.title) + "</span>" +
               (item.category ? '<span class="item-cat">' + esc(item.category) + "</span>" : "") + "</td>" +
             "<td>" + esc(trackerName(item)) + "</td>" +
-            '<td class="col-due">' + (item.due_at ? esc(app.fmtDate(item.due_at, { withTime: true })) : esc(T("noDue"))) + "</td>" +
+            '<td class="col-due">' + (item.due_at
+              ? '<div class="cell-stack"><span>' + esc(app.fmtDate(item.due_at, { withTime: true })) + '</span><span class="item-cat due-left" data-due="' + esc(item.due_at) + '"></span></div>'
+              : esc(T("noDue"))) + "</td>" +
             "<td>" + esc(assigneeName(item.assignee_id)) + "</td>" +
             '<td><span class="status-' + sk + '">' + esc(T(STATUS_KEYS[sk])) + "</span></td>" +
             '<td><div class="chat-options row-actions">' +
@@ -829,14 +831,29 @@
         return (diff > 0 ? "+" : "−") + Math.abs(diff) + " " + T("weekVsLast");
       }
 
+      /* الأرقام من القاعدة على كل العناصر لا على الصفحة المحمّلة (500 صف).
+         إن تعذّرت الدالة تُحسب محليا كما كانت، فلا تختفي البطاقة أبدا. */
+      function loadWeek() {
+        if (!app.client || !app.org) return Promise.resolve(null);
+        return app.client.rpc("week_summary", { p_org: app.org.id }).then(function (res) {
+          var row = res && res.data;
+          if (Array.isArray(row)) row = row[0];
+          state.week = (row && typeof row.done_this_week === "number") ? row : null;
+          return state.week;
+        }).catch(function () { state.week = null; return null; });
+      }
+
       function renderWeek() {
         var card = $("weekCard");
         if (!card) return;
         var items = state.items || [];
         var thisFrom = weekStart(0), nextFrom = new Date(thisFrom.getTime() + 7 * 86400000);
         var lastFrom = weekStart(-1);
-        var now = weekCounts(items, thisFrom, nextFrom);
-        var before = weekCounts(items, lastFrom, thisFrom);
+        var w = state.week;
+        var now = w ? { done: w.done_this_week, added: w.added_this_week, late: w.late_this_week }
+                    : weekCounts(items, thisFrom, nextFrom);
+        var before = w ? { done: w.done_last_week, added: w.added_last_week, late: w.late_last_week }
+                       : weekCounts(items, lastFrom, thisFrom);
         var boxes = [
           { key: "weekDone", n: now.done, was: before.done, cls: "status-done" },
           { key: "weekAdded", n: now.added, was: before.added, cls: "" },
