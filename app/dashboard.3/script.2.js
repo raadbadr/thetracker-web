@@ -537,14 +537,46 @@
           "<th>" + esc(T("colAmount")) + "</th><th>" + esc(T("colStatus")) + "</th>" +
           "<th>" + esc(T("attachTitle")) + "</th><th></th></tr></thead><tbody>";
         rows.forEach(function (r) {
+          var next = r.kind === "session"
+            ? '<button type="button" class="chat-option-btn" data-next-session="' + esc(r.id) + '">' + esc(T("nextSession")) + "</button>"
+            : "";
           html += "<tr><td>" + esc(r.title || "-") + "</td>" +
                   '<td class="cell-num">' + (r.due_at ? esc(app.fmtDate(r.due_at)) : "-") + "</td>" +
                   '<td class="cell-num">' + money(r.amount) + "</td>" +
                   "<td>" + esc(r.status === "done" ? T("statusDone") : T("statusOpen")) + "</td>" +
                   '<td class="cell-num">' + esc(String(r.attachments || 0)) + "</td>" +
-                  '<td><button type="button" class="chat-option-btn" data-bundle-open="' + esc(r.id) + '">' + esc(T("actionEdit")) + "</button></td></tr>";
+                  '<td><div class="chat-options row-actions">' + next +
+                    '<button type="button" class="chat-option-btn" data-bundle-open="' + esc(r.id) + '">' + esc(T("actionEdit")) + "</button></div></td></tr>";
         });
         return html + "</tbody></table></div>";
+      }
+
+      /* الجلسة القادمة تُكتب من الجلسة الحالية: النموذج نفسه مملوءا من القضية،
+         والعنصر الجديد يُربط بالقضية نفسها فلا يطفو وحده. */
+      function startNextSession(sessionId) {
+        var head = state.caseHead;
+        var kids = state.caseKids || [];
+        var session = kids.filter(function (k) { return k.id === sessionId; })[0];
+        if (!head) return;
+        var panel = $("addItemPanel");
+        panel.hidden = false;
+        clearMsg("addMsg");
+        closeEdit();
+        state.pendingParent = head.id;
+        $("addTitle").value = T("nextSessionTitle").replace("{case}", head.title || "");
+        $("addCategory").value = (session && session.category) || T("sessionCategory");
+        $("addClient").value = head.client_name || "";
+        $("addClientEn").value = head.client_name_en || "";
+        $("addCaseNumber").value = head.case_number || "";
+        $("addAmount").value = "";
+        $("addDue").value = "";
+        if ($("addTracker") && head.tracker_id) $("addTracker").value = head.tracker_id;
+        try { panel.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) { /* تجاهل */ }
+        /* حقل التاريخ صار منتقيا: المؤشر يذهب إلى الحقل الظاهر لا إلى حقل المتصفح المخفي */
+        var due = $("addDue");
+        var wrap = due && due.closest ? due.closest(".dp-wrap, .date-field") : null;
+        var shown = wrap ? wrap.querySelector('input[type="text"]') : null;
+        (shown || due).focus();
       }
 
       /* ملف القضية الكامل: يفتح من رقم القضية أو من صفها */
@@ -555,6 +587,7 @@
           var data = res && res.data;
           if (!data || data.error || !data.head) { paintEl(box).html = '<p class="empty-note">' + esc(T("caseBundleEmpty")) + "</p>"; return; }
           var head = data.head, kids = data.children || [];
+          state.caseHead = head; state.caseKids = kids;
           var d = head.data || {};
           var facts = [
             [T("colCaseNumber"), head.case_number],
@@ -619,6 +652,8 @@
         }
         var fileBtn = ev.target.closest("[data-case-file]");
         if (fileBtn) { ev.preventDefault(); openCaseFile(fileBtn.dataset.caseFile); return; }
+        var nextBtn = ev.target.closest("[data-next-session]");
+        if (nextBtn) { ev.preventDefault(); startNextSession(nextBtn.dataset.nextSession); return; }
         var openBtn = ev.target.closest("[data-bundle-open]");
         if (openBtn) {
           var id = openBtn.dataset.bundleOpen;
@@ -755,6 +790,7 @@
           case_number: $("addCaseNumber").value.trim() || null,
           status: "open"
         };
+        if (state.pendingParent) row.parent_id = state.pendingParent;
         guard(function () {
           $("addSaveBtn").disabled = true;
           return app.insertItems([row]).then(function () {
@@ -766,6 +802,7 @@
             $("addClient").value = "";
             $("addClientEn").value = "";
             $("addCaseNumber").value = "";
+            state.pendingParent = "";
             return refresh();
           });
         }).then(function () { $("addSaveBtn").disabled = false; }, function (err) {
