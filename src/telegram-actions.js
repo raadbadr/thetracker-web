@@ -234,6 +234,8 @@ export async function executeAction(env, userId, intent, lang) {
     return { text: b.actSaved(null, (intent.item && intent.item.title) || "", r && r.tracker_name, !!(r && r.tracker_new)), extra: urlButton(b.openDash, DASHBOARD_URL) };
   }
   if (intent.action === "done") {
+    /* استعلام فارغ يطابق كل عنصر مفتوح في القاعدة؛ لا إنجاز بلا تحديد */
+    if (!intent.item_id && !String(intent.query || "").trim()) return { text: b.notFound(""), extra: menuKeyboard(lang) };
     const r = await rpc(env, "telegram_complete", { p_secret: env.WORKER_SECRET, p_user_id: userId, p_query: intent.query || "", p_item_id: intent.item_id || null });
     if (!r || r.status === "not_found") return { text: b.notFound(intent.query || ""), extra: menuKeyboard(lang) };
     if (r.status === "ambiguous") {
@@ -243,6 +245,7 @@ export async function executeAction(env, userId, intent, lang) {
     return { text: b.actDoneOk(null, r.title), extra: menuKeyboard(lang) };
   }
   if (intent.action === "assign") {
+    if (!String(intent.query || "").trim() || !String(intent.member || "").trim()) return { text: b.notFound(intent.query || ""), extra: menuKeyboard(lang) };
     const r = await rpc(env, "telegram_assign", { p_secret: env.WORKER_SECRET, p_user_id: userId, p_query: intent.query || "", p_member: intent.member || "" });
     if (!r || r.status === "not_found") return { text: b.notFound(intent.query || ""), extra: menuKeyboard(lang) };
     if (r.status === "ambiguous") return { text: b.manyFound + "\n" + b.manyHint, extra: menuKeyboard(lang) };

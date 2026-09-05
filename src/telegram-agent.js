@@ -23,8 +23,12 @@ export function writeGate(name, args, text) {
   if (!VERBS[action].test(String(text || ""))) return { blocked: true, reason: "لم يطلب المستخدم هذا الإجراء في رسالته؛ لا تنفذه ولا تقترحه. أجب على رسالته كما هي (إن كانت مجاملة أو شكرا فرد بجملة قصيرة)." };
   if (action === "remind") return { allow: true };
   const a = args && typeof args === "object" ? args : {};
-  if (action === "done") return { pending: { action: "done", query: String(a.query || ""), item_id: a.item_id || null } };
-  if (action === "assign") return { pending: { action: "assign", query: String(a.query || ""), member: String(a.member || "") } };
+  const q = String(a.query || "").trim();
+  /* بلا تحديد للعنصر لا شيء يمر: استعلام فارغ في القاعدة يطابق كل شيء */
+  if (action === "done" && !a.item_id && !q) return { blocked: true, reason: "حدد العنصر المطلوب إنجازه (عنوانه أو رقم القضية أو المخالفة)، واسأل المستخدم سؤالا واحدا إن لم يتضح." };
+  if (action === "assign" && (!q || !String(a.member || "").trim())) return { blocked: true, reason: "حدد العنصر واسم العضو، واسأل المستخدم سؤالا واحدا إن لم يتضح." };
+  if (action === "done") return { pending: { action: "done", query: q, item_id: a.item_id || null } };
+  if (action === "assign") return { pending: { action: "assign", query: q, member: String(a.member || "").trim() } };
   const item = {};
   for (const k of ["kind", "title", "client_name", "case_number", "violation_number", "amount", "due_at", "location", "notes", "category", "parent_id"]) if (a[k] != null && a[k] !== "") item[k] = a[k];
   return { pending: { action: "add", item } };

@@ -136,6 +136,7 @@ try {
   check("an explicit «أضف» becomes a pending add with item fields only", !!add.pending && add.pending.action === "add" && add.pending.item.title === "مراجعة العقد" && !("telegram_user_id" in add.pending.item), JSON.stringify(add));
   const asg = writeGate("tracker_assign", { query: "4471", member: "أحمد" }, "كلف أحمد بالقضية 4471");
   check("an explicit «كلف» becomes a pending assignment", !!asg.pending && asg.pending.action === "assign" && asg.pending.member === "أحمد", JSON.stringify(asg));
+  check("an empty query never reaches the database (it would match every open item)", !!writeGate("tracker_complete", { query: "  " }, "أنجزت").blocked && !!writeGate("tracker_assign", { query: "", member: "أحمد" }, "كلف أحمد").blocked && !!writeGate("tracker_assign", { query: "4471", member: "" }, "أسند 4471").blocked);
   check("reading tools pass the gate untouched", writeGate("tracker_items", { kind: "case" }, "احسنت").allow === true && writeGate("tracker_company", {}, "شكرا").allow === true);
   check("«ذكرني» may set a reminder directly; without the word it is blocked", writeGate("tracker_remind", { query: "الجلسة", before: "يوم" }, "ذكرني قبل يوم بالجلسة").allow === true && writeGate("tracker_remind", { query: "x", before: "يوم" }, "الجلسة قريبة").blocked === true);
   check("English «done» / «close» are verbs, praise is not", VERBS.done.test("mark 4471 as done") && VERBS.done.test("close the case 4471") && !VERBS.done.test("great job") && !VERBS.done.test("well done".replace("done", "")));
