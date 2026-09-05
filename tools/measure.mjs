@@ -95,6 +95,7 @@ for (const name of pages) {
     /* زر الإغلاق الدائري: يقاس بعد اللقطة بفتح اللوحات المخفية — دائرة 40 على بداية الاتجاه */
     const closeX = await page.evaluate(() => {
       ["editPanel", "addItemPanel", "docForm", "editorCard", "renameOrgForm", "newOrgForm", "newTrackerForm"].forEach((id) => { const el = document.getElementById(id); if (el) el.hidden = false; });
+      try { if (!document.getElementById("appNewOrg") && window.trackerApp && window.trackerApp.openNewOrgDialog) window.trackerApp.openNewOrgDialog(); } catch (e) { /* الصفحة بلا نافذة حساب */ }
       const rtl = getComputedStyle(document.documentElement).direction === "rtl";
       return [...document.querySelectorAll(".close-x")].map((b) => {
         const r = b.getBoundingClientRect(); const cs = getComputedStyle(b); const host = b.closest(".has-close-x");
@@ -104,6 +105,7 @@ for (const name of pages) {
           (hr ? " inset=" + Math.round(rtl ? hr.right - r.right : r.left - hr.left) : " inline");
       });
     });
+    if (await page.$("#appNewOrg")) await page.screenshot({ path: `${OUT}/${name}-${label}-newaccount.png`, fullPage: false });
     report.push({ page: name, size: label, ...m, closeX, errors: errors.slice(0, 4) });
     if (process.env.DEBUG) console.log("   dbg", name, label, JSON.stringify(m.dbg));
     await page.close();

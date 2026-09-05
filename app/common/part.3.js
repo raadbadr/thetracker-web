@@ -698,6 +698,12 @@
     "body .close-x:hover{background:var(--glass-strong)}",
     "body .close-x.is-corner{position:absolute;top:1rem;inset-inline-start:1rem;z-index:5}",
     "body .has-close-x{position:relative}",
+    "body .waitlist-form>.close-x,body .form-actions>.close-x{width:40px;max-width:40px;flex:0 0 40px}",
+    /* داخل نوافذ app-gate: قاعدة الأزرار هناك تمدد كل زر بعرض النافذة، فتُخصَّص هنا: دائرة في الزاوية والعنوان في المنتصف */
+    "body .app-gate-card button.close-x{width:40px;height:40px;min-height:40px;padding:0;border-radius:50%;grid-column:auto;",
+    "background:var(--bg-top);color:var(--primary);border:1px solid var(--glass-border);box-shadow:0 2px 4px rgba(0,0,0,.2);",
+    "position:absolute;top:1.1rem;inset-inline-start:1.1rem;z-index:5;font-weight:400}",
+    "body .app-gate-card.has-close-x h2{text-align:center;padding-inline:48px;min-height:40px;display:flex;align-items:center;justify-content:center}",
     /* صف الأدوات: كل ما فيه على خط واحد بارتفاع واحد */
     "body .toolbar,body .filters-row{align-items:center}",
     "body .toolbar>*,body .filters-row>*{margin:0}",
