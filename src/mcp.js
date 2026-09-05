@@ -197,7 +197,7 @@ export async function callTool(name, args, ctx) {
       if (!r || r.status === "no_org") return fail("No company found.");
       const LABEL = { month: "هذا الشهر", week: "هذا الأسبوع", year: "هذه السنة", all: "منذ البداية" };
       const money = (v) => Number(v || 0).toLocaleString("en-US", { maximumFractionDigits: 2 }) + " ريال";
-      if (!Number(r.count || 0)) return result(r, "لا مصاريف مسجلة " + LABEL[period] + ". تُسجَّل من لوحة التحكم ← مصاريف التشغيل: https://appmails.net/app/dashboard.html");
+      if (!Number(r.count || 0)) return result(r, "لا مصاريف مسجلة " + LABEL[period] + ". تسجل من لوحة التحكم ← مصاريف التشغيل: https://appmails.net/app/dashboard.html");
       const cats = (r.by_category || []).map((c) => c.name + " " + money(c.total) + " (" + c.count + ")").join("، ");
       const latest = (r.latest || []).map((e) => "• " + [e.title, money(e.amount), e.date ? dmy(e.date) : null, e.category].filter(Boolean).join(" — ")).join("\n");
       const head = "مصاريف " + LABEL[period] + (r.period_start && period !== "all" ? " (" + dmy(r.period_start) + " إلى " + dmy(r.period_end) + ")" : "") + ": " + money(r.total) + " في " + r.count + " مصروف.";
