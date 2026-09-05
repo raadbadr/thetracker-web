@@ -22,6 +22,9 @@ function stub(url, method, body) {
   if (p.endsWith("/auth/v1/token")) return { access_token: "stub", token_type: "bearer", expires_in: 36000, refresh_token: "r", user: USER };
   if (p.includes("/rest/v1/rpc/my_services")) return ["dashboard", "cases", "violations", "team", "settings", "documents", "processes", "risks", "expenses"];
   if (p.includes("/rest/v1/rpc/platform_stats")) return { users: 12, orgs: 3, items: 120 };
+  /* أحداث الخط الزمني في الشهر الجاري، اثنان منها في يوم واحد (للتنقل بين المتزامنة) */
+  if (p.includes("/rest/v1/rpc/activity_feed")) { const y = new Date().getFullYear(), m = new Date().getMonth(); const at = (d, h) => new Date(y, m, d, h, 0, 0).toISOString();
+    return [{ at: at(2, 9), kind: "import", title: "التقرير الشامل للمخالفات", meta: {} }, { at: at(4, 10), kind: "attachment", title: "السجل التجاري — PARKINZI Company", meta: {} }, { at: at(4, 15), kind: "item_done", title: "قضية تجارية رقم 1002", meta: {} }, { at: at(5, 8), kind: "member", title: "المهندس رعد بدر", meta: {} }]; }
   if (p.includes("/rest/v1/rpc/")) return [];
   if (p.includes("/rest/v1/profiles")) return u.searchParams.has("id") && !u.searchParams.get("id").includes("in.") ? PROFILE : [PROFILE];
   if (p.includes("/rest/v1/org_members")) return [MEMBER];
