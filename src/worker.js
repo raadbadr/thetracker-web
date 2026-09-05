@@ -468,7 +468,7 @@ async function smartReply(env, chatId, userId, text, lang, tgName, attachment, p
   logBotReply(env, chatId, userId, reply);
 }
 
-/* رد البوت يُسجل كالرسائل الواردة: ذاكرة للوكيل، ورؤية للإدارة (من كلم البوت وبماذا رد) */
+/* رد البوت يسجل كالرسائل الواردة: ذاكرة للوكيل، ورؤية للإدارة (من كلم البوت وبماذا رد) */
 function logBotReply(env, chatId, userId, text) {
   if (!env.WORKER_SECRET || !text) return;
   rpc(env, "log_telegram_message", { p_secret: env.WORKER_SECRET, p_chat_id: String(chatId), p_username: "bot", p_first_name: "TheTracker",
@@ -769,7 +769,7 @@ export default {
 
     // Only handle /api/* routes — everything else is static assets
     if (path === "/mcp" || path === "/mcp/") return await handleMcp(request, env, url, { authenticate: mcpAuthenticate, importRows: importRowsWithKey });
-    /* الشكل نفسه الذي رُبط به خادم باركينزي في هرمس (رابط فقط بلا ترويسة): المفتاح داخل المسار /mcp/tt_live_… */
+    /* الشكل نفسه الذي ربط به خادم باركينزي في هرمس (رابط فقط بلا ترويسة): المفتاح داخل المسار /mcp/tt_live_… */
     const mcpKeyInPath = path.match(/^\/mcp\/(tt_live_[a-f0-9]{48})\/?$/i);
     if (mcpKeyInPath) {
       const withKey = new Request(request, { headers: new Headers(request.headers) });
@@ -777,7 +777,7 @@ export default {
       return await handleMcp(withKey, env, url, { authenticate: mcpAuthenticate, importRows: importRowsWithKey });
     }
     if (!path.startsWith("/api/")) {
-      /* ملف مقسم أجزاء؟ يُجمَّع كما هو؛ وإلا يُخدم من الأصول الثابتة */
+      /* ملف مقسم أجزاء؟ يجمع كما هو؛ وإلا يخدم من الأصول الثابتة */
       if (/\.(js|css)$/.test(path)) {
         try { const bundled = await serveBundle(request, env, url); if (bundled) return bundled; }
         catch (e) { console.log("bundle error", path, String(e && e.message || e)); }
@@ -813,14 +813,14 @@ export default {
         return await handleDocumentAnalyze(request, env);
       }
       if (path === "/api/translate" && request.method === "POST") {
-        /* ترجمة العرض: جلسة مستخدم + حد معدل، والنتائج تُخزن مؤقتا في القاعدة */
+        /* ترجمة العرض: جلسة مستخدم + حد معدل، والنتائج تخزن مؤقتا في القاعدة */
         const trUser = await authedUser(request, env);
         if (!trUser) return json({ error: "unauthorized" }, 401);
         if (tgAiRateLimited("tr:" + trUser.id)) return json({ error: "rate_limited" }, 429);
         return await handleTranslate(request, env);
       }
       if (path === "/api/client-error" && request.method === "POST") {
-        /* تقارير إقلاع الواجهة: تُسجَّل في سجل الـ Worker فقط (wrangler tail)، لا تُخزَّن ولا تحمل بيانات شخصية */
+        /* تقارير إقلاع الواجهة: تسجل في سجل الـ Worker فقط (wrangler tail)، لا تخزن ولا تحمل بيانات شخصية */
         const raw = (await request.text()).slice(0, 2000);
         console.log("client-error", raw, "ip:", request.headers.get("cf-connecting-ip") || "");
         return new Response(null, { status: 204 });

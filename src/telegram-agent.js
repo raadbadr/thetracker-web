@@ -14,7 +14,7 @@ function systemPrompt(ctx) {
     `التاريخ والوقت الآن (الرياض): ${new Date().toLocaleString("en-GB", { timeZone: "Asia/Riyadh" })}.`,
     `TheTracker منصة لتتبع القضايا والمخالفات والمهام والمستندات والمواعيد للشركات ومكاتب المحاماة.`,
     `قواعدك: أجب بلغة رسالة المستخدم نفسها (عربية، إنجليزية، فرنسية أو أردو)، وإن لم تتضح فبـ${LANG_NAMES[lang] || LANG_NAMES.ar}. بلا تشكيل، والأرقام غربية (1234567890)، بإيجاز ووضوح ومباشرة كزميل عمل محترف.`,
-    `لا تحيّي ولا تذكر اسمه أو شركته في كل رد؛ المحادثة مستمرة، فادخل في الجواب مباشرة. لا تكرر جملة قلتها قبل قليل، ولا تختم بعبارات مجاملة.`,
+    `لا تحيي ولا تذكر اسمه أو شركته في كل رد؛ المحادثة مستمرة، فادخل في الجواب مباشرة. لا تكرر جملة قلتها قبل قليل، ولا تختم بعبارات مجاملة.`,
     `لكل سؤال عن بياناته (قضايا، مخالفات، مهام، مواعيد، متأخر، عميل، رقم) استعمل الأدوات ولا تخمن ولا تختلق. tracker_list للمواعيد القادمة والمتأخرة، tracker_search للبحث بأي كلمة أو رقم.`,
     `حين يطلب إضافة أو إنجاز أو إسناد بصيغة واضحة نفذ بالأداة مباشرة ثم أخبره بما تم برقم العنصر. إن كانت المهمة بلا قضية أو مخالفة تنتمي إليها فاعرض المرشحين الذين تعيدهم الأداة واطلب اختيار واحد. إن كان الطلب غامضا اسأل سؤالا واحدا قصيرا.`,
     `لا تقل أبدا إنك تنتظر تفعيل أدوات أو دمجا تقنيا: الأدوات متاحة لك الآن. لا تخرج عن مواضيع تراكر إلا بتحية قصيرة أو توضيح.`,
@@ -61,7 +61,7 @@ export async function agentReply(env, ctx) {
   const messages = [{ role: "system", content: systemPrompt(ctx) }];
   for (const h of history.slice(-10)) {
     if (!h || !h.body) continue;
-    if (h.body === ctx.text && h.role === "user") continue; /* الرسالة الحالية سُجلت قبل الرد؛ لا نكررها */
+    if (h.body === ctx.text && h.role === "user") continue; /* الرسالة الحالية سجلت قبل الرد؛ لا نكررها */
     messages.push({ role: h.role === "assistant" ? "assistant" : "user", content: String(h.body).slice(0, 1500) });
   }
   messages.push({ role: "user", content: String(ctx.text || "").slice(0, 3000) });
@@ -74,7 +74,7 @@ export async function agentReply(env, ctx) {
     const calls = extractCalls(res);
     if (!calls.length) {
       const text = extractText(res).trim();
-      return text ? { text: text.replace(/[ً-ْٰ]/g, ""), tools: toolsUsed } : null;
+      return text ? { text: text.replace(/[-]/g, ""), tools: toolsUsed } : null;
     }
     const assistantMsg = { role: "assistant", content: extractText(res) || "", tool_calls: calls.map((c, i) => ({ id: c.id || ("call_" + round + "_" + i), type: "function", function: { name: c.name, arguments: JSON.stringify(c.args) } })) };
     messages.push(assistantMsg);
