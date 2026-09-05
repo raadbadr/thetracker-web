@@ -241,7 +241,8 @@
     if (native.__dur) return;
     var compact = native.getAttribute("data-duration") === "compact" || !native.closest(".form-field");
     if (compact) {   /* صف ضيق (إجراءات المعالجة): العدّاد وحده في سطر منتقي التاريخ */
-      var subHost = native.__dp ? native.__dp.sub : native.parentNode;
+      /* بعد سطر الهجري لا داخله: منتقي التاريخ يعيد كتابة نص ذلك السطر فيمحو ما بداخله */
+      var subHost = native.__dp ? native.__dp.wrap : native.parentNode;
       var cd = document.createElement("span"); cd.className = "dur-countdown dur-inline"; cd.setAttribute("aria-live", "polite");
       subHost.appendChild(cd);
       var crec = { native: native, days: null, out: cd, label: null };

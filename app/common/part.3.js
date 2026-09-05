@@ -707,7 +707,7 @@
     "body .dur-countdown{display:block;min-height:1.2em;font-size:.8rem;color:var(--text-secondary);font-variant-numeric:tabular-nums}",
     "body .dur-countdown.is-late,body .due-left.is-late{color:var(--error);font-weight:700}",
     "body .due-left:empty{display:none}",
-    "body .dp-sub .dur-inline{margin-inline-start:.5rem}",
+    "body .dp-wrap .dur-inline{display:block;margin-top:.15rem}",
     "body .waitlist-form>.close-x,body .form-actions>.close-x{width:40px;max-width:40px;flex:0 0 40px}",
     /* داخل نوافذ app-gate: قاعدة الأزرار هناك تمدد كل زر بعرض النافذة، فتُخصَّص هنا: دائرة في الزاوية والعنوان في المنتصف */
     "body .app-gate-card button.close-x{width:40px;height:40px;min-height:40px;padding:0;border-radius:50%;grid-column:auto;",

@@ -74,8 +74,9 @@ for (const name of pages) {
       r.continue();
     });
     const errors = [];
-    page.on("pageerror", (e) => errors.push(String(e.message).slice(0, 160)));
+    page.on("pageerror", (e) => errors.push((String(e.message) + " @ " + String(e.stack || "").split("\n").slice(1, 3).join(" > ").replace(/http:\/\/localhost:\d+/g, "")).slice(0, 260)));
     page.on("console", (m) => { if (m.type() === "error") errors.push("console: " + m.text().slice(0, 160)); });
+    page.on("response", (res) => { if (res.status() >= 400) errors.push("http " + res.status() + ": " + res.url().replace(base, "").slice(0, 120)); });
     await page.evaluateOnNewDocument((key, sess) => { localStorage.setItem(key, JSON.stringify(sess)); localStorage.setItem("tracker_lang", "ar"); localStorage.setItem("tracker_org", "22222222-2222-4222-8222-222222222222"); }, "sb-" + REF + "-auth-token", { access_token: "stub", refresh_token: "r", token_type: "bearer", expires_in: 36000, expires_at: Math.floor(Date.now() / 1000) + 36000, user: USER });
     try { await page.goto(base + "/app/" + name + ".html", { waitUntil: "networkidle0", timeout: 45000 }); } catch (e) { errors.push("goto: " + e.message.slice(0, 120)); }
     await new Promise((r) => setTimeout(r, 1200));

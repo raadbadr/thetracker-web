@@ -763,3 +763,7 @@
     .row-actions .icon-btn:hover { border-color: var(--primary); }
     .row-actions .icon-btn.is-danger { color: var(--error, #e5484d); }
     .row-actions .icon-btn.is-danger:hover { border-color: var(--error, #e5484d); }
+
+    /* زر إضافة إجراء معالجة: القاعدة نفسها في مكتبة الإجراءات (كان بلا تنسيق هنا فظهر مقصوصا) */
+    .add-step { width: 100%; padding: 0.8rem; border: 1.5px dashed var(--glass-border); border-radius: 12px; background: none; color: var(--primary); font: inherit; font-weight: 700; cursor: pointer; }
+    .add-step:hover { border-color: var(--primary); }
