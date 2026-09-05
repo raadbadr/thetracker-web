@@ -539,7 +539,9 @@
         rows.forEach(function (r) {
           var next = r.kind === "session"
             ? '<button type="button" class="chat-option-btn" data-next-session="' + esc(r.id) + '">' + esc(T("nextSession")) + "</button>"
-            : "";
+            : (r.kind === "ruling"
+              ? '<button type="button" class="chat-option-btn" data-appeal="' + esc(r.id) + '">' + esc(T("appealDeadline")) + "</button>"
+              : "");
           html += "<tr><td>" + esc(r.title || "-") + "</td>" +
                   '<td class="cell-num">' + (r.due_at ? esc(app.fmtDate(r.due_at)) : "-") + "</td>" +
                   '<td class="cell-num">' + money(r.amount) + "</td>" +
@@ -573,6 +575,33 @@
         if ($("addTracker") && head.tracker_id) $("addTracker").value = head.tracker_id;
         try { panel.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) { /* تجاهل */ }
         /* حقل التاريخ صار منتقيا: المؤشر يذهب إلى الحقل الظاهر لا إلى حقل المتصفح المخفي */
+        var due = $("addDue");
+        var wrap = due && due.closest ? due.closest(".dp-wrap, .date-field") : null;
+        var shown = wrap ? wrap.querySelector('input[type="text"]') : null;
+        (shown || due).focus();
+      }
+
+      /* مهلة الاستئناف: موعد يُكتب على القضية نفسها وينبّه قبله.
+         مدة المهلة لا تُفترض هنا — المحامي يكتب التاريخ لأنها تختلف
+         باختلاف المحكمة ونوع الحكم. */
+      function startAppealDeadline(rulingId) {
+        var head = state.caseHead;
+        var ruling = (state.caseKids || []).filter(function (k) { return k.id === rulingId; })[0];
+        if (!head) return;
+        var panel = $("addItemPanel");
+        panel.hidden = false;
+        clearMsg("addMsg");
+        closeEdit();
+        state.pendingParent = head.id;
+        $("addTitle").value = T("appealTitle").replace("{case}", (ruling && ruling.title) || head.title || "");
+        $("addCategory").value = T("appealCategory");
+        $("addClient").value = head.client_name || "";
+        $("addClientEn").value = head.client_name_en || "";
+        $("addCaseNumber").value = head.case_number || "";
+        $("addAmount").value = "";
+        $("addDue").value = "";
+        if ($("addTracker") && head.tracker_id) $("addTracker").value = head.tracker_id;
+        try { panel.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) { /* تجاهل */ }
         var due = $("addDue");
         var wrap = due && due.closest ? due.closest(".dp-wrap, .date-field") : null;
         var shown = wrap ? wrap.querySelector('input[type="text"]') : null;
@@ -654,6 +683,8 @@
         if (fileBtn) { ev.preventDefault(); openCaseFile(fileBtn.dataset.caseFile); return; }
         var nextBtn = ev.target.closest("[data-next-session]");
         if (nextBtn) { ev.preventDefault(); startNextSession(nextBtn.dataset.nextSession); return; }
+        var appealBtn = ev.target.closest("[data-appeal]");
+        if (appealBtn) { ev.preventDefault(); startAppealDeadline(appealBtn.dataset.appeal); return; }
         var openBtn = ev.target.closest("[data-bundle-open]");
         if (openBtn) {
           var id = openBtn.dataset.bundleOpen;
