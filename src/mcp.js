@@ -181,7 +181,8 @@ export async function callTool(name, args, ctx) {
       const r = await ctx.rpc("telegram_team", { p_secret: secret, p_user_id: user });
       if (!r || r.status === "no_org") return fail("No team found.");
       const lines = (r.members || []).map((m) => {
-        const head = [m.full_name || m.email, m.role, m.department].filter(Boolean).join(" — ");
+        const ROLE = { owner: "مالك", admin: "مشرف", member: "عضو" }, DEPT = { management: "الإدارة", legal: "القانوني", hr: "الموارد البشرية", finance: "المالي", operations: "التشغيل", other: "أخرى" };
+        const head = [m.full_name || m.email, ROLE[m.role] || m.role, DEPT[m.department] || m.department, m.job_title].filter(Boolean).join(" — ");
         const load = "مفتوح " + (m.open || 0) + (m.overdue ? " (متأخر " + m.overdue + ")" : "") + (m.next_due ? " — أقرب موعد " + String(m.next_due).slice(0, 10) : "");
         const items = (m.items || []).slice(0, 3).map((it) => "   • " + [it.title, it.case_number ? "قضية " + it.case_number : null, it.violation_number ? "مخالفة " + it.violation_number : null, it.due_at ? String(it.due_at).slice(0, 10) : null].filter(Boolean).join(" | ")).join("\n");
         return head + "\n   " + load + (items ? "\n" + items : "");
