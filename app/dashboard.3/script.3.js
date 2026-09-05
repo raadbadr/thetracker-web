@@ -17,7 +17,8 @@
           client_name: $("editClient").value.trim() || null,
           client_name_en: $("editClientEn").value.trim() || null,
           case_number: $("editCaseNumber").value.trim() || null,
-          status: $("editStatus").value || "open"
+          status: $("editStatus").value || "open",
+          remind_before: $("editRemind").value || null
         };
         var id = state.editing.id;
         guard(function () {

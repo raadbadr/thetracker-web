@@ -283,6 +283,31 @@
         return "";
       }
 
+      /* التذكير قبل انتهاء الورقة: نفس قيم items.remind_before في اللوحة */
+      var REMIND_CHOICES = ["", "1 day", "3 days", "7 days", "14 days", "30 days"];
+      var REMIND_KEYS = { "": "remindDefault", "1 day": "remindDay", "3 days": "remind3Days",
+                          "7 days": "remindWeek", "14 days": "remind2Weeks", "30 days": "remindMonth" };
+
+      function remindValue(raw) {
+        var v = String(raw == null ? "" : raw).trim();
+        var m = v.match(/(\d+)\s*(day|days|mon|mons|month|months|week|weeks)/i);
+        if (!m) return "";
+        var n = Number(m[1]), unit = m[2].toLowerCase();
+        if (unit.indexOf("week") === 0) n *= 7;
+        if (unit.indexOf("mon") === 0) n *= 30;
+        var text = n === 1 ? "1 day" : n + " days";
+        return REMIND_CHOICES.indexOf(text) === -1 ? "" : text;
+      }
+
+      function fillRemind(current) {
+        var sel = $("fRemind");
+        if (!sel) return;
+        sel.innerHTML = REMIND_CHOICES.map(function (v) {
+          return '<option value="' + v + '">' + esc(t(REMIND_KEYS[v])) + "</option>";
+        }).join("");
+        sel.value = remindValue(current);
+      }
+
       function fillForm(f) {
         var wanted = state.wantedKind; state.wantedKind = null;
         var kind = (wanted && KINDS.indexOf(wanted) !== -1) ? wanted : (KINDS.indexOf(f.kind) !== -1 ? f.kind : "other");
@@ -299,6 +324,7 @@
         $("fCourt").value = f.court || "";
         $("fSummary").textContent = f.summary || "";
         if (!$("fExpiry").value) $("fExpiry").value = dueFromDetails(f);
+        fillRemind(f && f.remind_before);
         state.details = (f && f.details) || null;
         state.detailLabels = (f && f.detail_labels) || null;
         renderDetails(f);
@@ -336,6 +362,7 @@
             tracker_id: tr.id,
             title: String($("fTitle").value || "").trim() || kindLabel(kind),
             due_at: expiry,
+            remind_before: $("fRemind").value || null,
             status: "open",
             category: kindLabel(kind),
             amount: amount,

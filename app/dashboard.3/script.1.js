@@ -658,7 +658,7 @@
           mainCol.appendChild(services);
           mainCol.appendChild(main);
         } else {
-          /* القضايا والمخالفات والمصاريف: التقويم نفسه الكبير أول الصفحة بعرضها (أمر المهندس رعد)، ثم القائمة */
+          /* القضايا والمخالفات: التقويم نفسه الكبير أول الصفحة بعرضها (أمر المهندس رعد)، ثم القائمة */
           calCard.classList.add("cal-card--top");
           mainCol.appendChild(main);
         }
@@ -679,7 +679,9 @@
         dash.insertBefore(timeline, grid);
         /* الرئيسية: المربعات الأربعة أولا ثم التقويم تحتها مباشرة (أمر المهندس رعد)؛ بقية الصفحات: التقويم أولا */
         var statsTop = dash.querySelector(".stats-section.stats-top");
-        if (statsTop && statsTop.parentNode === dash) dash.insertBefore(calCard, statsTop.nextSibling);
+        /* مصاريف التشغيل بلا تقويم: مواعيدها ليست جلسات ولا مخالفات (أمر المهندس رعد) */
+        if (state.viewType === "expenses") calCard.remove();
+        else if (statsTop && statsTop.parentNode === dash) dash.insertBefore(calCard, statsTop.nextSibling);
         else dash.insertBefore(calCard, dash.firstChild);
 
         var tabs = dash.querySelector(".tabs-row");

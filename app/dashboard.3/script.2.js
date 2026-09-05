@@ -793,6 +793,34 @@
         }).catch(function (err) { fail(err, "newTrackerMsg"); });
       });
 
+      /* ---------- التذكير قبل الموعد ---------- */
+      /* القيم كما تكتبها القاعدة في items.remind_before، وnull يعني القاعدة العامة للسجل */
+      var REMIND_CHOICES = ["", "1 day", "3 days", "7 days", "14 days", "30 days"];
+      var REMIND_KEYS = { "": "remindDefault", "1 day": "remindDay", "3 days": "remind3Days",
+                          "7 days": "remindWeek", "14 days": "remind2Weeks", "30 days": "remindMonth" };
+
+      /* القاعدة تعيد المدة نصا مثل "7 days" أو "1 day" أو "7 days 00:00:00" */
+      function remindValue(raw) {
+        var v = String(raw == null ? "" : raw).trim();
+        if (!v) return "";
+        var m = v.match(/(\d+)\s*(day|days|mon|mons|month|months|week|weeks)/i);
+        if (!m) return "";
+        var n = Number(m[1]);
+        var unit = m[2].toLowerCase();
+        if (unit.indexOf("week") === 0) n *= 7;
+        if (unit.indexOf("mon") === 0) n *= 30;
+        var text = n === 1 ? "1 day" : n + " days";
+        return REMIND_CHOICES.indexOf(text) === -1 ? "" : text;
+      }
+
+      function fillRemindOptions(sel, current) {
+        if (!sel) return;
+        sel.innerHTML = REMIND_CHOICES.map(function (v) {
+          return '<option value="' + v + '">' + esc(T(REMIND_KEYS[v])) + "</option>";
+        }).join("");
+        sel.value = remindValue(current);
+      }
+
       /* ---------- inline edit ---------- */
 
       function openEdit(item) {
@@ -808,6 +836,7 @@
         $("editClient").value = item.client_name || "";
         $("editClientEn").value = item.client_name_en || "";
         $("editCaseNumber").value = item.case_number || "";
+        fillRemindOptions($("editRemind"), item.remind_before);
         clearMsg("editMsg");
         show("editPanel");
         loadAttachments();
