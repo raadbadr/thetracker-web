@@ -1,4 +1,4 @@
--- رقم السجل التجاري للشركات والمؤسسات يبدأ بـ 700 دائما (قاعدة المهندس رعد 2026-09-05): يُشدد التحقق في إنشاء الجهة
+-- رقم السجل التجاري للشركات والمؤسسات: الرقم الوطني الموحد، 10 أرقام تبدأ بـ 7 (سلسلة 700…) — قاعدة المهندس رعد 2026-09-05
 create or replace function public.create_org_registered(p_name text, p_entity_type text, p_reg_number text, p_reg_expiry date, p_name_en text default null)
 returns jsonb language plpgsql security definer set search_path to 'public' as $$
 declare
@@ -13,8 +13,8 @@ begin
   v_type := case when p_entity_type in ('company','establishment','freelance','individual','nonprofit','government') then p_entity_type else 'company' end;
   v_num := regexp_replace(coalesce(p_reg_number, ''), '\s', '', 'g');
   if v_type in ('company','establishment') then
-    -- السجل التجاري: 10 أرقام تبدأ بـ 700
-    if v_num !~ '^700[0-9]{7}$' then raise exception 'REG_NUMBER_INVALID' using errcode = 'P0001'; end if;
+    -- السجل التجاري: 10 أرقام تبدأ بـ 7
+    if v_num !~ '^7[0-9]{9}$' then raise exception 'REG_NUMBER_INVALID' using errcode = 'P0001'; end if;
     v_kind := 'commercial_register'; v_label := 'السجل التجاري';
   elsif v_type = 'individual' then
     if v_num !~ '^[12][0-9]{9}$' then raise exception 'REG_NUMBER_INVALID' using errcode = 'P0001'; end if;

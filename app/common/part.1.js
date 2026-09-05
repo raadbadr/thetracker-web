@@ -650,8 +650,8 @@
   /* رقم المستند الرسمي بحسب نوع الجهة (نفس قواعد القاعدة) */
   function registrationRule(entityType) {
     var type = entityTypeValue(entityType);
-    /* السجل التجاري للشركات والمؤسسات: 10 أرقام تبدأ بـ 700 (قاعدة المهندس رعد؛ لا مجرد عدد الأرقام) */
-    if (type === "company" || type === "establishment") return { kind: "commercial_register", pattern: /^700[0-9]{7}$/ };
+    /* السجل التجاري للشركات والمؤسسات: الرقم الوطني الموحد، 10 أرقام تبدأ بـ 7 (سلسلة 700…؛ سجل المهندس رعد نفسه 705…) */
+    if (type === "company" || type === "establishment") return { kind: "commercial_register", pattern: /^7[0-9]{9}$/ };
     if (type === "individual") return { kind: "id_document", pattern: /^[12][0-9]{9}$/ };
     return { kind: "license", pattern: /^[A-Za-z0-9\-\/]{4,30}$/ };
   }
