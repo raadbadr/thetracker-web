@@ -371,6 +371,8 @@ async function runMenu(env, chatId, userId, action) {
     try { rows = await telegramItems(env, userId, action, 8); } catch {}
     const text = formatItems(lang, rows, action === "overdue" ? b.overdueTitle : b.upcomingTitle, action === "overdue" ? b.noOverdue : b.noUpcoming, userTimeZone);
     try { await sendTelegram(env, chatId, text, menuKeyboard(lang)); } catch {}
+    /* رد الزر يُسجل مثل بقية الردود كي يرى مدير المنصة المحادثة كاملة */
+    await logBotReply(env, chatId, userId, text);
   } else if (action === "dashboard") {
     try { await sendTelegram(env, chatId, b.openDash, urlButton(b.openDash, "https://appmails.net/app/dashboard.html")); } catch {}
   } else if (action === "company") {
