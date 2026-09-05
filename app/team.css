@@ -212,6 +212,8 @@
     /* لوحة الأدوار: حروف تمسك وتسحب، باللمس وبالفأرة */
     .rasi-palette { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin: .25rem 0 1rem; }
     .rasi-palette .rasi-chip { width: auto; min-height: 44px; padding: .4rem 1rem; border-radius: 999px; font-size: .85rem; }
+    /* السطر الشارح بحجمه المعتمد في بقية الصفحات (0.85rem) لا بحجم الفقرة العادية */
+    .settings-note { font-size: 0.85rem; }
     .rasi-dot { width: .7rem; height: .7rem; border-radius: 50%; display: inline-block; vertical-align: -1px; }
     .rasi-chip { width: 44px; height: 44px; border-radius: 12px; border: 1.5px solid var(--glass-border);
       background: var(--glass); color: var(--text-primary); font-family: inherit; font-weight: 700; font-size: 1rem;

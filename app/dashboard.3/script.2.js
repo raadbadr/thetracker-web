@@ -634,6 +634,7 @@
       }
 
       function renderList() {
+        renderWeek();
         renderChart();
         renderCasesChart();
         renderExpensesChart();
@@ -794,6 +795,62 @@
           });
         }).catch(function (err) { fail(err, "newTrackerMsg"); });
       });
+
+      /* ---------- ملخص الأسبوع ----------
+         ثلاثة أرقام من العناصر نفسها: ما أُنجز، وما أُضيف، وما تأخر،
+         وتحت كل رقم مقارنته بالأسبوع الماضي. بنمط بطاقات المؤشرات نفسه. */
+      function weekStart(offsetWeeks) {
+        var d = new Date();
+        d.setHours(0, 0, 0, 0);
+        d.setDate(d.getDate() - d.getDay() + (offsetWeeks || 0) * 7);   /* الأسبوع يبدأ الأحد */
+        return d;
+      }
+
+      function inRange(iso, from, to) {
+        if (!iso) return false;
+        var t = new Date(iso).getTime();
+        return isFinite(t) && t >= from.getTime() && t < to.getTime();
+      }
+
+      function weekCounts(items, from, to) {
+        var out = { done: 0, added: 0, late: 0 };
+        (items || []).forEach(function (it) {
+          if (it.status === "done" && inRange(it.updated_at, from, to)) out.done += 1;
+          if (inRange(it.created_at, from, to)) out.added += 1;
+          if (it.status !== "done" && it.status !== "cancelled" && inRange(it.due_at, from, to) &&
+              new Date(it.due_at).getTime() < Date.now()) out.late += 1;
+        });
+        return out;
+      }
+
+      function trendText(now, before) {
+        var diff = now - before;
+        if (!diff) return T("weekSame");
+        return (diff > 0 ? "+" : "−") + Math.abs(diff) + " " + T("weekVsLast");
+      }
+
+      function renderWeek() {
+        var card = $("weekCard");
+        if (!card) return;
+        var items = state.items || [];
+        var thisFrom = weekStart(0), nextFrom = new Date(thisFrom.getTime() + 7 * 86400000);
+        var lastFrom = weekStart(-1);
+        var now = weekCounts(items, thisFrom, nextFrom);
+        var before = weekCounts(items, lastFrom, thisFrom);
+        var boxes = [
+          { key: "weekDone", n: now.done, was: before.done, cls: "status-done" },
+          { key: "weekAdded", n: now.added, was: before.added, cls: "" },
+          { key: "weekLate", n: now.late, was: before.late, cls: now.late ? "status-overdue" : "" }
+        ];
+        var html = "<h3>" + esc(T("weekTitle")) + "</h3>" +
+          '<div class="totals-row">' + boxes.map(function (b) {
+            return '<div class="total-card"><span class="total-label">' + esc(T(b.key)) + "</span>" +
+                   '<span class="total-value ' + b.cls + '">' + b.n + "</span>" +
+                   '<span class="total-label">' + esc(trendText(b.n, b.was)) + "</span></div>";
+          }).join("") + "</div>";
+        paintEl(card).html = html;
+        card.hidden = false;
+      }
 
       /* ---------- التذكير قبل الموعد ---------- */
       /* القيم كما تكتبها القاعدة في items.remind_before، وnull يعني القاعدة العامة للسجل */

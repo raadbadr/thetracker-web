@@ -676,6 +676,14 @@
           chart.hidden = true;   /* لا إطار فارغ قبل الرسم */
           dash.insertBefore(chart, dash.firstChild);
         }
+        /* ملخص الأسبوع تحت المؤشرات مباشرة، في الرئيسية وحدها */
+        if (!state.viewType) {
+          var week = document.createElement("div");
+          week.className = "content";
+          week.id = "weekCard";
+          week.hidden = true;   /* لا إطار فارغ قبل حسابه */
+          dash.insertBefore(week, dash.firstChild);
+        }
         if (state.viewType === "violations") addChart("violationsChart");
         else if (state.viewType === "cases") addChart("casesChart");
         else if (state.viewType === "expenses") addChart("expensesChart");
