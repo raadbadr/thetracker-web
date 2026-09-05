@@ -1,7 +1,7 @@
     (function () {
       "use strict";
       var app = null;
-      var state = { items: [], attachments: {}, file: null, fields: null, tracker: null, kind: "", search: "", papers: null, paperState: "", details: null, detailLabels: null, profilePatch: null, pendingKind: null, wantedKind: null };
+      var state = { items: [], attachments: {}, file: null, fields: null, tracker: null, kind: "", search: "", papers: null, paperState: "", focused: "", details: null, detailLabels: null, profilePatch: null, pendingKind: null, wantedKind: null };
       var PDF_SRC = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
       var PDF_WORKER = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
       var KINDS = ["commercial_register","articles_of_association","bylaws","chamber_certificate","gosi_certificate","zakat_certificate","saudization_certificate","vat_certificate","license","lease_contract","contract","case_filing","court_ruling","hearing_notice","violation","invoice","power_of_attorney","id_document","passport","driving_license","vehicle_registration","insurance_policy","employment_contract","other"];
@@ -445,7 +445,22 @@
           }
         });
         if (app.translateNodes) app.translateNodes($("listCard"));
+        focusFromHash();
       }
+      /* قادم من التقويم: يفتح المستند نفسه ويبرزه ويعرض بياناته */
+      function focusFromHash() {
+        var id = String(window.location.hash || "").replace(/^#/, "");
+        if (!id || state.focused === id) return;
+        var row = $("docsBody").querySelector('[data-details="' + id + '"], [data-attach="' + id + '"]');
+        if (!row) return;
+        state.focused = id;
+        var tr = row.closest("tr");
+        tr.classList.add("is-focused");
+        var details = $("docsBody").querySelector('[data-details-for="' + id + '"]');
+        if (details) details.hidden = false;
+        try { tr.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) { /* ignore */ }
+      }
+
       /* ---------- الأوراق الرسمية: ما تحتاجه كل منشأة، وما ينقصها ---------- */
       var PAPER_STATE = { missing: { key: "pMissing", cls: "status-overdue" }, expired: { key: "pExpired", cls: "status-overdue" },
         expiring: { key: "pExpiring", cls: "status-open" }, valid: { key: "pValid", cls: "status-done" },

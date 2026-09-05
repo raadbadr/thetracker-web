@@ -484,6 +484,7 @@
       overflow-wrap: anywhere; white-space: normal; min-width: 0; }
     .detail-val .was { color: var(--text-tertiary); font-weight: 600; }
     .profile-actions { margin-top: .8rem; display: flex; flex-wrap: wrap; gap: .5rem; }
+    .items-table tr.is-focused > td { background: var(--glass-strong); box-shadow: inset 0 0 0 2px var(--primary); }
     .items-table tr.detail-line > td { padding-top: 0; }
     .items-table tr.detail-line .detail-rows { margin: 0 0 .6rem; }
     @media (max-width: 600px) { .detail-rows { grid-template-columns: minmax(0, 1fr); } }

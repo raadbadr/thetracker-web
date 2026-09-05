@@ -449,6 +449,8 @@
        تأخذ البطاقة مقاسها الطبيعي (655 بكسل) داخل عمود عرضه 343 فتفيض الشاشة. */
     .dash-main { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--gap); align-content: start; }
     .dash-main > *, .dash-side > * { min-width: 0; max-width: 100%; }
+    /* على الجوال: البطاقات الرئيسية أولا والتقويم تحتها، وعلى الحاسب يتصدر بعرض اللوحة */
+    @media (max-width: 900px) { .dash-main > .cal-card { order: 2; } .dash-main > * { order: 1; } }
     .dash-side { display: grid; gap: var(--gap); align-content: start; }
     /* التقويم داخل العمود الجانبي: خلايا مضغوطة وأزرار في سطر واحد */
     .dash-side .cal-nav { gap: 0.4rem; }
@@ -729,6 +731,9 @@
     .cal-chip.status-overdue { border-color: var(--error); color: var(--error); }
     .cal-chip.status-overdue:hover { background: var(--error); color: var(--white); }
     .cal-chip.status-done { border-color: var(--success); color: var(--success); }
+    /* الورقة الرسمية حدث بلونه: برتقالي لا يشبه لون المهمة ولا القضية */
+    .cal-chip.is-paper { border-color: var(--warning); color: var(--warning); }
+    .cal-chip.is-paper:hover { background: var(--warning); color: #1a1a26; }
     .cal-chip.status-done:hover { background: var(--success); color: var(--white); }
     .cal-chip.status-cancelled { border-color: var(--text-tertiary); color: var(--text-tertiary); text-decoration: line-through; }
     .cal-chip.status-cancelled:hover { background: var(--text-tertiary); color: var(--white); }

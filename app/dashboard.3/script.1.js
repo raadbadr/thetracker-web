@@ -630,7 +630,7 @@
 
         /* التقويم يخرج من التبويبات ويظهر دائما في العمود الجانبي */
         var calCard = document.createElement("div");
-        calCard.className = "content";
+        calCard.className = "content cal-card";
         calCard.innerHTML = "<h2>" + esc(T("calendarCardTitle")) + "</h2>";
 
         dash.insertBefore(grid, dash.firstChild);
@@ -679,6 +679,10 @@
 
         var tabs = dash.querySelector(".tabs-row");
         if (tabs) tabs.hidden = true;
+        /* التقويم دائم الظهور بعد ترتيب اللوحة، مهما قال التبويب المحفوظ */
+        calendar.hidden = false;
+        var listPanel = $("listPanel");
+        if (listPanel) listPanel.hidden = false;
 
         services.addEventListener("click", function (ev) {
           var btn = ev.target.closest("[data-svc]");

@@ -163,12 +163,14 @@
 
           var list = byDay[key] || [];
           list.slice(0, MAX_CHIPS).forEach(function (it) {
+            var paper = paperKindOf(it);
             var chip = document.createElement("button");
             chip.type = "button";
-            chip.className = "cal-chip status-" + statusKeyOf(it);
-            chip.textContent = it.title || "";
-            chip.title = it.title || "";
+            chip.className = "cal-chip " + (paper ? "is-paper" : "status-" + statusKeyOf(it));
+            chip.textContent = paper ? paperEventLabel(it, paper) : (it.title || "");
+            chip.title = chip.textContent;
             chip.dataset.id = it.id;
+            if (paper) chip.dataset.paper = "1";
             cell.appendChild(chip);
           });
           if (list.length > MAX_CHIPS) {
@@ -182,9 +184,43 @@
         }
       }
 
+      /* الورقة الرسمية حدث بلونه: «انتهاء السجل التجاري»، والنقر يفتحها في المستندات */
+      var PAPER_LABEL = {
+        commercial_register: { ar: "السجل التجاري", en: "Commercial register", fr: "Registre de commerce", ur: "تجارتی رجسٹر" },
+        vat_certificate: { ar: "الشهادة الضريبية", en: "VAT certificate", fr: "Certificat de TVA", ur: "ویٹ سرٹیفکیٹ" },
+        gosi_certificate: { ar: "شهادة التأمينات", en: "GOSI certificate", fr: "Certificat GOSI", ur: "جی او ایس آئی سرٹیفکیٹ" },
+        zakat_certificate: { ar: "شهادة الزكاة", en: "Zakat certificate", fr: "Certificat de zakat", ur: "زکوٰۃ سرٹیفکیٹ" },
+        chamber_certificate: { ar: "شهادة الغرفة", en: "Chamber certificate", fr: "Certificat de chambre", ur: "چیمبر سرٹیفکیٹ" },
+        saudization_certificate: { ar: "شهادة السعودة", en: "Saudization certificate", fr: "Certificat de saoudisation", ur: "سعودائزیشن سرٹیفکیٹ" },
+        license: { ar: "الرخصة", en: "Licence", fr: "Licence", ur: "لائسنس" },
+        lease_contract: { ar: "عقد الإيجار", en: "Lease contract", fr: "Bail", ur: "کرایہ نامہ" },
+        insurance_policy: { ar: "وثيقة التأمين", en: "Insurance policy", fr: "Police d'assurance", ur: "انشورنس پالیسی" },
+        id_document: { ar: "الهوية", en: "ID", fr: "Pièce d'identité", ur: "شناخت" },
+        passport: { ar: "الجواز", en: "Passport", fr: "Passeport", ur: "پاسپورٹ" },
+        driving_license: { ar: "رخصة القيادة", en: "Driving licence", fr: "Permis de conduire", ur: "ڈرائیونگ لائسنس" },
+        vehicle_registration: { ar: "الاستمارة", en: "Vehicle registration", fr: "Carte grise", ur: "گاڑی رجسٹریشن" },
+        power_of_attorney: { ar: "الوكالة", en: "Power of attorney", fr: "Procuration", ur: "وکالت نامہ" },
+        employment_contract: { ar: "عقد العمل", en: "Employment contract", fr: "Contrat de travail", ur: "ملازمت کا معاہدہ" },
+        articles_of_association: { ar: "عقد التأسيس", en: "Articles of association", fr: "Statuts", ur: "بانی معاہدہ" },
+        bylaws: { ar: "النظام الأساسي", en: "Bylaws", fr: "Statuts", ur: "بنیادی قواعد" }
+      };
+      var EXPIRY_WORD = { ar: "انتهاء", en: "Expires", fr: "Expiration", ur: "اختتام" };
+
+      function paperKindOf(item) {
+        var kind = ((item && item.data) || {}).document_kind;
+        return kind && PAPER_LABEL[kind] ? kind : "";
+      }
+
+      function paperEventLabel(item, kind) {
+        var l = (app && app.lang && app.lang()) || document.documentElement.lang || "ar";
+        var name = PAPER_LABEL[kind][l] || PAPER_LABEL[kind].ar;
+        return (EXPIRY_WORD[l] || EXPIRY_WORD.ar) + " " + name;
+      }
+
       $("calGrid").addEventListener("click", function (ev) {
         var c = ev.target.closest(".cal-chip");
         if (!c) return;
+        if (c.dataset.paper) { window.location.href = "/app/documents.html#" + encodeURIComponent(c.dataset.id); return; }
         var it = findItem(c.dataset.id);
         if (it) openEdit(it);
       });
