@@ -449,3 +449,61 @@
       color: var(--btn-ink);
     }
   
+
+    /* الجوال: منسوخة حرفيا من قواعد بقية الصفحات (documents/part.1.css) */
+    @media (max-width: 900px) {
+      .container { max-width: 100%; padding: 1rem 0.75rem; }
+      .content { padding: 1.25rem 1rem; }
+      /* كل شبكة متعددة الأعمدة تصير عمودا واحدا */
+      .dash-grid, .dash-grid--single, .ind-grid, .svc-grid, .dash-grid--single .svc-grid,
+      .form-grid, .features-grid, .totals-row, .ach-row, .filters-row, .settings-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+      .stats-section .platform-stats-list,
+      .stats-section.stats-top .platform-stats-list,
+      .dash-side .platform-stats-list { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+      /* كل جدول يتمرر أفقيا داخل حاويته ولا يمد الصفحة */
+      .table-wrap, .rasi-wrap, .preview-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+      .content table { max-width: none; }
+      /* الحقول والأزرار بمقاس الإصبع، وخط 16 بكسل يمنع تكبير iOS التلقائي */
+      .waitlist-input, select.waitlist-input, textarea.waitlist-input { width: 100%; min-width: 0; font-size: 16px; }
+      .waitlist-btn, .chat-option-btn, .waitlist-input, select.waitlist-input { min-height: 44px; }
+      .toolbar, .filters-row, .waitlist-form, .form-actions, .row-actions, .chat-options { flex-wrap: wrap; }
+      img, canvas, svg, video { max-width: 100%; }
+      .drop-zone, .chat-shell, .import-flow { width: 100%; max-width: 100%; }
+      /* عنصر الشبكة يتقلص مع حاويته: بلا هذا يفرض النص أعرض من الشاشة */
+      .attach-actions, .attach-actions > *, .inline-actions, .invite-row { min-width: 0; }
+      .attach-actions { grid-template-columns: minmax(0, 1fr) !important; }
+      .attach-actions > * { width: 100%; }
+      .content input, .content select, .content textarea { max-width: 100%; }
+    }
+    @media (max-width: 600px) {
+      .content { padding: 1rem 0.85rem; }
+      h1 { font-size: 1.6rem; }
+      h2 { font-size: 1.25rem; }
+      .stats-section .platform-stats-list,
+      .stats-section.stats-top .platform-stats-list,
+      .dash-side .platform-stats-list { grid-template-columns: minmax(0, 1fr) !important; }
+      /* الزر بعرض الشاشة: الإصبع لا يخطئه */
+      .form-actions .waitlist-btn, .form-actions .chat-option-btn,
+      .toolbar .waitlist-btn, .toolbar .chat-option-btn { width: 100%; }
+      .row-actions { gap: .4rem; }
+      .row-actions .chat-option-btn { flex: 1 1 auto; }
+    }
+
+    /* رسائل تلغرام: كل مستخدم في صندوق واحد يُفتح فتُقرأ محادثته كاملة */
+    .tg-conv { display: grid; gap: .4rem; text-align: start; cursor: pointer; font: inherit;
+      border: 1px solid var(--glass-border); background: var(--glass); border-radius: 18px; padding: 1rem 1.1rem; }
+    .tg-conv:hover { border-color: var(--primary); }
+    .tg-conv-head { display: flex; flex-wrap: wrap; gap: .5rem; align-items: baseline; }
+    .tg-conv-name { font-weight: 700; color: var(--text-primary); }
+    .tg-conv-handle { font-size: .8rem; color: var(--text-secondary); }
+    .tg-conv-last { color: var(--text-secondary); font-size: .9rem; overflow-wrap: anywhere; }
+    .tg-conv-meta { font-size: .78rem; color: var(--text-secondary); }
+    .features-grid.tg-open { display: block; }
+    .tg-thread { display: grid; gap: .6rem; }
+    .tg-thread-head { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; margin-bottom: .4rem; }
+    .tg-msg { border: 1px solid var(--glass-border); background: var(--glass); border-radius: 14px; padding: .7rem .9rem; }
+    .tg-msg-body { color: var(--text-primary); overflow-wrap: anywhere; white-space: pre-wrap; }
+    .tg-msg-meta { display: flex; gap: .6rem; font-size: .75rem; color: var(--text-secondary); margin-top: .35rem; }
+    .tg-msg-action { color: var(--primary); font-weight: 700; }

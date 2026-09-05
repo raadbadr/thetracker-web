@@ -512,3 +512,51 @@
     .api-docs summary { cursor: pointer; color: var(--primary); font-weight: 600; }
     .api-docs pre { margin-top: .75rem; padding: 1rem; border-radius: 12px; background: var(--glass); border: 1px solid var(--glass-border); font-size: .78rem; overflow-x: auto; text-align: left; white-space: pre; }
   
+
+    /* الجوال: منسوخة حرفيا من قواعد بقية الصفحات (documents/part.1.css) */
+    @media (max-width: 900px) {
+      .container { max-width: 100%; padding: 1rem 0.75rem; }
+      .content { padding: 1.25rem 1rem; }
+      /* كل شبكة متعددة الأعمدة تصير عمودا واحدا */
+      .dash-grid, .dash-grid--single, .ind-grid, .svc-grid, .dash-grid--single .svc-grid,
+      .form-grid, .features-grid, .totals-row, .ach-row, .filters-row, .settings-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+      .stats-section .platform-stats-list,
+      .stats-section.stats-top .platform-stats-list,
+      .dash-side .platform-stats-list { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+      /* كل جدول يتمرر أفقيا داخل حاويته ولا يمد الصفحة */
+      .table-wrap, .rasi-wrap, .preview-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+      .content table { max-width: none; }
+      /* الحقول والأزرار بمقاس الإصبع، وخط 16 بكسل يمنع تكبير iOS التلقائي */
+      .waitlist-input, select.waitlist-input, textarea.waitlist-input { width: 100%; min-width: 0; font-size: 16px; }
+      .waitlist-btn, .chat-option-btn, .waitlist-input, select.waitlist-input { min-height: 44px; }
+      .toolbar, .filters-row, .waitlist-form, .form-actions, .row-actions, .chat-options { flex-wrap: wrap; }
+      img, canvas, svg, video { max-width: 100%; }
+      .drop-zone, .chat-shell, .import-flow { width: 100%; max-width: 100%; }
+      /* عنصر الشبكة يتقلص مع حاويته: بلا هذا يفرض النص أعرض من الشاشة */
+      .attach-actions, .attach-actions > *, .inline-actions, .invite-row { min-width: 0; }
+      .attach-actions { grid-template-columns: minmax(0, 1fr) !important; }
+      .attach-actions > * { width: 100%; }
+      .content input, .content select, .content textarea { max-width: 100%; }
+    }
+    @media (max-width: 600px) {
+      .content { padding: 1rem 0.85rem; }
+      h1 { font-size: 1.6rem; }
+      h2 { font-size: 1.25rem; }
+      .stats-section .platform-stats-list,
+      .stats-section.stats-top .platform-stats-list,
+      .dash-side .platform-stats-list { grid-template-columns: minmax(0, 1fr) !important; }
+      /* الزر بعرض الشاشة: الإصبع لا يخطئه */
+      .form-actions .waitlist-btn, .form-actions .chat-option-btn,
+      .toolbar .waitlist-btn, .toolbar .chat-option-btn { width: 100%; }
+      .row-actions { gap: .4rem; }
+      .row-actions .chat-option-btn { flex: 1 1 auto; }
+    }
+
+    @media (max-width: 900px) {
+      /* مربع اختيار جوجل درايف كان 13 بكسل: أصغر من أن يُلمس.
+         الصندوق 24 والسطر كله 44 فالإصبع يصيبه من أي موضع. */
+      #storageDriveToggle { width: 24px; height: 24px; flex: 0 0 auto; }
+      .storage-switch { min-height: 44px; display: flex; align-items: center; gap: .6rem; }
+    }
