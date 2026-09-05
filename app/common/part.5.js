@@ -139,11 +139,104 @@
     });
   }
 
+  /* ============================================================
+   * الأرقام غربية دائما (أمر المهندس رعد): الموقع لا يقبل ٠١٢٣ ولا ۰۱۲۳،
+   * لا كتابة ولا لصقا. اللصق يطلق input بعده، فمستمع واحد يغطي الحالتين،
+   * والتحويل حرف بحرف فلا يتغير طول النص ولا يقفز مؤشر الكتابة.
+   * ============================================================ */
+
+  var EASTERN_DIGITS = /[٠-٩۰-۹]/g;
+
+  function toWesternDigits(text) {
+    return String(text == null ? "" : text).replace(EASTERN_DIGITS, function (ch) {
+      var code = ch.charCodeAt(0);
+      var base = code >= 0x06F0 ? 0x06F0 : 0x0660;
+      return String(code - base);
+    });
+  }
+
+  function fixDigitsIn(el) {
+    if (!el) return;
+    var tag = (el.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "textarea") {
+      var value = el.value;
+      if (!value || !EASTERN_DIGITS.test(value)) return;
+      EASTERN_DIGITS.lastIndex = 0;
+      var start = null, end = null;
+      /* الحقول التي لا تدعم التحديد (number, date…) ترمي عند قراءة الموضع */
+      try { start = el.selectionStart; end = el.selectionEnd; } catch (e) { start = null; }
+      el.value = toWesternDigits(value);
+      if (start != null) { try { el.setSelectionRange(start, end); } catch (e) { /* تجاهل */ } }
+      return;
+    }
+    if (el.isContentEditable) {
+      var text = el.textContent;
+      if (!text || !EASTERN_DIGITS.test(text)) return;
+      EASTERN_DIGITS.lastIndex = 0;
+      el.textContent = toWesternDigits(text);
+    }
+  }
+
+  function dispatchInput(el) {
+    var ev;
+    try { ev = new Event("input", { bubbles: true }); }
+    catch (e) { ev = document.createEvent("Event"); ev.initEvent("input", true, false); }
+    el.dispatchEvent(ev);
+  }
+
+  /* أخطاء الكتابة الشائعة تُصحَّح عند مغادرة الحقل لا أثناء الكتابة،
+     كي لا تُمنع المسافة بين الكلمتين وهي تُكتب (أمر المهندس رعد:
+     مسافة قبل البداية أو بعد النهاية تُعدَّل، والأرقام بصيغة موحدة). */
+  var INVISIBLE = /[​-‏‪-‮⁦-⁩﻿]/g;
+  var ODD_SPACE = /[   	]/g;
+  var NUMERIC_FIELD = /^(number|tel)$/;
+
+  function isNumericField(el) {
+    if (NUMERIC_FIELD.test(el.type || "")) return true;
+    var mode = (el.getAttribute && el.getAttribute("inputmode")) || "";
+    return mode === "numeric" || mode === "decimal";
+  }
+
+  function tidyValue(el) {
+    if (!el || (el.tagName || "").toLowerCase() !== "input" && (el.tagName || "").toLowerCase() !== "textarea") return;
+    var value = el.value;
+    if (typeof value !== "string" || !value) return;
+    var clean = toWesternDigits(value).replace(INVISIBLE, "").replace(ODD_SPACE, " ").trim();
+    if (isNumericField(el)) {
+      /* رقم واحد بصيغة واحدة: الفاصلة العربية نقطة، وفواصل الآلاف تُحذف */
+      clean = clean.replace(/٫/g, ".").replace(/[٬,]/g, "").replace(/\s+/g, "");
+    }
+    if (clean === value) return;
+    try { el.value = clean; } catch (e) { return; }
+    dispatchInput(el);
+  }
+
+  function bootWesternDigits() {
+    document.addEventListener("input", function (ev) { fixDigitsIn(ev.target); }, true);
+    document.addEventListener("blur", function (ev) { tidyValue(ev.target); }, true);
+    document.addEventListener("change", function (ev) { tidyValue(ev.target); }, true);
+    /* حقول number لا تُرجع قيمة غير رقمية أصلا، فاللصق فيها يُحوَّل قبل أن يصل */
+    document.addEventListener("paste", function (ev) {
+      var el = ev.target;
+      if (!el || (el.type !== "number" && el.type !== "tel")) return;
+      var data = ev.clipboardData && ev.clipboardData.getData("text");
+      if (!data || !EASTERN_DIGITS.test(data)) return;
+      EASTERN_DIGITS.lastIndex = 0;
+      ev.preventDefault();
+      var western = toWesternDigits(data);
+      var start = el.selectionStart, end = el.selectionEnd;
+      if (start == null) { el.value = western; }
+      else { el.value = el.value.slice(0, start) + western + el.value.slice(end); }
+      dispatchInput(el);
+    }, true);
+  }
+
   /* القائمة الجانبية تركب بعد اكتمال تعريف الواجهة، وأي خطأ فيها لا يوقف الصفحة. */
   function bootSidebar() {
     try { mountSidebar(); } catch (e) { /* تجاهل */ }
     try { mountTopbar(); } catch (e) { /* تجاهل */ }
     try { keepInsideApp(); } catch (e) { /* تجاهل */ }
+    try { bootWesternDigits(); } catch (e) { /* تجاهل */ }
     try { mountCloseX(); } catch (e) { /* تجاهل */ }
     var readyGate = app && app.ready && typeof app.ready.then === "function" ? app.ready : null;
     if (readyGate) readyGate.then(function () {
