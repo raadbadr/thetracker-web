@@ -452,7 +452,7 @@ async function smartReply(env, chatId, userId, text, lang, tgName, attachment, p
   } catch (e) { console.log("agent failed", String(e && e.message || e).slice(0, 200)); agent = null; }
   if (agent && agent.text) {
     try { await sendTelegram(env, chatId, pre + agent.text, menuKeyboard(lang)); } catch {}
-    logBotReply(env, chatId, userId, agent.text);
+    await logBotReply(env, chatId, userId, agent.text);
     return;
   }
   if (intent.action === "search" && intent.query) {
@@ -465,14 +465,16 @@ async function smartReply(env, chatId, userId, text, lang, tgName, attachment, p
   try { reply = await telegramAssistantReply(env, chatId, userId, text, attachment); } catch {}
   if (!reply) reply = attachment ? b.fileUnreadable : channelText(lang).alreadyLinked(tgName);
   try { await sendTelegram(env, chatId, pre + reply, menuKeyboard(lang)); } catch {}
-  logBotReply(env, chatId, userId, reply);
+  await logBotReply(env, chatId, userId, reply);
 }
 
 /* رد البوت يسجل كالرسائل الواردة: ذاكرة للوكيل، ورؤية للإدارة (من كلم البوت وبماذا رد) */
-function logBotReply(env, chatId, userId, text) {
+async function logBotReply(env, chatId, userId, text) {
   if (!env.WORKER_SECRET || !text) return;
-  rpc(env, "log_telegram_message", { p_secret: env.WORKER_SECRET, p_chat_id: String(chatId), p_username: "bot", p_first_name: "TheTracker",
-    p_body: String(text).slice(0, 4000), p_user_id: userId || null, p_action: "reply" }).catch(() => {});
+  try {
+    await rpc(env, "log_telegram_message", { p_secret: env.WORKER_SECRET, p_chat_id: String(chatId), p_username: "bot", p_first_name: "TheTracker",
+      p_body: String(text).slice(0, 4000), p_user_id: userId || null, p_action: "reply" });
+  } catch (e) { console.log("reply log failed", String(e && e.message || e).slice(0, 200)); }
 }
 
 /** POST /api/telegram/webhook — كل رسالة تسجل ويرد عليها: ربط (/start الرمز)، قائمة أزرار، أو دعوة للربط */
