@@ -277,7 +277,8 @@
     ".app-userbox{flex:1 1 0%;min-width:0;max-width:100%;gap:.5rem}",
     ".app-orgbox{flex:1 1 0%;min-width:0;max-width:100%;padding:0 .5rem}",
     ".app-orglabel{display:none}",
-    ".app-orgselect{flex:1 1 0%;width:0;min-width:0;max-width:100%}",
+    /* 16 بكسل على الجوال: iOS يكبّر الصفحة تلقائيا عند لمس أي حقل خطه أصغر */
+    ".app-orgselect{flex:1 1 0%;width:0;min-width:0;max-width:100%;font-size:16px}",
     ".app-sidebar-toggle{margin-inline-end:0}",
     "body.has-app-topbar{padding-top:calc(var(--site-header-h,61px) + 56px)}",
     "body.has-app-topbar .container{padding-top:1rem}",
