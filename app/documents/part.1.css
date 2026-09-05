@@ -473,6 +473,21 @@
     #papersStats .platform-stat-value.status-overdue { color: var(--error); }
     #papersNote { font-size: 0.78rem; margin: 0 0 0.75rem; opacity: 0.75; }
 
+    /* ما قرأه النظام من الورقة: تسمية وقيمة، القيمة كاملة تلتف ولا تُقص */
+    .doc-details, .doc-profile { margin: 1rem 0 .25rem; }
+    .doc-profile { padding: .9rem 1rem; border: 1px solid var(--primary); border-radius: 14px; background: var(--glass); }
+    .detail-rows { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: .5rem .9rem; margin-top: .5rem; }
+    .detail-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem .6rem;
+      padding: .45rem .6rem; border-radius: 10px; background: var(--glass); border: 1px solid var(--glass-border); }
+    .detail-key { color: var(--text-secondary); font-size: .78rem; font-weight: 600; }
+    .detail-val { color: var(--text-primary); font-size: .85rem; font-weight: 600;
+      overflow-wrap: anywhere; white-space: normal; min-width: 0; }
+    .detail-val .was { color: var(--text-tertiary); font-weight: 600; }
+    .profile-actions { margin-top: .8rem; display: flex; flex-wrap: wrap; gap: .5rem; }
+    .items-table tr.detail-line > td { padding-top: 0; }
+    .items-table tr.detail-line .detail-rows { margin: 0 0 .6rem; }
+    @media (max-width: 600px) { .detail-rows { grid-template-columns: minmax(0, 1fr); } }
+
     /* Detail rows (verbatim from index.html .platform-stat-card family) */
     .platform-stat-detail {
       width: 100%;

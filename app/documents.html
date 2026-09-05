@@ -169,6 +169,23 @@
             <label class="form-field"><span data-i18n="docCourt">المحكمة</span><input type="text" class="waitlist-input" id="fCourt" maxlength="200" dir="auto"></label>
           </div>
           <p class="inline-hint" id="fSummary"></p>
+
+          <!-- كل بيان قرأه النظام من الورقة: تسمية وقيمة كاملة بلا قص -->
+          <div class="doc-details" id="docDetails" hidden>
+            <h3 class="invite-block-title" data-i18n="docDetailsTitle">ما قرأه النظام من الورقة</h3>
+            <div class="detail-rows" id="docDetailRows"></div>
+          </div>
+
+          <!-- ما يصلح لتحديث ملف الشركة: يُعرض ولا يُكتب إلا بموافقة -->
+          <div class="doc-profile" id="docProfileAsk" hidden>
+            <h3 class="invite-block-title" data-i18n="docProfileTitle">تحديث بيانات الشركة من هذه الورقة</h3>
+            <div class="detail-rows" id="docProfileRows"></div>
+            <div class="chat-options profile-actions">
+              <button type="button" class="waitlist-btn" id="docProfileApply" data-i18n="docProfileApply">حدّث بيانات الشركة</button>
+              <button type="button" class="chat-option-btn" id="docProfileSkip" data-i18n="docProfileSkip">اترك بياناتي كما هي</button>
+            </div>
+          </div>
+
           <div class="waitlist-form form-actions">
             <button type="submit" class="waitlist-btn" id="docSaveBtn" data-i18n="docSave">حفظ وإضافة للمتابعة</button>
             <button type="button" class="chat-option-btn" id="docCancelBtn" data-i18n="cancel">إلغاء</button>

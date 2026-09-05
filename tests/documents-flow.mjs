@@ -18,7 +18,12 @@ const ITEMS = [
   { id: WITH_FILE, org_id: ORG.id, title: "الشهادة الضريبية", category: "شهادة ضريبية", status: "open",
     due_at: "2027-01-01T09:00:00Z", client_name: "شركة الاختبار", data: { document_kind: "vat_certificate", number: "300000000000003" } },
   { id: NO_FILE, org_id: ORG.id, title: "السجل التجاري", category: "سجل تجاري", status: "open",
-    due_at: "2027-09-01T09:00:00Z", client_name: "شركة الاختبار", data: { document_kind: "commercial_register", number: "7055060102" } },
+    due_at: "2027-09-01T09:00:00Z", client_name: "شركة الاختبار",
+    data: { document_kind: "commercial_register", number: "7055060102",
+            details: { cr_number: "7055060102", unified_number: "7001234567", company_name: "شركة الاختبار", city: "الرياض", expiry_date: "2027-09-01" },
+            detail_labels: { cr_number: { ar: "رقم السجل", en: "CR number" }, unified_number: { ar: "الرقم الموحد", en: "Unified number" },
+                             company_name: { ar: "اسم المنشأة", en: "Company name" }, city: { ar: "المدينة", en: "City" },
+                             expiry_date: { ar: "تاريخ الانتهاء", en: "Expiry date" } } } },
 ];
 const ATTACH = [{ id: "55555555-5555-4555-8555-555555555555", org_id: ORG.id, item_id: WITH_FILE,
   name: "الشهادة الضريبية.pdf", mime: "application/pdf", size_bytes: 12345, storage_path: ORG.id + "/" + WITH_FILE + "/x.pdf" }];
@@ -33,6 +38,7 @@ function stub(url) {
       { kind: "gosi_certificate", required: true, item_id: null, state: "missing" },
     ], extra: [] };
   }
+  if (p.includes("/rest/v1/rpc/save_org_profile")) return { org_id: ORG.id };
   if (p.includes("/rest/v1/rpc/my_services")) return ["dashboard", "documents", "team", "settings"];
   if (p.includes("/rest/v1/rpc/")) return [];
   if (p.includes("/rest/v1/profiles")) return [PROFILE];
@@ -73,8 +79,22 @@ const page = await browser.newPage();
 
 await page.setRequestInterception(true);
 page.on("console", (m) => { if (m.type() === "error") console.log("  console:", m.text().slice(0, 160)); });
+const profileWrites = [];
+const ANALYZED = {
+  kind: "vat_certificate", title: "الشهادة الضريبية", number: "300000000000003",
+  issuer: "هيئة الزكاة والضريبة والجمارك", party: "شركة الاختبار", party_en: "", issue_date: "2026-01-01", expiry_date: "",
+  amount: null, case_number: "", court: "", summary: "", confidence: 0.9,
+  details: { tin: "300000000000003", taxpayer_name: "شركة الاختبار", first_filing_due: "2027-04-30", tax_period: "ربع سنوي" },
+  detail_labels: { tin: { ar: "الرقم الضريبي", en: "TIN" }, taxpayer_name: { ar: "اسم المكلف", en: "Taxpayer" },
+                   first_filing_due: { ar: "أول إقرار مستحق", en: "First filing due" }, tax_period: { ar: "الفترة الضريبية", en: "Tax period" } },
+  profile_updates: { vat_number: "300000000000003", legal_name: "شركة الاختبار" }
+};
 page.on("request", (r) => {
   const url = r.url();
+  if (/\/api\/documents\/analyze/.test(url)) return r.respond({ status: 200, contentType: "application/json", body: JSON.stringify({ fields: ANALYZED }) });
+  if (url.startsWith(SB) && /\/rest\/v1\/org_profiles/.test(url) && r.method() !== "GET" && r.method() !== "OPTIONS") {
+    profileWrites.push(r.postData() || "");
+  }
   const cors = { "access-control-allow-origin": "*", "access-control-allow-headers": "*", "access-control-allow-methods": "GET,POST,PATCH,PUT,DELETE,OPTIONS", "access-control-expose-headers": "*", "access-control-max-age": "600" };
   if (url.startsWith(SB) && r.method() === "OPTIONS") return r.respond({ status: 204, headers: cors, body: "" });
   if (url.startsWith(SB)) { const body = stub(url); return r.respond({ status: 200, contentType: "application/json", headers: { ...cors, "content-range": "0-9/10" }, body: JSON.stringify(body ?? []) }); }
@@ -110,7 +130,7 @@ page.on("console", (m) => { if (m.type() === "error") console.log("  console:", 
 page.on("pageerror", (e) => console.log("  pageerror:", String(e).slice(0, 200)));
 
 const seen = await page.evaluate(() => ({
-  rows: document.querySelectorAll("#docsBody tr").length,
+  rows: document.querySelectorAll("#docsBody tr:not(.detail-line)").length,
   fileLinks: document.querySelectorAll("#docsBody [data-open]").length,
   downloads: document.querySelectorAll("#docsBody [data-get]").length,
   attaches: document.querySelectorAll("#docsBody [data-attach]").length,
@@ -133,7 +153,7 @@ check("nothing is cut with an ellipsis", seen.ellipsis === 0, "n=" + seen.ellips
 
 const gaps = await page.evaluate(() => {
   const out = {};
-  ["#docsBody tr:first-child .row-actions", "#papersBody tr:first-child .row-actions"].forEach((sel, i) => {
+  ["#docsBody tr:first-child .row-actions", "#docsBody tr:nth-child(2) .row-actions", "#papersBody tr:first-child .row-actions"].forEach((sel, i) => {
     const box = document.querySelector(sel);
     if (!box) { out[sel] = null; return; }
     const kids = [...box.children].map((el) => el.getBoundingClientRect());
@@ -150,7 +170,7 @@ console.log("  gaps:", JSON.stringify(gaps));
 Object.keys(gaps).forEach((sel) => {
   const g = gaps[sel];
   if (!g || g.count < 2) return;
-  check("buttons are evenly spaced in " + sel.split(" ")[0], new Set(g.gaps).size === 1, JSON.stringify(g.gaps));
+  check("buttons are evenly spaced in " + sel.replace(" .row-actions", ""), new Set(g.gaps).size === 1, JSON.stringify(g.gaps));
 });
 
 /* البلاطات: أربع في صف، والنقر يفلتر الجدولين، ونقرة ثانية تعيد الكل */
@@ -177,14 +197,14 @@ const filtered = await page.evaluate(() => {
   return {
     pressed: after.getAttribute("aria-pressed"),
     papers: [...document.querySelectorAll("#papersBody tr")].length,
-    docs: [...document.querySelectorAll("#docsBody tr")].length,
+    docs: [...document.querySelectorAll("#docsBody tr:not(.detail-line)")].length,
   };
 });
 check("pressing a tile filters both tables to that state", filtered.papers === 1 && filtered.docs === 0 && filtered.pressed === "true", JSON.stringify(filtered));
 
 const cleared = await page.evaluate(() => {
   document.querySelector('#papersStats [data-paper-state="missing"]').click();
-  return { papers: document.querySelectorAll("#papersBody tr").length, docs: document.querySelectorAll("#docsBody tr").length };
+  return { papers: document.querySelectorAll("#papersBody tr").length, docs: document.querySelectorAll("#docsBody tr:not(.detail-line)").length };
 });
 check("pressing the same tile again clears the filter", cleared.papers === 3 && cleared.docs === 2, JSON.stringify(cleared));
 
@@ -202,6 +222,62 @@ check("the tiles fall into two rows on the phone", small.rows === 2, "rows=" + s
 check("nothing overflows sideways at 375", !small.overflow, "scrollWidth over 375");
 await page.setViewport({ width: 1280, height: 900, deviceScaleFactor: 1 });
 await new Promise((r) => setTimeout(r, 300));
+
+/* تفاصيل المستند: زر يفتح صفا يعرض كل بيان بتسميته وقيمته كاملة */
+const details = await page.evaluate(() => {
+  const btn = document.querySelector("#docsBody [data-details]");
+  if (!btn) return { missing: true };
+  const line = document.querySelector("#docsBody [data-details-for]");
+  const before = line.hidden;
+  btn.click();
+  const rows = [...line.querySelectorAll(".detail-row")].map((r) => ({
+    key: r.querySelector(".detail-key").textContent.trim(),
+    val: r.querySelector(".detail-val").textContent.trim(),
+    cut: getComputedStyle(r.querySelector(".detail-val")).textOverflow === "ellipsis",
+  }));
+  btn.click();
+  return { before, afterHidden: line.hidden, rows };
+});
+check("a document with read fields offers its details", !details.missing && details.before === true, JSON.stringify(details).slice(0, 120));
+check("the details list every field with its label", (details.rows || []).length === 5, "n=" + (details.rows || []).length);
+check("dates in the details read day-month-year", (details.rows || []).some((r) => r.val === "01-09-2027"), JSON.stringify((details.rows || []).map((r) => r.val)));
+check("no detail value is cut", !(details.rows || []).some((r) => r.cut), "some values truncate");
+check("pressing details again folds the row", details.afterHidden === true, "stayed open");
+
+/* المسار الحقيقي: صورة تُرفع من حقل الملف، والمحلل يرد بعقده الجديد */
+await page.evaluate(() => {
+  const png = Uint8Array.from(atob("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="), (c) => c.charCodeAt(0));
+  const file = new File([png], "الشهادة الضريبية.png", { type: "image/png" });
+  const dt = new DataTransfer();
+  dt.items.add(file);
+  const input = document.getElementById("docFile");
+  input.files = dt.files;
+  input.dispatchEvent(new Event("change", { bubbles: true }));
+});
+await new Promise((r) => setTimeout(r, 1200));
+const shown = await page.evaluate(() => ({
+  detailRows: document.querySelectorAll("#docDetailRows .detail-row").length,
+  detailsOpen: !document.getElementById("docDetails").hidden,
+  askOpen: !document.getElementById("docProfileAsk").hidden,
+  askRows: [...document.querySelectorAll("#docProfileRows .detail-row")].map((r) => r.querySelector(".detail-key").textContent.trim()),
+  expiry: document.getElementById("fExpiry").value,
+  expiryShown: (() => {
+    const n = document.getElementById("fExpiry");
+    const wrap = n && n.closest(".dp-wrap, .date-field");
+    const disp = wrap && wrap.querySelector("input[type=text]");
+    return disp ? disp.value : "";
+  })(),
+}));
+check("every read field is shown in the form", shown.detailRows === 4 && shown.detailsOpen, JSON.stringify(shown));
+check("the paper's own date becomes the due date", shown.expiry === "2027-04-30" && shown.expiryShown === "30-04-2027", shown.expiry + " / " + shown.expiryShown);
+check("the company update is offered, not written", shown.askOpen && profileWrites.length === 0, JSON.stringify(shown) + " writes=" + profileWrites.length);
+check("only the field that differs is offered", shown.askRows.length === 1 && /الرقم الضريبي/.test(shown.askRows[0]), JSON.stringify(shown.askRows));
+
+await page.evaluate(() => { document.getElementById("docProfileApply").click(); });
+await new Promise((r) => setTimeout(r, 600));
+const after = await page.evaluate(() => ({ askOpen: !document.getElementById("docProfileAsk").hidden }));
+check("pressing update writes the company details once", profileWrites.length === 1 && !after.askOpen,
+      "writes=" + profileWrites.length + " " + JSON.stringify(profileWrites[0] || null).slice(0, 120) + " open=" + after.askOpen);
 
 await page.click("#docsBody [data-get]");
 await new Promise((r) => setTimeout(r, 1500));

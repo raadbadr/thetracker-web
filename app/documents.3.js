@@ -1,7 +1,7 @@
     (function () {
       "use strict";
       var app = null;
-      var state = { items: [], attachments: {}, file: null, fields: null, tracker: null, kind: "", search: "", papers: null, paperState: "", pendingKind: null, wantedKind: null };
+      var state = { items: [], attachments: {}, file: null, fields: null, tracker: null, kind: "", search: "", papers: null, paperState: "", details: null, detailLabels: null, profilePatch: null, pendingKind: null, wantedKind: null };
       var PDF_SRC = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
       var PDF_WORKER = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
       var KINDS = ["commercial_register","articles_of_association","bylaws","chamber_certificate","gosi_certificate","zakat_certificate","saudization_certificate","vat_certificate","license","lease_contract","contract","case_filing","court_ruling","hearing_notice","violation","invoice","power_of_attorney","id_document","passport","driving_license","vehicle_registration","insurance_policy","employment_contract","other"];
@@ -152,12 +152,14 @@
         var nameEn = String(f.party_en || "").trim();
         var number = String(f.number || "").trim();
 
+        /* شركة قائمة: لا يُكتب في ملفها شيء بلا إذن — بطاقة «تحديث بيانات الشركة» تسأل أولا */
+        if (app.org) return null;
         /* لا شركة بعد؟ الورقة نفسها تنشئها. */
         if (!app.org) {
           if ((!name && !nameEn) || !map.entity) return null;
           return app.createOrg(name, map.entity, map.entity === "company" ? number : "", f.expiry_date || null, nameEn)
             .then(function (org) {
-              toast(fmtOne("orgCreatedFromDoc", org.name), "success");
+              app.toast(fmtOne("orgCreatedFromDoc", org.name), "success");
               return saveProfileFields(f, map, name, number);
             })
             .catch(function () { return null; });
@@ -167,6 +169,7 @@
 
       /* تملأ الحقول الفارغة فقط: ما أدخله المستخدم لا يمس */
       function saveProfileFields(f, map, name, number) {
+        var nameEn = String((f && f.party_en) || "").trim();
         return app.orgProfile().then(function (current) {
           var have = current || {};
           var patch = {};
@@ -175,13 +178,110 @@
           if (nameEn && !have.legal_name_en) patch.legal_name_en = nameEn;
           if (!Object.keys(patch).length) return null;
           return app.saveOrgProfile(patch).then(function () {
-            toast(t("orgProfileFilled"), "success");
+            app.toast(t("orgProfileFilled"), "success");
             return loadPapers();
           });
         }).catch(function () { return null; });
       }
 
       function fmtOne(key, value) { return String(t(key)).replace("{name}", value == null ? "" : value); }
+
+      /* كل بيان قرأه المحلل يُعرض كما هو: التسمية بلغة الواجهة، والقيمة كاملة.
+         التواريخ بصيغة المنصة يوم-شهر-سنة، والأرقام من اليسار. */
+      function detailLabel(key, labels) {
+        var pair = (labels || {})[key];
+        if (!pair) return key.replace(/_/g, " ");
+        var l = lang();
+        return pair[l] || pair.ar || pair.en || key;
+      }
+
+      function isDateValue(v) { return typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v); }
+      function isNumberish(v) { return typeof v === "number" || (typeof v === "string" && /^[0-9][0-9\s.,\-\/]*$/.test(v)); }
+
+      function detailRowsHtml(details, labels) {
+        var keys = Object.keys(details || {}).filter(function (k) {
+          var v = details[k];
+          return v !== null && v !== undefined && String(v).trim() !== "";
+        });
+        if (!keys.length) return "";
+        return keys.map(function (k) {
+          var raw = details[k];
+          var value = isDateValue(raw) ? app.fmtDate(raw + "T09:00:00") : String(raw);
+          var ltr = isDateValue(raw) || isNumberish(raw);
+          return '<div class="detail-row"><span class="detail-key">' + esc(detailLabel(k, labels)) + "</span>" +
+                 '<span class="detail-val"' + (ltr ? ' dir="ltr"' : ' dir="auto"') + ">" + esc(value) + "</span></div>";
+        }).join("");
+      }
+
+      function renderDetails(f) {
+        var rows = detailRowsHtml(f && f.details, f && f.detail_labels);
+        app.paint($("docDetailRows"), rows);
+        show("docDetails", !!rows);
+      }
+
+      /* ما تحمله الورقة ويخالف ملف الشركة يُعرض ويُنتظر قرار صاحبه */
+      var PROFILE_LABELS = {
+        vat_number: { ar: "الرقم الضريبي", en: "VAT number" },
+        cr_number: { ar: "رقم السجل التجاري", en: "Commercial register" },
+        unified_number: { ar: "الرقم الموحد", en: "Unified number" },
+        legal_name: { ar: "الاسم النظامي", en: "Legal name" },
+        national_address_short: { ar: "العنوان الوطني", en: "National address" }
+      };
+
+      function askProfileUpdate(f) {
+        state.profilePatch = null;
+        show("docProfileAsk", false);
+        var updates = (f && f.profile_updates) || {};
+        var keys = Object.keys(updates).filter(function (k) { return String(updates[k] || "").trim(); });
+        if (!keys.length || !app.org) return Promise.resolve(null);
+        return app.orgProfile().then(function (current) {
+          var have = current || {};
+          var patch = {}, rows = "";
+          keys.forEach(function (k) {
+            var next = String(updates[k]).trim();
+            var field = k === "national_address_short" ? "national_address" : k;
+            var now = k === "national_address_short" ? "" : String(have[field] == null ? "" : have[field]).trim();
+            if (now === next) return;                       /* لا شيء يتغير */
+            if (!now) { patch[field] = k === "national_address_short" ? { short: next } : next; }
+            else { patch[field] = k === "national_address_short" ? { short: next } : next; }
+            rows += '<div class="detail-row"><span class="detail-key">' + esc(detailLabel(k, PROFILE_LABELS)) + "</span>" +
+                    '<span class="detail-val" dir="auto">' +
+                      (now ? '<b class="was">' + esc(t("docProfileNow")) + ":</b> " + esc(now) + "<br>" : "") +
+                      '<b>' + esc(t("docProfileNew")) + ":</b> " + esc(next) +
+                    "</span></div>";
+          });
+          if (!Object.keys(patch).length) return null;
+          state.profilePatch = patch;
+          app.paint($("docProfileRows"), rows);
+          show("docProfileAsk", true);
+          return patch;
+        }).catch(function () { return null; });
+      }
+
+      function applyProfilePatch() {
+        var patch = state.profilePatch;
+        if (!patch) { show("docProfileAsk", false); return; }
+        var btn = $("docProfileApply"); btn.disabled = true;
+        app.saveOrgProfile(patch).then(function () {
+          state.profilePatch = null;
+          show("docProfileAsk", false);
+          app.toast(t("docProfileDone"), "success");
+          return loadPapers();
+        }).catch(function (err) { app.toast(errorMessage(err), "error"); })
+          .finally(function () { btn.disabled = false; });
+      }
+
+      /* التاريخ المهم في الورقة يصير موعد الاستحقاق إن لم تحمل الورقة تاريخ انتهاء */
+      var DUE_KEYS = ["expiry_date", "first_filing_due", "hearing_date", "next_hearing_date", "due_date", "payment_due"];
+
+      function dueFromDetails(f) {
+        var details = (f && f.details) || {};
+        for (var i = 0; i < DUE_KEYS.length; i++) {
+          var v = details[DUE_KEYS[i]];
+          if (isDateValue(v)) return v;
+        }
+        return "";
+      }
 
       function fillForm(f) {
         var wanted = state.wantedKind; state.wantedKind = null;
@@ -198,6 +298,11 @@
         $("fCase").value = f.case_number || "";
         $("fCourt").value = f.court || "";
         $("fSummary").textContent = f.summary || "";
+        if (!$("fExpiry").value) $("fExpiry").value = dueFromDetails(f);
+        state.details = (f && f.details) || null;
+        state.detailLabels = (f && f.detail_labels) || null;
+        renderDetails(f);
+        askProfileUpdate(f);
       }
 
       /* ---------- الحفظ: عنصر متابع + مرفق ---------- */
@@ -243,7 +348,9 @@
               issuer: String($("fIssuer").value || "").trim() || null,
               issue_date: $("fIssue").value || null,
               court: String($("fCourt").value || "").trim() || null,
-              summary: $("fSummary").textContent || null
+              summary: $("fSummary").textContent || null,
+              details: state.details && Object.keys(state.details).length ? state.details : null,
+              detail_labels: state.details && Object.keys(state.details).length ? state.detailLabels : null
             }
           };
           return app.insertItems([row]);
@@ -322,11 +429,20 @@
                 }).join("")
               : "-") + "</td>" +
             '<td><div class="chat-options row-actions">' +
+              (d.details && Object.keys(d.details).length ? iconBtn("details", t("docDetailsOf"), "data-details", it.id) : "") +
               (files.length ? iconBtn("download", t("pDownload"), "data-get", files[0].id) : "") +
               iconBtn("plus", t(files.length ? "docAddAnother" : "docAttachFile"), "data-attach", it.id) +
               iconBtn("trash", t("delete"), "data-del", it.id, "is-danger") +
             "</div></td>";
           body.appendChild(tr);
+          if (d.details && Object.keys(d.details).length) {
+            var det = document.createElement("tr");
+            det.className = "detail-line";
+            det.hidden = true;
+            det.setAttribute("data-details-for", it.id);
+            det.innerHTML = '<td colspan="8"><div class="detail-rows">' + detailRowsHtml(d.details, d.detail_labels) + "</div></td>";
+            body.appendChild(det);
+          }
         });
         if (app.translateNodes) app.translateNodes($("listCard"));
       }
@@ -357,7 +473,8 @@
         download: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v10.6l3.3-3.3 1.4 1.4-5.7 5.7-5.7-5.7 1.4-1.4L10 13.6V3h2zM5 19h14v2H5v-2z"/></svg>',
         plus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>',
         replace: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5V2L8 6l4 4V7a5 5 0 11-5 5H5a7 7 0 107-7z"/></svg>',
-        trash: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>'
+        trash: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>',
+        details: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v2H4V5zm0 6h16v2H4v-2zm0 6h10v2H4v-2z"/></svg>'
       };
 
       function iconBtn(icon, label, attr, value, extra) {
@@ -498,7 +615,22 @@
         dz.addEventListener("dragleave", function () { dz.classList.remove("is-over"); });
         dz.addEventListener("drop", function (e) { e.preventDefault(); dz.classList.remove("is-over"); handleFile(e.dataTransfer.files && e.dataTransfer.files[0]); });
         $("docForm").addEventListener("submit", save);
-        $("docCancelBtn").addEventListener("click", function () { show("docForm", false); state.file = null; state.driveDoc = null; $("docFile").value = ""; setStatus(""); });
+        $("docProfileApply").addEventListener("click", applyProfilePatch);
+        $("docProfileSkip").addEventListener("click", function () { state.profilePatch = null; show("docProfileAsk", false); });
+        $("docCancelBtn").addEventListener("click", function () {
+          show("docForm", false); show("docDetails", false); show("docProfileAsk", false);
+          state.file = null; state.driveDoc = null; state.details = null; state.detailLabels = null; state.profilePatch = null;
+          $("docFile").value = ""; setStatus("");
+        });
+        $("docsBody").addEventListener("click", function (e) {
+          var btn = e.target.closest("[data-details]");
+          if (!btn) return;
+          e.preventDefault();
+          var row = $("docsBody").querySelector('[data-details-for="' + btn.getAttribute("data-details") + '"]');
+          if (!row) return;
+          row.hidden = !row.hidden;
+          btn.setAttribute("aria-expanded", row.hidden ? "false" : "true");
+        });
         $("filterKind").addEventListener("change", function () { state.kind = this.value; render(); });
         $("filterSearch").addEventListener("input", function () { state.search = this.value.trim(); render(); });
         $("papersStats").addEventListener("click", function (e) {
