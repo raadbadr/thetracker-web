@@ -245,7 +245,7 @@
     var wrap = document.createElement("label");
     wrap.className = "form-field dur-field";
     wrap.innerHTML = "<span></span>" +
-      '<input type="number" class="waitlist-input dur-days" min="0" max="3650" step="1" inputmode="numeric" placeholder="60" dir="ltr" autocomplete="off">' +
+      '<input type="number" class="waitlist-input dur-days" min="0" max="3650" step="1" inputmode="numeric" dir="ltr" autocomplete="off">' +
       '<span class="dur-countdown" aria-live="polite"></span>';
     field.parentNode.insertBefore(wrap, field.nextSibling);
     var days = wrap.querySelector(".dur-days"), out = wrap.querySelector(".dur-countdown");
@@ -376,6 +376,7 @@
     } else if (rec.native.value) text = String(rec.native.value);
     if (!typing) { rec.dirty = false; if (rec.display.value !== text) rec.display.value = text; }
     if (rec.sub.textContent !== hijri) rec.sub.textContent = hijri;
+    if (rec.native.__dur) durRefresh(rec.native.__dur);   /* حاسبة المدة تتبع القيمة المكتوبة برمجيا أيضا */
   }
 
   function dpSetValue(rec, value) {
