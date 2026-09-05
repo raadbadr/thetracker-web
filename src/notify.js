@@ -197,7 +197,14 @@ export function urlButton(label, url) {
 export function formatItems(lang, rows, title, emptyText, userTimeZone, userHour12) {
   const list = Array.isArray(rows) ? rows : [];
   if (!list.length) return emptyText;
+  const words = PAPER_WORDS[lang] || PAPER_WORDS.ar;
   const lines = list.map((r, i) => {
+    if (r.document_kind || r.doc_number) {
+      /* ورقة رسمية: رقمها هي (السجل/الضريبي…) وتاريخا الإصدار والانتهاء، لا الرقم القياسي ولا وقت */
+      const num = r.doc_number ? ` — ${words[0]} ${r.doc_number}` : "";
+      const issued = r.issue_date ? `${words[1]} ${dmy(r.issue_date)} · ` : "";
+      return `${i + 1}. ${r.title || ""}${num}\n   ${issued}${r.due_at ? `${words[2]} ${dmy(r.due_at)}` : "-"}`;
+    }
     const who = r.client_name ? ` — ${r.client_name}` : "";
     const num = r.case_number ? ` (${r.case_number})` : "";
     const tr = r.tracker_name ? ` · ${r.tracker_name}` : "";
@@ -227,6 +234,13 @@ export async function linkChannelDirect(env, userId, channel, externalId) {
    بلا اختلاف بين اللغات — مطابقة app.fmtDate في الموقع ومعيار تطبيق باركينزي.
    المنطقة الزمنية وصيغة الوقت (24 أو 12 ساعة) باختيار المستلم من إعداداته
    (profiles.tz وprofiles.time_format)، والافتراض توقيت الرياض و24 ساعة. */
+/* التواريخ للمستخدم دائما يوم-شهر-سنة؛ أي قيمة ليست تاريخا تعود كما هي */
+export function dmy(v) {
+  const t = String(v || "").slice(0, 10);
+  const m = t.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return m ? `${m[3]}-${m[2]}-${m[1]}` : t;
+}
+const PAPER_WORDS = { ar: ["رقم", "إصدار", "ينتهي"], en: ["No.", "issued", "expires"], fr: ["n°", "délivré le", "expire le"], ur: ["نمبر", "اجرا", "ختم"] };
 function fmtDue(iso, userTimeZone, userHour12) {
   try {
     const parts = new Intl.DateTimeFormat("en-GB", {

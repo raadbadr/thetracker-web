@@ -2,7 +2,7 @@
    المصادقة: Authorization: Bearer tt_live_… (مفتاح API من الإعدادات ← API)؛ المفتاح يحدد الشركة والمستخدم صاحب المفتاح،
    وكل أداة تمر عبر دوال القاعدة المحمية بسر الـ Worker نفسها التي يستعملها بوت تيليغرام، فالصلاحيات واحدة.
    بلا حالة: كل طلب مستقل (Mcp-Session-Id يقبل ويعاد إن أرسله العميل). */
-import { rpc } from "./notify.js";
+import { rpc, dmy } from "./notify.js";
 
 const PROTOCOL_VERSIONS = ["2025-06-18", "2025-03-26", "2024-11-05"];
 const SERVER_INFO = { name: "thetracker", version: "1.0.0" };
@@ -40,7 +40,7 @@ export const TOOLS = [
     inputSchema: { type: "object", properties: { telegram_user_id: { type: "string", description: "Numeric Telegram user id of the person talking" } }, additionalProperties: false } },
   { name: "tracker_link_telegram", description: "Link a Telegram user to their TheTracker account so the bot knows who they are. Identify them by the phone number they shared (matches the account phone) or by a link code from the site's settings; with neither, the key owner's account is linked.",
     inputSchema: { type: "object", properties: { telegram_user_id: { type: "string" }, phone: { type: "string", description: "Phone as shared on Telegram, any format" }, code: { type: "string", description: "8-character link code from Settings → Telegram" } }, required: ["telegram_user_id"], additionalProperties: false } },
-  { name: "tracker_search", description: "Search cases, violations and tasks by title, client, case number, violation number or item number. Returns id, item_number, title, status, due_at, client, amount, roles.",
+  { name: "tracker_search", description: "Search cases, violations and tasks by title, client, case number or violation number. Returns id, title, status, due_at, client, amount, roles.",
     inputSchema: { type: "object", properties: { telegram_user_id: { type: "string", description: "Telegram user id of the person talking (Telegram only)" }, query: { type: "string", description: "Free text or a number" }, limit: { type: "integer", minimum: 1, maximum: 20, default: 8 } }, required: ["query"], additionalProperties: false } },
   { name: "tracker_company", description: "The user's company record as registered on the site: legal name, commercial register number, VAT number, unified number, IBAN and bank, national address, contacts, plan, and the official papers on file with their extracted details. Use it for questions like 'what is my CR number?'.",
     inputSchema: { type: "object", properties: { telegram_user_id: { type: "string" } }, additionalProperties: false } },
@@ -77,10 +77,10 @@ function describeRows(rows) {
   return rows.map((r) => {
     if (r.document_kind || r.doc_number) {
       /* ورقة رسمية: رقمها هي (السجل/الضريبي…) لا الرقم القياسي للعنصر */
-      return [r.title, r.doc_number ? "رقم " + r.doc_number : null, r.issue_date ? "إصدار " + String(r.issue_date).slice(0, 10) : null, r.due_at ? "ينتهي " + String(r.due_at).slice(0, 10) : null].filter(Boolean).join(" — ");
+      return [r.title, r.doc_number ? "رقم " + r.doc_number : null, r.issue_date ? "إصدار " + dmy(r.issue_date) : null, r.due_at ? "ينتهي " + dmy(r.due_at) : null].filter(Boolean).join(" — ");
     }
     /* الرقم القياسي (ITM-…) داخلي للإدارة؛ المستخدم يرى رقم القضية أو المخالفة أو الورقة */
-    return [r.title, r.case_number ? "قضية " + r.case_number : null, r.violation_number ? "مخالفة " + r.violation_number : null, r.client_name, r.status === "open" ? null : r.status, r.due_at ? "الموعد " + String(r.due_at).slice(0, 10) : null, r.amount != null ? r.amount + " ريال" : null].filter(Boolean).join(" | ");
+    return [r.title, r.case_number ? "قضية " + r.case_number : null, r.violation_number ? "مخالفة " + r.violation_number : null, r.client_name, r.status === "open" ? null : r.status, r.due_at ? "الموعد " + dmy(r.due_at) : null, r.amount != null ? r.amount + " ريال" : null].filter(Boolean).join(" | ");
   }).join("\n");
 }
 
@@ -137,11 +137,11 @@ export async function callTool(name, args, ctx) {
         if (o.vat_number) lines.push("الرقم الضريبي: " + o.vat_number);
         if (o.iban) lines.push("الآيبان: " + o.iban);
         if (o.national_address && o.national_address.short) lines.push("العنوان المختصر: " + o.national_address.short);
-        if (o.plan) lines.push("الباقة: " + o.plan + (o.plan_expires_at ? " حتى " + String(o.plan_expires_at).slice(0, 10) : ""));
+        if (o.plan) lines.push("الباقة: " + o.plan + (o.plan_expires_at ? " حتى " + dmy(o.plan_expires_at) : ""));
         for (const d of o.documents || []) {
           const det = d.details || {};
           const issue = det.issue_date || det.certificate_date || det.effective_date || null;
-          lines.push("• " + (d.title || d.kind) + (d.number ? " — رقم " + d.number : "") + (issue ? " — إصدار " + String(issue).slice(0, 10) : "") + (d.expires_at ? " — ينتهي " + String(d.expires_at).slice(0, 10) : "") + (d.files ? "" : " (بلا ملف)"));
+          lines.push("• " + (d.title || d.kind) + (d.number ? " — رقم " + d.number : "") + (issue ? " — إصدار " + dmy(issue) : "") + (d.expires_at ? " — ينتهي " + dmy(d.expires_at) : "") + (d.files ? "" : " (بلا ملف)"));
         }
       }
       const others = orgs.filter((o) => !shown.includes(o));
@@ -183,8 +183,8 @@ export async function callTool(name, args, ctx) {
       const lines = (r.members || []).map((m) => {
         const ROLE = { owner: "مالك", admin: "مشرف", member: "عضو" }, DEPT = { management: "الإدارة", legal: "القانوني", hr: "الموارد البشرية", finance: "المالي", operations: "التشغيل", other: "أخرى" };
         const head = [m.full_name || m.email, ROLE[m.role] || m.role, DEPT[m.department] || m.department, m.job_title].filter(Boolean).join(" — ");
-        const load = "مفتوح " + (m.open || 0) + (m.overdue ? " (متأخر " + m.overdue + ")" : "") + (m.next_due ? " — أقرب موعد " + String(m.next_due).slice(0, 10) : "");
-        const items = (m.items || []).slice(0, 3).map((it) => "   • " + [it.title, it.case_number ? "قضية " + it.case_number : null, it.violation_number ? "مخالفة " + it.violation_number : null, it.due_at ? String(it.due_at).slice(0, 10) : null].filter(Boolean).join(" | ")).join("\n");
+        const load = "مفتوح " + (m.open || 0) + (m.overdue ? " (متأخر " + m.overdue + ")" : "") + (m.next_due ? " — أقرب موعد " + dmy(m.next_due) : "");
+        const items = (m.items || []).slice(0, 3).map((it) => "   • " + [it.title, it.case_number ? "قضية " + it.case_number : null, it.violation_number ? "مخالفة " + it.violation_number : null, it.due_at ? dmy(it.due_at) : null].filter(Boolean).join(" | ")).join("\n");
         return head + "\n   " + load + (items ? "\n" + items : "");
       });
       return result(r, (r.org && r.org.name ? r.org.name + "\n" : "") + (lines.length ? lines.join("\n") : "لا أعضاء."));
