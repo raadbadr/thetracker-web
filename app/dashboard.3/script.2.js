@@ -517,6 +517,65 @@
       }
 
       /* رقم الدعوى يجمع المخالفة وقضيتها وملفاتهما */
+      /* أنواع أبناء القضية بترتيب قراءتها في الملف */
+      var CASE_SECTIONS = [
+        { kind: "session",   key: "secSessions" },
+        { kind: "ruling",    key: "secRulings" },
+        { kind: "execution", key: "secExecutions" },
+        { kind: "violation", key: "secViolations" },
+        { kind: "task",      key: "secTasks" },
+        { kind: "document",  key: "secDocuments" }
+      ];
+
+      function caseRowsHtml(rows) {
+        var html = '<div class="table-wrap"><table class="items-table"><thead><tr>' +
+          "<th>" + esc(T("colTitle")) + "</th><th>" + esc(T("colDue")) + "</th>" +
+          "<th>" + esc(T("colAmount")) + "</th><th>" + esc(T("colStatus")) + "</th>" +
+          "<th>" + esc(T("attachTitle")) + "</th><th></th></tr></thead><tbody>";
+        rows.forEach(function (r) {
+          html += "<tr><td>" + esc(r.title || "-") + "</td>" +
+                  '<td class="cell-num">' + (r.due_at ? esc(app.fmtDate(r.due_at)) : "-") + "</td>" +
+                  '<td class="cell-num">' + money(r.amount) + "</td>" +
+                  "<td>" + esc(r.status === "done" ? T("statusDone") : T("statusOpen")) + "</td>" +
+                  '<td class="cell-num">' + esc(String(r.attachments || 0)) + "</td>" +
+                  '<td><button type="button" class="chat-option-btn" data-bundle-open="' + esc(r.id) + '">' + esc(T("actionEdit")) + "</button></td></tr>";
+        });
+        return html + "</tbody></table></div>";
+      }
+
+      /* ملف القضية الكامل: يفتح من رقم القضية أو من صفها */
+      function openCaseFile(itemId) {
+        var box = $("caseBundle");
+        if (!box || !app.client) return;
+        app.client.rpc("case_file", { p_org: app.org.id, p_case: itemId }).then(function (res) {
+          var data = res && res.data;
+          if (!data || data.error || !data.head) { paintEl(box).html = '<p class="empty-note">' + esc(T("caseBundleEmpty")) + "</p>"; return; }
+          var head = data.head, kids = data.children || [];
+          var d = head.data || {};
+          var facts = [
+            [T("colCaseNumber"), head.case_number],
+            [T("fieldClient"), head.client_name],
+            [T("fieldCourt"), d.court],
+            [T("fieldStage"), head.stage],
+            [T("colAmount"), head.amount != null ? money(head.amount) : null]
+          ].filter(function (f) { return f[1]; });
+          var html = "<h3>" + esc(head.title || T("caseFileTitle")) + "</h3>" +
+            '<div class="totals-row">' + facts.map(function (f) {
+              return '<div class="total-card"><span class="total-label">' + esc(f[0]) + '</span><span class="total-value">' + f[1] + "</span></div>";
+            }).join("") + "</div>";
+          CASE_SECTIONS.forEach(function (sec) {
+            var rows = kids.filter(function (k) { return k.kind === sec.kind; });
+            if (!rows.length) return;
+            html += "<h4>" + esc(T(sec.key)) + " (" + rows.length + ")</h4>" + caseRowsHtml(rows);
+          });
+          if (!kids.length) html += '<p class="empty-note">' + esc(T("caseFileEmpty")) + "</p>";
+          paintEl(box).html = html;
+          try { box.scrollIntoView({ behavior: "smooth", block: "nearest" }); } catch (e) { /* تجاهل */ }
+        }).catch(function () {
+          paintEl(box).html = '<p class="empty-note">' + esc(T("caseBundleEmpty")) + "</p>";
+        });
+      }
+
       function openCaseBundle(caseNumber) {
         var box = $("caseBundle");
         if (!box) return;
@@ -554,6 +613,8 @@
           openCaseBundle(link.dataset.case);
           return;
         }
+        var fileBtn = ev.target.closest("[data-case-file]");
+        if (fileBtn) { ev.preventDefault(); openCaseFile(fileBtn.dataset.caseFile); return; }
         var openBtn = ev.target.closest("[data-bundle-open]");
         if (openBtn) {
           var id = openBtn.dataset.bundleOpen;
@@ -608,6 +669,10 @@
             "<td>" + esc(assigneeName(item.assignee_id)) + "</td>" +
             '<td><span class="status-' + sk + '">' + esc(T(STATUS_KEYS[sk])) + "</span></td>" +
             '<td><div class="chat-options row-actions">' +
+              (state.viewType === "cases"
+                ? '<button type="button" class="chat-option-btn is-icon" data-case-file="' + esc(item.id) + '" title="' + esc(T("openCaseFile")) + '" aria-label="' + esc(T("openCaseFile")) + '">' +
+                  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2h-8l-2-2z"/></svg></button>'
+                : "") +
               (item.status === "done" ? actionBtn(item, "reopen", "actionReopen") : actionBtn(item, "done", "actionDone")) +
               actionBtn(item, "edit", "actionEdit") +
               actionBtn(item, "delete", "actionDelete", "is-danger") +

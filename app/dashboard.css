@@ -894,3 +894,10 @@
     .export-menu button { padding: .5rem .7rem; min-height: 38px; border: 0; border-radius: 9px; background: transparent;
       color: var(--text-primary); font-family: inherit; font-size: .85rem; text-align: start; cursor: pointer; }
     .export-menu button:hover, .export-menu button:focus-visible { background: var(--primary); color: var(--btn-ink, #fff); }
+
+    /* زر الرمز: مربع بلا كلمات، واسم الفعل في التلميح */
+    .chat-option-btn.is-icon { width: 34px; height: 34px; min-height: 34px; padding: 0; justify-content: center; }
+    .chat-option-btn svg { width: 16px; height: 16px; fill: currentColor; flex: 0 0 auto; }
+    .chat-option-btn { display: inline-flex; align-items: center; gap: .35rem; }
+    .chat-option-btn.is-danger { color: var(--error); border-color: var(--error); }
+    .chat-option-btn.is-danger:hover, .chat-option-btn.is-danger:focus-visible { background: var(--error); color: #fff; }
