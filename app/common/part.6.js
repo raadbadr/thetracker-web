@@ -239,15 +239,28 @@
   var durRecords = [];
   function mountDurationCalc(native) {
     if (native.__dur) return;
+    var compact = native.getAttribute("data-duration") === "compact" || !native.closest(".form-field");
+    if (compact) {   /* صف ضيق (إجراءات المعالجة): العدّاد وحده في سطر منتقي التاريخ */
+      var subHost = native.__dp ? native.__dp.sub : native.parentNode;
+      var cd = document.createElement("span"); cd.className = "dur-countdown dur-inline"; cd.setAttribute("aria-live", "polite");
+      subHost.appendChild(cd);
+      var crec = { native: native, days: null, out: cd, label: null };
+      native.__dur = crec; durRecords.push(crec);
+      native.addEventListener("input", function () { durRefresh(crec); });
+      native.addEventListener("change", function () { durRefresh(crec); });
+      durRefresh(crec);
+      return;
+    }
     var field = native.closest(".form-field") || native.closest("label") || native.parentNode;
-    if (!field || !field.parentNode) return;
+    if (!field) return;
     var t = durText();
-    var wrap = document.createElement("label");
-    wrap.className = "form-field dur-field";
-    wrap.innerHTML = "<span></span>" +
+    /* داخل حقل التاريخ نفسه (لا خلية مستقلة تبتعد عنه في الشبكة): سطر «المدة بالأيام» ثم العدّاد */
+    var wrap = document.createElement("span");
+    wrap.className = "dur-field";
+    wrap.innerHTML = '<span class="dur-label"></span>' +
       '<input type="number" class="waitlist-input dur-days" min="0" max="3650" step="1" inputmode="numeric" dir="ltr" autocomplete="off">' +
       '<span class="dur-countdown" aria-live="polite"></span>';
-    field.parentNode.insertBefore(wrap, field.nextSibling);
+    field.appendChild(wrap);
     var days = wrap.querySelector(".dur-days"), out = wrap.querySelector(".dur-countdown");
     var rec = { native: native, days: days, out: out, label: wrap.firstChild };
     native.__dur = rec; durRecords.push(rec);
@@ -267,8 +280,8 @@
   }
   function durRefresh(rec, keepDays) {
     var t = durText();
-    if (rec.label.textContent !== t.days) rec.label.textContent = t.days;
-    if (!keepDays && document.activeElement !== rec.days) {
+    if (rec.label && rec.label.textContent !== t.days) rec.label.textContent = t.days;
+    if (rec.days && !keepDays && document.activeElement !== rec.days) {
       var d = durDaysFromValue(rec.native);
       if (rec.days.value !== d) rec.days.value = d;
     }

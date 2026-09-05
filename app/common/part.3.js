@@ -688,8 +688,8 @@
     "[dir=ltr] body select.waitlist-input{background-position:right .85rem center}",
     "body select.waitlist-input::-ms-expand{display:none}",
     /* ــ زر الإغلاق الدائري (نمط تطبيق باركينزي: StandardCloseButton) ــ
-       الإلغاء يصير علامة × داخل دائرة أعلى النافذة، في بداية السطر حسب اتجاه
-       اللغة (يمين في العربية والأردية، يسار في الإنجليزية والفرنسية). */
+       الإلغاء يصير علامة × داخل دائرة أعلى النافذة، في نهاية السطر حسب اتجاه
+       اللغة (يسار في العربية والأردية، يمين في الإنجليزية والفرنسية). */
     "body .close-x{width:40px;height:40px;min-height:40px;min-width:40px;padding:0;flex:0 0 40px;",
     "border-radius:50%;display:inline-flex;align-items:center;justify-content:center;",
     "background:var(--bg-top);color:var(--primary);border:1px solid var(--glass-border);",
@@ -702,9 +702,12 @@
     "body .has-close-x>.close-x+h2,body .has-close-x>.close-x+h3{min-height:40px;display:flex;align-items:center;justify-content:center;text-align:center;padding-inline:56px;margin-top:0;box-sizing:border-box}",
     "body .has-close-x>.close-x+:not(h1):not(h2):not(h3){margin-top:calc(40px + .75rem)}",
     /* حاسبة المدة والعدّاد: حقل الأيام بجانب التاريخ، والسطر محجوز فلا يقفز شيء؛ التأخر أحمر */
+    "body .dur-field{display:flex;flex-direction:column;gap:.25rem;margin-top:.5rem}",
+    "body .dur-label{font-size:.85rem;color:var(--text-secondary)}",
     "body .dur-countdown{display:block;min-height:1.2em;font-size:.8rem;color:var(--text-secondary);font-variant-numeric:tabular-nums}",
     "body .dur-countdown.is-late,body .due-left.is-late{color:var(--error);font-weight:700}",
     "body .due-left:empty{display:none}",
+    "body .dp-sub .dur-inline{margin-inline-start:.5rem}",
     "body .waitlist-form>.close-x,body .form-actions>.close-x{width:40px;max-width:40px;flex:0 0 40px}",
     /* داخل نوافذ app-gate: قاعدة الأزرار هناك تمدد كل زر بعرض النافذة، فتُخصَّص هنا: دائرة في الزاوية والعنوان في المنتصف */
     "body .app-gate-card button.close-x{width:40px;height:40px;min-height:40px;padding:0;border-radius:50%;grid-column:auto;",
@@ -896,14 +899,16 @@
     }
   }
 
-  /* الزر في زاوية حشو الحاوية نفسها (3rem على الحاسب، 1.5rem على الجوال…) فلا يلمس الحافة ولا يغطي العنوان */
+  /* الزر في زاوية حشو الحاوية نفسها (3rem على الحاسب، 1.5rem على الجوال…) فلا يلمس الحافة ولا يغطي العنوان.
+     موضعه نهاية الاتجاه (أمر المهندس رعد 2026-09-05): أعلى اليسار في العربية والأردية، أعلى اليمين في الإنجليزية والفرنسية */
   function placeCloseX(btn) {
     var host = btn.parentNode; if (!host) return;
     var cs = getComputedStyle(host);
     var rtl = getComputedStyle(document.documentElement).direction === "rtl";
-    var top = cs.paddingTop, side = rtl ? cs.paddingRight : cs.paddingLeft;
+    var top = cs.paddingTop, side = rtl ? cs.paddingLeft : cs.paddingRight;
     if (btn.style.top !== top) btn.style.top = top;
-    if (btn.style.insetInlineStart !== side) btn.style.insetInlineStart = side;
+    if (btn.style.insetInlineStart) btn.style.insetInlineStart = "";
+    if (btn.style.insetInlineEnd !== side) btn.style.insetInlineEnd = side;
   }
   var closeXResizeTimer = null;
   window.addEventListener("resize", function () {

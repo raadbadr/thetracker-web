@@ -82,7 +82,8 @@
         rows.forEach(function (r) {
           var tr = document.createElement("tr");
           var meta = [r.code, r.case_number ? t("colCase") + " " + r.case_number : "", r.owner_id ? name(r.owner_id) : "", r.review_at ? t("colReview") + " " + app.fmtDate(r.review_at) : ""].filter(Boolean).join(" · ");
-          tr.innerHTML = '<td><span class="item-title" data-tr>' + esc(r.title) + '</span><span class="item-cat">' + esc(meta) + "</span></td>" +
+          tr.innerHTML = '<td><span class="item-title" data-tr>' + esc(r.title) + '</span><span class="item-cat">' + esc(meta) + "</span>" +
+            (r.review_at ? '<span class="item-cat due-left" data-due="' + esc(r.review_at) + '"></span>' : "") + "</td>" +
             "<td>" + esc(t("cat_" + (r.category || "legal"))) + "</td>" +
             "<td>" + esc(r.client_name || "-") + "</td>" +
             "<td>" + badge(r.likelihood, r.impact) + "</td>" +
@@ -134,7 +135,7 @@
           var row = document.createElement("div"); row.className = "action-row";
           row.innerHTML = '<input type="text" class="waitlist-input" data-af="title" data-i="' + i + '" value="' + esc(a.title || "") + '" placeholder="' + esc(t("actionTitle")) + '" maxlength="200" dir="auto">' +
             '<select class="waitlist-input" data-af="owner_id" data-i="' + i + '">' + memberOptions(a.owner_id) + "</select>" +
-            '<input type="date" class="waitlist-input" data-af="due" data-i="' + i + '" value="' + esc(a.due || "") + '" dir="ltr">' +
+            '<input type="date" class="waitlist-input" data-af="due" data-i="' + i + '" value="' + esc(a.due || "") + '" dir="ltr" data-duration="compact">' +
             '<label class="rule-check" style="white-space:nowrap"><input type="checkbox" data-af="done" data-i="' + i + '"' + (a.done ? " checked" : "") + "> " + esc(t("done")) + "</label>" +
             '<button type="button" class="st-tool" data-adel="' + i + '">✕</button>';
           box.appendChild(row);
@@ -166,9 +167,10 @@
         if (!pending.length) return Promise.resolve(risk);
         return ensureTracker().then(function (tr) {
           var rows = pending.map(function (a) {
-            return { tracker_id: tr.id, title: (risk.code ? risk.code + " · " : "") + a.title, due_at: new Date(a.due + "T09:00:00").toISOString(),
+            /* الرمز القياسي للخطر داخلي: يبقى في data لا في العنوان الظاهر */
+            return { tracker_id: tr.id, title: a.title, due_at: new Date(a.due + "T09:00:00").toISOString(),
                      status: "open", category: t("riskActionCategory"), assignee_id: a.owner_id || null, client_name: risk.client_name || null,
-                     case_number: risk.case_number || null, data: { risk_id: risk.id, risk_title: risk.title } };
+                     case_number: risk.case_number || null, data: { risk_id: risk.id, risk_title: risk.title, risk_code: risk.code || null } };
           });
           return app.insertItems(rows).then(function (inserted) {
             (inserted || []).forEach(function (it, i) { pending[i].item_id = it.id; });
