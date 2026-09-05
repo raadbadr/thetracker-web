@@ -97,5 +97,30 @@ try {
   check("token never appears in the response", !JSON.stringify([...good.headers]).includes("000:fake"));
 } finally { globalThis.fetch = realFetch; }
 
+/* ─── القوائم للمستخدم: رقم الورقة نفسها لا الرقم القياسي، والتواريخ يوم-شهر-سنة ─── */
+{
+  const { formatItems, dmy } = await import("../src/notify.js");
+  const { callTool } = await import("../src/mcp.js");
+  const paper = { item_number: "ITM-05092026-0002", kind: "document", document_kind: "vat_certificate", title: "الشهادة الضريبية — PARKINZI Company", client_name: "PARKINZI Company", doc_number: "314983900200003", issue_date: "2026-09-01", due_at: "2026-10-31T00:00:00+00:00" };
+  const cr = { item_number: "ITM-05092026-0001", kind: "document", document_kind: "commercial_register", title: "السجل التجاري — PARKINZI Company", doc_number: "7055060102", issue_date: "2026-08-24", due_at: "2027-09-01T00:00:00+00:00" };
+  const session = { item_number: "ITM-05092026-0003", kind: "session", title: "جلسة", client_name: "عميل", case_number: "4471", due_at: "2026-09-10T06:00:00+00:00" };
+  check("dmy: day-month-year from an ISO timestamp", dmy("2026-10-31T00:00:00+00:00") === "31-10-2026");
+  const menu = formatItems("ar", [paper, cr, session], "📅 مواعيدك القادمة:", "لا يوجد", "Asia/Riyadh");
+  check("menu button: paper shows its own number", menu.includes("رقم 314983900200003") && menu.includes("رقم 7055060102"), menu);
+  check("menu button: issue and expiry in day-month-year", menu.includes("إصدار 01-09-2026") && menu.includes("ينتهي 31-10-2026") && menu.includes("ينتهي 01-09-2027"), menu);
+  check("menu button: case rows unchanged, no canonical number anywhere", menu.includes("جلسة — عميل (4471)") && clean(menu), menu);
+  const ctx = { env: {}, who: { org_id: "o", org_name: "x", user_id: "u" }, hash: null, rpc: async (name) => name === "telegram_items_by_kind" ? [paper, cr] : name === "telegram_items" ? [paper, session] : null };
+  const items = await callTool("tracker_items", { kind: "document" }, ctx);
+  check("tool text: papers read kind — number — issued — expires", items.content[0].text.includes("الشهادة الضريبية — PARKINZI Company — رقم 314983900200003 — إصدار 01-09-2026 — ينتهي 31-10-2026"), items.content[0].text);
+  check("tool text: no canonical number, no ISO date", clean(items.content[0].text) && !/\d{4}-\d{2}-\d{2}/.test(items.content[0].text), items.content[0].text);
+  const list = await callTool("tracker_list", { mode: "upcoming" }, ctx);
+  check("upcoming list: same rule", clean(list.content[0].text) && list.content[0].text.includes("رقم 314983900200003"), list.content[0].text);
+  const money = { status: "ok", period: "month", period_start: "2026-09-01", period_end: "2026-09-30", currency: "SAR", total: 1250.5, count: 3, by_category: [{ name: "إيجار", total: 1000, count: 1 }], latest: [{ title: "إيجار المكتب", amount: 1000, date: "2026-09-02", category: "إيجار" }] };
+  const exp = await callTool("tracker_expenses", { period: "month" }, { ...ctx, rpc: async () => money });
+  check("expenses: total, count, categories and latest in plain words", exp.content[0].text.includes("1,250.5 ريال في 3 مصروف") && exp.content[0].text.includes("إيجار المكتب — 1,000 ريال — 02-09-2026") && clean(exp.content[0].text), exp.content[0].text);
+  const none = await callTool("tracker_expenses", {}, { ...ctx, rpc: async () => ({ status: "ok", total: 0, count: 0, by_category: [], latest: [] }) });
+  check("expenses: none recorded → one plain sentence with where to add them", none.content[0].text.startsWith("لا مصاريف مسجلة هذا الشهر") && clean(none.content[0].text), none.content[0].text);
+}
+
 console.log(failed ? `\n${failed} check(s) failed` : "\nall checks pass");
 process.exit(failed ? 1 : 0);

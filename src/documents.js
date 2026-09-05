@@ -749,7 +749,7 @@ export function rulesExtract(rawText) {
   if (!out.number) { const genericNumberMatch = text.match(/رقم\s*[^:：\n]{0,25}[:：]\s*([0-9]{5,20})/); if (genericNumberMatch) out.number = genericNumberMatch[1]; }
   const expiryDateInfo = findDate(text, ["تاريخ\\s*(?:ال)?انتهاء", "ينتهي\\s*(?:في|بتاريخ)", "صالح(?:ة)?\\s*حتى", "تاريخ\\s*نهاية", "الانتهاء", "تاريخ\\s*(?:ال)?جلسة", "موعد\\s*(?:ال)?جلسة", "تاريخ\\s*(?:ال)?استحقاق", "تاريخ\\s*(?:ال)?سداد", "expir(?:y|es|ation)\\s*(?:date)?", "valid\\s*(?:until|to)", "due\\s*date", "hearing\\s*date"]);
   const issueDateInfo = findDate(text, ["تاريخ\\s*(?:ال)?إصدار", "تاريخ\\s*(?:ال)?اصدار", "تاريخ\\s*التسجيل", "تاريخ\\s*(?:ال)?بداية", "تاريخ\\s*(?:ال)?تحرير", "تاريخ\\s*العقد", "صدر\\s*(?:في|بتاريخ)", "حرر\\s*(?:في|بتاريخ)", "issue\\s*date", "issued\\s*on", "registration\\s*date", "date"]);
-  /* الشهادة الضريبية لا «تنتهي»: «تاريخ استحقاق أول إقرار» موعد إقرار لا انتهاء، فلا يُعدّ انتهاء (يبقى في التفاصيل first_filing_due) */
+  /* الشهادة الضريبية لا «تنتهي»: «تاريخ استحقاق أول إقرار» موعد إقرار لا انتهاء، فلا يعد انتهاء (يبقى في التفاصيل first_filing_due) */
   const vatDueNotExpiry = out.kind === "vat_certificate" && expiryDateInfo && /استحقاق|due/i.test(String(expiryDateInfo.label || ""));
   if (expiryDateInfo && !vatDueNotExpiry) { out.expiry_date = expiryDateInfo.raw; out.expiry_date_calendar = expiryDateInfo.year < 1700 ? "hijri" : "gregorian"; }
   if (issueDateInfo) { out.issue_date = issueDateInfo.raw; out.issue_date_calendar = issueDateInfo.year < 1700 ? "hijri" : "gregorian"; }

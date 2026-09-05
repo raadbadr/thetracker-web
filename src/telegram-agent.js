@@ -29,7 +29,7 @@ function systemPrompt(ctx) {
   ].filter(Boolean).join("\n");
 }
 
-/* داخل تيليغرام المستخدم معروف من الربط: لا يُعرض على النموذج معامل telegram_user_id كي لا يخترع رقما (فعلها: "123456") */
+/* داخل تيليغرام المستخدم معروف من الربط: لا يعرض على النموذج معامل telegram_user_id كي لا يخترع رقما (فعلها: "123456") */
 function toolDefs() {
   return AGENT_TOOLS.map((t) => {
     const params = JSON.parse(JSON.stringify(t.inputSchema || {}));
@@ -96,7 +96,7 @@ async function oneWord(env, ctx) {
   return { text: rows.length ? rowsText(rows) : (EMPTY[ctx.lang] || EMPTY.ar), tools: [hit[1].tool] };
 }
 
-/* الأوامر المباشرة (كلمة أو سؤال قصير معروف) تُجاب قبل أي تخمين نية: لا «سأسجل هذا» لكلمة «المستندات» */
+/* الأوامر المباشرة (كلمة أو سؤال قصير معروف) تجاب قبل أي تخمين نية: لا «سأسجل هذا» لكلمة «المستندات» */
 export async function quickAnswer(env, ctx) {
   if (!env.WORKER_SECRET) return null;
   try { return await oneWord(env, ctx); } catch (e) { return null; }

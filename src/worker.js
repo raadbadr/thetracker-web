@@ -455,7 +455,7 @@ const HUMANIZE_EMPTY = { ar: "لم أفهم الطلب، أعد صياغته ب�
 function humanize(text, lang) {
   let t = String(text || "");
   t = t.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, "");
-  /* الأرقام القياسية الداخلية (ITM-/ORG-/USR-) لا تصل إلى المستخدم أبدا، حتى لو قلّد النموذج ردا قديما */
+  /* الأرقام القياسية الداخلية (ITM-/ORG-/USR-) لا تصل إلى المستخدم أبدا، حتى لو قلد النموذج ردا قديما */
   t = t.replace(/\b(?:ITM|ORG|USR)-\d{8}-\d{4}\b\s*[|—-]?\s*/g, "");
   const lines = t.split("\n").filter((line) => {
     const l = line.trim();
@@ -490,7 +490,7 @@ function sanitizeIntentItem(item, text) {
 async function smartReply(env, chatId, userId, text, lang, tgName, attachment, prefix, userTimeZone) {
   const b = botText(lang);
   const pre = prefix || "";
-  /* أولا: الأوامر المباشرة المعروفة (قضايا، المستندات، رقم السجل…) تُجاب من البيانات فورا، قبل أي تخمين نية */
+  /* أولا: الأوامر المباشرة المعروفة (قضايا، المستندات، رقم السجل…) تجاب من البيانات فورا، قبل أي تخمين نية */
   if (!attachment) {
     let quick = null;
     try { quick = await quickAnswer(env, { chatId, userId, text, lang }); } catch {}
@@ -504,7 +504,7 @@ async function smartReply(env, chatId, userId, text, lang, tgName, attachment, p
   let intent = { action: "question" };
   try { intent = await extractIntent(env, text, attachment ? { attachment } : null); } catch {}
   if (intent.item) intent.item = sanitizeIntentItem(intent.item, text);
-  /* الإضافة لا تُقترح إلا بفعل صريح في الرسالة؛ كلمة أو سؤال ليس طلب تسجيل */
+  /* الإضافة لا تقترح إلا بفعل صريح في الرسالة؛ كلمة أو سؤال ليس طلب تسجيل */
   if (intent.action === "add" && !ADD_VERBS.test(text)) intent.action = "question";
   if (intent.action === "add" || intent.action === "done" || intent.action === "assign") {
     if (intent.action === "add" && !(intent.item && intent.item.title)) intent.action = "question";

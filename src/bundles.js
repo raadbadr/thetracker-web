@@ -1,7 +1,7 @@
 /* حزم الملفات الكبيرة (قاعدة المهندس رعد: لا ملف مصدر يتجاوز 1000 سطر):
-   الملف المطلوب /app/common.js مثلا يُخدم بتجميع أجزائه المذكورة في /app/common.js.parts.json
+   الملف المطلوب /app/common.js مثلا يخدم بتجميع أجزائه المذكورة في /app/common.js.parts.json
    بالترتيب وبلا أي تغيير في المحتوى، فيبقى سلوك التشغيل واحدا بينما المصدر مقسم أجزاء صغيرة.
-   إن لم يوجد ملف أجزاء يُترك الطلب للأصول الثابتة كما هو. */
+   إن لم يوجد ملف أجزاء يترك الطلب للأصول الثابتة كما هو. */
 async function sha256Hex(text) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");

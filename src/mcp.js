@@ -128,7 +128,7 @@ export async function callTool(name, args, ctx) {
     case "tracker_company": {
       const orgs = (await ctx.rpc("telegram_company_profile", { p_secret: secret, p_user_id: user })) || [];
       if (!orgs.length) return fail("No company on this account.");
-      /* شركته (مالك/مدير) أولا؛ العضويات في شركات غيره تُذكر بعدها باسمها فقط */
+      /* شركته (مالك/مدير) أولا؛ العضويات في شركات غيره تذكر بعدها باسمها فقط */
       const mine = orgs.filter((o) => o.role === "owner" || o.role === "admin");
       const shown = mine.length ? mine : orgs.slice(0, 1);
       const lines = [];
