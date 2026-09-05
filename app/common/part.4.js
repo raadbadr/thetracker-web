@@ -775,7 +775,8 @@
         var payload = n.payload || {};
         var title = bellTitle(payload) || payload.title || payload.item_title || "";
         var due = payload.due_at || null;
-        var number = payload.item_number || "";
+        /* الرقم القياسي داخلي: يظهر رقم الورقة أو القضية إن حملته الرسالة، وإلا فلا رقم */
+        var number = payload.number || payload.case_number || payload.doc_number || "";
         if (!n.read_at) unseen++;
         var target = bellTarget(n);
         html += '<div class="app-bell-item' + (n.read_at ? "" : " is-unread") + (target ? " is-link" : "") + '"' +

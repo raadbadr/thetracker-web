@@ -142,7 +142,9 @@
         var extra = {};
         items.forEach(function (it) { Object.keys(it.data || {}).forEach(function (k) { extra[k] = true; }); });
         var cols = [
-          { label: "#", get: function (r) { return r.item_number || ""; } },
+          /* الرقم القياسي داخلي: التصدير يحمل رقم الورقة أو القضية أو المخالفة */
+          { label: T("colNumber"), get: function (r) { var d = r.data || {};
+              return String(r.case_number || d.number || d.violation_number || d["رقم المخالفة"] || "").trim(); } },
           { label: T("colTitle"), get: function (r) { return r.title; } },
           { label: "category", get: function (r) { return r.category; } },
           { label: T("colTracker"), get: function (r) { return r.trackers && r.trackers.name || ""; } },
@@ -270,7 +272,7 @@
 
       function violationFields(item) {
         return {
-          number: dataOf(item, ["violation_number", "رقم المخالفة"]) || item.item_number || "",
+          number: dataOf(item, ["violation_number", "رقم المخالفة"]) || item.case_number || "",
           date: dataOf(item, ["violation_date", "تاريخ المخالفة"]),
           issuer: dataOf(item, ["location", "جهة اصدار المخالفة", "جهة الإصدار"]),
           vtype: dataOf(item, ["نوع المخالفة", "violation_type"]),

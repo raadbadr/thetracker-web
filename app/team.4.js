@@ -183,7 +183,10 @@
         var sel = $("fileLinkTo");
         var opts = (window.__teamWork || []).filter(function (it) { return it.status === "open"; }).slice(0, 200);
         sel.innerHTML = '<option value="">' + esc(t("chatFileNoLink")) + "</option>" + opts.map(function (it) {
-          return '<option value="' + esc(it.id) + '">' + esc(it.title || "") + (it.item_number ? " (" + esc(it.item_number) + ")" : "") + "</option>";
+          /* رقم الورقة نفسها لا الرقم القياسي الداخلي */
+          var d = it.data || {};
+          var num = String(it.case_number || d.number || d.violation_number || "").trim();
+          return '<option value="' + esc(it.id) + '">' + esc(it.title || "") + (num ? " (" + esc(num) + ")" : "") + "</option>";
         }).join("");
         show("fileBar", true);
       }
