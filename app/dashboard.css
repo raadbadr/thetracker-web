@@ -445,6 +445,10 @@
     @media (max-width: 560px) { .dash-grid--single .svc-grid { grid-template-columns: 1fr; } }
     .dash-grid--single .cal-cell { min-height: 92px; }
     .dash-main, .dash-side { min-width: 0; }
+    /* عمود اللوحة شبكة بعمود واحد صريح، وأبناؤه يتقلصون معه: بلا min-width
+       تأخذ البطاقة مقاسها الطبيعي (655 بكسل) داخل عمود عرضه 343 فتفيض الشاشة. */
+    .dash-main { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--gap); align-content: start; }
+    .dash-main > *, .dash-side > * { min-width: 0; max-width: 100%; }
     .dash-side { display: grid; gap: var(--gap); align-content: start; }
     /* التقويم داخل العمود الجانبي: خلايا مضغوطة وأزرار في سطر واحد */
     .dash-side .cal-nav { gap: 0.4rem; }
