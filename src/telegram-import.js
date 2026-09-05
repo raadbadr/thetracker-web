@@ -38,12 +38,12 @@ function nonEmpty(v) { return !(v === null || v === undefined || (typeof v === "
 function cellText(v) {
   if (v === null || v === undefined) return "";
   if (v instanceof Date) return isNaN(v.getTime()) ? "" : v.toISOString().slice(0, 10);
-  return String(v).trim();
+  return toWesternDigits(String(v)).trim();
 }
 function cellValue(v) {
   if (!nonEmpty(v)) return null;
   if (v instanceof Date) return isNaN(v.getTime()) ? null : v.toISOString();
-  if (typeof v === "string") return v.trim();
+  if (typeof v === "string") return toWesternDigits(v).trim();
   return v;
 }
 function normHeader(s) { return String(s || "").toLowerCase().replace(/[_\-]+/g, " ").replace(/\s+/g, " ").trim(); }

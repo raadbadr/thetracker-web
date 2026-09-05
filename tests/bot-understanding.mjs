@@ -32,6 +32,8 @@ is("how many violations do we have", { tool: "tracker_items", kind: "violation",
 is("قضايا شركة أبراج", { tool: "tracker_items", kind: "case" });
 is("مخالفات ASKEC", { tool: "tracker_items", kind: "violation" });
 is("القضية 4471", { tool: "tracker_items", kind: "case" });
+is("القضية ٤٤٧١", { tool: "tracker_items", kind: "case" });
+check("Eastern digits filter the same row as Western ones", composeAnswer(u("القضية ٤٤٧١"), [{ title: "جلسة", case_number: "4471" }, { title: "أخرى", case_number: "9" }], "ar", (r) => r.map((x) => x.title).join(","), "x") === "جلسة");
 /* ورقة بعينها */
 is("متى تنتهي الشهادة الضريبية", { tool: "tracker_items", kind: "document", kw: true });
 is("رقم الشهادة الضريبية", { tool: "tracker_items", kind: "document", kw: true });

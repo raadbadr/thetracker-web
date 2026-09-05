@@ -2,7 +2,7 @@
    «وش عندي اليوم»، «المتأخرات»، «مصاريف هذا الشهر»، «من في الفريق»، «رقم السجل التجاري»…
    يعيد أداة وقيودا (نوع، حالة، كلمة تصفية، نافذة زمنية، طلب عدد) أو ردا قصيرا للتحية والشكر، أو null فيترك الرسالة للنموذج.
    أي فعل كتابة صريح (أضف، أنجزت، أسند، ذكرني) ليس من شأن هذه الطبقة. */
-import { VERBS } from "./notify.js";
+import { VERBS, westernDigits } from "./notify.js";
 
 export function normalize(text) {
   return String(text || "")
@@ -77,7 +77,7 @@ function inWindow(iso, win, tz) {
 /* الفهم نفسه: يعيد {reply} أو {tool,args,label,count,filter,window,keyword} أو null */
 export function understand(text, lang) {
   const L = LABELS[lang] || LABELS.ar;
-  const raw = String(text || "").trim();
+  const raw = westernDigits(String(text || "")).trim();
   if (!raw) return null;
   const n = normalize(raw);
   if (!n || n.length > 160) return null;

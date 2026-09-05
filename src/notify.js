@@ -236,6 +236,10 @@ export async function linkChannelDirect(env, userId, channel, externalId) {
    المنطقة الزمنية وصيغة الوقت (24 أو 12 ساعة) باختيار المستلم من إعداداته
    (profiles.tz وprofiles.time_format)، والافتراض توقيت الرياض و24 ساعة. */
 /* التواريخ للمستخدم دائما يوم-شهر-سنة؛ أي قيمة ليست تاريخا تعود كما هي */
+/* الأرقام غربية دائما: ما يكتبه المستخدم بالأرقام العربية الشرقية أو الفارسية يُحوَّل قبل أي فهم أو تخزين */
+export function westernDigits(text) {
+  return String(text || "").replace(/[\u0660-\u0669\u06F0-\u06F9]/g, (d) => { const c = d.charCodeAt(0); return String(c >= 0x06F0 ? c - 0x06F0 : c - 0x0660); });
+}
 export function dmy(v) {
   const t = String(v || "").slice(0, 10);
   const m = t.match(/^(\d{4})-(\d{2})-(\d{2})$/);

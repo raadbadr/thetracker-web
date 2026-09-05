@@ -12,7 +12,7 @@ import { handleV1, mcpAuthenticate, importRowsWithKey } from "./api-v1.js";
 import { agentReply, quickAnswer, VERBS } from "./telegram-agent.js";
 import { handleCalendar } from "./calendar.js";
 import { handleDocumentAnalyze } from "./documents.js";
-import { runNotificationCron, linkChannelByCode, notifyTarget, sendTelegram, sendWhatsapp, sendSms, sendEmail, rpc, t as channelText,
+import { runNotificationCron, linkChannelByCode, notifyTarget, sendTelegram, sendWhatsapp, sendSms, sendEmail, rpc, t as channelText, westernDigits,
          bot as botText, menuKeyboard, menuAction, urlButton, formatItems, telegramItems, linkChannelDirect, linkChannelByPhone, contactKeyboard,
          sendChatAction, fetchTelegramFile, bytesToBase64, TELEGRAM_FILE_MAX, answerCallback, clearInlineButtons, confirmButtons, actionButtons } from "./notify.js";
 import { ALLOWED_EXT, fileExt, parseWorkbook, draftPayload, commitImport } from "./telegram-import.js";
@@ -497,7 +497,7 @@ async function handleTelegramWebhook(request, env) {
   const chatId = msg && msg.chat && msg.chat.id;
   /* البوت مساعد شخصي لحساب مرتبط: لا يعمل في المجموعات والقنوات، فلا يضغط أحد زر تأكيد عن غيره */
   if (msg && msg.chat && msg.chat.type && msg.chat.type !== "private") return json({ ok: true });
-  const text = String((msg && msg.text) || "").trim();
+  const text = westernDigits(String((msg && msg.text) || "")).trim();
   if (!chatId) return json({ ok: true });
   const from = (msg && msg.from) || {};
   const tgLang = telegramLang(from.language_code);
@@ -549,7 +549,7 @@ async function handleTelegramWebhook(request, env) {
   const voice = msg.voice || msg.audio || msg.video_note || null;
   const photo = Array.isArray(msg.photo) && msg.photo.length ? msg.photo[msg.photo.length - 1] : null;
   const doc = msg.document || null;
-  const caption = String((msg && msg.caption) || "").trim();
+  const caption = westernDigits(String((msg && msg.caption) || "")).trim();
   const mediaLabel = voice ? "[voice]" : doc ? `[file: ${doc.file_name || doc.mime_type || "document"}]` : photo ? "[photo]" : "";
   if (mediaLabel && !text) { /* يسجل نوع الوسيط مع تعليقه */ }
   const logBody = mediaLabel ? `${mediaLabel} ${caption}`.trim() : text;
