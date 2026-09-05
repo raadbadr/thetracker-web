@@ -27,3 +27,6 @@ package-lock.json
 wrangler.toml
 .DS_Store
 .assetsignore
+
+# لقطات جرد العناصر (tools/inventory.mjs) — محلية لا تُرفع
+.inv
