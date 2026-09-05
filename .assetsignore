@@ -18,3 +18,12 @@ supabase
 
 # Internal docs (README, rules, design notes)
 *.md
+
+# أدوات المشروع واختباراته وإعداداته — ليست جزءا من الموقع
+tests
+tools
+package.json
+package-lock.json
+wrangler.toml
+.DS_Store
+.assetsignore
