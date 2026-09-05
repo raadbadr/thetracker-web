@@ -205,5 +205,46 @@ try {
   check("plain talk with no facts passes", ungrounded("على الرحب.", "", false) === false);
 }
 
+/* ─── من الطرف إلى الطرف: النموذج يحاول الكذب فيمنعه الحارس، ويمر حين يستند إلى أداة ─── */
+{
+  const { agentReply } = await import("../src/telegram-agent.js");
+  const realFetch = globalThis.fetch;
+  const rpcCalls = [];
+  const rpcReply = (name) => {
+    if (name === "telegram_history") return [];
+    if (name === "telegram_items_by_kind") return [{ id: "i1", title: "جلسة الاستئناف", case_number: "4471", client_name: "شركة أبراج", due_at: "2026-09-10T06:00:00+00:00" }];
+    return null;
+  };
+  globalThis.fetch = async (url, opts) => {
+    const name = String(url).split("/rpc/")[1] || "";
+    rpcCalls.push(name);
+    const body = JSON.stringify(rpcReply(name));
+    return new Response(body, { status: 200, headers: { "content-type": "application/json" } });
+  };
+  const envOf = (replies) => {
+    let i = 0;
+    return { WORKER_SECRET: "s", SUPABASE_URL: "https://stub.supabase.co", SUPABASE_ANON_KEY: "k",
+      AI: { run: async () => replies[Math.min(i++, replies.length - 1)] } };
+  };
+  try {
+    /* سؤال لا أداة له: النموذج يخترع رقما فيُمنع الرد كله */
+    const lie = await agentReply(envOf([{ response: "عدد سكان الرياض 5 ملايين" }]), { chatId: "t1", userId: "u1", text: "كم عدد سكان الرياض", lang: "ar" });
+    check("end to end: an invented number never reaches the user", !!lie && lie.text.startsWith("لا أملك هذه المعلومة") && !/\d/.test(lie.text), lie && lie.text);
+    /* أسماء مخترعة بعد أداة حقيقية: تُمنع أيضا */
+    const names = await agentReply(envOf([
+      { tool_calls: [{ function: { name: "tracker_items", arguments: JSON.stringify({ kind: "case" }) } }] },
+      { response: "العملاء: شركة أبراج، محمد علي، سارة خالد" },
+    ]), { chatId: "t2", userId: "u1", text: "مين العملاء", lang: "ar" });
+    check("end to end: invented names are blocked even after a real tool call", !!names && names.text.startsWith("لا أملك هذه المعلومة"), names && names.text);
+    /* الحقيقة تمر: رقم القضية جاء من الأداة */
+    const truth = await agentReply(envOf([
+      { tool_calls: [{ function: { name: "tracker_items", arguments: JSON.stringify({ kind: "case" }) } }] },
+      { response: "لديك قضية واحدة: جلسة الاستئناف رقم 4471 لشركة أبراج." },
+    ]), { chatId: "t3", userId: "u1", text: "ايش وضع القضايا عندي", lang: "ar" });
+    check("end to end: a grounded answer passes untouched", !!truth && truth.text.includes("4471") && !truth.text.startsWith("لا أملك"), truth && truth.text);
+    check("end to end: the tool really was called against the database", rpcCalls.includes("telegram_items_by_kind"), String(rpcCalls));
+  } finally { globalThis.fetch = realFetch; }
+}
+
 console.log(failed ? `\n${failed} check(s) failed` : "\nall checks pass");
 process.exit(failed ? 1 : 0);
