@@ -62,6 +62,8 @@ export const TOOLS = [
     inputSchema: { type: "object", properties: { telegram_user_id: { type: "string", description: "Telegram user id of the person talking (Telegram only)" }, query: { type: "string", description: "Item number, title or case number" }, member: { type: "string", description: "Member name or email" } }, required: ["query", "member"], additionalProperties: false } },
   { name: "tracker_team", description: "The company's team: each member's name, role, department, open and overdue counts, next due date and their nearest items. Use for 'who is responsible for…', 'what is on Ahmed this week', 'the team'.",
     inputSchema: { type: "object", properties: { telegram_user_id: { type: "string" } }, additionalProperties: false } },
+  { name: "tracker_expenses", description: "Operating expenses of the user's company for a period: total in SAR, count, top categories and the latest expenses. Use for 'how are my expenses', 'what did we spend this month/week/year'.",
+    inputSchema: { type: "object", properties: { telegram_user_id: { type: "string" }, period: { type: "string", enum: ["month", "week", "year", "all"], default: "month", description: "month (default), week, year or all" } }, additionalProperties: false } },
   { name: "tracker_remind", description: "Set a personal reminder lead time for one item: remind before its due date by e.g. 'يوم', '3 أيام', 'أسبوع', '2 hours'. Identify the item by query (title, case number, violation number). Returns ambiguous candidates when several match.",
     inputSchema: { type: "object", properties: { telegram_user_id: { type: "string" }, query: { type: "string" }, before: { type: "string", description: "Lead time as written by the user" } }, required: ["query", "before"], additionalProperties: false } },
   { name: "tracker_import_rows", description: "Bulk-import rows (objects with Arabic or English column names, e.g. title, client_name, case_number, due_at, amount, status) into a tracker of this company.",
@@ -188,6 +190,18 @@ export async function callTool(name, args, ctx) {
         return head + "\n   " + load + (items ? "\n" + items : "");
       });
       return result(r, (r.org && r.org.name ? r.org.name + "\n" : "") + (lines.length ? lines.join("\n") : "لا أعضاء."));
+    }
+    case "tracker_expenses": {
+      const period = ["month", "week", "year", "all"].includes(a.period) ? a.period : "month";
+      const r = await ctx.rpc("telegram_expenses", { p_secret: secret, p_user_id: user, p_period: period });
+      if (!r || r.status === "no_org") return fail("No company found.");
+      const LABEL = { month: "هذا الشهر", week: "هذا الأسبوع", year: "هذه السنة", all: "منذ البداية" };
+      const money = (v) => Number(v || 0).toLocaleString("en-US", { maximumFractionDigits: 2 }) + " ريال";
+      if (!Number(r.count || 0)) return result(r, "لا مصاريف مسجلة " + LABEL[period] + ". تُسجَّل من لوحة التحكم ← مصاريف التشغيل: https://appmails.net/app/dashboard.html");
+      const cats = (r.by_category || []).map((c) => c.name + " " + money(c.total) + " (" + c.count + ")").join("، ");
+      const latest = (r.latest || []).map((e) => "• " + [e.title, money(e.amount), e.date ? dmy(e.date) : null, e.category].filter(Boolean).join(" — ")).join("\n");
+      const head = "مصاريف " + LABEL[period] + (r.period_start && period !== "all" ? " (" + dmy(r.period_start) + " إلى " + dmy(r.period_end) + ")" : "") + ": " + money(r.total) + " في " + r.count + " مصروف.";
+      return result(r, head + (cats ? "\nأعلى التصنيفات: " + cats : "") + (latest ? "\nآخر المصاريف:\n" + latest : ""));
     }
     case "tracker_remind": {
       const r = await ctx.rpc("telegram_set_reminder", { p_secret: secret, p_user_id: user, p_query: String(a.query || ""), p_before: String(a.before || "") });

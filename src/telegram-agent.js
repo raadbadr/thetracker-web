@@ -5,7 +5,7 @@ import { TOOLS, callTool } from "./mcp.js";
 
 const MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const LANG_NAMES = { ar: "العربية الفصحى", en: "English", fr: "français", ur: "اردو" };
-const AGENT_TOOLS = TOOLS.filter((t) => ["tracker_company", "tracker_items", "tracker_search", "tracker_list", "tracker_add", "tracker_complete", "tracker_assign", "tracker_team", "tracker_remind"].includes(t.name));
+const AGENT_TOOLS = TOOLS.filter((t) => ["tracker_company", "tracker_items", "tracker_search", "tracker_list", "tracker_add", "tracker_complete", "tracker_assign", "tracker_team", "tracker_remind", "tracker_expenses"].includes(t.name));
 
 function systemPrompt(ctx) {
   const lang = ctx.lang || "ar";
@@ -17,7 +17,7 @@ function systemPrompt(ctx) {
     `لا تحيي ولا تذكر اسمه أو شركته في كل رد؛ المحادثة مستمرة، فادخل في الجواب مباشرة. لا تكرر جملة قلتها قبل قليل، ولا تختم بعبارات مجاملة.`,
     `أسئلة الفريق (من المسؤول عن…، ماذا على فلان، عبء الأعضاء) من tracker_team. طلب «ذكرني قبل … بـ يوم/3 أيام/أسبوع» = tracker_remind بالعنصر والمهلة كما كتبها.`,
     `أسئلة بيانات الشركة (رقم السجل التجاري، الرقم الضريبي، الآيبان، العنوان، الباقة، الأوراق المرفوعة) تجاب من tracker_company بالرقم نفسه كما هو مسجل.`,
-    `كلمة واحدة تكفي: «قضايا» = tracker_items(case)، «مخالفات» = (violation)، «مهام» = (task)، «مستندات» = (document)، «المنجز» = (status done)، «مواعيد/القادم» = tracker_list(upcoming)، «متأخر» = tracker_list(overdue)، أي اسم أو رقم = tracker_search. والكلام الطويل تفهم منه المطلوب نفسه.`,
+    `كلمة واحدة تكفي: «قضايا» = tracker_items(case)، «مخالفات» = (violation)، «مهام» = (task)، «مستندات» = (document)، «المنجز» = (status done)، «مواعيد/القادم» = tracker_list(upcoming)، «متأخر» = tracker_list(overdue)، «مصاريف/المصاريف/كم صرفنا» = tracker_expenses(period)، أي اسم أو رقم = tracker_search. والكلام الطويل تفهم منه المطلوب نفسه.`,
     `لا تذكر أبدا أسماء حقول أو مفاتيح تقنية (مثل due_at أو client_name) ولا JSON ولا معرفات داخلية ولا صيغ تقنية (ISO 8601)؛ تكلم بلغة إنسان عادي فقط.`,
     `لا تعرض الرقم القياسي الداخلي (ITM-…) للمستخدم أبدا؛ اعرض رقم السجل أو القضية أو المخالفة أو الورقة نفسه كما هو مسجل، وتواريخ الإصدار والانتهاء.`,
     `صيغة الرد: مختصرة جدا وبلغة إنسان. للقوائم سطر لكل عنصر بلا مقدمة ولا خاتمة، منسوخ من نص الأداة كما هو: الورقة الرسمية «نوعها — رقمها — إصدار يوم-شهر-سنة — ينتهي يوم-شهر-سنة»، والقضية أو المخالفة أو المهمة «العنوان — قضية/مخالفة رقم … — العميل — الموعد». الرقم الوحيد الذي يظهر هو رقم الورقة أو القضية أو المخالفة كما هو مسجل؛ أي رمز يبدأ بـ ITM أو ORG أو USR ممنوع. التواريخ يوم-شهر-سنة (مثل 31-10-2026) بلا وقت إلا إن كان موعدا بساعة. إن لم يوجد شيء فجملة واحدة. للأسئلة: الجواب فقط. لا شرح لما فعلت ولا ذكر لأسماء الأدوات.`,
@@ -74,6 +74,7 @@ const ONE_WORD = [
   [/^(متأخر|المتأخر|متأخرات|المتأخرات|overdue|late)$/i, { tool: "tracker_list", args: { mode: "overdue" } }],
   [/^(الكل|كل شيء|everything|all)$/i, { tool: "tracker_items", args: { kind: "all", status: "open", limit: 20 } }],
   [/^(الفريق|فريقي|الأعضاء|team|my team|members)$/i, { tool: "tracker_team", args: {} }],
+  [/^(مصاريف|المصاريف|مصروفات|المصروفات|مصروف|مصاريف التشغيل|expenses?|spending|dépenses?|اخراجات)$/i, { tool: "tracker_expenses", args: {} }],
   [/^(الشركة|شركتي|بياناتي|بيانات الشركة|السجل|رقم السجل|السجل التجاري|رقم السجل التجاري|الرقم الضريبي|الايبان|الآيبان|متى ينتهي|متى تنتهي|الانتهاء|تاريخ الانتهاء|تاريخ الاصدار|تاريخ الإصدار|company|my company|cr|vat|iban|expiry|when does it expire)$/i, { tool: "tracker_company", args: {} }],
 ];
 const EMPTY = { ar: "لا يوجد.", en: "Nothing.", fr: "Rien.", ur: "کچھ نہیں۔" };
@@ -89,7 +90,7 @@ async function oneWord(env, ctx) {
   if (!hit) return null;
   const toolCtx = { env, who: { org_id: ctx.orgId || null, org_name: ctx.orgName || "", user_id: ctx.userId }, hash: null, rpc: (name, args) => rpc(env, name, args) };
   const out = await callTool(hit[1].tool, hit[1].args, toolCtx);
-  if (hit[1].tool === "tracker_company" || hit[1].tool === "tracker_team") return out && out.content && out.content[0] && !out.isError ? { text: out.content[0].text, tools: [hit[1].tool] } : null;
+  if (hit[1].tool === "tracker_company" || hit[1].tool === "tracker_team" || hit[1].tool === "tracker_expenses") return out && out.content && out.content[0] && !out.isError ? { text: out.content[0].text, tools: [hit[1].tool] } : null;
   const rows = out && out.structuredContent && out.structuredContent.items;
   if (!Array.isArray(rows)) return null;
   return { text: rows.length ? rowsText(rows) : (EMPTY[ctx.lang] || EMPTY.ar), tools: [hit[1].tool] };
