@@ -168,8 +168,31 @@ export async function callTool(name, args, ctx) {
       return result({ companies: orgs }, lines.join("\n"));
     }
     case "tracker_items": {
-      const rows = await ctx.rpc("telegram_items_by_kind", { p_secret: secret, p_user_id: user, p_kind: a.kind || "all", p_status: a.status || "open", p_limit: Math.min(30, Math.max(1, Number(a.limit) || 10)) });
-      return result({ kind: a.kind || "all", status: a.status || "open", count: (rows || []).length, items: rows || [] }, (rows && rows.length ? rows.length + " items\n" : "") + describeRows(rows));
+      const kind = a.kind || "all", status = a.status || "open";
+      const limit = Math.min(30, Math.max(1, Number(a.limit) || 10));
+      const rows = await ctx.rpc("telegram_items_by_kind", { p_secret: secret, p_user_id: user, p_kind: kind, p_status: status, p_limit: limit });
+      if (rows && rows.length) return result({ kind, status, count: rows.length, items: rows }, rows.length + " items\n" + describeRows(rows));
+      if (kind === "all") return result({ kind, status, count: 0, items: [] }, status === "open" ? "لا عناصر مفتوحة." : "لا عناصر مسجلة.");
+      /* لا شيء من هذا النوع: انظر أوسع قبل النفي — المنجز منه، وما يحمل الكلمة في عنوانه، ونظرة عامة على الموجود */
+      const K = { violation: ["مخالفات", "مخالف"], case: ["قضايا", "قض"], task: ["مهام", "مهم"], document: ["مستندات", "مستند"] }[kind] || [kind, kind];
+      const parts = [], extra = { kind, status, count: 0, items: [] };
+      let done = [];
+      if (status === "open") { try { done = (await ctx.rpc("telegram_items_by_kind", { p_secret: secret, p_user_id: user, p_kind: kind, p_status: "done", p_limit: 10 })) || []; } catch (e) { done = []; } }
+      if (done.length) { extra.done = done; parts.push("لا " + K[0] + " مفتوحة الآن. المنجزة سابقا " + done.length + ":\n" + describeRows(done)); }
+      else parts.push("لا " + K[0] + " مسجلة إطلاقا، لا حالية ولا سابقة.");
+      let near = [];
+      try { near = ((await ctx.rpc("telegram_search", { p_secret: secret, p_user_id: user, p_query: K[1], p_limit: 5 })) || []).filter((r) => !done.some((d) => d.id === r.id)); } catch (e) { near = []; }
+      if (near.length) { extra.similar = near; parts.push("عناصر تحمل الكلمة في عنوانها وهي ليست " + K[0] + ":\n" + describeRows(near)); }
+      let all = [];
+      try { all = (await ctx.rpc("telegram_items_by_kind", { p_secret: secret, p_user_id: user, p_kind: "all", p_status: "all", p_limit: 30 })) || []; } catch (e) { all = []; }
+      if (all.length) {
+        const by = new Map();
+        for (const r of all) { const g = r.tracker_name || r.category || "أخرى"; const c = by.get(g) || { open: 0, done: 0 }; c[r.status === "open" ? "open" : "done"] += 1; by.set(g, c); }
+        const overview = [...by.entries()].sort((x, y) => (y[1].open + y[1].done) - (x[1].open + x[1].done)).map(([g, c]) => g + " " + (c.open + c.done) + (c.open ? " (مفتوح " + c.open + ")" : "")).join("، ");
+        extra.overview = [...by.entries()].map(([name, c]) => ({ name, ...c }));
+        parts.push("الموجود لديك" + (all.length >= 30 ? " (أول 30)" : "") + ": " + overview + ".");
+      }
+      return result(extra, parts.join("\n"));
     }
     case "tracker_list": {
       const rows = await ctx.rpc("telegram_items", { p_secret: secret, p_user_id: user, p_mode: a.mode === "overdue" ? "overdue" : "upcoming", p_limit: Math.min(20, Math.max(1, Number(a.limit) || 10)) });

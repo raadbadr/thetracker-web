@@ -166,6 +166,16 @@ try {
     check("MCP: a Telegram user from another company is not acted for", foreign.structuredContent.status === "not_member" && !calls.includes("telegram_items_by_kind"), JSON.stringify(foreign.structuredContent));
     const link = await callTool("tracker_link_telegram", { telegram_user_id: "999" }, ctx);
     check("MCP: linking needs the site code — no phone, no key-owner fallback", link.isError === true && !calls.includes("link_channel_direct") && !calls.includes("link_channel_by_phone"));
+    /* «هل توجد مخالفات؟» with none of that kind: the tool looks wider instead of a bare no */
+    const rsk = { id: "r1", title: "RSK-05092026-0001 · عدم ارتكاب المخالفة والالتزام بالإجراءات", status: "open", tracker_name: "إدارة المخاطر", category: "معالجة خطر", due_at: "2026-09-07T06:00:00+00:00" };
+    const doc = { id: "d1", title: "السجل التجاري لشركة أبراج الكهرباء", status: "open", tracker_name: "المستندات", document_kind: "commercial_register", doc_number: "7012345678" };
+    const wide = async (name, args) => name === "telegram_items_by_kind" ? (args.p_kind === "violation" ? [] : [rsk, doc]) : name === "telegram_search" ? [rsk] : null;
+    const none = await callTool("tracker_items", { kind: "violation", status: "open" }, { ...ctx, rpc: wide });
+    const t = none.content[0].text;
+    check("no violations → says so, names the near match and the overview", t.includes("لا مخالفات مسجلة إطلاقا") && t.includes("عدم ارتكاب المخالفة") && t.includes("إدارة المخاطر 1") && t.includes("المستندات 1") && clean(t), t);
+    check("no violations → structured similar/overview for the model", Array.isArray(none.structuredContent.similar) && none.structuredContent.similar.length === 1 && none.structuredContent.overview.length === 2);
+    const some = await callTool("tracker_items", { kind: "document" }, { ...ctx, rpc: async (n, args) => n === "telegram_items_by_kind" ? [doc] : null });
+    check("when items exist the answer is the plain list", some.content[0].text.startsWith("1 items") && some.content[0].text.includes("رقم 7012345678"));
     const trusted = await callTool("tracker_complete", { query: "4521" }, { ...ctx, trusted: true });
     check("the in-house bot (gate + button already applied) is trusted", !trusted.isError);
   }
