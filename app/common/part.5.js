@@ -37,13 +37,19 @@
   };
 
   var PROFILE_CSS = [
-    ".app-gate{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:1.5rem;",
+    /* النافذة تبقى داخل الشاشة: تتمرر إن طالت، وتستفيد من العرض على الحاسب */
+    ".app-gate{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem;",
+    "overflow-y:auto;overscroll-behavior:contain;",
     "background:rgba(10,18,24,.75);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}",
-    ".app-gate-card{width:min(460px,100%);padding:1.75rem;border-radius:22px;background:var(--bg-mid,#1a2933);",
+    ".app-gate-card{width:min(100vw - 2rem,640px);max-height:calc(100vh - 2rem);overflow-y:auto;",
+    "padding:1.5rem;border-radius:22px;background:var(--bg-mid,#1a2933);",
     "border:1px solid var(--glass-border);box-shadow:0 24px 60px rgba(0,0,0,.45)}",
+    /* حقلان في الصف على الشاشات العريضة، وواحد على الجوال */
+    "@media(min-width:620px){.app-gate-card{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 1rem;align-items:start}",
+    ".app-gate-card h2,.app-gate-card p,.app-gate-card div,.app-gate-card button{grid-column:1/-1}}",
     ".app-gate-card h2{margin:0 0 .35rem;font-size:1.3rem;color:var(--text-primary)}",
     ".app-gate-card p{margin:0 0 1.1rem;font-size:.9rem;color:var(--text-secondary)}",
-    ".app-gate-card label{display:block;margin-bottom:.9rem;font-size:.85rem;color:var(--text-secondary)}",
+    ".app-gate-card label{display:block;margin-bottom:.9rem;font-size:.85rem;color:var(--text-secondary);min-width:0}",
     ".app-gate-card input,.app-gate-card select{width:100%;margin-top:.35rem;padding:.7rem .9rem;border-radius:12px;",
     "border:1px solid var(--glass-border);background:var(--glass);color:var(--text-primary);font:inherit}",
     ".app-gate-card select{appearance:none;-webkit-appearance:none}",
