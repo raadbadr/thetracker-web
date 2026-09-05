@@ -35,7 +35,7 @@ const rpcResult = (id, result) => ({ jsonrpc: "2.0", id, result });
 const rpcError = (id, code, message, data) => ({ jsonrpc: "2.0", id, error: { code, message, ...(data !== undefined ? { data } : {}) } });
 
 /* ---------- الأدوات ---------- */
-const TOOLS = [
+export const TOOLS = [
   { name: "tracker_whoami", description: "Who the current person is (by telegram_user_id if linked, else the key owner), the company, and headline counts.",
     inputSchema: { type: "object", properties: { telegram_user_id: { type: "string", description: "Numeric Telegram user id of the person talking" } }, additionalProperties: false } },
   { name: "tracker_link_telegram", description: "Link a Telegram user to their TheTracker account so the bot knows who they are. Identify them by the phone number they shared (matches the account phone) or by a link code from the site's settings; with neither, the key owner's account is linked.",

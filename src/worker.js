@@ -8,6 +8,7 @@ import { handleAssistantRequest, askAssistant } from "./assistant.js";
 import { handleTranslate } from "./translate.js";
 import { serveBundle } from "./bundles.js";
 import { handleMcp } from "./mcp.js";
+import { agentReply } from "./telegram-agent.js";
 import { handleCalendar } from "./calendar.js";
 import { handleDocumentAnalyze } from "./documents.js";
 import { runNotificationCron, linkChannelByCode, notifyTarget, sendTelegram, sendWhatsapp, sendSms, sendEmail, rpc, t as channelText,
@@ -442,6 +443,18 @@ async function smartReply(env, chatId, userId, text, lang, tgName, attachment, p
       return;
     }
   }
+  /* الوكيل الذكي أولا: يعرف من يخاطب، يستعمل أدوات تراكر (بحث، مواعيد، إضافة، إنجاز، إسناد) باسمه، ويتذكر المحادثة */
+  let agent = null;
+  try {
+    let target = null;
+    try { target = await notifyTarget(env, userId, "telegram"); } catch {}
+    agent = await agentReply(env, { chatId, userId, text, lang, name: tgName, orgName: (target && target.org_name) || "", attachment, userTimeZone });
+  } catch (e) { console.log("agent failed", String(e && e.message || e).slice(0, 200)); agent = null; }
+  if (agent && agent.text) {
+    try { await sendTelegram(env, chatId, pre + agent.text, menuKeyboard(lang)); } catch {}
+    logBotReply(env, chatId, userId, agent.text);
+    return;
+  }
   if (intent.action === "search" && intent.query) {
     let rows = [];
     try { rows = await rpc(env, "telegram_search", { p_secret: env.WORKER_SECRET, p_user_id: userId, p_query: intent.query, p_limit: 8 }); } catch {}
@@ -452,6 +465,14 @@ async function smartReply(env, chatId, userId, text, lang, tgName, attachment, p
   try { reply = await telegramAssistantReply(env, chatId, userId, text, attachment); } catch {}
   if (!reply) reply = attachment ? b.fileUnreadable : channelText(lang).alreadyLinked(tgName);
   try { await sendTelegram(env, chatId, pre + reply, menuKeyboard(lang)); } catch {}
+  logBotReply(env, chatId, userId, reply);
+}
+
+/* رد البوت يُسجل كالرسائل الواردة: ذاكرة للوكيل، ورؤية للإدارة (من كلم البوت وبماذا رد) */
+function logBotReply(env, chatId, userId, text) {
+  if (!env.WORKER_SECRET || !text) return;
+  rpc(env, "log_telegram_message", { p_secret: env.WORKER_SECRET, p_chat_id: String(chatId), p_username: "bot", p_first_name: "TheTracker",
+    p_body: String(text).slice(0, 4000), p_user_id: userId || null, p_action: "reply" }).catch(() => {});
 }
 
 /** POST /api/telegram/webhook — كل رسالة تسجل ويرد عليها: ربط (/start الرمز)، قائمة أزرار، أو دعوة للربط */
