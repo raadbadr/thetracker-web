@@ -767,3 +767,8 @@
     /* زر إضافة إجراء معالجة: القاعدة نفسها في مكتبة الإجراءات (كان بلا تنسيق هنا فظهر مقصوصا) */
     .add-step { width: 100%; padding: 0.8rem; border: 1.5px dashed var(--glass-border); border-radius: 12px; background: none; color: var(--primary); font: inherit; font-weight: 700; cursor: pointer; }
     .add-step:hover { border-color: var(--primary); }
+    /* حذف إجراء معالجة: سلة حمراء بحجم لمس، تسأل قبل التنفيذ */
+    .st-tool { background: none; border: 1.5px solid transparent; color: var(--text-secondary); width: 36px; height: 36px; border-radius: 9px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+    .st-tool svg { width: 18px; height: 18px; fill: currentColor; }
+    .st-tool.is-danger { color: var(--error); }
+    .st-tool:hover { border-color: currentColor; }

@@ -137,7 +137,7 @@
             '<select class="waitlist-input" data-af="owner_id" data-i="' + i + '">' + memberOptions(a.owner_id) + "</select>" +
             '<input type="date" class="waitlist-input" data-af="due" data-i="' + i + '" value="' + esc(a.due || "") + '" dir="ltr" data-duration="compact">' +
             '<label class="rule-check" style="white-space:nowrap"><input type="checkbox" data-af="done" data-i="' + i + '"' + (a.done ? " checked" : "") + "> " + esc(t("done")) + "</label>" +
-            '<button type="button" class="st-tool" data-adel="' + i + '">✕</button>';
+            '<button type="button" class="st-tool is-danger" data-adel="' + i + '" title="' + esc(t("delete")) + '" aria-label="' + esc(t("delete")) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>';
           box.appendChild(row);
         });
       }
@@ -241,7 +241,7 @@
         $("addAction").addEventListener("click", function () { readForm(); state.draft.actions.push({ title: "", owner_id: "", due: "", done: false }); renderActions(); });
         $("actions").addEventListener("input", function (e) { var el = e.target; if (el.dataset.af) state.draft.actions[Number(el.dataset.i)][el.dataset.af] = el.type === "checkbox" ? el.checked : el.value; });
         $("actions").addEventListener("change", function (e) { var el = e.target; if (el.dataset.af) state.draft.actions[Number(el.dataset.i)][el.dataset.af] = el.type === "checkbox" ? el.checked : el.value; });
-        $("actions").addEventListener("click", function (e) { var d = e.target.closest("[data-adel]"); if (d) { state.draft.actions.splice(Number(d.dataset.adel), 1); renderActions(); } });
+        $("actions").addEventListener("click", function (e) { var d = e.target.closest("[data-adel]"); if (d && window.confirm(t("confirmDeleteAction"))) { state.draft.actions.splice(Number(d.dataset.adel), 1); renderActions(); } });
         $("form").addEventListener("submit", function (e) {
           e.preventDefault();
           var d = readForm();
