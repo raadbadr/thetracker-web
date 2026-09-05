@@ -313,17 +313,57 @@
       /* ---------- رسائل تلغرام ---------- */
 
       let tgMessages = [];
+      let tgOpenChat = null;   /* المحادثة المفتوحة الآن، أو null فالقائمة */
 
-      function tgCard(m) {
-        const who = (m.profiles && (m.profiles.full_name || m.profiles.email)) || "";
-        const chat = (m.username ? "@" + esc(m.username) + " · " : "") + esc(m.first_name || "") +
-                     ' <span dir="ltr">(' + esc(String(m.chat_id)) + ")</span>";
-        return '<div class="feature-card">' +
-          row("colChat", chat) +
-          (who ? row("colUser", esc(who)) : "") +
-          row("colText", '<span dir="auto">' + esc(m.body || "") + "</span>") +
-          row("colAction", '<span class="highlight">' + esc(T("tgAction_" + (m.action || "none"))) + "</span>") +
-          row("colDate", esc(fmtDate(m.created_at, { withTime: true }))) + "</div>";
+      function tgWho(m) {
+        const name = (m.profiles && (m.profiles.full_name || m.profiles.email)) || m.first_name || "";
+        return name || String(m.chat_id);
+      }
+
+      /* رسائل كل مستخدم في محادثة واحدة: القائمة صناديق، والصندوق يُفتح فتُقرأ المحادثة */
+      function tgConversations() {
+        const byChat = new Map();
+        tgMessages.forEach((m) => {
+          const key = String(m.chat_id);
+          if (!byChat.has(key)) byChat.set(key, { chat_id: key, username: m.username, name: tgWho(m), items: [] });
+          const c = byChat.get(key);
+          c.items.push(m);
+          if (!c.username && m.username) c.username = m.username;
+          if (m.profiles && (m.profiles.full_name || m.profiles.email)) c.name = m.profiles.full_name || m.profiles.email;
+        });
+        const list = Array.from(byChat.values());
+        list.forEach((c) => {
+          c.items.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+          c.last = c.items[c.items.length - 1];
+        });
+        list.sort((a, b) => new Date(b.last.created_at) - new Date(a.last.created_at));
+        return list;
+      }
+
+      function tgConversationCard(c) {
+        const handle = c.username ? "@" + esc(c.username) : "";
+        return '<button type="button" class="feature-card tg-conv" data-chat="' + esc(c.chat_id) + '">' +
+          '<span class="tg-conv-head"><span class="tg-conv-name">' + esc(c.name) + "</span>" +
+          (handle ? '<span class="tg-conv-handle" dir="ltr">' + handle + "</span>" : "") + "</span>" +
+          '<span class="tg-conv-last" dir="auto">' + esc((c.last.body || "").slice(0, 90)) + "</span>" +
+          '<span class="tg-conv-meta">' + esc(T("tgMsgsCountLabel")) + " " + c.items.length +
+          " · " + esc(fmtDate(c.last.created_at, { withTime: true })) + "</span></button>";
+      }
+
+      function tgThread(c) {
+        const rows = c.items.map((m) => {
+          const action = m.action && m.action !== "none"
+            ? '<span class="tg-msg-action">' + esc(T("tgAction_" + m.action)) + "</span>" : "";
+          return '<div class="tg-msg"><div class="tg-msg-body" dir="auto">' + esc(m.body || "") + "</div>" +
+                 '<div class="tg-msg-meta">' + esc(fmtDate(m.created_at, { withTime: true })) + action + "</div></div>";
+        }).join("");
+        return '<div class="tg-thread">' +
+          '<div class="tg-thread-head">' +
+            '<button type="button" class="chat-option-btn" id="tgBack">' + esc(T("backBtn")) + "</button>" +
+            '<span class="tg-conv-name">' + esc(c.name) + "</span>" +
+            (c.username ? '<span class="tg-conv-handle" dir="ltr">@' + esc(c.username) + "</span>" : "") +
+            '<span class="tg-conv-handle" dir="ltr">(' + esc(c.chat_id) + ")</span>" +
+          "</div>" + rows + "</div>";
       }
 
       function renderTgMessages() {
@@ -334,10 +374,29 @@
           setStatus($("tgStatus"), T("tgMsgsEmpty"));
           return;
         }
-        grid.innerHTML = tgMessages.map(tgCard).join("");
-        countEl.textContent = T("tgMsgsCountLabel") + " " + tgMessages.length;
+        const convs = tgConversations();
+        if (tgOpenChat) {
+          const c = convs.filter((x) => x.chat_id === tgOpenChat)[0];
+          if (c) {
+            grid.classList.add("tg-open");
+            grid.innerHTML = tgThread(c);
+            countEl.textContent = T("tgMsgsCountLabel") + " " + c.items.length;
+            setStatus($("tgStatus"), "");
+            return;
+          }
+          tgOpenChat = null;
+        }
+        grid.classList.remove("tg-open");
+        grid.innerHTML = convs.map(tgConversationCard).join("");
+        countEl.textContent = T("tgConvsCountLabel") + " " + convs.length + " · " + T("tgMsgsCountLabel") + " " + tgMessages.length;
         setStatus($("tgStatus"), "");
       }
+
+      document.addEventListener("click", function (ev) {
+        const open = ev.target.closest && ev.target.closest("[data-chat]");
+        if (open) { tgOpenChat = open.dataset.chat; renderTgMessages(); return; }
+        if (ev.target.closest && ev.target.closest("#tgBack")) { tgOpenChat = null; renderTgMessages(); }
+      });
 
       function loadTgMessages() {
         setStatus($("tgStatus"), T("loading"));
