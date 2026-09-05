@@ -312,6 +312,16 @@
                 <button type="button" class="cal-mode" id="calHijriBtn" data-cal-mode="hijri" data-i18n="calHijri">هجري</button>
               </div>
             </div>
+            <!-- فلاتر التقويم الماستر (الرئيسية فقط): بنفس نمط أزرار ميلادي/هجري -->
+            <div class="cal-nav-group" id="calFilters" role="group" hidden>
+              <div class="cal-modes">
+                <button type="button" class="cal-mode is-active" data-cal-filter="all" data-i18n="calFilterAll">الكل</button>
+                <button type="button" class="cal-mode" data-cal-filter="cases" data-i18n="calFilterCases">قضايا</button>
+                <button type="button" class="cal-mode" data-cal-filter="violations" data-i18n="calFilterViolations">مخالفات</button>
+                <button type="button" class="cal-mode" data-cal-filter="tasks" data-i18n="calFilterTasks">مهام</button>
+                <button type="button" class="cal-mode" data-cal-filter="documents" data-i18n="calFilterDocs">أوراق</button>
+              </div>
+            </div>
           </div>
           <div class="cal-grid" id="calGrid"></div>
         </div>
