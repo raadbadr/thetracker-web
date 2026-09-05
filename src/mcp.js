@@ -8,7 +8,9 @@ const PROTOCOL_VERSIONS = ["2025-06-18", "2025-03-26", "2024-11-05"];
 const SERVER_INFO = { name: "thetracker", version: "1.0.0" };
 const INSTRUCTIONS =
   "TheTracker: cases, violations and tasks for one company. Numbers/identifiers are never translated. " +
-  "Use tracker_search before completing or assigning; when tracker_add returns needs_parent, ask the user which case/violation the task belongs to and call again with parent_id.";
+  "On Telegram ALWAYS pass telegram_user_id (the numeric id of the person you are talking to) to every tool so you act as that member with their permissions. " +
+  "If a tool answers status=unlinked, call tracker_link_telegram with their telegram_user_id and the phone number they share (or a link code from the site), then continue. " +
+  "Use tracker_search before completing or assigning; when tracker_add returns needs_parent, ask which case/violation the task belongs to and call again with parent_id.";
 
 const buckets = new Map();
 function rateLimited(key, limit) {
@@ -34,13 +36,16 @@ const rpcError = (id, code, message, data) => ({ jsonrpc: "2.0", id, error: { co
 
 /* ---------- الأدوات ---------- */
 const TOOLS = [
-  { name: "tracker_whoami", description: "Which company and user this API key acts for, with headline counts.", inputSchema: { type: "object", properties: {}, additionalProperties: false } },
+  { name: "tracker_whoami", description: "Who the current person is (by telegram_user_id if linked, else the key owner), the company, and headline counts.",
+    inputSchema: { type: "object", properties: { telegram_user_id: { type: "string", description: "Numeric Telegram user id of the person talking" } }, additionalProperties: false } },
+  { name: "tracker_link_telegram", description: "Link a Telegram user to their TheTracker account so the bot knows who they are. Identify them by the phone number they shared (matches the account phone) or by a link code from the site's settings; with neither, the key owner's account is linked.",
+    inputSchema: { type: "object", properties: { telegram_user_id: { type: "string" }, phone: { type: "string", description: "Phone as shared on Telegram, any format" }, code: { type: "string", description: "8-character link code from Settings → Telegram" } }, required: ["telegram_user_id"], additionalProperties: false } },
   { name: "tracker_search", description: "Search cases, violations and tasks by title, client, case number, violation number or item number. Returns id, item_number, title, status, due_at, client, amount, roles.",
-    inputSchema: { type: "object", properties: { query: { type: "string", description: "Free text or a number" }, limit: { type: "integer", minimum: 1, maximum: 20, default: 8 } }, required: ["query"], additionalProperties: false } },
+    inputSchema: { type: "object", properties: { telegram_user_id: { type: "string", description: "Telegram user id of the person talking (Telegram only)" }, query: { type: "string", description: "Free text or a number" }, limit: { type: "integer", minimum: 1, maximum: 20, default: 8 } }, required: ["query"], additionalProperties: false } },
   { name: "tracker_list", description: "Open items with a due date: 'upcoming' (soonest first) or 'overdue'.",
-    inputSchema: { type: "object", properties: { mode: { type: "string", enum: ["upcoming", "overdue"], default: "upcoming" }, limit: { type: "integer", minimum: 1, maximum: 20, default: 10 } }, additionalProperties: false } },
+    inputSchema: { type: "object", properties: { telegram_user_id: { type: "string", description: "Telegram user id of the person talking (Telegram only)" }, mode: { type: "string", enum: ["upcoming", "overdue"], default: "upcoming" }, limit: { type: "integer", minimum: 1, maximum: 20, default: 10 } }, additionalProperties: false } },
   { name: "tracker_add", description: "Create a case, violation or task. A task must belong to a case or violation: pass parent_id (item id) or the call returns status=needs_parent with candidates to choose from.",
-    inputSchema: { type: "object", properties: {
+    inputSchema: { type: "object", properties: { telegram_user_id: { type: "string", description: "Telegram user id of the person talking (Telegram only)" },
       kind: { type: "string", enum: ["case", "violation", "task"] }, title: { type: "string" },
       client_name: { type: "string" }, case_number: { type: "string" }, violation_number: { type: "string" },
       amount: { type: "number" }, due_at: { type: "string", description: "ISO 8601 date or datetime" },
@@ -48,11 +53,11 @@ const TOOLS = [
       parent_id: { type: "string", description: "Item id of the parent case/violation (tasks only)" } },
       required: ["kind", "title"], additionalProperties: false } },
   { name: "tracker_complete", description: "Mark an item done. Give a query (item number, title, case number) or an exact item_id; ambiguous queries return candidates.",
-    inputSchema: { type: "object", properties: { query: { type: "string" }, item_id: { type: "string" } }, additionalProperties: false } },
+    inputSchema: { type: "object", properties: { telegram_user_id: { type: "string", description: "Telegram user id of the person talking (Telegram only)" }, query: { type: "string" }, item_id: { type: "string" } }, additionalProperties: false } },
   { name: "tracker_assign", description: "Assign an item to a team member (by name or email) as responsible.",
-    inputSchema: { type: "object", properties: { query: { type: "string", description: "Item number, title or case number" }, member: { type: "string", description: "Member name or email" } }, required: ["query", "member"], additionalProperties: false } },
+    inputSchema: { type: "object", properties: { telegram_user_id: { type: "string", description: "Telegram user id of the person talking (Telegram only)" }, query: { type: "string", description: "Item number, title or case number" }, member: { type: "string", description: "Member name or email" } }, required: ["query", "member"], additionalProperties: false } },
   { name: "tracker_import_rows", description: "Bulk-import rows (objects with Arabic or English column names, e.g. title, client_name, case_number, due_at, amount, status) into a tracker of this company.",
-    inputSchema: { type: "object", properties: { rows: { type: "array", items: { type: "object" }, minItems: 1, maxItems: 500 }, tracker: { type: "string", description: "Tracker (sheet) name; default: the company's main tracker" } }, required: ["rows"], additionalProperties: false } },
+    inputSchema: { type: "object", properties: { telegram_user_id: { type: "string", description: "Telegram user id of the person talking (Telegram only)" }, rows: { type: "array", items: { type: "object" }, minItems: 1, maxItems: 500 }, tracker: { type: "string", description: "Tracker (sheet) name; default: the company's main tracker" } }, required: ["rows"], additionalProperties: false } },
 ];
 
 function text(s) { return { content: [{ type: "text", text: String(s) }] }; }
@@ -64,15 +69,40 @@ function describeRows(rows) {
   return rows.map((r) => [r.item_number, r.title, r.status, r.client_name, r.case_number, r.due_at ? "due " + String(r.due_at).slice(0, 16) : null, r.amount != null ? r.amount + " SAR" : null].filter(Boolean).join(" | ")).join("\n");
 }
 
+async function resolveActor(ctx, a) {
+  const tg = a && a.telegram_user_id ? String(a.telegram_user_id).trim() : "";
+  if (!tg) return { user: ctx.who.user_id, name: null, tg: "" };
+  let hit = null;
+  try { hit = await ctx.rpc("channel_user_lookup", { p_secret: ctx.env.WORKER_SECRET, p_channel: "telegram", p_external_id: tg }); } catch (e) { hit = null; }
+  if (hit && hit.user_id) return { user: hit.user_id, name: hit.name || null, tg };
+  return { user: null, name: null, tg };
+}
+
 export async function callTool(name, args, ctx) {
   const a = args || {};
-  const secret = ctx.env.WORKER_SECRET, user = ctx.who.user_id;
+  const secret = ctx.env.WORKER_SECRET;
+  const actor = await resolveActor(ctx, a);
+  if (name === "tracker_link_telegram") {
+    const tg = String(a.telegram_user_id || "").trim();
+    if (!tg) return fail("telegram_user_id is required");
+    try {
+      let linkedUser = null;
+      if (a.code) linkedUser = await ctx.rpc("link_channel", { p_secret: secret, p_channel: "telegram", p_code: String(a.code).trim().toUpperCase(), p_external_id: tg });
+      else if (a.phone) linkedUser = await ctx.rpc("link_channel_by_phone", { p_secret: secret, p_channel: "telegram", p_phone: String(a.phone), p_external_id: tg });
+      else linkedUser = await ctx.rpc("link_channel_direct", { p_secret: secret, p_user_id: ctx.who.user_id, p_channel: "telegram", p_external_id: tg });
+      const who = await ctx.rpc("channel_user_lookup", { p_secret: secret, p_channel: "telegram", p_external_id: tg });
+      if (!who || !who.user_id) return fail("No account matched" + (a.phone ? " that phone number" : a.code ? " that code" : "") + ". Ask for the phone registered on the site or a link code from Settings.", { status: "unlinked", raw: linkedUser });
+      return result({ status: "linked", user_id: who.user_id, name: who.name, telegram_user_id: tg }, "Linked: " + (who.name || who.user_id) + " ↔ Telegram " + tg);
+    } catch (e) { return fail("Link failed: " + String(e && e.message || e).slice(0, 200)); }
+  }
+  if (actor.tg && !actor.user) return result({ status: "unlinked", telegram_user_id: actor.tg }, "unlinked: this Telegram user is not linked to a TheTracker account yet. Ask for their phone number (share contact) or a link code and call tracker_link_telegram.");
+  const user = actor.user;
   switch (name) {
     case "tracker_whoami": {
       let counts = null;
       try { const rows = await ctx.rpc("api_items_export", { p_secret: secret, p_hash: ctx.hash, p_tracker: null }); counts = { items: (rows || []).length, open: (rows || []).filter((r) => r.status === "open").length }; } catch (e) { counts = null; }
-      const info = { org: ctx.who.org_name, org_id: ctx.who.org_id, user_id: user, counts };
-      return result(info, `Company: ${ctx.who.org_name}` + (counts ? ` — ${counts.items} items, ${counts.open} open` : ""));
+      const info = { org: ctx.who.org_name, org_id: ctx.who.org_id, user_id: user, user_name: actor.name, telegram_user_id: actor.tg || null, counts };
+      return result(info, (actor.name ? `You are ${actor.name}. ` : "") + `Company: ${ctx.who.org_name}` + (counts ? ` — ${counts.items} items, ${counts.open} open` : ""));
     }
     case "tracker_search": {
       const rows = await ctx.rpc("telegram_search", { p_secret: secret, p_user_id: user, p_query: String(a.query || ""), p_limit: Math.min(20, Math.max(1, Number(a.limit) || 8)) });
