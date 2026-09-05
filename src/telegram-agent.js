@@ -85,9 +85,9 @@ async function oneWord(env, ctx) {
 
 /* يعيد نص الرد أو null إن تعذر (فيسقط المتصل إلى الرد التقليدي) */
 export async function agentReply(env, ctx) {
-  if (!env.AI || !env.WORKER_SECRET) return null;
-  try { const quick = await oneWord(env, ctx); if (quick) return quick; } catch (e) { /* يتابع إلى النموذج */ }
-  if (limited("agent:" + ctx.chatId, 30)) return null;
+  if (!env.AI || !env.WORKER_SECRET) { console.log("agent: no AI or secret"); return null; }
+  try { const quick = await oneWord(env, ctx); if (quick) { console.log("agent: one-word", quick.tools.join(",")); return quick; } } catch (e) { console.log("agent: one-word failed", String(e && e.message || e).slice(0, 200)); }
+  if (limited("agent:" + ctx.chatId, 30)) { console.log("agent: rate limited"); return null; }
   let history = [];
   try { history = (await rpc(env, "telegram_history", { p_secret: env.WORKER_SECRET, p_chat_id: String(ctx.chatId), p_limit: 10 })) || []; } catch (e) { history = []; }
   const messages = [{ role: "system", content: systemPrompt(ctx) }];
@@ -112,6 +112,7 @@ export async function agentReply(env, ctx) {
       const text = extractText(res).trim();
       if (text) return { text: text.replace(/[\u064B-\u0652\u0670]/g, ""), tools: toolsUsed };
       if (round < 2) { messages.push({ role: "user", content: "أجب الآن نصا مباشرا من نتائج الأدوات أعلاه، باختصار." }); continue; }
+      console.log("agent: empty text after tools", toolsUsed.join(","), JSON.stringify(res).slice(0, 300));
       return null;
     }
     const assistantMsg = { role: "assistant", content: extractText(res) || "", tool_calls: calls.map((c, i) => ({ id: c.id || ("call_" + round + "_" + i), type: "function", function: { name: c.name, arguments: JSON.stringify(c.args) } })) };
@@ -121,9 +122,11 @@ export async function agentReply(env, ctx) {
       let out;
       try { out = await callTool(c.name, c.args, toolCtx); } catch (e) { out = { content: [{ type: "text", text: "tool error: " + String(e && e.message || e).slice(0, 200) }], isError: true }; }
       toolsUsed.push(c.name);
+      console.log("agent: tool", c.name, JSON.stringify(c.args).slice(0, 200), "→", (out && out.isError) ? "error" : "ok");
       const payload = out && out.structuredContent ? JSON.stringify(out.structuredContent).slice(0, 6000) : String((out && out.content && out.content[0] && out.content[0].text) || "").slice(0, 6000);
       messages.push({ role: "tool", tool_call_id: assistantMsg.tool_calls[i].id, name: c.name, content: payload });
     }
   }
+  console.log("agent: rounds exhausted", toolsUsed.join(","));
   return null;
 }
