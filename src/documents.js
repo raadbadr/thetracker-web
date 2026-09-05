@@ -245,16 +245,16 @@ function findAfter(text, labels, pattern) {
 /* جدول الأوراق الرسمية المعروفة: كل نوع بكلماته ومسميات رقمه وجهته. يفحص بالترتيب. */
 const wordBoundaryAr = (pattern) => "(?<![\\u0600-\\u06FF])(?:" + pattern + ")(?![\\u0600-\\u06FF])";
 const KIND_RULES = [
-  { kind: "commercial_register", entity: "company", test: /السجل\s*التجاري|سجل\s*تجاري|رقم\s*السجل|شهادة\s*(?:ال)?سجل|commercial\s*regist|(?=[\s\S]*سجل)(?=[\s\S]*\b[1247]\d{9}\b)/i, issuer: "وزارة التجارة",
+  { kind: "commercial_register", entity: "company", test: /^(?![\s\S]*(?:ضريبة\s*القيمة|الرقم\s*الضريبي|شهادة\s*(?:تسجيل\s*)?(?:في\s*)?ضريبة|\bVAT\b|شهادة\s*(?:ال|لل)?زكاة|الزكاة\s*والدخل|(?:ال|لل)تأمينات\s*الاجتماعية|(?:ال|لل)غرفة\s*التجارية|شهادة\s*(?:السعودة|التوطين)|نطاقات))[\s\S]*(?:السجل\s*التجاري|سجل\s*تجاري|رقم\s*السجل|شهادة\s*(?:ال)?سجل|commercial\s*regist|(?=[\s\S]*سجل)(?=[\s\S]*\b[1247]\d{9}\b))/i, issuer: "وزارة التجارة",
     number: ["رقم\\s*السجل\\s*التجاري", "رقم\\s*السجل", "الرقم\\s*الوطني\\s*الموحد", "الرقم\\s*الموحد", "C\\.?R\\.?\\s*(?:No\\.?)?", "national\\s*number", "unified\\s*number", "registration\\s*number"],
     numPat: "[1247]\\d{9}",
     party: ["اسم\\s*المنشأة", "الاسم\\s*التجاري", "اسم\\s*الشركة", "اسم\\s*التاجر", "business\\s*name", "trade\\s*name", "company\\s*name", "entity\\s*name"] },
   { kind: "articles_of_association", test: /عقد\s*(?:ال)?تأسيس|عقد\s*شركة|articles\s*of\s*(?:association|incorporation)|memorandum\s*of\s*association/i,
     number: ["رقم\\s*العقد", "رقم\\s*التوثيق", "رقم\\s*الوثيقة"], numPat: "\\d{4,20}", party: ["اسم\\s*الشركة", "تحت\\s*اسم", "باسم"], issuerTest: [[/وزارة\s*التجارة/, "وزارة التجارة"], [/كاتب\s*(?:ال)?عدل|العدل/, "وزارة العدل"]] },
   { kind: "bylaws", test: /النظام\s*الأساس|النظام\s*الاساس|bylaws/i, issuer: "وزارة التجارة", party: ["اسم\\s*الشركة", "شركة"] },
-  { kind: "chamber_certificate", test: /الغرفة\s*التجارية|غرفة\s*(?:الرياض|جدة|الشرقية|مكة|المدينة|القصيم|عسير|حائل|تبوك|جازان|نجران|الجوف|الباحة)|chamber\s*of\s*commerce/i, issuer: "الغرفة التجارية",
+  { kind: "chamber_certificate", test: /(?:ال|لل)غرفة\s*التجارية|غرفة\s*(?:الرياض|جدة|الشرقية|مكة|المدينة|القصيم|عسير|حائل|تبوك|جازان|نجران|الجوف|الباحة)|chamber\s*of\s*commerce/i, issuer: "الغرفة التجارية",
     number: ["رقم\\s*العضوية", "رقم\\s*الاشتراك", "رقم\\s*الشهادة", "membership\\s*(?:No\\.?)?"], numPat: "\\d{4,15}", party: ["اسم\\s*المنشأة", "الاسم\\s*التجاري", "اسم\\s*الشركة", "اسم\\s*العضو"] },
-  { kind: "gosi_certificate", test: /التأمينات\s*الاجتماعية|GOSI/i, issuer: "المؤسسة العامة للتأمينات الاجتماعية",
+  { kind: "gosi_certificate", test: /(?:ال|لل)تأمينات\s*الاجتماعية|GOSI/i, issuer: "المؤسسة العامة للتأمينات الاجتماعية",
     number: ["رقم\\s*الاشتراك", "رقم\\s*المنشأة", "رقم\\s*الشهادة", "رقم\\s*المشترك"], numPat: "\\d{6,15}", party: ["اسم\\s*المنشأة", "اسم\\s*صاحب\\s*العمل", "اسم\\s*الشركة"] },
   { kind: "zakat_certificate", test: /شهادة\s*(?:الزكاة|زكاة)|الزكاة\s*والدخل|zakat/i, issuer: "هيئة الزكاة والضريبة والجمارك",
     number: ["رقم\\s*الشهادة", "الرقم\\s*المميز", "رقم\\s*المكلف"], numPat: "\\d{6,15}", party: ["اسم\\s*المكلف", "اسم\\s*المنشأة", "اسم\\s*الشركة"] },
@@ -307,17 +307,21 @@ const KIND_RULES = [
 
 /* إشارات لا تحتمل اللبس: حين تتحقق، لا رأي للنموذج فيها.
    الترتيب مهم: الأخص أولا. */
+/* الشهادات المتخصصة أولا: كثير من الأوراق (الضريبية، الزكاة، التأمينات، الغرفة) تحمل «رقم السجل التجاري» كحقل،
+   فلا يكون السجل قويا إلا بعنوانه هو (شهادة السجل التجاري) لا بمجرد ذكر رقمه */
+const SPECIFIC_PAPER = /ضريبة\s*القيمة|الرقم\s*الضريبي|شهادة\s*(?:تسجيل\s*)?(?:في\s*)?ضريبة|\bVAT\b|شهادة\s*(?:ال|لل)?زكاة|الزكاة\s*والدخل|(?:ال|لل)تأمينات\s*الاجتماعية|GOSI|(?:ال|لل)غرفة\s*التجارية|chamber\s*of\s*commerce|شهادة\s*(?:السعودة|التوطين)|نطاقات/i;
 const STRONG_KINDS = [
-  { kind: "commercial_register", when: (t) =>
-      (/وزارة\s*التجارة/.test(t) && /\b[1247]\d{9}\b/.test(t)) ||
-      /(?:رقم\s*)?السجل\s*التجاري/.test(t) },
-  { kind: "vat_certificate", when: (t) => /\b3\d{13}3\b/.test(t) && /(?:ضريب|VAT)/i.test(t) },
-  { kind: "zakat_certificate", when: (t) => /شهادة\s*(?:ال)?زكاة|الزكاة\s*والدخل/.test(t) },
-  { kind: "gosi_certificate", when: (t) => /التأمينات\s*الاجتماعية/.test(t) },
-  { kind: "chamber_certificate", when: (t) => /الغرفة\s*التجارية/.test(t) },
+  { kind: "vat_certificate", when: (t) => (/\b3\d{13}3\b/.test(t) && /(?:ضريب|VAT)/i.test(t)) || /شهادة\s*(?:تسجيل\s*)?(?:في\s*)?ضريبة\s*القيمة/.test(t) },
+  { kind: "zakat_certificate", when: (t) => /شهادة\s*(?:ال|لل)?زكاة|الزكاة\s*والدخل/.test(t) },
+  { kind: "gosi_certificate", when: (t) => /(?:ال|لل)تأمينات\s*الاجتماعية/.test(t) },
+  { kind: "chamber_certificate", when: (t) => /(?:ال|لل)غرفة\s*التجارية/.test(t) },
   { kind: "saudization_certificate", when: (t) => /شهادة\s*(?:السعودة|التوطين)|نطاقات/.test(t) },
   { kind: "power_of_attorney", when: (t) => /(?:رقم\s*)?(?:ال)?وكالة/.test(t) && /كاتب\s*(?:ال)?عدل|ناجز|الموكل/.test(t) },
-  { kind: "articles_of_association", when: (t) => /عقد\s*(?:ال)?تأسيس/.test(t) }
+  { kind: "articles_of_association", when: (t) => /عقد\s*(?:ال)?تأسيس/.test(t) },
+  { kind: "commercial_register", when: (t) => !SPECIFIC_PAPER.test(t) && (
+      /شهادة\s*(?:ال)?سجل\s*(?:ال)?تجاري|commercial\s*registration\s*certificate/i.test(t) ||
+      /(?<!رقم\s)(?<!رقم)السجل\s*التجاري/.test(t) ||
+      (/وزارة\s*التجارة/.test(t) && /\b[1247]\d{9}\b/.test(t))) }
 ];
 
 function strongKind(text) {
@@ -444,7 +448,8 @@ export async function handleDocumentAnalyze(request, env) {
   if (text.trim().length < 12) return new Response(JSON.stringify({ error: "no_text" }), { status: 422, headers });
 
   const rules = rulesExtract(text);
-  const fast = isFastPathRequested(request) || (rules.kind && (rules.number || rules.party) && (rules.expiry_date || rules.issue_date));
+  /* القواعد وحدها تحسم فقط حين تكون واثقة (عنوان الورقة صريح + رقم + تاريخ)؛ وإلا يقرأ النموذج والقواعد تدقق وتكمل */
+  const fast = isFastPathRequested(request) || (rules.strong && rules.kind && rules.number && (rules.expiry_date || rules.issue_date));
   if (fast && rules.kind) {
     const merged = mergeRules(null, rules);
     merged.summary = merged.title; merged.confidence = 0.9;

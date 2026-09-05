@@ -7,6 +7,7 @@
 import { handleAssistantRequest, askAssistant } from "./assistant.js";
 import { handleTranslate } from "./translate.js";
 import { serveBundle } from "./bundles.js";
+import { handleMcp } from "./mcp.js";
 import { handleCalendar } from "./calendar.js";
 import { handleDocumentAnalyze } from "./documents.js";
 import { runNotificationCron, linkChannelByCode, notifyTarget, sendTelegram, sendWhatsapp, sendSms, sendEmail, rpc, t as channelText,
@@ -163,6 +164,33 @@ function csvOf(rows) {
   rows.forEach((r) => lines.push(cols.map((c) => q(c in r ? r[c] : (r.data || {})[c])).join(",")));
   return "\ufeff" + lines.join("\r\n");
 }
+function rowsToCsvBytes(rows, trackerName) {
+  const ws = XLSX.utils.json_to_sheet(rows.map((r) => (r && typeof r === "object") ? r : { title: String(r) }));
+  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, trackerName || "data");
+  return XLSX.write(wb, { type: "array", bookType: "csv" });
+}
+/* استيراد صفوف JSON بمفتاح API (يستعمله /api/v1/import وخادم MCP) */
+async function importRowsWithKey(env, hash, rows, trackerName) {
+  if (!Array.isArray(rows) || !rows.length) return { ok: false, error: "no rows" };
+  const filename = (trackerName || "api") + ".csv";
+  let parsed;
+  try { parsed = parseWorkbook(rowsToCsvBytes(rows.slice(0, 500), trackerName), filename); } catch (e) { return { ok: false, error: "cannot parse: " + String(e.message || e).slice(0, 120) }; }
+  const payload = draftPayload(parsed);
+  const results = [], errors = [];
+  for (const sh of payload.sheets) {
+    try {
+      results.push(await rpc(env, "api_import", { p_secret: env.WORKER_SECRET, p_hash: hash, p_filename: filename,
+        p_tracker_name: trackerName || sh.tracker || sh.name, p_columns: sh.columns || [], p_mapping: sh.mapping || {}, p_rows: sh.rows || [] }));
+    } catch (e) { errors.push({ sheet: sh.name, message: String(e.message || e).slice(0, 200) }); }
+  }
+  const imported = results.reduce((n, r) => n + (Number(r && (r.inserted ?? r.imported ?? r.count)) || 0), 0);
+  return { ok: errors.length === 0, imported, results, errors };
+}
+async function mcpAuthenticate(request, env) {
+  const a = await v1Auth(request, env);
+  if (a.error) return { error: true, status: a.error.status, message: a.error.status === 503 ? "not configured" : "invalid or missing API key (Authorization: Bearer tt_live_…)" };
+  return a;
+}
 async function handleV1(request, env, url) {
   const path = url.pathname;
   const auth = await v1Auth(request, env);
@@ -197,9 +225,7 @@ async function handleV1(request, env, url) {
         const rows = Array.isArray(body) ? body : (body.rows || body.items || body.data || []);
         if (!Array.isArray(rows) || !rows.length) return v1Json({ error: "no rows" }, 400);
         trackerName = trackerName || body.tracker || null;
-        const ws = XLSX.utils.json_to_sheet(rows.map((r) => (r && typeof r === "object") ? r : { title: String(r) }));
-        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, trackerName || "data");
-        bytes = XLSX.write(wb, { type: "array", bookType: "csv" }); filename = (trackerName || "api") + ".csv";
+        bytes = rowsToCsvBytes(rows, trackerName); filename = (trackerName || "api") + ".csv";
       } else {
         bytes = await request.arrayBuffer(); filename = (trackerName || "api") + (ct.includes("spreadsheet") || ct.includes("excel") ? ".xlsx" : ".csv");
       }
@@ -721,6 +747,7 @@ export default {
     }
 
     // Only handle /api/* routes — everything else is static assets
+    if (path === "/mcp" || path === "/mcp/") return await handleMcp(request, env, url, { authenticate: mcpAuthenticate, importRows: importRowsWithKey });
     if (!path.startsWith("/api/")) {
       /* ملف مقسم أجزاء؟ يُجمَّع كما هو؛ وإلا يُخدم من الأصول الثابتة */
       if (/\.(js|css)$/.test(path)) {
