@@ -42,6 +42,10 @@ export const TOOLS = [
     inputSchema: { type: "object", properties: { telegram_user_id: { type: "string" }, phone: { type: "string", description: "Phone as shared on Telegram, any format" }, code: { type: "string", description: "8-character link code from Settings → Telegram" } }, required: ["telegram_user_id"], additionalProperties: false } },
   { name: "tracker_search", description: "Search cases, violations and tasks by title, client, case number, violation number or item number. Returns id, item_number, title, status, due_at, client, amount, roles.",
     inputSchema: { type: "object", properties: { telegram_user_id: { type: "string", description: "Telegram user id of the person talking (Telegram only)" }, query: { type: "string", description: "Free text or a number" }, limit: { type: "integer", minimum: 1, maximum: 20, default: 8 } }, required: ["query"], additionalProperties: false } },
+  { name: "tracker_company", description: "The user's company record as registered on the site: legal name, commercial register number, VAT number, unified number, IBAN and bank, national address, contacts, plan, and the official papers on file with their extracted details. Use it for questions like 'what is my CR number?'.",
+    inputSchema: { type: "object", properties: { telegram_user_id: { type: "string" } }, additionalProperties: false } },
+  { name: "tracker_items", description: "List the user's items by kind and status: kind case|violation|task|document|all, status open|done|all. Use it for one-word requests like قضايا, مخالفات, مهام, مستندات, المنجز.",
+    inputSchema: { type: "object", properties: { telegram_user_id: { type: "string" }, kind: { type: "string", enum: ["case", "violation", "task", "document", "all"], default: "all" }, status: { type: "string", enum: ["open", "done", "all"], default: "open" }, limit: { type: "integer", minimum: 1, maximum: 30, default: 10 } }, additionalProperties: false } },
   { name: "tracker_list", description: "Open items with a due date: 'upcoming' (soonest first) or 'overdue'.",
     inputSchema: { type: "object", properties: { telegram_user_id: { type: "string", description: "Telegram user id of the person talking (Telegram only)" }, mode: { type: "string", enum: ["upcoming", "overdue"], default: "upcoming" }, limit: { type: "integer", minimum: 1, maximum: 20, default: 10 } }, additionalProperties: false } },
   { name: "tracker_add", description: "Create a case, violation or task. A task must belong to a case or violation: pass parent_id (item id) or the call returns status=needs_parent with candidates to choose from.",
@@ -107,6 +111,17 @@ export async function callTool(name, args, ctx) {
     case "tracker_search": {
       const rows = await ctx.rpc("telegram_search", { p_secret: secret, p_user_id: user, p_query: String(a.query || ""), p_limit: Math.min(20, Math.max(1, Number(a.limit) || 8)) });
       return result({ items: rows || [] }, describeRows(rows));
+    }
+    case "tracker_company": {
+      const orgs = await ctx.rpc("telegram_company_profile", { p_secret: secret, p_user_id: user });
+      const o = (orgs || [])[0];
+      if (!o) return fail("No company on this account.");
+      const lines = [o.legal_name || o.name, o.cr_number ? "CR: " + o.cr_number : null, o.vat_number ? "VAT: " + o.vat_number : null, o.unified_number ? "Unified: " + o.unified_number : null, o.iban ? "IBAN: " + o.iban : null, o.national_address && o.national_address.short ? "Address: " + o.national_address.short : null].filter(Boolean);
+      return result({ companies: orgs }, lines.join("\n"));
+    }
+    case "tracker_items": {
+      const rows = await ctx.rpc("telegram_items_by_kind", { p_secret: secret, p_user_id: user, p_kind: a.kind || "all", p_status: a.status || "open", p_limit: Math.min(30, Math.max(1, Number(a.limit) || 10)) });
+      return result({ kind: a.kind || "all", status: a.status || "open", count: (rows || []).length, items: rows || [] }, (rows && rows.length ? rows.length + " items\n" : "") + describeRows(rows));
     }
     case "tracker_list": {
       const rows = await ctx.rpc("telegram_items", { p_secret: secret, p_user_id: user, p_mode: a.mode === "overdue" ? "overdue" : "upcoming", p_limit: Math.min(20, Math.max(1, Number(a.limit) || 10)) });
