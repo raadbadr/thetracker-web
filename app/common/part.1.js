@@ -36,7 +36,7 @@
   var ORG_KEY = "tracker_org";
   var LANG_KEY = "tracker_lang";
   var TIME_ZONE = "Asia/Riyadh";
-  var ITEM_COLUMNS = "id,item_number,title,category,due_at,status,assignee_id,amount,client_name,client_name_en,case_number,data,tracker_id,trackers(name)";
+  var ITEM_COLUMNS = "id,item_number,title,category,due_at,status,assignee_id,amount,client_name,client_name_en,case_number,data,tracker_id,trackers(name),remind_before";
   var INSERT_CHUNK = 200;
 
   /* Fallback strings (used only when the page has no `translations` object or lacks the key). */
