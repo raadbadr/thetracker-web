@@ -8,7 +8,7 @@ const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..")
 const OUT = process.env.OUT || path.join(ROOT, ".measure-shots");
 fs.mkdirSync(OUT, { recursive: true });
 const pages = (process.argv[2] || "dashboard,documents,team,settings,admin,import,processes,risks").split(",");
-const sizes = [[375, 812, "phone"], [768, 1024, "tablet"], [1280, 900, "desktop"]];
+const sizes = (process.env.SIZES ? process.env.SIZES.split(",").map((w) => [Number(w), 900, w]) : [[375, 812, "phone"], [768, 1024, "tablet"], [1280, 900, "desktop"]]);
 const REF = "stubproj"; const SB = "https://stubproj.supabase.co";
 const USER = { id: "11111111-1111-4111-8111-111111111111", email: "owner@example.com", app_metadata: { provider: "google" }, user_metadata: { full_name: "المهندس رعد بدر" }, aud: "authenticated", role: "authenticated" };
 const ORG = { id: "22222222-2222-4222-8222-222222222222", name: "PARKINZI Company", owner_id: USER.id, plan_code: "trial", plan_expires_at: "2026-09-18T00:00:00Z", org_number: "ORG-05092026-0001", created_at: "2026-09-04T21:39:44Z" };

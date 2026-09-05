@@ -671,8 +671,12 @@
     .form-field.span-4 { grid-column: span 4; }
     .form-field.span-6 { grid-column: span 6; }
     .form-field.span-12 { grid-column: span 12; }
+    /* اللوح: حقلان في الصف. الجوال: حقل واحد. الشبكة تبقى اثني عشر عمودا فالامتداد وحده يتغير. */
     @media (max-width: 900px) {
       .form-field, .form-field.span-3, .form-field.span-4 { grid-column: span 6; }
+    }
+    @media (max-width: 600px) {
+      .form-field, .form-field.span-3, .form-field.span-4, .form-field.span-6 { grid-column: span 12; }
     }
     .form-field { display: flex; flex-direction: column; gap: 0.25rem; }
     .form-field > span { font-size: 0.85rem; color: var(--text-secondary); }
@@ -720,13 +724,10 @@
     .cal-nav > .cal-nav-group:nth-child(1) { order: 2; justify-self: center; }
     .cal-nav .cal-title { justify-content: center; }   /* النص في منتصف صندوقه لا في طرفه: الفراغ متساو عن الزرين */
     .cal-nav > .cal-nav-group:nth-child(2) { order: 1; justify-self: start; }
-    .cal-nav > #calFilters { order: 3; justify-self: end; }
-    .cal-nav > #calFilters[hidden] { display: none; }
     @media (max-width: 900px) {
       .cal-nav { grid-template-columns: 1fr; justify-items: center; row-gap: 0.6rem; }
       .cal-nav > .cal-nav-group:nth-child(1) { order: 1; }
       .cal-nav > .cal-nav-group:nth-child(2) { order: 2; justify-self: center; }
-      .cal-nav > #calFilters { order: 3; justify-self: center; }
     }
     .dash-side .cal-nav { grid-template-columns: 1fr; justify-items: center; }
     .dash-side .cal-nav > .cal-nav-group:nth-child(2) { justify-self: center; }
@@ -886,10 +887,9 @@
     @media (max-width: 900px) {
       .container { max-width: 100%; padding: 1rem 0.75rem; }
       .content { padding: 1.25rem 1rem; }
-      /* كل شبكة متعددة الأعمدة تصير عمودا واحدا */
+      /* كل شبكة متعددة الأعمدة تصير عمودا واحدا (شبكة النموذج مستثناة: نقطتا كسرها أدناه) */
       .dash-grid, .dash-grid--single, .ind-grid, .svc-grid, .dash-grid--single .svc-grid,
-      .form-field, .form-field.span-3, .form-field.span-4, .form-field.span-6, .form-field.span-12 { grid-column: span 1; }
-      .form-grid, .features-grid, .totals-row, .ach-row, .filters-row, .settings-grid {
+      .features-grid, .totals-row, .ach-row, .filters-row, .settings-grid {
         grid-template-columns: minmax(0, 1fr) !important;
       }
       .stats-section .platform-stats-list,

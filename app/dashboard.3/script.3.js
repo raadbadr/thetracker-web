@@ -62,8 +62,7 @@
       function loadCalendar() {
         var r = calRange();
         return app.listItems({ from: r.start.toISOString(), to: r.end.toISOString(), limit: 1000 }).then(function (items) {
-          state.calAll = (items || []).filter(matchesView);
-          state.calItems = applyCalFilter(state.calAll);
+          state.calItems = (items || []).filter(matchesView);
           renderCalendar();
         }).catch(function (err) {
           state.calItems = [];
@@ -118,33 +117,6 @@
       }
 
       function calendarIsHijri() { return state.calMode === "hijri"; }
-
-      /* فلاتر التقويم الماستر: تصنيف بلا إعادة جلب؛ الأوراق = عناصر بنوع مستند، والمهام = ما ليس قضية ولا مخالفة ولا ورقة */
-      function calKind(it) {
-        if (it && it.data && it.data.document_kind) return "documents";
-        if (isCaseItem(it)) return "cases";
-        if (isViolationItem(it)) return "violations";
-        return "tasks";
-      }
-      function applyCalFilter(list) {
-        var f = state.calFilter || "all";
-        return f === "all" ? (list || []) : (list || []).filter(function (it) { return calKind(it) === f; });
-      }
-      function wireCalFilters() {
-        var box = $("calFilters");
-        if (!box) return;
-        /* الرئيسية فقط: هي التقويم الماستر. تُقرأ الوجهة من الرابط لا من state،
-           لأن هذه الدالة تُنادى عند تحميل السكربت قبل أن يُحدَّد viewType. */
-        box.hidden = !!currentViewType();
-        box.addEventListener("click", function (ev) {
-          var btn = ev.target.closest("[data-cal-filter]");
-          if (!btn) return;
-          state.calFilter = btn.getAttribute("data-cal-filter") || "all";
-          box.querySelectorAll("[data-cal-filter]").forEach(function (b) { b.classList.toggle("is-active", b === btn); b.setAttribute("aria-pressed", b === btn ? "true" : "false"); });
-          state.calItems = applyCalFilter(state.calAll || state.calItems);
-          renderCalendar();
-        });
-      }
 
       function renderCalendar() {
         if (!state.month) return;
@@ -289,7 +261,6 @@
         state.month = calendarIsHijri() ? startOfHijriMonth(anchor) : startOfMonth(anchor);
         loadCalendar();
       });
-      wireCalFilters();
       $("calTodayBtn").addEventListener("click", function () {
         var now = new Date();
         state.month = calendarIsHijri() ? startOfHijriMonth(now) : startOfMonth(now);
