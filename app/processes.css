@@ -695,7 +695,7 @@
     .raci-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
     .raci-table th, .raci-table td { padding: 0.45rem 0.5rem; border-bottom: 1px solid var(--glass-border); text-align: center; }
     .raci-table th:first-child, .raci-table td:first-child { text-align: start; }
-    .raci-badge { display: inline-block; min-width: 22px; padding: 2px 6px; border-radius: 6px; font-weight: 800; font-size: 0.72rem; color: #fff; }
+    .raci-badge { display: inline-block; padding: 2px 8px; border-radius: 8px; font-weight: 700; font-size: 0.72rem; color: #fff; white-space: normal; overflow-wrap: anywhere; }
     .raci-R { background: #2fbf71; } .raci-A { background: #e5484d; } .raci-C { background: #f2a33c; } .raci-I { background: #46b3e6; }
     .flow { display: flex; flex-direction: column; align-items: center; gap: 0; margin-top: 0.5rem; }
     .flow-node { min-width: 220px; max-width: 420px; padding: 0.7rem 1rem; border-radius: 12px; background: var(--glass); border: 1px solid var(--glass-border); text-align: center; font-size: 0.85rem; }
@@ -748,14 +748,16 @@
     /* إسناد الأدوار بنقرة واحدة: صور الأعضاء بأحرفهم الأولى تحت كل دور،
        نقرة تُسند ونقرة على المسند تلغيه — بلا قوائم ولا سحب. */
     .role-pick { min-width: 0; }
-    .role-pick .avatars { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.3rem; }
-    .avatar-btn { width: 36px; height: 36px; min-height: 36px; padding: 0; border-radius: 50%;
-      border: 2px solid var(--glass-border); background: var(--glass); color: var(--text-primary);
-      font: inherit; font-size: 0.78rem; font-weight: 800; cursor: pointer; display: grid; place-items: center;
-      transition: transform .12s ease, border-color .12s ease, background .12s ease; }
-    .avatar-btn:hover { transform: translateY(-1px); border-color: var(--primary); }
-    .avatar-btn.is-on { border-color: var(--primary); background: var(--primary); color: var(--btn-ink, #fff); box-shadow: 0 4px 12px var(--primary-shadow); }
-    .avatar-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+    .role-pick .avatars { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.3rem; }
+    /* شريحة باسم العضو كاملا: لا حروف أولى ولا قص (أمر المهندس رعد) */
+    .name-pill { display: inline-flex; align-items: center; min-height: 36px; padding: .35rem .75rem;
+      border-radius: 999px; border: 1px solid var(--glass-border); background: var(--glass);
+      color: var(--text-primary); font: inherit; font-size: .85rem; font-weight: 600; cursor: pointer;
+      white-space: normal; overflow-wrap: anywhere; text-align: start; line-height: 1.35;
+      transition: border-color .12s ease, background .12s ease; }
+    .name-pill:hover { border-color: var(--primary); }
+    .name-pill.is-on { border-color: var(--primary); background: var(--primary); color: var(--btn-ink, #fff); box-shadow: 0 4px 12px var(--primary-shadow); }
+    .name-pill:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
     .role-empty { font-size: 0.72rem; color: var(--text-secondary); }
 
     /* زر تصدير واحد يُسأل بعده عن النوع (أمر المهندس رعد: لا زران) */

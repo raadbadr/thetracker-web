@@ -15,24 +15,15 @@
         return html;
       }
       /* حرفان من الاسم يكفيان للتعرف على الشخص في دائرة صغيرة */
-      function initialsOf(text) {
-        var parts = String(text || "").trim().split(/\s+/).filter(Boolean)
-          .map(function (w) { return w.replace(/^ال(?=.)/, ""); }); /* «الشمري» تُقرأ شينا لا ألفا */
-        if (!parts.length) return "؟";
-        if (parts.length === 1) return parts[0].slice(0, 2);
-        return parts[0].slice(0, 1) + parts[1].slice(0, 1);
-      }
-
       function rolePicker(stepIndex, role, current) {
         var list = state.members || [];
         if (!list.length) return '<span class="role-empty">' + esc(t("noMembersYet")) + "</span>";
         return list.map(function (m) {
           var full = state.names[m.user_id] || "";
           var on = current === m.user_id;
-          return '<button type="button" class="avatar-btn' + (on ? " is-on" : "") + '" data-avatar="1"' +
+          return '<button type="button" class="name-pill' + (on ? " is-on" : "") + '" data-avatar="1"' +
                  ' data-i="' + stepIndex + '" data-role="' + role + '" data-member="' + esc(m.user_id) + '"' +
-                 ' aria-pressed="' + (on ? "true" : "false") + '" title="' + esc(full) + '">' +
-                 esc(initialsOf(full)) + "</button>";
+                 ' aria-pressed="' + (on ? "true" : "false") + '">' + esc(full) + "</button>";
         }).join("");
       }
 
@@ -101,7 +92,7 @@
             "</div>" +
             '<div class="raci-grid">' +
               ["R","A","C","I"].map(function (k) {
-                return '<div class="role-pick"><span class="mini-label">' + k + " — " + esc(t("raci_" + k)) + "</span>" +
+                return '<div class="role-pick"><span class="mini-label">' + esc(t("raci_" + k)) + " (" + k + ")</span>" +
                        '<div class="avatars">' + rolePicker(i, k, st[k] || "") + "</div></div>";
               }).join("") +
             "</div>" +
@@ -132,7 +123,7 @@
         (p.steps || []).forEach(function (s, i) {
           html += "<tr><td>" + (i + 1) + '. <span data-tr>' + esc(s.title) + "</span></td>" + ids.map(function (id) {
             var letters = ["R","A","C","I"].filter(function (k) { return s[k] === id; });
-            return "<td>" + letters.map(function (k) { return '<span class="raci-badge raci-' + k + '">' + k + "</span>"; }).join(" ") + "</td>";
+            return "<td>" + letters.map(function (k) { return '<span class="raci-badge raci-' + k + '">' + esc(t("raci_" + k)) + "</span>"; }).join(" ") + "</td>";
           }).join("") + "</tr>";
         });
         $("raciWrap").innerHTML = html + "</tbody></table>";
