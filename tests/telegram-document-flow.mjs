@@ -32,7 +32,8 @@ check("offline analyzer: too short is null", analyzeTextOffline("hi") === null);
 /* 2) نص التأكيد: الرقم والتاريخان، بلا رقم قياسي ولا أسماء حقول ولا تشكيل */
 for (const lang of ["ar", "en", "fr", "ur"]) {
   const text = docConfirmText(lang, vat);
-  check(`confirm text (${lang}) has the number and both dates`, text.includes("314983900200003") && text.includes("31-08-2026") && text.includes(vatExpiry), text);
+  /* الشهادة الضريبية: تاريخها المعروض هو أول إقرار (31-10-2026) لا انتهاء مفترضا */
+  check(`confirm text (${lang}) has the number, the issue date and the first filing date`, text.includes("314983900200003") && text.includes("31-08-2026") && text.includes("31-10-2026") && !text.includes("31-08-2027"), text);
   check(`confirm text (${lang}) shows nothing internal`, clean(text), text);
 }
 const arConfirm = docConfirmText("ar", vat);
@@ -44,7 +45,7 @@ check("confirm text (ar) names the party", arConfirm.includes("باسم: PARKINZ
 const saved = docSavedText("ar", { status: "created", kind: "commercial_register", number: "7055060102", expiry_date: "2027-08-24" });
 check("saved text (ar)", saved === "حفظت في المستندات: السجل التجاري — رقم 7055060102 — ينتهي 24-08-2027", saved);
 const updated = docSavedText("ar", { status: "updated", kind: "vat_certificate", number: "314983900200003", expiry_date: "2027-08-31" });
-check("updated text (ar)", updated === "حدثت في المستندات: الشهادة الضريبية — رقم 314983900200003 — ينتهي 31-08-2027", updated);
+check("updated text (ar)", updated === "حدثت في المستندات: الشهادة الضريبية — رقم 314983900200003 — أول إقرار 31-08-2027", updated);
 check("saved text (en) is clean", clean(docSavedText("en", { status: "created", kind: "gosi_certificate", number: "123456789", expiry_date: "2026-12-31" })));
 const offer = profileOfferText("ar", { vat_number: "314983900200003", legal_name_en: "PARKINZI Company" }, { vat_number: null, legal_name_en: "Parkinzi" });
 check("profile offer (ar) shows labels, not keys", offer.includes("الرقم الضريبي: 314983900200003 (المسجل: غير مسجل)") && offer.includes("الاسم النظامي بالإنجليزية") && !SNAKE.test(offer), offer);
