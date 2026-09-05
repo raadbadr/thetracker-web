@@ -63,6 +63,8 @@ export const TOOLS = [
     inputSchema: { type: "object", properties: { user_message: { type: "string", description: "The person's exact words that ask for this action (required)" }, confirm: { type: "boolean", description: "true only after the person confirmed the needs_confirmation preview" }, telegram_user_id: { type: "string", description: "Telegram user id of the person talking (Telegram only)" }, query: { type: "string", description: "Item number, title or case number" }, member: { type: "string", description: "Member name or email" } }, required: ["query", "member"], additionalProperties: false } },
   { name: "tracker_team", description: "The company's team: each member's name, role, department, open and overdue counts, next due date and their nearest items. Use for 'who is responsible for…', 'what is on Ahmed this week', 'the team'.",
     inputSchema: { type: "object", properties: { telegram_user_id: { type: "string" } }, additionalProperties: false } },
+  { name: "tracker_overview", description: "Counts of everything in the user's company: total, open and done, per tracker with the nearest due date, and per kind. Use for 'what do we have', 'summary', 'status', 'everything'.",
+    inputSchema: { type: "object", properties: { telegram_user_id: { type: "string" } }, additionalProperties: false } },
   { name: "tracker_expenses", description: "Operating expenses of the user's company for a period: total in SAR, count, top categories and the latest expenses. Use for 'how are my expenses', 'what did we spend this month/week/year'.",
     inputSchema: { type: "object", properties: { telegram_user_id: { type: "string" }, period: { type: "string", enum: ["month", "week", "year", "all"], default: "month", description: "month (default), week, year or all" } }, additionalProperties: false } },
   { name: "tracker_remind", description: "Set a personal reminder lead time for one item: remind before its due date by e.g. 'يوم', '3 أيام', 'أسبوع', '2 hours'. Identify the item by query (title, case number, violation number). Returns ambiguous candidates when several match.",
@@ -75,6 +77,13 @@ function text(s) { return { content: [{ type: "text", text: String(s) }] }; }
 function result(obj, summary) { return { content: [{ type: "text", text: summary || JSON.stringify(obj) }], structuredContent: obj }; }
 function fail(msg, obj) { return { content: [{ type: "text", text: String(msg) }], isError: true, ...(obj ? { structuredContent: obj } : {}) }; }
 
+const KIND_AR = { case: "قضايا", session: "جلسات", violation: "مخالفات", task: "مهام", document: "مستندات", ruling: "أحكام", execution: "تنفيذ", license: "تراخيص", other: "أخرى" };
+/* نظرة عامة بلغة إنسان: كل متتبع بعدد المفتوح والمنجز وأقرب موعد، ثم الأنواع */
+function overviewText(r) {
+  const trackers = (r.trackers || []).map((t) => "• " + t.name + ": " + (t.open || 0) + " مفتوح" + (t.done ? "، " + t.done + " منجز" : "") + (t.next_due ? " — الأقرب " + dmy(t.next_due) : "")).join("\n");
+  const kinds = (r.kinds || []).filter((k) => (k.open || 0) + (k.done || 0) > 0).map((k) => (KIND_AR[k.kind] || k.kind) + " " + (k.open || 0) + (k.done ? " (+" + k.done + " منجز)" : "")).join("، ");
+  return (r.org_name ? r.org_name + ": " : "") + (r.total || 0) + " عنصر (" + (r.open || 0) + " مفتوح، " + (r.done || 0) + " منجز)" + (trackers ? "\n" + trackers : "") + (kinds ? "\nبحسب النوع: " + kinds : "");
+}
 function describeRows(rows) {
   if (!rows || !rows.length) return "No items.";
   return rows.map((r) => {
@@ -183,8 +192,11 @@ export async function callTool(name, args, ctx) {
       let near = [];
       try { near = ((await ctx.rpc("telegram_search", { p_secret: secret, p_user_id: user, p_query: K[1], p_limit: 5 })) || []).filter((r) => !done.some((d) => d.id === r.id)); } catch (e) { near = []; }
       if (near.length) { extra.similar = near; parts.push("عناصر تحمل الكلمة في عنوانها وهي ليست " + K[0] + ":\n" + describeRows(near)); }
+      let ov = null;
+      try { ov = await ctx.rpc("telegram_overview", { p_secret: secret, p_user_id: user }); } catch (e) { ov = null; }
       let all = [];
-      try { all = (await ctx.rpc("telegram_items_by_kind", { p_secret: secret, p_user_id: user, p_kind: "all", p_status: "all", p_limit: 30 })) || []; } catch (e) { all = []; }
+      if (ov && ov.status !== "no_org" && (ov.total || 0) > 0) { extra.overview = ov.trackers || []; parts.push("الموجود لديك — " + overviewText(ov)); }
+      else if (!ov) { try { all = (await ctx.rpc("telegram_items_by_kind", { p_secret: secret, p_user_id: user, p_kind: "all", p_status: "all", p_limit: 30 })) || []; } catch (e) { all = []; } }
       if (all.length) {
         const by = new Map();
         for (const r of all) { const g = r.tracker_name || r.category || "أخرى"; const c = by.get(g) || { open: 0, done: 0 }; c[r.status === "open" ? "open" : "done"] += 1; by.set(g, c); }
@@ -230,6 +242,11 @@ export async function callTool(name, args, ctx) {
         return head + "\n   " + load + (items ? "\n" + items : "");
       });
       return result(r, (r.org && r.org.name ? r.org.name + "\n" : "") + (lines.length ? lines.join("\n") : "لا أعضاء."));
+    }
+    case "tracker_overview": {
+      const r = await ctx.rpc("telegram_overview", { p_secret: secret, p_user_id: user });
+      if (!r || r.status === "no_org") return fail("No company found.");
+      return result(r, overviewText(r));
     }
     case "tracker_expenses": {
       const period = ["month", "week", "year", "all"].includes(a.period) ? a.period : "month";

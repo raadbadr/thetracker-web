@@ -391,7 +391,7 @@ async function smartReply(env, chatId, userId, text, lang, tgName, attachment, p
   /* أولا: الأوامر المباشرة المعروفة (قضايا، المستندات، رقم السجل…) تجاب من البيانات فورا، قبل أي تخمين نية */
   if (!attachment) {
     let quick = null;
-    try { quick = await quickAnswer(env, { chatId, userId, text, lang }); } catch {}
+    try { quick = await quickAnswer(env, { chatId, userId, text, lang, userTimeZone }); } catch {}
     if (quick && quick.text) {
       const quickText = humanize(quick.text, lang);
       try { await sendTelegram(env, chatId, pre + quickText, menuKeyboard(lang)); } catch {}

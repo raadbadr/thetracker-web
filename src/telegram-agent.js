@@ -2,10 +2,11 @@
    ويعرف من يخاطب (اسمه وشركته) ويتذكر آخر الرسائل. الردود بلغة الواجهة بلا تشكيل وبأرقام غربية. */
 import { rpc, dmy, VERBS, writeGate } from "./notify.js";
 import { TOOLS, callTool } from "./mcp.js";
+import { understand, composeAnswer } from "./telegram-understand.js";
 
 const MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const LANG_NAMES = { ar: "العربية الفصحى", en: "English", fr: "français", ur: "اردو" };
-const AGENT_TOOLS = TOOLS.filter((t) => ["tracker_company", "tracker_items", "tracker_search", "tracker_list", "tracker_add", "tracker_complete", "tracker_assign", "tracker_team", "tracker_remind", "tracker_expenses"].includes(t.name));
+const AGENT_TOOLS = TOOLS.filter((t) => ["tracker_company", "tracker_items", "tracker_search", "tracker_list", "tracker_add", "tracker_complete", "tracker_assign", "tracker_team", "tracker_remind", "tracker_expenses", "tracker_overview"].includes(t.name));
 
 export { VERBS, writeGate } from "./notify.js";
 
@@ -19,7 +20,7 @@ function systemPrompt(ctx) {
     `لا تحيي ولا تذكر اسمه أو شركته في كل رد؛ المحادثة مستمرة، فادخل في الجواب مباشرة. لا تكرر جملة قلتها قبل قليل، ولا تختم بعبارات مجاملة.`,
     `أسئلة الفريق (من المسؤول عن…، ماذا على فلان، عبء الأعضاء) من tracker_team. طلب «ذكرني قبل … بـ يوم/3 أيام/أسبوع» = tracker_remind بالعنصر والمهلة كما كتبها.`,
     `أسئلة بيانات الشركة (رقم السجل التجاري، الرقم الضريبي، الآيبان، العنوان، الباقة، الأوراق المرفوعة) تجاب من tracker_company بالرقم نفسه كما هو مسجل.`,
-    `كلمة واحدة تكفي: «قضايا» = tracker_items(case)، «مخالفات» = (violation)، «مهام» = (task)، «مستندات» = (document)، «المنجز» = (status done)، «مواعيد/القادم» = tracker_list(upcoming)، «متأخر» = tracker_list(overdue)، «مصاريف/المصاريف/كم صرفنا» = tracker_expenses(period)، أي اسم أو رقم = tracker_search. والكلام الطويل تفهم منه المطلوب نفسه.`,
+    `كلمة واحدة تكفي: «قضايا» = tracker_items(case)، «مخالفات» = (violation)، «مهام» = (task)، «مستندات» = (document)، «المنجز» = (status done)، «مواعيد/القادم» = tracker_list(upcoming)، «متأخر» = tracker_list(overdue)، «الكل/ملخص/وضعنا» = tracker_overview، «مصاريف/المصاريف/كم صرفنا» = tracker_expenses(period)، أي اسم أو رقم = tracker_search. والكلام الطويل تفهم منه المطلوب نفسه.`,
     `إن لم يوجد شيء من النوع المطلوب فلا تكرر النفي نفسه: انقل ما تقوله الأداة عن الموجود فعلا (المنجز سابقا، ما يحمل الكلمة في عنوانه، النظرة العامة على المتتبعات) لكي يفهم المستخدم صورة بياناته. «بشكل عام» أو «السابقة» أو «الكل» تعني status=all.`,
     `لا تذكر أبدا أسماء حقول أو مفاتيح تقنية (مثل due_at أو client_name) ولا JSON ولا معرفات داخلية ولا صيغ تقنية (ISO 8601)؛ تكلم بلغة إنسان عادي فقط.`,
     `لا تعرض الرقم القياسي الداخلي (ITM-…) للمستخدم أبدا؛ اعرض رقم السجل أو القضية أو المخالفة أو الورقة نفسه كما هو مسجل، وتواريخ الإصدار والانتهاء.`,
@@ -67,20 +68,6 @@ function limited(key, limit) {
   return b.count > limit;
 }
 
-/* كلمة واحدة = أمر مباشر بلا نموذج: قضايا، مخالفات، مهام، مستندات، مواعيد، متأخر، المنجز، الشركة (وبالإنجليزية) */
-const ONE_WORD = [
-  [/^(قضايا|القضايا|قضية|قضاياي|cases?)$/i, { tool: "tracker_items", args: { kind: "case" } }],
-  [/^(مخالفات|المخالفات|مخالفة|violations?)$/i, { tool: "tracker_items", args: { kind: "violation" } }],
-  [/^(مهام|المهام|مهمة|مهماتي|tasks?)$/i, { tool: "tracker_items", args: { kind: "task" } }],
-  [/^(مستندات|المستندات|أوراق|الأوراق|اوراق|documents?|papers?)$/i, { tool: "tracker_items", args: { kind: "document" } }],
-  [/^(المنجز|منجز|المكتمل|مكتمل|done|completed)$/i, { tool: "tracker_items", args: { kind: "all", status: "done" } }],
-  [/^(مواعيد|مواعيدي|القادم|القادمة|upcoming|dates?)$/i, { tool: "tracker_list", args: { mode: "upcoming" } }],
-  [/^(متأخر|المتأخر|متأخرات|المتأخرات|overdue|late)$/i, { tool: "tracker_list", args: { mode: "overdue" } }],
-  [/^(الكل|كل شيء|everything|all)$/i, { tool: "tracker_items", args: { kind: "all", status: "open", limit: 20 } }],
-  [/^(الفريق|فريقي|الأعضاء|team|my team|members)$/i, { tool: "tracker_team", args: {} }],
-  [/^(مصاريف|المصاريف|مصروفات|المصروفات|مصروف|مصاريف التشغيل|expenses?|spending|dépenses?|اخراجات)$/i, { tool: "tracker_expenses", args: {} }],
-  [/^(الشركة|شركتي|بياناتي|بيانات الشركة|السجل|رقم السجل|السجل التجاري|رقم السجل التجاري|الرقم الضريبي|الايبان|الآيبان|متى ينتهي|متى تنتهي|الانتهاء|تاريخ الانتهاء|تاريخ الاصدار|تاريخ الإصدار|company|my company|cr|vat|iban|expiry|when does it expire)$/i, { tool: "tracker_company", args: {} }],
-];
 const EMPTY = { ar: "لا يوجد.", en: "Nothing.", fr: "Rien.", ur: "کچھ نہیں۔" };
 function rowsText(rows) {
   return (rows || []).map((r) => {
@@ -88,18 +75,26 @@ function rowsText(rows) {
     return [r.title, r.case_number ? "قضية " + r.case_number : null, r.violation_number ? "مخالفة " + r.violation_number : null, r.client_name, r.due_at ? dmy(r.due_at) : null].filter(Boolean).join(" | ");
   }).join("\n");
 }
+const TEXT_TOOLS = new Set(["tracker_company", "tracker_team", "tracker_expenses", "tracker_overview"]);
+/* الرسائل البديهية تُفهم وتُجاب من البيانات مباشرة بلا نموذج (telegram-understand.js) */
 async function oneWord(env, ctx) {
-  const t = String(ctx.text || "").trim().replace(/[؟?!.،,]+$/, "").replace(/^(كم|ما|ماهو|ما هو|وش|ايش|إيش)\s+/, "");
-  const hit = ONE_WORD.find(([re]) => re.test(t));
-  if (!hit) return null;
+  const u = understand(ctx.text, ctx.lang);
+  if (!u) return null;
+  if (u.reply) return { text: u.reply, tools: [] };
   const toolCtx = { env, who: { org_id: ctx.orgId || null, org_name: ctx.orgName || "", user_id: ctx.userId }, hash: null, trusted: true, rpc: (name, args) => rpc(env, name, args) };
-  const out = await callTool(hit[1].tool, hit[1].args, toolCtx);
-  if (hit[1].tool === "tracker_company" || hit[1].tool === "tracker_team" || hit[1].tool === "tracker_expenses") return out && out.content && out.content[0] && !out.isError ? { text: out.content[0].text, tools: [hit[1].tool] } : null;
-  const rows = out && out.structuredContent && out.structuredContent.items;
+  const out = await callTool(u.tool, u.args, toolCtx);
+  if (!out || out.isError) return null;
+  const toolText = out.content && out.content[0] && out.content[0].text;
+  if (TEXT_TOOLS.has(u.tool)) return toolText ? { text: toolText, tools: [u.tool] } : null;
+  const rows = out.structuredContent && out.structuredContent.items;
   if (!Array.isArray(rows)) return null;
-  /* لا شيء من النوع المطلوب: نص الأداة يحمل ما يوجد فعلا (المنجز، المشابه، النظرة العامة) بدل «لا يوجد» جافة */
-  const toolText = out && out.content && out.content[0] && out.content[0].text;
-  return { text: rows.length ? rowsText(rows) : (toolText && toolText !== "No items." ? toolText : (EMPTY[ctx.lang] || EMPTY.ar)), tools: [hit[1].tool] };
+  let text = composeAnswer(u, rows, ctx.lang, rowsText, toolText, ctx.userTimeZone);
+  /* ورقة بعينها غير مرفوعة بعد: بطاقة الشركة تحمل رقمها كما سُجل */
+  if (!text && u.tool === "tracker_items" && u.args.kind === "document" && u.keyword) {
+    const c = await callTool("tracker_company", {}, toolCtx);
+    text = c && !c.isError && c.content && c.content[0] ? c.content[0].text : null;
+  }
+  return text ? { text, tools: [u.tool] } : null;
 }
 
 /* الأوامر المباشرة (كلمة أو سؤال قصير معروف) تجاب قبل أي تخمين نية: لا «سأسجل هذا» لكلمة «المستندات» */
