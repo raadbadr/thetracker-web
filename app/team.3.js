@@ -9,7 +9,7 @@
       var app = null;
       var state = { loaded: false, workLoaded: false, error: null, canManage: false, members: [], invitations: [], limits: {}, work: [], roles: {}, filterUser: null, matrixDirty: true };
       /* بطاقة العمل الواحدة: صفوف مفتوحة، شرائح مشغولة، آخر ناتج للشريط والمصفوفة، والقائمة المعتمة الوحيدة */
-      var openRows = {}, pending = {}, lastStripHtml = "", lastMatrixSig = "", roleMenu = null, menuAnchor = null, suppressClick = false, pressTimer = null;
+      var openRows = {}, pending = {}, itemVer = {}, lastStripHtml = "", lastMatrixSig = "", roleMenu = null, menuAnchor = null, suppressClick = false, pressTimer = null;
       var SVG_MORE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5 4.5 8l1.4-1.4L12 12.7l6.1-6.1L19.5 8z"/></svg>';
       var SVG_PLUS = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg>';
 
@@ -598,13 +598,17 @@
         el.classList.toggle("is-late", isLate(it));
         if (el.dataset.title !== (it.title || "")) {
           el.dataset.title = it.title || "";
-          var tt = el.querySelector(".wr-title"); tt.textContent = it.title || "-"; tt.removeAttribute("data-tr-done");
+          var tt = el.querySelector(".wr-title"); tt.textContent = it.title || "-";
+          tt.removeAttribute("data-tr-done"); tt.removeAttribute("data-tr-original"); tt.removeAttribute("title"); tt.classList.remove("is-translated");
           if (app.translateNodes) app.translateNodes(el);
         }
         el.querySelector(".wr-meta").innerHTML = metaHtml(it);
         el.querySelector(".wr-pills").innerHTML = rolePills(it);
         var detail = el.querySelector(".wr-detail");
-        if (detail && !detail.hidden) { detail.innerHTML = buildDetail(it); detail.dataset.built = "1"; }
+        if (detail) {
+          if (!detail.hidden) { detail.innerHTML = buildDetail(it); detail.dataset.built = "1"; }
+          else delete detail.dataset.built;   /* المطوية تبنى من جديد عند فتحها التالي */
+        }
         el.dataset.sig = sig;
       }
       function patchRowById(itemId) {
@@ -752,17 +756,19 @@
         if (role) row[userId] = role; else delete row[userId];
         if (role !== "R" && it.assignee_id === userId) it.assignee_id = null;
         pending[key] = true;
+        var ver = itemVer[itemId] = (itemVer[itemId] || 0) + 1;   /* كتابة أحدث على العمل نفسه تلغي أثر رد أقدم */
         if (el && el.setAttribute) el.setAttribute("aria-busy", "true");
         patchRowById(itemId); renderStrip(); markMatrixDirty();
         var p = (role === "" || role === "R" || role === "S")
           ? app.distributeItem(itemId, userId, role || null)
           : app.setItemRole(itemId, userId, role).then(function () { return prevAssignee === userId ? app.assignItem(itemId, null) : null; });
         return p.then(function (res) {
-          if (res && res.roles) state.roles[itemId] = res.roles;
+          if (res && res.roles && itemVer[itemId] === ver) state.roles[itemId] = res.roles;
           toast(t("rasiSaved"), "success");
           if (prevA) toast(tf("rasiApproverSwapped", { name: nameOf(userId), prev: nameOf(prevA) }));
         }).catch(function (err) {
-          state.roles[itemId] = prevRoles; it.assignee_id = prevAssignee;
+          if (itemVer[itemId] === ver) { state.roles[itemId] = prevRoles; it.assignee_id = prevAssignee; }
+          else loadRoles();   /* كتابة أحدث سبقت: الحقيقة من الخادم */
           toast(errorMessage(err), "error");
         }).then(function () {
           delete pending[key];
