@@ -153,6 +153,56 @@ Object.keys(gaps).forEach((sel) => {
   check("buttons are evenly spaced in " + sel.split(" ")[0], new Set(g.gaps).size === 1, JSON.stringify(g.gaps));
 });
 
+/* البلاطات: أربع في صف، والنقر يفلتر الجدولين، ونقرة ثانية تعيد الكل */
+const tiles = await page.evaluate(() => {
+  const list = [...document.querySelectorAll("#papersStats [data-paper-state]")];
+  const box = document.getElementById("papersStats").getBoundingClientRect();
+  return {
+    count: list.length,
+    states: list.map((b) => b.getAttribute("data-paper-state")),
+    icons: list.filter((b) => b.querySelector("svg")).length,
+    buttons: list.filter((b) => b.tagName === "BUTTON" && b.hasAttribute("aria-pressed")).length,
+    rows: new Set(list.map((b) => Math.round(b.getBoundingClientRect().top))).size,
+    height: Math.round(box.height),
+  };
+});
+check("the papers card shows four state tiles", tiles.count === 4 && tiles.states.join(",") === "valid,expiring,expired,missing", JSON.stringify(tiles.states));
+check("each tile carries an icon and is a button", tiles.icons === 4 && tiles.buttons === 4, "icons=" + tiles.icons + " buttons=" + tiles.buttons);
+check("the tiles sit on one row on the desktop", tiles.rows === 1, "rows=" + tiles.rows);
+
+const filtered = await page.evaluate(() => {
+  const tile = document.querySelector('#papersStats [data-paper-state="missing"]');
+  tile.click();
+  const after = document.querySelector('#papersStats [data-paper-state="missing"]');
+  return {
+    pressed: after.getAttribute("aria-pressed"),
+    papers: [...document.querySelectorAll("#papersBody tr")].length,
+    docs: [...document.querySelectorAll("#docsBody tr")].length,
+  };
+});
+check("pressing a tile filters both tables to that state", filtered.papers === 1 && filtered.docs === 0 && filtered.pressed === "true", JSON.stringify(filtered));
+
+const cleared = await page.evaluate(() => {
+  document.querySelector('#papersStats [data-paper-state="missing"]').click();
+  return { papers: document.querySelectorAll("#papersBody tr").length, docs: document.querySelectorAll("#docsBody tr").length };
+});
+check("pressing the same tile again clears the filter", cleared.papers === 3 && cleared.docs === 2, JSON.stringify(cleared));
+
+await page.setViewport({ width: 375, height: 812, deviceScaleFactor: 2 });
+await new Promise((r) => setTimeout(r, 400));
+const small = await page.evaluate(() => {
+  const list = [...document.querySelectorAll("#papersStats [data-paper-state]")];
+  const rows = new Set(list.map((b) => Math.round(b.getBoundingClientRect().top))).size;
+  const card = document.getElementById("papersCard").getBoundingClientRect();
+  return { rows, overflow: document.documentElement.scrollWidth > 375, height: Math.round(card.height),
+           tile: Math.round(list[0].getBoundingClientRect().height) };
+});
+console.log("  phone 375:", JSON.stringify(small));
+check("the tiles fall into two rows on the phone", small.rows === 2, "rows=" + small.rows);
+check("nothing overflows sideways at 375", !small.overflow, "scrollWidth over 375");
+await page.setViewport({ width: 1280, height: 900, deviceScaleFactor: 1 });
+await new Promise((r) => setTimeout(r, 300));
+
 await page.click("#docsBody [data-get]");
 await new Promise((r) => setTimeout(r, 1500));
 const dl = await page.evaluate(() => window.__downloads || []);

@@ -392,7 +392,7 @@
           { s: "valid",    k: "pStatValid",    n: counts.valid,    c: "status-done",    a: "cars" },
           { s: "expiring", k: "pStatExpiring", n: counts.expiring, c: "status-open",    a: "spots" },
           { s: "expired",  k: "pStatExpired",  n: counts.expired,  c: "status-overdue", a: "overdue" },
-          { s: "missing",  k: "pStatMissing",  n: counts.missing,  c: "status-overdue", a: "users" }
+          { s: "missing",  k: "pStatMissing",  n: counts.missing,  c: "status-overdue", a: "overdue" }
         ].map(function (c) {
           var on = state.paperState === c.s;
           return '<button type="button" class="platform-stat-card paper-tile' + (on ? " is-on" : "") + '"' +
