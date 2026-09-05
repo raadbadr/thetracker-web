@@ -308,11 +308,11 @@
             '<td><span class="' + cls + '">' + esc(leftText) + "</span></td>" +
             "<td>" + (files.length
               ? files.map(function (a) {
-                  return '<span class="file-row"><a href="#" data-open="' + esc(a.id) + '" title="' + esc(a.name) + '">' + esc(a.name) + "</a>" +
-                         iconBtn("download", t("pDownload"), "data-get", a.id, "file-get") + "</span>";
+                  return '<span class="file-row"><a href="#" data-open="' + esc(a.id) + '" title="' + esc(a.name) + '">' + esc(a.name) + "</a></span>";
                 }).join("")
               : "-") + "</td>" +
             '<td><div class="chat-options row-actions">' +
+              (files.length ? iconBtn("download", t("pDownload"), "data-get", files[0].id) : "") +
               iconBtn("plus", t(files.length ? "docAddAnother" : "docAttachFile"), "data-attach", it.id) +
               iconBtn("trash", t("delete"), "data-del", it.id, "is-danger") +
             "</div></td>";

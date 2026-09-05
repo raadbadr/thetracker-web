@@ -708,8 +708,10 @@
     .row-actions .chat-option-btn { padding: 0.3rem 0.7rem; font-size: 0.8rem; white-space: nowrap; }
     /* جدول المستندات: صف واحد لكل مستند، أزراره جنبا إلى جنب،
        والأعمدة القصيرة لا تنكسر — العنوان وحده يأخذ ما يزيد */
+    /* الأزرار جنبا إلى جنب بمسافة واحدة، ولا هامش يفرقها */
     .content .items-table .row-actions { display: flex; flex-direction: row; flex-wrap: nowrap;
-      justify-content: flex-start; align-items: center; gap: .4rem; }
+      justify-content: flex-start; align-items: center; gap: .5rem; }
+    .content .items-table .row-actions > * { margin: 0 !important; }
     .content .items-table .row-actions .chat-option-btn { min-height: 32px; padding: .28rem .7rem;
       font-size: .8rem; white-space: nowrap; width: auto; flex: 0 0 auto; }
     .content .items-table td, .content .items-table th { white-space: nowrap; vertical-align: middle; }

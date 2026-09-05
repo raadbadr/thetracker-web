@@ -131,6 +131,28 @@ check("the paper with a file offers view and download", seen.paperOpen === 1 && 
 check("papers without a file offer attach", seen.paperAttach === 1, "n=" + seen.paperAttach);
 check("nothing is cut with an ellipsis", seen.ellipsis === 0, "n=" + seen.ellipsis);
 
+const gaps = await page.evaluate(() => {
+  const out = {};
+  ["#docsBody tr:first-child .row-actions", "#papersBody tr:first-child .row-actions"].forEach((sel, i) => {
+    const box = document.querySelector(sel);
+    if (!box) { out[sel] = null; return; }
+    const kids = [...box.children].map((el) => el.getBoundingClientRect());
+    const g = [];
+    for (let k = 1; k < kids.length; k++) {
+      const prev = kids[k - 1], cur = kids[k];
+      g.push(Math.round(Math.abs(Math.min(prev.left, cur.left) === cur.left ? prev.left - cur.right : cur.left - prev.right)));
+    }
+    out[sel] = { count: kids.length, gaps: g };
+  });
+  return out;
+});
+console.log("  gaps:", JSON.stringify(gaps));
+Object.keys(gaps).forEach((sel) => {
+  const g = gaps[sel];
+  if (!g || g.count < 2) return;
+  check("buttons are evenly spaced in " + sel.split(" ")[0], new Set(g.gaps).size === 1, JSON.stringify(g.gaps));
+});
+
 await page.click("#docsBody [data-get]");
 await new Promise((r) => setTimeout(r, 1500));
 const dl = await page.evaluate(() => window.__downloads || []);
