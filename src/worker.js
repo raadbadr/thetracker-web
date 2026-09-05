@@ -8,7 +8,7 @@ import { handleAssistantRequest, askAssistant } from "./assistant.js";
 import { handleTranslate } from "./translate.js";
 import { serveBundle } from "./bundles.js";
 import { handleMcp } from "./mcp.js";
-import { agentReply } from "./telegram-agent.js";
+import { agentReply, quickAnswer } from "./telegram-agent.js";
 import { handleCalendar } from "./calendar.js";
 import { handleDocumentAnalyze } from "./documents.js";
 import { runNotificationCron, linkChannelByCode, notifyTarget, sendTelegram, sendWhatsapp, sendSms, sendEmail, rpc, t as channelText,
@@ -429,11 +429,43 @@ async function readTelegramDocument(env, media, name, mime) {
 }
 
 /** الرسالة (نص/صوت/ملف) ← نية ← بحث فوري، أو عرض فعل بزري تأكيد، أو جواب المساعد */
+const ADD_VERBS = /(أضف|اضف|ضيف|سجل|سجّل|أنشئ|انشئ|اعمل|سوي|سو |افتح قضية|افتح مخالفة|add|create|new task|register)/i;
+function sanitizeIntentItem(item, text) {
+  const out = {};
+  const arabicMsg = /[\u0600-\u06FF]/.test(text || "");
+  for (const k of Object.keys(item || {})) {
+    let v = item[k];
+    if (v === null || v === undefined || v === "") continue;
+    if (typeof v === "string") {
+      v = v.trim();
+      /* هذيان النموذج: نص طويل أو شرح إنجليزي داخل رسالة عربية */
+      if (v.length > 120) continue;
+      if (arabicMsg && (v.match(/[A-Za-z]{3,}/g) || []).length >= 4) continue;
+      if (/^(missing|none|null|n\/a|leave blank|not applicable)/i.test(v)) continue;
+    }
+    out[k] = v;
+  }
+  return out;
+}
+
 async function smartReply(env, chatId, userId, text, lang, tgName, attachment, prefix, userTimeZone) {
   const b = botText(lang);
+  const pre = prefix || "";
+  /* أولا: الأوامر المباشرة المعروفة (قضايا، المستندات، رقم السجل…) تُجاب من البيانات فورا، قبل أي تخمين نية */
+  if (!attachment) {
+    let quick = null;
+    try { quick = await quickAnswer(env, { chatId, userId, text, lang }); } catch {}
+    if (quick && quick.text) {
+      try { await sendTelegram(env, chatId, pre + quick.text, menuKeyboard(lang)); } catch {}
+      await logBotReply(env, chatId, userId, quick.text);
+      return;
+    }
+  }
   let intent = { action: "question" };
   try { intent = await extractIntent(env, text, attachment ? { attachment } : null); } catch {}
-  const pre = prefix || "";
+  if (intent.item) intent.item = sanitizeIntentItem(intent.item, text);
+  /* الإضافة لا تُقترح إلا بفعل صريح في الرسالة؛ كلمة أو سؤال ليس طلب تسجيل */
+  if (intent.action === "add" && !ADD_VERBS.test(text)) intent.action = "question";
   if (intent.action === "add" || intent.action === "done" || intent.action === "assign") {
     if (intent.action === "add" && !(intent.item && intent.item.title)) intent.action = "question";
     else {

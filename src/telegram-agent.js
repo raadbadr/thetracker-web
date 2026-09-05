@@ -92,6 +92,12 @@ async function oneWord(env, ctx) {
   return { text: rows.length ? rowsText(rows) : (EMPTY[ctx.lang] || EMPTY.ar), tools: [hit[1].tool] };
 }
 
+/* الأوامر المباشرة (كلمة أو سؤال قصير معروف) تُجاب قبل أي تخمين نية: لا «سأسجل هذا» لكلمة «المستندات» */
+export async function quickAnswer(env, ctx) {
+  if (!env.WORKER_SECRET) return null;
+  try { return await oneWord(env, ctx); } catch (e) { return null; }
+}
+
 /* يعيد نص الرد أو null إن تعذر (فيسقط المتصل إلى الرد التقليدي) */
 export async function agentReply(env, ctx) {
   if (!env.AI || !env.WORKER_SECRET) { console.log("agent: no AI or secret"); return null; }
