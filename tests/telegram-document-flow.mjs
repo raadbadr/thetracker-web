@@ -138,8 +138,37 @@ try {
   check("an explicit «كلف» becomes a pending assignment", !!asg.pending && asg.pending.action === "assign" && asg.pending.member === "أحمد", JSON.stringify(asg));
   check("an empty query never reaches the database (it would match every open item)", !!writeGate("tracker_complete", { query: "  " }, "أنجزت").blocked && !!writeGate("tracker_assign", { query: "", member: "أحمد" }, "كلف أحمد").blocked && !!writeGate("tracker_assign", { query: "4471", member: "" }, "أسند 4471").blocked);
   check("reading tools pass the gate untouched", writeGate("tracker_items", { kind: "case" }, "احسنت").allow === true && writeGate("tracker_company", {}, "شكرا").allow === true);
-  check("«ذكرني» may set a reminder directly; without the word it is blocked", writeGate("tracker_remind", { query: "الجلسة", before: "يوم" }, "ذكرني قبل يوم بالجلسة").allow === true && writeGate("tracker_remind", { query: "x", before: "يوم" }, "الجلسة قريبة").blocked === true);
+  check("«ذكرني قبل يوم» may set a reminder directly; without the word it is blocked", writeGate("tracker_remind", { query: "الجلسة", before: "يوم" }, "ذكرني قبل يوم بالجلسة").allow === true && writeGate("tracker_remind", { query: "x", before: "يوم" }, "الجلسة قريبة").blocked === true);
+  check("cancelling, negating or asking about a reminder never writes one", ["ألغِ التنبيه عن قضية 55", "لا تذكرني بالمخالفة 77", "احذف التذكير", "هل يوجد تذكير على قضية 55؟", "تذكير"].every((m) => writeGate("tracker_remind", { query: "55", before: "1 day" }, m).blocked === true));
   check("English «done» / «close» are verbs, praise is not", VERBS.done.test("mark 4471 as done") && VERBS.done.test("close the case 4471") && !VERBS.done.test("great job") && !VERBS.done.test("well done".replace("done", "")));
+  const { heuristicIntent: hi } = await import("../src/telegram-actions.js");
+  check("«تم سداد المخالفة 778» is a done intent for the heuristic and passes the gate (one source of verbs)", hi("تم سداد المخالفة 778") && hi("تم سداد المخالفة 778").action === "done" && VERBS.done.test("تم سداد المخالفة 778"));
+  const { actionButtons } = await import("../src/notify.js");
+  const kb = actionButtons("ar", "k7x2q").reply_markup.inline_keyboard[0];
+  check("confirm buttons carry their draft token", kb[0].callback_data === "act:y:k7x2q" && kb[1].callback_data === "act:n:k7x2q" && actionButtons("ar").reply_markup.inline_keyboard[0][0].callback_data === "act:y");
+  /* MCP clients (Hermes) obey the same rule as the bot */
+  {
+    const { callTool } = await import("../src/mcp.js");
+    const calls = [];
+    const rpcStub = async (name, args) => { calls.push(name); if (name === "telegram_complete") return { status: "done", title: "قضية 4521" }; if (name === "channel_user_lookup") return { user_id: "u2", name: "زميل" }; if (name === "telegram_org_choices") return [{ id: "other-org", name: "غيرها", role: "member" }]; return null; };
+    const ctx = { env: { WORKER_SECRET: "s" }, who: { org_id: "org1", org_name: "x", user_id: "u1" }, hash: null, rpc: rpcStub };
+    const noMsg = await callTool("tracker_complete", { query: "4521" }, ctx);
+    check("MCP: a write without the person's words is refused", noMsg.isError === true && !calls.includes("telegram_complete"));
+    const praise = await callTool("tracker_complete", { query: "4521", user_message: "احسنت" }, ctx);
+    check("MCP: «احسنت» is refused, nothing written", praise.isError === true && !calls.includes("telegram_complete"));
+    const preview = await callTool("tracker_complete", { query: "4521", user_message: "أنجزت القضية 4521" }, ctx);
+    check("MCP: an explicit request first returns a preview, still nothing written", !preview.isError && preview.structuredContent.status === "needs_confirmation" && !calls.includes("telegram_complete"), JSON.stringify(preview.structuredContent));
+    const go = await callTool("tracker_complete", { query: "4521", user_message: "أنجزت القضية 4521", confirm: true }, ctx);
+    check("MCP: with confirm=true the write happens", !go.isError && calls.includes("telegram_complete"));
+    const imp = await callTool("tracker_import_rows", { rows: [{ title: "a" }, { title: "b" }] }, { ...ctx, importRows: async () => ({ ok: true, imported: 2 }) });
+    check("MCP: import previews the row count before confirm", imp.structuredContent.status === "needs_confirmation" && imp.structuredContent.rows === 2);
+    const foreign = await callTool("tracker_items", { kind: "case", telegram_user_id: "999" }, ctx);
+    check("MCP: a Telegram user from another company is not acted for", foreign.structuredContent.status === "not_member" && !calls.includes("telegram_items_by_kind"), JSON.stringify(foreign.structuredContent));
+    const link = await callTool("tracker_link_telegram", { telegram_user_id: "999" }, ctx);
+    check("MCP: linking needs the site code — no phone, no key-owner fallback", link.isError === true && !calls.includes("link_channel_direct") && !calls.includes("link_channel_by_phone"));
+    const trusted = await callTool("tracker_complete", { query: "4521" }, { ...ctx, trusted: true });
+    check("the in-house bot (gate + button already applied) is trusted", !trusted.isError);
+  }
   const dash = formatItems("ar", [{ title: "مخالفة", client_name: "ASKEC", case_number: "-", due_at: "2026-09-07T06:00:00+00:00" }], "📅", "لا يوجد", "Asia/Riyadh");
   check("a dash for the case number is not printed as (-)", !dash.includes("(-)") && dash.includes("مخالفة — ASKEC"), dash);
 }

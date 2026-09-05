@@ -1,38 +1,13 @@
 /* وكيل تراكر على تيليغرام: نموذج لغوي يستعمل أدوات MCP نفسها (بحث، مواعيد، إضافة، إنجاز، إسناد) باسم المستخدم المرتبط،
    ويعرف من يخاطب (اسمه وشركته) ويتذكر آخر الرسائل. الردود بلغة الواجهة بلا تشكيل وبأرقام غربية. */
-import { rpc, dmy } from "./notify.js";
+import { rpc, dmy, VERBS, writeGate } from "./notify.js";
 import { TOOLS, callTool } from "./mcp.js";
 
 const MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const LANG_NAMES = { ar: "العربية الفصحى", en: "English", fr: "français", ur: "اردو" };
 const AGENT_TOOLS = TOOLS.filter((t) => ["tracker_company", "tracker_items", "tracker_search", "tracker_list", "tracker_add", "tracker_complete", "tracker_assign", "tracker_team", "tracker_remind", "tracker_expenses"].includes(t.name));
 
-/* أفعال الكتابة: لا تنفذ بلا طلب صريح في رسالة المستخدم نفسها، ثم لا تنفذ إلا بعد تأكيده بزر.
-   كلمات المجاملة (أحسنت، شكرا…) ليست أوامر — هذا ما أقفل مخالفة بالخطأ ذات مرة. */
-export const VERBS = {
-  add: /(أضف|اضف|ضيف|سجل|سجّل|أنشئ|انشئ|اعمل|سوي|سو |افتح قضية|افتح مخالفة|add|create|new task|register|ajoute|enregistre|شامل کر|درج کر)/i,
-  done: /(أنجزت|انجزت|أنجزنا|انجزنا|تم إنجاز|تم انجاز|تم إنهاء|تم انهاء|أنهيت|انهيت|أنهينا|انهينا|أقفل|اقفل|أغلق|اغلق|إقفال|اقفال|إغلاق|اغلاق|خلصت|خلصنا|انتهت|انتهى|انتهينا|اعتبرها منجزة|اعتبره منجزا|كمنجز|منجزة|سددت|سُددت|دفعنا|دفعت|تم الدفع|تم السداد|\bdone\b|complete|finish|\bclose|paid|termin|clôtur|مکمل|ختم کر)/i,
-  assign: /(أسند|اسند|إسناد|اسناد|كلف|كلّف|تكليف|حوّل|حول|عيّن|عين|assign|delegate|hand (?:it )?to|attribue|confie|تفویض|سونپ)/i,
-  remind: /(ذكرني|ذكّرني|ذكرنا|نبهني|نبّهني|تذكير|تنبيه|remind|reminder|rappel|یاد دہانی|یاد دلا)/i,
-};
-const WRITE_TOOLS = { tracker_add: "add", tracker_complete: "done", tracker_assign: "assign" };
-/* يحكم نداء أداة كتابة: ممنوع بلا فعل صريح، وإلا يتحول إلى نية تنتظر تأكيد المستخدم بزر (لا تنفيذ هنا) */
-export function writeGate(name, args, text) {
-  const action = WRITE_TOOLS[name] || (name === "tracker_remind" ? "remind" : null);
-  if (!action) return { allow: true };
-  if (!VERBS[action].test(String(text || ""))) return { blocked: true, reason: "لم يطلب المستخدم هذا الإجراء في رسالته؛ لا تنفذه ولا تقترحه. أجب على رسالته كما هي (إن كانت مجاملة أو شكرا فرد بجملة قصيرة)." };
-  if (action === "remind") return { allow: true };
-  const a = args && typeof args === "object" ? args : {};
-  const q = String(a.query || "").trim();
-  /* بلا تحديد للعنصر لا شيء يمر: استعلام فارغ في القاعدة يطابق كل شيء */
-  if (action === "done" && !a.item_id && !q) return { blocked: true, reason: "حدد العنصر المطلوب إنجازه (عنوانه أو رقم القضية أو المخالفة)، واسأل المستخدم سؤالا واحدا إن لم يتضح." };
-  if (action === "assign" && (!q || !String(a.member || "").trim())) return { blocked: true, reason: "حدد العنصر واسم العضو، واسأل المستخدم سؤالا واحدا إن لم يتضح." };
-  if (action === "done") return { pending: { action: "done", query: q, item_id: a.item_id || null } };
-  if (action === "assign") return { pending: { action: "assign", query: q, member: String(a.member || "").trim() } };
-  const item = {};
-  for (const k of ["kind", "title", "client_name", "case_number", "violation_number", "amount", "due_at", "location", "notes", "category", "parent_id"]) if (a[k] != null && a[k] !== "") item[k] = a[k];
-  return { pending: { action: "add", item } };
-}
+export { VERBS, writeGate } from "./notify.js";
 
 function systemPrompt(ctx) {
   const lang = ctx.lang || "ar";
@@ -116,7 +91,7 @@ async function oneWord(env, ctx) {
   const t = String(ctx.text || "").trim().replace(/[؟?!.،,]+$/, "").replace(/^(كم|ما|ماهو|ما هو|وش|ايش|إيش)\s+/, "");
   const hit = ONE_WORD.find(([re]) => re.test(t));
   if (!hit) return null;
-  const toolCtx = { env, who: { org_id: ctx.orgId || null, org_name: ctx.orgName || "", user_id: ctx.userId }, hash: null, rpc: (name, args) => rpc(env, name, args) };
+  const toolCtx = { env, who: { org_id: ctx.orgId || null, org_name: ctx.orgName || "", user_id: ctx.userId }, hash: null, trusted: true, rpc: (name, args) => rpc(env, name, args) };
   const out = await callTool(hit[1].tool, hit[1].args, toolCtx);
   if (hit[1].tool === "tracker_company" || hit[1].tool === "tracker_team" || hit[1].tool === "tracker_expenses") return out && out.content && out.content[0] && !out.isError ? { text: out.content[0].text, tools: [hit[1].tool] } : null;
   const rows = out && out.structuredContent && out.structuredContent.items;
@@ -145,7 +120,7 @@ export async function agentReply(env, ctx) {
   }
   messages.push({ role: "user", content: String(ctx.text || "").slice(0, 3000) });
 
-  const toolCtx = { env, who: { org_id: ctx.orgId || null, org_name: ctx.orgName || "", user_id: ctx.userId }, hash: null, rpc: (name, args) => rpc(env, name, args) };
+  const toolCtx = { env, who: { org_id: ctx.orgId || null, org_name: ctx.orgName || "", user_id: ctx.userId }, hash: null, trusted: true, rpc: (name, args) => rpc(env, name, args) };
   const tools = toolDefs();
   let toolsUsed = [];
   const seen = new Set();

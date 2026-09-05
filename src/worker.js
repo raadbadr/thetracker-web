@@ -8,6 +8,7 @@ import { handleAssistantRequest, askAssistant } from "./assistant.js";
 import { handleTranslate } from "./translate.js";
 import { serveBundle } from "./bundles.js";
 import { handleMcp } from "./mcp.js";
+import { handleV1, mcpAuthenticate, importRowsWithKey } from "./api-v1.js";
 import { agentReply, quickAnswer, VERBS } from "./telegram-agent.js";
 import { handleCalendar } from "./calendar.js";
 import { handleDocumentAnalyze } from "./documents.js";
@@ -15,7 +16,6 @@ import { runNotificationCron, linkChannelByCode, notifyTarget, sendTelegram, sen
          bot as botText, menuKeyboard, menuAction, urlButton, formatItems, telegramItems, linkChannelDirect, linkChannelByPhone, contactKeyboard,
          sendChatAction, fetchTelegramFile, bytesToBase64, TELEGRAM_FILE_MAX, answerCallback, clearInlineButtons, confirmButtons, actionButtons } from "./notify.js";
 import { ALLOWED_EXT, fileExt, parseWorkbook, draftPayload, commitImport } from "./telegram-import.js";
-import * as XLSX from "xlsx";
 import { extractIntent, describeAction, formatSearch, executeAction, runTelegramDigests } from "./telegram-actions.js";
 import { hmacHex, telegramFileRoute, handleTelegramFile, offerDocument, handleDocCallback } from "./telegram-documents.js";
 
@@ -137,121 +137,6 @@ async function authedUser(request, env) {
  * GET  /api/v1/items?tracker=&format=json|csv
  * GET  /api/v1/ping
  * ============================================================ */
-async function sha256Hex(text) {
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
-  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-function v1Json(data, status = 200) {
-  const r = json(data, status);
-  r.headers.set("Access-Control-Allow-Origin", "*");
-  return r;
-}
-async function v1Auth(request, env) {
-  if (!env.WORKER_SECRET) return { error: v1Json({ error: "not configured" }, 503) };
-  const m = (request.headers.get("Authorization") || "").match(/^Bearer\s+(tt_live_[a-f0-9]{48})$/i);
-  if (!m) return { error: v1Json({ error: "missing or malformed API key" }, 401) };
-  const hash = await sha256Hex(m[1]);
-  let who = null;
-  try { who = await rpc(env, "api_key_resolve", { p_secret: env.WORKER_SECRET, p_hash: hash }); } catch { who = null; }
-  if (!who || !who.org_id) return { error: v1Json({ error: "invalid or revoked API key" }, 401) };
-  return { hash, who };
-}
-function csvOf(rows) {
-  const keys = ["number", "title", "category", "tracker", "status", "due_at", "assignee_email", "amount", "client_name", "case_number", "created_at"];
-  const extra = new Set();
-  rows.forEach((r) => Object.keys(r.data || {}).forEach((k) => extra.add(k)));
-  const cols = keys.concat([...extra]);
-  const q = (v) => '"' + String(v === null || v === undefined ? "" : (typeof v === "object" ? JSON.stringify(v) : v)).replace(/"/g, '""') + '"';
-  const lines = [cols.map(q).join(",")];
-  rows.forEach((r) => lines.push(cols.map((c) => q(c in r ? r[c] : (r.data || {})[c])).join(",")));
-  return "\ufeff" + lines.join("\r\n");
-}
-function rowsToCsvBytes(rows, trackerName) {
-  const ws = XLSX.utils.json_to_sheet(rows.map((r) => (r && typeof r === "object") ? r : { title: String(r) }));
-  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, trackerName || "data");
-  return XLSX.write(wb, { type: "array", bookType: "csv" });
-}
-/* استيراد صفوف JSON بمفتاح API (يستعمله /api/v1/import وخادم MCP) */
-async function importRowsWithKey(env, hash, rows, trackerName) {
-  if (!Array.isArray(rows) || !rows.length) return { ok: false, error: "no rows" };
-  const filename = (trackerName || "api") + ".csv";
-  let parsed;
-  try { parsed = parseWorkbook(rowsToCsvBytes(rows.slice(0, 500), trackerName), filename); } catch (e) { return { ok: false, error: "cannot parse: " + String(e.message || e).slice(0, 120) }; }
-  const payload = draftPayload(parsed);
-  const results = [], errors = [];
-  for (const sh of payload.sheets) {
-    try {
-      results.push(await rpc(env, "api_import", { p_secret: env.WORKER_SECRET, p_hash: hash, p_filename: filename,
-        p_tracker_name: trackerName || sh.tracker || sh.name, p_columns: sh.columns || [], p_mapping: sh.mapping || {}, p_rows: sh.rows || [] }));
-    } catch (e) { errors.push({ sheet: sh.name, message: String(e.message || e).slice(0, 200) }); }
-  }
-  const imported = results.reduce((n, r) => n + (Number(r && (r.inserted ?? r.imported ?? r.count)) || 0), 0);
-  return { ok: errors.length === 0, imported, results, errors };
-}
-async function mcpAuthenticate(request, env) {
-  const a = await v1Auth(request, env);
-  if (a.error) return { error: true, status: a.error.status, message: a.error.status === 503 ? "not configured" : "invalid or missing API key (Authorization: Bearer tt_live_…)" };
-  return a;
-}
-async function handleV1(request, env, url) {
-  const path = url.pathname;
-  const auth = await v1Auth(request, env);
-  if (auth.error) return auth.error;
-  const { hash, who } = auth;
-
-  if (path === "/api/v1/ping") return v1Json({ ok: true, org: who.org_name });
-
-  if (path === "/api/v1/items" && request.method === "GET") {
-    const tracker = url.searchParams.get("tracker") || null;
-    let rows = [];
-    try { rows = (await rpc(env, "api_items_export", { p_secret: env.WORKER_SECRET, p_hash: hash, p_tracker: tracker })) || []; }
-    catch (e) { return v1Json({ error: String(e.message || e).slice(0, 200) }, 500); }
-    if ((url.searchParams.get("format") || "").toLowerCase() === "csv") {
-      return new Response(csvOf(rows), { headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": "attachment; filename=items.csv", "Access-Control-Allow-Origin": "*", "Cache-Control": "no-store" } });
-    }
-    return v1Json({ count: rows.length, items: rows });
-  }
-
-  if (path === "/api/v1/import" && request.method === "POST") {
-    const ct = (request.headers.get("Content-Type") || "").toLowerCase();
-    let bytes = null, filename = "api.csv", trackerName = url.searchParams.get("tracker") || null;
-    try {
-      if (ct.includes("multipart/form-data")) {
-        const form = await request.formData();
-        const f = form.get("file");
-        if (!f || typeof f.arrayBuffer !== "function") return v1Json({ error: "file field missing" }, 400);
-        trackerName = trackerName || form.get("tracker") || null;
-        filename = f.name || filename; bytes = await f.arrayBuffer();
-      } else if (ct.includes("application/json") || ct.includes("text/json")) {
-        const body = await request.json();
-        const rows = Array.isArray(body) ? body : (body.rows || body.items || body.data || []);
-        if (!Array.isArray(rows) || !rows.length) return v1Json({ error: "no rows" }, 400);
-        trackerName = trackerName || body.tracker || null;
-        bytes = rowsToCsvBytes(rows, trackerName); filename = (trackerName || "api") + ".csv";
-      } else {
-        bytes = await request.arrayBuffer(); filename = (trackerName || "api") + (ct.includes("spreadsheet") || ct.includes("excel") ? ".xlsx" : ".csv");
-      }
-    } catch (e) { return v1Json({ error: "unreadable body: " + String(e.message || e).slice(0, 120) }, 400); }
-    if (!ALLOWED_EXT.includes(fileExt(filename))) return v1Json({ error: "unsupported file type" }, 415);
-
-    let parsed;
-    try { parsed = parseWorkbook(bytes, filename); } catch (e) { return v1Json({ error: "cannot parse: " + String(e.message || e).slice(0, 120) }, 422); }
-    const payload = draftPayload(parsed);
-    const results = [], errors = [];
-    for (const sh of payload.sheets) {
-      try {
-        results.push(await rpc(env, "api_import", {
-          p_secret: env.WORKER_SECRET, p_hash: hash, p_filename: filename,
-          p_tracker_name: trackerName || sh.tracker || sh.name, p_columns: sh.columns || [], p_mapping: sh.mapping || {}, p_rows: sh.rows || [],
-        }));
-      } catch (e) { errors.push({ sheet: sh.name, message: String(e.message || e).slice(0, 200) }); }
-    }
-    return v1Json({ ok: errors.length === 0, results, errors, unusable: (parsed.unusable || []).map((u) => ({ sheet: u.name, rows: u.skipped })) }, errors.length && !results.length ? 422 : 200);
-  }
-  return v1Json({ error: "not found" }, 404);
-}
-
-/** POST /api/notify/test { channel } — رسالة تجريبية لقناة المستخدم الحالي */
 async function handleNotifyTest(request, env) {
   const user = await authedUser(request, env);
   if (!user) return json({ error: "unauthorized" }, 401);
@@ -491,10 +376,11 @@ function sanitizeIntentItem(item, text) {
 
 /* كل كتابة تمر من هنا: مسودة في القاعدة + وصف ما سيحدث + زرا تأكيد/إلغاء؛ التنفيذ في act:y فقط */
 async function askToConfirm(env, chatId, userId, intent, lang, pre, userTimeZone) {
-  try { await rpc(env, "telegram_draft_put", { p_secret: env.WORKER_SECRET, p_chat_id: String(chatId), p_user_id: userId, p_payload: { type: "action", intent } }); }
+  const token = Math.random().toString(36).slice(2, 8); /* يربط الزر بمسودته: زر قديم لا ينفذ مسودة أحدث */
+  try { await rpc(env, "telegram_draft_put", { p_secret: env.WORKER_SECRET, p_chat_id: String(chatId), p_user_id: userId, p_payload: { type: "action", intent, token } }); }
   catch { return false; }
   const ask = humanize(describeAction(lang, intent, userTimeZone), lang);
-  try { await sendTelegram(env, chatId, (pre || "") + ask, actionButtons(lang)); } catch {}
+  try { await sendTelegram(env, chatId, (pre || "") + ask, actionButtons(lang, token)); } catch {}
   await logBotReply(env, chatId, userId, ask);
   return true;
 }
@@ -609,6 +495,8 @@ async function handleTelegramWebhook(request, env) {
   if (update && update.callback_query) return handleTelegramCallback(env, update.callback_query);
   const msg = update && (update.message || update.edited_message);
   const chatId = msg && msg.chat && msg.chat.id;
+  /* البوت مساعد شخصي لحساب مرتبط: لا يعمل في المجموعات والقنوات، فلا يضغط أحد زر تأكيد عن غيره */
+  if (msg && msg.chat && msg.chat.type && msg.chat.type !== "private") return json({ ok: true });
   const text = String((msg && msg.text) || "").trim();
   if (!chatId) return json({ ok: true });
   const from = (msg && msg.from) || {};
@@ -710,7 +598,9 @@ async function handleTelegramWebhook(request, env) {
       try { await rpc(env, "telegram_draft_put", { p_secret: env.WORKER_SECRET, p_chat_id: String(chatId), p_user_id: owner, p_payload: draftPayload(parsed) }); }
       catch (e) { try { await sendTelegram(env, chatId, b.importFailed, menuKeyboard(lang)); } catch {} return json({ ok: true }); }
       const lines = parsed.sheets.map((sh) => b.importSheet(sh.tracker || sh.name, sh.records.length, sh.skipped)).join("\n");
-      const summary = b.importFound(doc.file_name || "file", parsed.sheets.length) + "\n" + lines + "\n\n" + b.importAsk;
+      let orgLine = ""; /* الشركة التي ستُكتب فيها الصفوف (النشطة في البوت) تظهر قبل التأكيد */
+      try { const orgs = await orgChoices(env, owner); const cur = orgs.find((o) => o && o.active) || orgs[0]; if (cur && cur.name) orgLine = "\n🏢 " + cur.name; } catch {}
+      const summary = b.importFound(doc.file_name || "file", parsed.sheets.length) + "\n" + lines + orgLine + "\n\n" + b.importAsk;
       try { await sendTelegram(env, chatId, summary, confirmButtons(lang)); } catch {}
       return json({ ok: true });
     }
@@ -747,6 +637,7 @@ async function handleTelegramCallback(env, cq) {
   const from = cq.from || {};
   await answerCallback(env, cq.id);
   if (!chatId) return json({ ok: true });
+  if (cq.message && cq.message.chat && cq.message.chat.type && cq.message.chat.type !== "private") return json({ ok: true });
   await clearInlineButtons(env, chatId, cq.message && cq.message.message_id);
   let owner = null;
   try {
@@ -770,21 +661,29 @@ async function handleTelegramCallback(env, cq) {
     return json({ ok: true });
   }
   if (/^(doc|prof):/.test(data) && await handleDocCallback(env, { chatId, userId: owner, lang, data })) return json({ ok: true });
-  if (data === "act:n") {
-    try { await rpc(env, "telegram_draft_take", { p_secret: env.WORKER_SECRET, p_chat_id: String(chatId) }); } catch {}
-    try { await sendTelegram(env, chatId, b.importCancelled, menuKeyboard(lang)); } catch {}
-    return json({ ok: true });
-  }
-  if (data === "act:y") {
+  const act = data.match(/^act:(y|n)(?::([a-z0-9]+))?$/);
+  if (act) {
     let draft = null;
     try { draft = await rpc(env, "telegram_draft_take", { p_secret: env.WORKER_SECRET, p_chat_id: String(chatId) }); } catch {}
-    const intent = draft && draft.payload && draft.payload.type === "action" ? draft.payload.intent : null;
+    const payload = draft && draft.payload && draft.payload.type === "action" ? draft.payload : null;
+    /* الزر يحمل رمز مسودته؛ إن كان لغيرها أعيدت المسودة إلى مكانها وأُبلغ أن هذا الزر انتهى */
+    const stale = payload && payload.token && payload.token !== (act[2] || "");
+    if (stale) {
+      try { await rpc(env, "telegram_draft_put", { p_secret: env.WORKER_SECRET, p_chat_id: String(chatId), p_user_id: draft.user_id, p_payload: payload }); } catch {}
+      try { await sendTelegram(env, chatId, b.importExpired, menuKeyboard(lang)); } catch {}
+      return json({ ok: true });
+    }
+    if (act[1] === "n") {
+      try { await sendTelegram(env, chatId, b.importCancelled, menuKeyboard(lang)); } catch {}
+      return json({ ok: true });
+    }
+    const intent = payload ? payload.intent : null;
     if (!intent || String(draft.user_id) !== String(owner)) { try { await sendTelegram(env, chatId, b.importExpired, menuKeyboard(lang)); } catch {} return json({ ok: true }); }
     await sendChatAction(env, chatId, "typing");
     let out;
     try { out = await executeAction(env, owner, intent, lang); }
     catch (e) { out = { text: /PLAN_LIMIT/.test(String((e && e.message) || e)) ? b.importLimit : b.importFailed, extra: menuKeyboard(lang) }; }
-    if (out.keepDraft) { try { await rpc(env, "telegram_draft_put", { p_secret: env.WORKER_SECRET, p_chat_id: String(chatId), p_user_id: owner, p_payload: { type: "action", intent } }); } catch {} }
+    if (out.keepDraft) { try { await rpc(env, "telegram_draft_put", { p_secret: env.WORKER_SECRET, p_chat_id: String(chatId), p_user_id: owner, p_payload: { ...payload, intent } }); } catch {} }
     try { await sendTelegram(env, chatId, out.text, out.extra); } catch {}
     return json({ ok: true });
   }
@@ -794,6 +693,12 @@ async function handleTelegramCallback(env, cq) {
     try { draft = await rpc(env, "telegram_draft_take", { p_secret: env.WORKER_SECRET, p_chat_id: String(chatId) }); } catch {}
     const intent = draft && draft.payload && draft.payload.type === "action" ? draft.payload.intent : null;
     if (!intent || String(draft.user_id) !== String(owner)) { try { await sendTelegram(env, chatId, b.importExpired, menuKeyboard(lang)); } catch {} return json({ ok: true }); }
+    /* زر اختيار القضية يكمل إضافة فقط؛ لا ينفذ إنجازا أو إسنادا معلقا */
+    if (intent.action !== "add") {
+      try { await rpc(env, "telegram_draft_put", { p_secret: env.WORKER_SECRET, p_chat_id: String(chatId), p_user_id: owner, p_payload: draft.payload }); } catch {}
+      try { await sendTelegram(env, chatId, b.importExpired, menuKeyboard(lang)); } catch {}
+      return json({ ok: true });
+    }
     intent.item = intent.item || {}; intent.item.parent_id = data.slice(4);
     await sendChatAction(env, chatId, "typing");
     let out;

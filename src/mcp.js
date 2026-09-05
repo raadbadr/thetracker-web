@@ -2,14 +2,15 @@
    المصادقة: Authorization: Bearer tt_live_… (مفتاح API من الإعدادات ← API)؛ المفتاح يحدد الشركة والمستخدم صاحب المفتاح،
    وكل أداة تمر عبر دوال القاعدة المحمية بسر الـ Worker نفسها التي يستعملها بوت تيليغرام، فالصلاحيات واحدة.
    بلا حالة: كل طلب مستقل (Mcp-Session-Id يقبل ويعاد إن أرسله العميل). */
-import { rpc, dmy } from "./notify.js";
+import { rpc, dmy, writeGate, describePending } from "./notify.js";
 
 const PROTOCOL_VERSIONS = ["2025-06-18", "2025-03-26", "2024-11-05"];
 const SERVER_INFO = { name: "thetracker", version: "1.0.0" };
 const INSTRUCTIONS =
   "TheTracker: cases, violations and tasks for one company. Numbers/identifiers are never translated. " +
   "On Telegram ALWAYS pass telegram_user_id (the numeric id of the person you are talking to) to every tool so you act as that member with their permissions. " +
-  "If a tool answers status=unlinked, call tracker_link_telegram with their telegram_user_id and the phone number they share (or a link code from the site), then continue. " +
+  "If a tool answers status=unlinked, ask the person for the 8-character link code shown in Settings → Telegram on the site and call tracker_link_telegram with it; there is no other way to link. status=not_member means they belong to another company: do not act for them. " +
+  "Writing tools (tracker_add, tracker_complete, tracker_assign, tracker_remind) need user_message = the person's exact words; they are refused when those words do not explicitly ask for the action (praise or thanks is not a request). They first answer needs_confirmation with a preview — show it, and only after the person confirms call again with confirm=true. " +
   "Use tracker_search before completing or assigning; when tracker_add returns needs_parent, ask which case/violation the task belongs to and call again with parent_id.";
 
 const buckets = new Map();
@@ -38,8 +39,8 @@ const rpcError = (id, code, message, data) => ({ jsonrpc: "2.0", id, error: { co
 export const TOOLS = [
   { name: "tracker_whoami", description: "Who the current person is (by telegram_user_id if linked, else the key owner), the company, and headline counts.",
     inputSchema: { type: "object", properties: { telegram_user_id: { type: "string", description: "Numeric Telegram user id of the person talking" } }, additionalProperties: false } },
-  { name: "tracker_link_telegram", description: "Link a Telegram user to their TheTracker account so the bot knows who they are. Identify them by the phone number they shared (matches the account phone) or by a link code from the site's settings; with neither, the key owner's account is linked.",
-    inputSchema: { type: "object", properties: { telegram_user_id: { type: "string" }, phone: { type: "string", description: "Phone as shared on Telegram, any format" }, code: { type: "string", description: "8-character link code from Settings → Telegram" } }, required: ["telegram_user_id"], additionalProperties: false } },
+  { name: "tracker_link_telegram", description: "Link a Telegram user to their TheTracker account with the 8-character link code they read from Settings → Telegram on the site. The code is the only proof accepted; never link by phone number or without a code.",
+    inputSchema: { type: "object", properties: { telegram_user_id: { type: "string" }, code: { type: "string", description: "8-character link code from Settings → Telegram" } }, required: ["telegram_user_id", "code"], additionalProperties: false } },
   { name: "tracker_search", description: "Search cases, violations and tasks by title, client, case number or violation number. Returns id, title, status, due_at, client, amount, roles.",
     inputSchema: { type: "object", properties: { telegram_user_id: { type: "string", description: "Telegram user id of the person talking (Telegram only)" }, query: { type: "string", description: "Free text or a number" }, limit: { type: "integer", minimum: 1, maximum: 20, default: 8 } }, required: ["query"], additionalProperties: false } },
   { name: "tracker_company", description: "The user's company record as registered on the site: legal name, commercial register number, VAT number, unified number, IBAN and bank, national address, contacts, plan, and the official papers on file with their extracted details. Use it for questions like 'what is my CR number?'.",
@@ -49,7 +50,7 @@ export const TOOLS = [
   { name: "tracker_list", description: "Open items with a due date: 'upcoming' (soonest first) or 'overdue'.",
     inputSchema: { type: "object", properties: { telegram_user_id: { type: "string", description: "Telegram user id of the person talking (Telegram only)" }, mode: { type: "string", enum: ["upcoming", "overdue"], default: "upcoming" }, limit: { type: "integer", minimum: 1, maximum: 20, default: 10 } }, additionalProperties: false } },
   { name: "tracker_add", description: "Create a case, violation or task. A task must belong to a case or violation: pass parent_id (item id) or the call returns status=needs_parent with candidates to choose from.",
-    inputSchema: { type: "object", properties: { telegram_user_id: { type: "string", description: "Telegram user id of the person talking (Telegram only)" },
+    inputSchema: { type: "object", properties: { user_message: { type: "string", description: "The person's exact words that ask for this action (required)" }, confirm: { type: "boolean", description: "true only after the person confirmed the needs_confirmation preview" }, telegram_user_id: { type: "string", description: "Telegram user id of the person talking (Telegram only)" },
       kind: { type: "string", enum: ["case", "violation", "task"] }, title: { type: "string" },
       client_name: { type: "string" }, case_number: { type: "string" }, violation_number: { type: "string" },
       amount: { type: "number" }, due_at: { type: "string", description: "ISO 8601 date or datetime" },
@@ -57,17 +58,17 @@ export const TOOLS = [
       parent_id: { type: "string", description: "Item id of the parent case/violation (tasks only)" } },
       required: ["kind", "title"], additionalProperties: false } },
   { name: "tracker_complete", description: "Mark an item done. Give a query (item number, title, case number) or an exact item_id; ambiguous queries return candidates.",
-    inputSchema: { type: "object", properties: { telegram_user_id: { type: "string", description: "Telegram user id of the person talking (Telegram only)" }, query: { type: "string" }, item_id: { type: "string" } }, additionalProperties: false } },
+    inputSchema: { type: "object", properties: { user_message: { type: "string", description: "The person's exact words that ask for this action (required)" }, confirm: { type: "boolean", description: "true only after the person confirmed the needs_confirmation preview" }, telegram_user_id: { type: "string", description: "Telegram user id of the person talking (Telegram only)" }, query: { type: "string" }, item_id: { type: "string" } }, additionalProperties: false } },
   { name: "tracker_assign", description: "Assign an item to a team member (by name or email) as responsible.",
-    inputSchema: { type: "object", properties: { telegram_user_id: { type: "string", description: "Telegram user id of the person talking (Telegram only)" }, query: { type: "string", description: "Item number, title or case number" }, member: { type: "string", description: "Member name or email" } }, required: ["query", "member"], additionalProperties: false } },
+    inputSchema: { type: "object", properties: { user_message: { type: "string", description: "The person's exact words that ask for this action (required)" }, confirm: { type: "boolean", description: "true only after the person confirmed the needs_confirmation preview" }, telegram_user_id: { type: "string", description: "Telegram user id of the person talking (Telegram only)" }, query: { type: "string", description: "Item number, title or case number" }, member: { type: "string", description: "Member name or email" } }, required: ["query", "member"], additionalProperties: false } },
   { name: "tracker_team", description: "The company's team: each member's name, role, department, open and overdue counts, next due date and their nearest items. Use for 'who is responsible for…', 'what is on Ahmed this week', 'the team'.",
     inputSchema: { type: "object", properties: { telegram_user_id: { type: "string" } }, additionalProperties: false } },
   { name: "tracker_expenses", description: "Operating expenses of the user's company for a period: total in SAR, count, top categories and the latest expenses. Use for 'how are my expenses', 'what did we spend this month/week/year'.",
     inputSchema: { type: "object", properties: { telegram_user_id: { type: "string" }, period: { type: "string", enum: ["month", "week", "year", "all"], default: "month", description: "month (default), week, year or all" } }, additionalProperties: false } },
   { name: "tracker_remind", description: "Set a personal reminder lead time for one item: remind before its due date by e.g. 'يوم', '3 أيام', 'أسبوع', '2 hours'. Identify the item by query (title, case number, violation number). Returns ambiguous candidates when several match.",
-    inputSchema: { type: "object", properties: { telegram_user_id: { type: "string" }, query: { type: "string" }, before: { type: "string", description: "Lead time as written by the user" } }, required: ["query", "before"], additionalProperties: false } },
+    inputSchema: { type: "object", properties: { user_message: { type: "string", description: "The person's exact words that ask for this action (required)" }, confirm: { type: "boolean", description: "true only after the person confirmed the needs_confirmation preview" }, telegram_user_id: { type: "string" }, query: { type: "string" }, before: { type: "string", description: "Lead time as written by the user" } }, required: ["query", "before"], additionalProperties: false } },
   { name: "tracker_import_rows", description: "Bulk-import rows (objects with Arabic or English column names, e.g. title, client_name, case_number, due_at, amount, status) into a tracker of this company.",
-    inputSchema: { type: "object", properties: { telegram_user_id: { type: "string", description: "Telegram user id of the person talking (Telegram only)" }, rows: { type: "array", items: { type: "object" }, minItems: 1, maxItems: 500 }, tracker: { type: "string", description: "Tracker (sheet) name; default: the company's main tracker" } }, required: ["rows"], additionalProperties: false } },
+    inputSchema: { type: "object", properties: { confirm: { type: "boolean", description: "true only after the key owner confirmed the row count" }, telegram_user_id: { type: "string", description: "Telegram user id of the person talking (Telegram only)" }, rows: { type: "array", items: { type: "object" }, minItems: 1, maxItems: 500 }, tracker: { type: "string", description: "Tracker (sheet) name; default: the company's main tracker" } }, required: ["rows"], additionalProperties: false } },
 ];
 
 function text(s) { return { content: [{ type: "text", text: String(s) }] }; }
@@ -91,8 +92,14 @@ async function resolveActor(ctx, a) {
   if (!tg) return { user: ctx.who.user_id, name: null, tg: "" };
   let hit = null;
   try { hit = await ctx.rpc("channel_user_lookup", { p_secret: ctx.env.WORKER_SECRET, p_channel: "telegram", p_external_id: tg }); } catch (e) { hit = null; }
-  if (hit && hit.user_id) return { user: hit.user_id, name: hit.name || null, tg };
-  return { user: null, name: null, tg };
+  if (!hit || !hit.user_id) return { user: null, name: null, tg };
+  /* المفتاح يعمل لشركة واحدة: مستخدم تيليغرام من شركة أخرى لا يُتصرف باسمه */
+  if (ctx.who && ctx.who.org_id) {
+    let orgs = [];
+    try { orgs = (await ctx.rpc("telegram_org_choices", { p_secret: ctx.env.WORKER_SECRET, p_user_id: hit.user_id })) || []; } catch (e) { orgs = []; }
+    if (!orgs.some((o) => o && String(o.id) === String(ctx.who.org_id))) return { user: null, name: hit.name || null, tg, notMember: true };
+  }
+  return { user: hit.user_id, name: hit.name || null, tg };
 }
 
 export async function callTool(name, args, ctx) {
@@ -102,18 +109,28 @@ export async function callTool(name, args, ctx) {
   if (name === "tracker_link_telegram") {
     const tg = String(a.telegram_user_id || "").trim();
     if (!tg) return fail("telegram_user_id is required");
+    const code = String(a.code || "").trim().toUpperCase();
+    /* الرمز من إعدادات الموقع هو الإثبات الوحيد: لا ربط برقم هاتف يكتبه أحد، ولا ربط صاحب المفتاح بغريب */
+    if (!/^[A-Z0-9]{8}$/.test(code)) return fail("A link code is required: ask the person for the 8-character code from Settings → Telegram on the site.", { status: "unlinked" });
     try {
-      let linkedUser = null;
-      if (a.code) linkedUser = await ctx.rpc("link_channel", { p_secret: secret, p_channel: "telegram", p_code: String(a.code).trim().toUpperCase(), p_external_id: tg });
-      else if (a.phone) linkedUser = await ctx.rpc("link_channel_by_phone", { p_secret: secret, p_channel: "telegram", p_phone: String(a.phone), p_external_id: tg });
-      else linkedUser = await ctx.rpc("link_channel_direct", { p_secret: secret, p_user_id: ctx.who.user_id, p_channel: "telegram", p_external_id: tg });
+      const linkedUser = await ctx.rpc("link_channel", { p_secret: secret, p_channel: "telegram", p_code: code, p_external_id: tg });
       const who = await ctx.rpc("channel_user_lookup", { p_secret: secret, p_channel: "telegram", p_external_id: tg });
-      if (!who || !who.user_id) return fail("No account matched" + (a.phone ? " that phone number" : a.code ? " that code" : "") + ". Ask for the phone registered on the site or a link code from Settings.", { status: "unlinked", raw: linkedUser });
+      if (!who || !who.user_id) return fail("No account matched that code. Ask for a fresh link code from Settings → Telegram.", { status: "unlinked", raw: linkedUser });
       return result({ status: "linked", user_id: who.user_id, name: who.name, telegram_user_id: tg }, "Linked: " + (who.name || who.user_id) + " ↔ Telegram " + tg);
     } catch (e) { return fail("Link failed: " + String(e && e.message || e).slice(0, 200)); }
   }
-  if (actor.tg && !actor.user) return result({ status: "unlinked", telegram_user_id: actor.tg }, "unlinked: this Telegram user is not linked to a TheTracker account yet. Ask for their phone number (share contact) or a link code and call tracker_link_telegram.");
+  if (actor.tg && !actor.user && actor.notMember) return result({ status: "not_member", telegram_user_id: actor.tg }, "not_member: this Telegram user belongs to another company. Do not act for them.");
+  if (actor.tg && !actor.user) return result({ status: "unlinked", telegram_user_id: actor.tg }, "unlinked: this Telegram user is not linked to a TheTracker account yet. Ask them for the 8-character link code from Settings → Telegram on the site and call tracker_link_telegram.");
   const user = actor.user;
+  /* الكتابة من عميل MCP تخضع لنفس قاعدة البوت: كلمات المستخدم نفسها تطلبها صراحة، ثم تأكيد قبل التنفيذ.
+     البوت الداخلي يمر من هنا موثوقا لأنه طبق البوابة وزر التأكيد قبل النداء. */
+  if (!ctx.trusted && ["tracker_add", "tracker_complete", "tracker_assign", "tracker_remind"].includes(name)) {
+    if (!String(a.user_message || "").trim()) return fail("user_message is required: pass the person's exact words so the request can be checked.", { status: "needs_user_message" });
+    const gate = writeGate(name, a, a.user_message);
+    if (gate.blocked) return fail(gate.reason, { status: "refused" });
+    if (gate.pending && a.confirm !== true) return result({ status: "needs_confirmation", action: gate.pending }, "needs_confirmation: show the person exactly what will happen — " + describePending(gate.pending) + " — and only after they confirm call again with the same arguments plus confirm=true.");
+  }
+  if (!ctx.trusted && name === "tracker_import_rows" && a.confirm !== true) return result({ status: "needs_confirmation", rows: Array.isArray(a.rows) ? a.rows.length : 0 }, "needs_confirmation: " + (Array.isArray(a.rows) ? a.rows.length : 0) + " rows would be imported" + (a.tracker ? " into " + a.tracker : "") + ". Confirm with the key owner, then call again with confirm=true.");
   switch (name) {
     case "tracker_whoami": {
       let counts = null;

@@ -2,7 +2,7 @@
 // أي مدخل (نص، صوت مفرغ، نص صورة، ملف) يمر على مستخرج نية يعيد JSON: إضافة عنصر،
 // إنجاز، إسناد، بحث، أو سؤال. الأفعال الكاتبة تعرض أولا وتنفذ بعد ضغطة تأكيد.
 // الإيجاز الصباحي وتجهيز الغد المسائي يخرجان من Cron كل 5 دقائق بحسب توقيت كل مستخدم.
-import { rpc, sendTelegram, bot as botText, menuKeyboard, urlButton } from "./notify.js";
+import { rpc, sendTelegram, bot as botText, menuKeyboard, urlButton, VERBS } from "./notify.js";
 
 const INTENT_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const RIYADH = "Asia/Riyadh";
@@ -103,8 +103,9 @@ function extractDueDate(text) {
 /* تصنيف احتياطي بالقواعد: موعد/جلسة/مخالفة مع تاريخ ← تسجيل، حتى لو تعثر النموذج */
 const DATE_RX = /(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4})|(\d{4}-\d{2}-\d{2})|(الأحد|الاثنين|الإثنين|الثلاثاء|الأربعاء|الخميس|الجمعة|السبت|غد|بكرة|بعد غد|بعد\s*\d{1,3}\s*(?:يوم|أيام|ايام)|الأسبوع|الشهر|صباح|مساء|الساعة|\d{1,2}\s*(ص|م|صباحا|مساء|AM|PM))/i;
 const ADD_RX = /(سجل|سجل|أضف|اضف|ضيف|موعد|جلسة|جلسه|نظر الدعوى|مخالفة|مخالفه|غرامة|مهمة|مهمه|deadline|hearing|session|fine|violation|appointment|add|schedule)/i;
-const DONE_RX = /(خلصت|خلصت|أنجزت|انجزت|تم سداد|سددت|أغلقت|اغلقت|انتهت|منجز|done|completed|paid|closed)/i;
-const ASSIGN_RX = /(أسند|اسند|حول|حول|كلف|كلف|assign|hand)/i;
+/* نفس أفعال البوابة كي لا يقترح المستخرج ما ترفضه البوابة أو العكس */
+const DONE_RX = VERBS.done;
+const ASSIGN_RX = VERBS.assign;
 const SEARCH_RX = /^(وين|أين|اين|فين|ابحث|دور|ما هي|ماهي|what|where|find|show)/i;
 export function heuristicIntent(text) {
   const t = String(text || "").trim();

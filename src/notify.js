@@ -332,9 +332,53 @@ export async function clearInlineButtons(env, chatId, messageId) {
     });
   } catch {}
 }
-export function actionButtons(lang) {
+/* زرا التأكيد يحملان رمز المسودة كي لا ينفذ زر قديم مسودة أحدث */
+export function actionButtons(lang, token) {
   const b = bot(lang);
-  return { reply_markup: { inline_keyboard: [[{ text: b.btnSave, callback_data: "act:y" }, { text: b.btnCancel, callback_data: "act:n" }]] } };
+  const t = token ? ":" + token : "";
+  return { reply_markup: { inline_keyboard: [[{ text: b.btnSave, callback_data: "act:y" + t }, { text: b.btnCancel, callback_data: "act:n" + t }]] } };
+}
+
+/* أفعال الكتابة: لا تنفذ بلا طلب صريح في رسالة المستخدم نفسها، ثم لا تنفذ إلا بعد تأكيده.
+   كلمات المجاملة (أحسنت، شكرا…) ليست أوامر — هذا ما أقفل مخالفة بالخطأ ذات مرة. */
+export const VERBS = {
+  add: /(أضف|اضف|ضيف|سجل|سجّل|أنشئ|انشئ|اعمل|سوي|سو |افتح قضية|افتح مخالفة|add|create|new task|register|ajoute|enregistre|شامل کر|درج کر)/i,
+  done: /(أنجزت|انجزت|أنجزنا|انجزنا|تم إنجاز|تم انجاز|تم إنهاء|تم انهاء|أنهيت|انهيت|أنهينا|انهينا|أقفل|اقفل|أغلق|اغلق|إقفال|اقفال|إغلاق|اغلاق|خلصت|خلصنا|انتهت|انتهى|انتهينا|اعتبرها منجزة|اعتبره منجزا|كمنجز|منجزة|سددت|سُددت|تم سداد|تم دفع|دفعنا|دفعت|تم الدفع|تم السداد|\bdone\b|complete|finish|\bclose|paid|termin|clôtur|مکمل|ختم کر)/i,
+  assign: /(أسند|اسند|إسناد|اسناد|كلف|كلّف|تكليف|حوّل|حول|عيّن|عين|assign|delegate|hand (?:it )?to|attribue|confie|تفویض|سونپ)/i,
+  remind: /(ذكرني|ذكّرني|ذكرنا|ذكّرنا|نبهني|نبّهني|نبهنا|remind (?:me|us)|rappelle|یاد دلا)/i,
+};
+/* التذكير ينفذ مباشرة، لذلك يشترط طلبا موجبا بمهلة، ولا إلغاء ولا نفي ولا سؤال في الرسالة */
+const REMIND_LEAD = /(\d+|يوم|أيام|ساعة|ساعات|أسبوع|أسبوعين|شهر|قبل|day|hour|week|month|before|jour|heure|semaine|دن|گھنٹ|ہفت)/i;
+const REMIND_NEG = /(ألغ|الغ|احذف|أزل|ازل|شيل|لا تذكر|لا تنبه|بدون|هل |؟|\?|cancel|remove|delete|stop|don't|do not|is there|annule|supprime)/i;
+const WRITE_TOOLS = { tracker_add: "add", tracker_complete: "done", tracker_assign: "assign", tracker_remind: "remind" };
+/* يحكم نداء أداة كتابة: ممنوع بلا فعل صريح، وإلا يتحول إلى نية تنتظر تأكيد المستخدم (لا تنفيذ هنا) */
+export function writeGate(name, args, text) {
+  const action = WRITE_TOOLS[name];
+  if (!action) return { allow: true };
+  const t = String(text || "");
+  if (action === "remind") {
+    if (VERBS.remind.test(t) && REMIND_LEAD.test(t) && !REMIND_NEG.test(t)) return { allow: true };
+    return { blocked: true, reason: "لم يطلب المستخدم تذكيرا جديدا بصيغة صريحة (ذكرني قبل … بـ …)؛ لا تغير التذكيرات. إن كان يسأل أو يلغي فأجبه نصا فقط." };
+  }
+  if (!VERBS[action].test(t)) return { blocked: true, reason: "لم يطلب المستخدم هذا الإجراء في رسالته؛ لا تنفذه ولا تقترحه. أجب على رسالته كما هي (إن كانت مجاملة أو شكرا فرد بجملة قصيرة)." };
+  const a = args && typeof args === "object" ? args : {};
+  const q = String(a.query || "").trim();
+  /* بلا تحديد للعنصر لا شيء يمر: استعلام فارغ في القاعدة يطابق كل شيء */
+  if (action === "done" && !a.item_id && !q) return { blocked: true, reason: "حدد العنصر المطلوب إنجازه (عنوانه أو رقم القضية أو المخالفة)، واسأل المستخدم سؤالا واحدا إن لم يتضح." };
+  if (action === "assign" && (!q || !String(a.member || "").trim())) return { blocked: true, reason: "حدد العنصر واسم العضو، واسأل المستخدم سؤالا واحدا إن لم يتضح." };
+  if (action === "done") return { pending: { action: "done", query: q, item_id: a.item_id || null } };
+  if (action === "assign") return { pending: { action: "assign", query: q, member: String(a.member || "").trim() } };
+  const item = {};
+  for (const k of ["kind", "title", "client_name", "case_number", "violation_number", "amount", "due_at", "location", "notes", "category", "parent_id"]) if (a[k] != null && a[k] !== "") item[k] = a[k];
+  return { pending: { action: "add", item } };
+}
+/* وصف قصير لما سيحدث، لعميل MCP كي يعرضه على صاحبه قبل التأكيد */
+export function describePending(p) {
+  if (!p) return "";
+  if (p.action === "done") return "mark as done: " + (p.query || p.item_id || "");
+  if (p.action === "assign") return "assign «" + p.query + "» to " + p.member;
+  const it = p.item || {};
+  return "add " + (it.kind || "task") + ": " + (it.title || "") + (it.due_at ? " — due " + dmy(it.due_at) : "") + (it.client_name ? " — " + it.client_name : "");
 }
 export function confirmButtons(lang) {
   const b = bot(lang);
