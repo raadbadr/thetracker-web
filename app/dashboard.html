@@ -146,18 +146,25 @@
         <div class="inline-form" id="editPanel" hidden>
           <h3 data-i18n="editTitle">تعديل العنصر</h3>
           <form id="editForm" novalidate>
+            <!-- ماذا: العنوان يتصدر بعرض نصف الصف، ثم سجله وتصنيفه -->
             <div class="form-grid">
-              <label class="form-field"><span data-i18n="fieldTitle">العنوان</span><input type="text" class="waitlist-input" id="editTitle" placeholder="عنوان العنصر" maxlength="300" dir="auto"></label>
-              <label class="form-field"><span data-i18n="fieldTracker">السجل</span><select class="waitlist-input" id="editTracker"></select></label>
-              <label class="form-field"><span data-i18n="fieldDue">موعد الاستحقاق</span><input type="datetime-local" class="waitlist-input" id="editDue" dir="ltr" data-duration="1"></label>
-              <label class="form-field"><span data-i18n="fieldCategory">التصنيف</span><input type="text" class="waitlist-input" id="editCategory" placeholder="التصنيف (اختياري)" maxlength="120" dir="auto"></label>
-              <label class="form-field"><span data-i18n="fieldAssignee">المسؤول</span><select class="waitlist-input" id="editAssignee"></select></label>
-              <label class="form-field"><span data-i18n="fieldStatus">الحالة</span><select class="waitlist-input" id="editStatus"></select></label>
-              <label class="form-field"><span data-i18n="fieldAmount">المبلغ</span><input type="number" step="0.01" min="0" class="waitlist-input" id="editAmount" dir="ltr"></label>
-              <label class="form-field"><span data-i18n="fieldClient">الجهة أو العميل</span><input type="text" class="waitlist-input" id="editClient" maxlength="160" dir="auto"></label>
-              <label class="form-field"><span data-i18n="fieldClientEn">الجهة أو العميل بالإنجليزية</span><input type="text" class="waitlist-input" id="editClientEn" maxlength="160" dir="ltr"></label>
-              <label class="form-field"><span data-i18n="fieldCaseNumber">رقم الملف</span><input type="text" class="waitlist-input" id="editCaseNumber" maxlength="120" dir="ltr"></label>
-              <label class="form-field"><span data-i18n="fieldRemind">ذكرني قبل</span><select class="waitlist-input" id="editRemind"></select></label>
+              <label class="form-field span-6"><span data-i18n="fieldTitle">العنوان</span><input type="text" class="waitlist-input" id="editTitle" placeholder="عنوان العنصر" maxlength="300" dir="auto"></label>
+              <label class="form-field span-3"><span data-i18n="fieldTracker">السجل</span><select class="waitlist-input" id="editTracker"></select></label>
+              <label class="form-field span-3"><span data-i18n="fieldCategory">التصنيف</span><input type="text" class="waitlist-input" id="editCategory" list="categorySuggest" placeholder="التصنيف (اختياري)" maxlength="120" dir="auto" autocomplete="off"></label>
+            </div>
+            <!-- متى: الموعد ومدته وتذكيره وحالته -->
+            <div class="form-grid">
+              <label class="form-field span-4"><span data-i18n="fieldDue">موعد الاستحقاق</span><input type="datetime-local" class="waitlist-input" id="editDue" dir="ltr" data-duration="1"></label>
+              <label class="form-field span-4"><span data-i18n="fieldRemind">ذكرني قبل</span><select class="waitlist-input" id="editRemind"></select></label>
+              <label class="form-field span-4"><span data-i18n="fieldStatus">الحالة</span><select class="waitlist-input" id="editStatus"></select></label>
+            </div>
+            <!-- من وكم: المسؤول والجهة والمبلغ ورقم الملف -->
+            <div class="form-grid">
+              <label class="form-field span-6"><span data-i18n="fieldAssignee">المسؤول</span><select class="waitlist-input" id="editAssignee"></select></label>
+              <label class="form-field span-6"><span data-i18n="fieldClient">الجهة أو العميل</span><input type="text" class="waitlist-input" id="editClient" maxlength="160" dir="auto"></label>
+              <label class="form-field span-6"><span data-i18n="fieldClientEn">الجهة أو العميل بالإنجليزية</span><input type="text" class="waitlist-input" id="editClientEn" maxlength="160" dir="ltr"></label>
+              <label class="form-field span-6"><span data-i18n="fieldAmount">المبلغ</span><input type="number" step="0.01" min="0" class="waitlist-input" id="editAmount" dir="ltr"></label>
+              <label class="form-field span-12"><span data-i18n="fieldCaseNumber">رقم الملف</span><input type="text" class="waitlist-input" id="editCaseNumber" maxlength="120" dir="ltr"></label>
             </div>
             <div class="waitlist-form form-actions">
               <button type="submit" class="waitlist-btn" id="editSaveBtn" data-i18n="save">حفظ</button>
@@ -195,17 +202,25 @@
             <h3 data-i18n="addItemTitle">عنصر جديد</h3>
             <p class="inline-hint" id="noTrackersHint" data-i18n="noTrackersHint" hidden>لا توجد سجلات بعد، أنشئ سجلا أولا لتتمكن من إضافة العناصر.</p>
             <form id="addItemForm" novalidate>
+              <!-- ماذا: العنوان يتصدر بعرض نصف الصف، ثم سجله وتصنيفه -->
               <div class="form-grid">
-                <label class="form-field"><span data-i18n="fieldTitle">العنوان</span><input type="text" class="waitlist-input" id="addTitle" placeholder="عنوان العنصر" maxlength="300" dir="auto"></label>
-                <label class="form-field"><span data-i18n="fieldTracker">السجل</span><select class="waitlist-input" id="addTracker"></select></label>
-                <label class="form-field"><span data-i18n="fieldDue">موعد الاستحقاق</span><input type="datetime-local" class="waitlist-input" id="addDue" dir="ltr" data-duration="1"></label>
-                <label class="form-field"><span data-i18n="fieldCategory">التصنيف</span><input type="text" class="waitlist-input" id="addCategory" placeholder="التصنيف (اختياري)" maxlength="120" dir="auto"></label>
-                <label class="form-field"><span data-i18n="fieldAssignee">المسؤول</span><select class="waitlist-input" id="addAssignee"></select></label>
-                <label class="form-field"><span data-i18n="fieldAmount">المبلغ</span><input type="number" step="0.01" min="0" class="waitlist-input" id="addAmount" dir="ltr"></label>
-                <label class="form-field"><span data-i18n="fieldClient">الجهة أو العميل</span><input type="text" class="waitlist-input" id="addClient" maxlength="160" dir="auto"></label>
-                <label class="form-field"><span data-i18n="fieldClientEn">الجهة أو العميل بالإنجليزية</span><input type="text" class="waitlist-input" id="addClientEn" maxlength="160" dir="ltr"></label>
-                <label class="form-field"><span data-i18n="fieldCaseNumber">رقم الملف</span><input type="text" class="waitlist-input" id="addCaseNumber" maxlength="120" dir="ltr"></label>
+                <label class="form-field span-6"><span data-i18n="fieldTitle">العنوان</span><input type="text" class="waitlist-input" id="addTitle" placeholder="عنوان العنصر" maxlength="300" dir="auto"></label>
+                <label class="form-field span-3"><span data-i18n="fieldTracker">السجل</span><select class="waitlist-input" id="addTracker"></select></label>
+                <label class="form-field span-3"><span data-i18n="fieldCategory">التصنيف</span><input type="text" class="waitlist-input" id="addCategory" list="categorySuggest" placeholder="التصنيف (اختياري)" maxlength="120" dir="auto" autocomplete="off"></label>
               </div>
+              <!-- متى ومن: الموعد ومدته، والمسؤول -->
+              <div class="form-grid">
+                <label class="form-field span-6"><span data-i18n="fieldDue">موعد الاستحقاق</span><input type="datetime-local" class="waitlist-input" id="addDue" dir="ltr" data-duration="1"></label>
+                <label class="form-field span-6"><span data-i18n="fieldAssignee">المسؤول</span><select class="waitlist-input" id="addAssignee"></select></label>
+              </div>
+              <!-- الأطراف والمبلغ والرقم -->
+              <div class="form-grid">
+                <label class="form-field span-6"><span data-i18n="fieldClient">الجهة أو العميل</span><input type="text" class="waitlist-input" id="addClient" maxlength="160" dir="auto"></label>
+                <label class="form-field span-6"><span data-i18n="fieldClientEn">الجهة أو العميل بالإنجليزية</span><input type="text" class="waitlist-input" id="addClientEn" maxlength="160" dir="ltr"></label>
+                <label class="form-field span-6"><span data-i18n="fieldAmount">المبلغ</span><input type="number" step="0.01" min="0" class="waitlist-input" id="addAmount" dir="ltr"></label>
+                <label class="form-field span-6"><span data-i18n="fieldCaseNumber">رقم الملف</span><input type="text" class="waitlist-input" id="addCaseNumber" maxlength="120" dir="ltr"></label>
+              </div>
+              <datalist id="categorySuggest"></datalist>
               <div class="waitlist-form form-actions">
                 <button type="submit" class="waitlist-btn" id="addSaveBtn" data-i18n="add">إضافة</button>
                 <button type="button" class="chat-option-btn" id="newTrackerBtn" data-i18n="newTrackerBtn">+ سجل جديد</button>

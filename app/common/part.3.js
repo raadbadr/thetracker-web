@@ -702,8 +702,9 @@
     "body .has-close-x>.close-x+h2,body .has-close-x>.close-x+h3{min-height:40px;display:flex;align-items:center;justify-content:center;text-align:center;padding-inline:56px;margin-top:0;box-sizing:border-box}",
     "body .has-close-x>.close-x+:not(h1):not(h2):not(h3){margin-top:calc(40px + .75rem)}",
     /* حاسبة المدة والعدّاد: حقل الأيام بجانب التاريخ، والسطر محجوز فلا يقفز شيء؛ التأخر أحمر */
-    "body .dur-field{display:flex;flex-direction:column;gap:.25rem;margin-top:.5rem}",
+    "body .dur-field{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem .6rem;margin-top:.5rem}",
     "body .dur-label{font-size:.85rem;color:var(--text-secondary)}",
+    "body .dur-days.waitlist-input{flex:0 0 6.5rem;width:6.5rem;min-width:0;text-align:center}",
     "body .dur-countdown{display:block;min-height:1.2em;font-size:.8rem;color:var(--text-secondary);font-variant-numeric:tabular-nums}",
     "body .dur-countdown.is-late,body .due-left.is-late{color:var(--error);font-weight:700}",
     "body .due-left:empty{display:none}",

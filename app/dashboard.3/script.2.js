@@ -668,7 +668,26 @@
         if (root) app.translateNodes(root);
       }
 
+      /* التصنيف يقترح ما استعمله المستخدم فعلا في عناصره، ويبقى قابلا للكتابة الحرة */
+      var lastCatHtml = "";
+      function renderCategorySuggest() {
+        var box = document.getElementById("categorySuggest");
+        if (!box) return;
+        var seen = {}, list = [];
+        (state.items || []).forEach(function (it) {
+          var c = String(it.category || "").trim();
+          if (!c || seen[c]) return;
+          seen[c] = true; list.push(c);
+        });
+        list.sort();
+        var html = list.map(function (c) { return '<option value="' + esc(c) + '"></option>'; }).join("");
+        if (html === lastCatHtml) return;
+        lastCatHtml = html;
+        box.innerHTML = html;
+      }
+
       function renderList() {
+        renderCategorySuggest();
         renderWeek();
         renderChart();
         renderCasesChart();

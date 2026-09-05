@@ -652,11 +652,24 @@
       margin-bottom: 1.25rem;
     }
     .inline-form h3 { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem; }
+    /* نموذج العنصر: شبكة اثني عشر عمودا تجمع الحقول بمعناها — العنوان يتصدر بنصف الصف،
+       والحقول المتشابهة في صف واحد، وكل خانة بارتفاعها هي (المدة والعدّاد تحت الموعد
+       لا يمددان جيرانه). الامتداد بأصناف span-3/4/6 لا بحساب في كل صفحة. */
     .form-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 0.75rem;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 0.75rem 1rem;
+      align-items: start;
       margin-bottom: 0.75rem;
+    }
+    .form-grid:last-of-type { margin-bottom: 1rem; }
+    .form-field { grid-column: span 4; }
+    .form-field.span-3 { grid-column: span 3; }
+    .form-field.span-4 { grid-column: span 4; }
+    .form-field.span-6 { grid-column: span 6; }
+    .form-field.span-12 { grid-column: span 12; }
+    @media (max-width: 900px) {
+      .form-field, .form-field.span-3, .form-field.span-4 { grid-column: span 6; }
     }
     .form-field { display: flex; flex-direction: column; gap: 0.25rem; }
     .form-field > span { font-size: 0.85rem; color: var(--text-secondary); }
@@ -872,6 +885,7 @@
       .content { padding: 1.25rem 1rem; }
       /* كل شبكة متعددة الأعمدة تصير عمودا واحدا */
       .dash-grid, .dash-grid--single, .ind-grid, .svc-grid, .dash-grid--single .svc-grid,
+      .form-field, .form-field.span-3, .form-field.span-4, .form-field.span-6, .form-field.span-12 { grid-column: span 1; }
       .form-grid, .features-grid, .totals-row, .ach-row, .filters-row, .settings-grid {
         grid-template-columns: minmax(0, 1fr) !important;
       }
