@@ -60,6 +60,10 @@ export const TOOLS = [
     inputSchema: { type: "object", properties: { telegram_user_id: { type: "string", description: "Telegram user id of the person talking (Telegram only)" }, query: { type: "string" }, item_id: { type: "string" } }, additionalProperties: false } },
   { name: "tracker_assign", description: "Assign an item to a team member (by name or email) as responsible.",
     inputSchema: { type: "object", properties: { telegram_user_id: { type: "string", description: "Telegram user id of the person talking (Telegram only)" }, query: { type: "string", description: "Item number, title or case number" }, member: { type: "string", description: "Member name or email" } }, required: ["query", "member"], additionalProperties: false } },
+  { name: "tracker_team", description: "The company's team: each member's name, role, department, open and overdue counts, next due date and their nearest items. Use for 'who is responsible for…', 'what is on Ahmed this week', 'the team'.",
+    inputSchema: { type: "object", properties: { telegram_user_id: { type: "string" } }, additionalProperties: false } },
+  { name: "tracker_remind", description: "Set a personal reminder lead time for one item: remind before its due date by e.g. 'يوم', '3 أيام', 'أسبوع', '2 hours'. Identify the item by query (title, case number, violation number). Returns ambiguous candidates when several match.",
+    inputSchema: { type: "object", properties: { telegram_user_id: { type: "string" }, query: { type: "string" }, before: { type: "string", description: "Lead time as written by the user" } }, required: ["query", "before"], additionalProperties: false } },
   { name: "tracker_import_rows", description: "Bulk-import rows (objects with Arabic or English column names, e.g. title, client_name, case_number, due_at, amount, status) into a tracker of this company.",
     inputSchema: { type: "object", properties: { telegram_user_id: { type: "string", description: "Telegram user id of the person talking (Telegram only)" }, rows: { type: "array", items: { type: "object" }, minItems: 1, maxItems: 500 }, tracker: { type: "string", description: "Tracker (sheet) name; default: the company's main tracker" } }, required: ["rows"], additionalProperties: false } },
 ];
@@ -172,6 +176,24 @@ export async function callTool(name, args, ctx) {
       if (r.status === "ambiguous") return result(r, "Ambiguous — candidates:\n" + describeRows(r.candidates || []) + "\nUse the item number.");
       if (r.status === "no_member") return fail("No such team member: " + a.member, r);
       return result(r, `Assigned ${r.title || a.query} to ${r.member_name || a.member}`);
+    }
+    case "tracker_team": {
+      const r = await ctx.rpc("telegram_team", { p_secret: secret, p_user_id: user });
+      if (!r || r.status === "no_org") return fail("No team found.");
+      const lines = (r.members || []).map((m) => {
+        const head = [m.full_name || m.email, m.role, m.department].filter(Boolean).join(" — ");
+        const load = "مفتوح " + (m.open || 0) + (m.overdue ? " (متأخر " + m.overdue + ")" : "") + (m.next_due ? " — أقرب موعد " + String(m.next_due).slice(0, 10) : "");
+        const items = (m.items || []).slice(0, 3).map((it) => "   • " + [it.title, it.case_number ? "قضية " + it.case_number : null, it.violation_number ? "مخالفة " + it.violation_number : null, it.due_at ? String(it.due_at).slice(0, 10) : null].filter(Boolean).join(" | ")).join("\n");
+        return head + "\n   " + load + (items ? "\n" + items : "");
+      });
+      return result(r, (r.org && r.org.name ? r.org.name + "\n" : "") + (lines.length ? lines.join("\n") : "لا أعضاء."));
+    }
+    case "tracker_remind": {
+      const r = await ctx.rpc("telegram_set_reminder", { p_secret: secret, p_user_id: user, p_query: String(a.query || ""), p_before: String(a.before || "") });
+      if (!r || r.status === "not_found") return fail("No matching item.", r);
+      if (r.status === "ambiguous") return result(r, "Ambiguous — candidates:\n" + describeRows(r.candidates || []) + "\nAsk which one, then call again with a more specific query.");
+      if (r.status === "bad_interval") return fail("Could not read the lead time: " + (r.given || a.before), r);
+      return result(r, "تم: تذكير قبل " + (r.remind_before || a.before) + " لـ " + (r.title || a.query) + (r.remind_at ? " (سيصل " + String(r.remind_at).slice(0, 16).replace("T", " ") + ")" : ""));
     }
     case "tracker_import_rows": {
       if (!ctx.importRows) return fail("import not available");
