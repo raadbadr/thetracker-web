@@ -113,10 +113,24 @@ export async function callTool(name, args, ctx) {
       return result({ items: rows || [] }, describeRows(rows));
     }
     case "tracker_company": {
-      const orgs = await ctx.rpc("telegram_company_profile", { p_secret: secret, p_user_id: user });
-      const o = (orgs || [])[0];
-      if (!o) return fail("No company on this account.");
-      const lines = [o.legal_name || o.name, o.cr_number ? "CR: " + o.cr_number : null, o.vat_number ? "VAT: " + o.vat_number : null, o.unified_number ? "Unified: " + o.unified_number : null, o.iban ? "IBAN: " + o.iban : null, o.national_address && o.national_address.short ? "Address: " + o.national_address.short : null].filter(Boolean);
+      const orgs = (await ctx.rpc("telegram_company_profile", { p_secret: secret, p_user_id: user })) || [];
+      if (!orgs.length) return fail("No company on this account.");
+      /* شركته (مالك/مدير) أولا؛ العضويات في شركات غيره تُذكر بعدها باسمها فقط */
+      const mine = orgs.filter((o) => o.role === "owner" || o.role === "admin");
+      const shown = mine.length ? mine : orgs.slice(0, 1);
+      const lines = [];
+      for (const o of shown) {
+        lines.push(o.legal_name || o.name);
+        if (o.cr_number) lines.push("رقم السجل التجاري: " + o.cr_number);
+        if (o.unified_number) lines.push("الرقم الموحد: " + o.unified_number);
+        if (o.vat_number) lines.push("الرقم الضريبي: " + o.vat_number);
+        if (o.iban) lines.push("الآيبان: " + o.iban);
+        if (o.national_address && o.national_address.short) lines.push("العنوان المختصر: " + o.national_address.short);
+        if (o.plan) lines.push("الباقة: " + o.plan + (o.plan_expires_at ? " حتى " + String(o.plan_expires_at).slice(0, 10) : ""));
+        for (const d of o.documents || []) lines.push("• " + (d.title || d.kind) + (d.number ? " — " + d.number : "") + (d.expires_at ? " — ينتهي " + String(d.expires_at).slice(0, 10) : "") + (d.files ? " (ملف مرفوع)" : " (بلا ملف)"));
+      }
+      const others = orgs.filter((o) => !shown.includes(o));
+      if (others.length) lines.push("عضو أيضا في: " + others.map((o) => o.name).join("، "));
       return result({ companies: orgs }, lines.join("\n"));
     }
     case "tracker_items": {
