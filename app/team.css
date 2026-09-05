@@ -179,29 +179,10 @@
     }
     .invite-row .waitlist-input { width: 100%; min-width: 0; }
     .invite-row .waitlist-btn { white-space: nowrap; }
-    /* لوحة توزيع الأعمال: عمود لكل عضو، والبطاقات تسحب بين الأعمدة */
-    .wl-board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(230px, 1fr); gap: var(--gap, 1.5rem); overflow-x: auto; padding-bottom: .5rem; }
-    .wl-col { display: flex; flex-direction: column; min-height: 260px; border-radius: 18px; border: 1px solid var(--glass-border); background: var(--glass); box-shadow: 4px 4px 10px var(--shadow-dark), -4px -4px 10px var(--shadow-light); transition: box-shadow .15s ease, border-color .15s ease; }
-    .wl-col.is-over { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-shadow); }
-    .wl-col-head { padding: .8rem .9rem .6rem; border-bottom: 1px solid var(--glass-border); }
-    .wl-col-head strong { display: block; font-size: .95rem; color: var(--text-primary); overflow-wrap: break-word; word-break: break-word; }
-    .wl-col-head span { font-size: .74rem; color: var(--text-secondary); }
-    .wl-col-head .is-late { color: var(--error); font-weight: 700; }
-    .wl-list { flex: 1 1 auto; display: grid; gap: .5rem; align-content: start; padding: .7rem; }
-    .wl-card { display: grid; gap: .2rem; padding: .6rem .7rem; border-radius: 12px; background: var(--glass-strong); border: 1px solid var(--glass-border); cursor: grab; user-select: none; }
-    .wl-card:active { cursor: grabbing; }
-    .wl-card.is-dragging { opacity: .45; }
-    .wl-card.is-late { border-color: var(--error); }
-    .wl-card b { font-size: .88rem; color: var(--text-primary); font-weight: 600; overflow-wrap: break-word; word-break: break-word; }
-    .wl-card span { font-size: .72rem; color: var(--text-secondary); }
-    .wl-card select { margin-top: .25rem; padding: .35rem .5rem; font-size: .78rem; border-radius: 8px; }
     .wl-empty { padding: 1rem .7rem; font-size: .8rem; color: var(--text-tertiary); text-align: center; }
     .user-list { display: grid; gap: 0.75rem; margin-top: 1rem; }
     /* مصفوفة RASI */
     .rasi-legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; font-size: 0.85rem; color: var(--text-secondary); margin: 0.25rem 0 0.9rem; }
-    .rasi-legend b { display: inline-block; min-width: 1.7em; text-align: center; border-radius: 6px; padding: 0.05em 0.35em; }
-    .rasi-tools { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
-    .rasi-tools .waitlist-input { flex: 1 1 220px; }
     .rasi-wrap { overflow-x: auto; margin-top: 1rem; }
     .rasi-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.85rem; min-width: 560px; }
     .rasi-table th, .rasi-table td { padding: 0.45rem 0.5rem; border-bottom: 1px solid var(--glass-border); text-align: center; vertical-align: middle; }
@@ -220,18 +201,6 @@
       cursor: pointer; user-select: none; -webkit-user-select: none; }
     .rasi-chip.is-clear { color: var(--text-secondary); }
     .rasi-chip.is-armed { outline: 2px solid var(--primary); outline-offset: 2px; transform: translateY(-1px); }
-    /* دوائر الأعضاء على بطاقة العمل: نقرة واحدة تسند أو تنقل أو تلغي */
-    .mdots { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .45rem; }
-    .mchip { min-height: 34px; padding: .3rem .7rem; border-radius: 999px; border: 1.5px solid var(--glass-border);
-      background: transparent; color: var(--text-secondary); font-family: inherit; font-size: .8rem; font-weight: 600;
-      cursor: pointer; white-space: normal; overflow-wrap: anywhere; text-align: center; max-width: 100%; }
-    .mchip.is-on { background: var(--primary); color: var(--btn-ink, #fff); border-color: transparent; }
-    .mchip:disabled { opacity: .6; cursor: wait; }
-    .mdot { width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--glass-border);
-      background: var(--glass); color: var(--text-secondary); font-family: inherit; font-weight: 700;
-      font-size: .78rem; cursor: pointer; line-height: 1; }
-    .mdot.is-on { background: var(--primary); color: var(--btn-ink, #fff); border-color: transparent; }
-    .mdot:disabled { opacity: .6; cursor: wait; }
     .rasi-cell { min-width: 5.5rem; min-height: 34px; padding: .25rem .55rem; border-radius: 10px; border: 1.5px solid var(--glass-border); background: transparent; color: var(--text-tertiary); font-weight: 700; font-size: .8rem; font-family: inherit; cursor: pointer; white-space: nowrap; transition: transform .12s ease; }
     .rasi-cell:hover { transform: scale(1.08); }
     .rasi-cell:disabled { opacity: 0.6; cursor: wait; }
@@ -239,21 +208,6 @@
     .is-A { background: var(--success); color: #fff; border-color: transparent; }
     .is-S { background: var(--warning); color: #1a1a26; border-color: transparent; }
     .is-I { background: var(--glass-strong); color: var(--text-primary); border-color: var(--glass-border); }
-    .rasi-legend { justify-content: flex-end; }
-    .rasi-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: flex-end; }
-    .rasi-chip { padding: 0.35rem 0.75rem; border-radius: 999px; border: 1.5px solid var(--glass-border); background: transparent; color: var(--text-secondary); font-family: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: transform .12s ease; }
-    .rasi-chip:hover { transform: translateY(-1px); }
-    .rasi-chip:disabled { opacity: 0.6; cursor: wait; }
-    .rasi-chip b { margin-inline-start: 0.4em; font-weight: 800; }
-    /* شرائح التوزيع السريع: الاسم كاملا في شريحة تلتف (لا دائرة 44 تحشر الاسم)، والدور بجانبه في السطر نفسه */
-    .rasi-chips .rasi-chip { width: auto; height: auto; min-height: 36px; padding: .35rem .85rem; border-radius: 999px;
-      display: inline-flex; align-items: center; justify-content: center; gap: .4em; max-width: 100%;
-      white-space: normal; overflow-wrap: anywhere; text-align: center; line-height: 1.25; font-size: .82rem; }
-    .rasi-chips .rasi-chip b { margin: 0; white-space: nowrap; }
-    .rasi-chips .rasi-chip.is-R { background: var(--primary); color: var(--btn-ink); border-color: transparent; }
-    .rasi-chips .rasi-chip.is-A { background: var(--success); color: #fff; border-color: transparent; }
-    .rasi-chips .rasi-chip.is-S { background: var(--warning); color: #1a1a26; border-color: transparent; }
-    .rasi-chips .rasi-chip.is-I { background: var(--glass-strong); color: var(--text-primary); border-color: var(--glass-border); }
     .rasi-code { direction: ltr; unicode-bidi: isolate; }
     #rasiMatrixWrap { margin-top: 1rem; }
     .quick-add { grid-template-columns: minmax(0, 1fr) 170px auto; margin-bottom: 0.5rem; }
@@ -723,3 +677,55 @@
     .export-menu button { padding: .5rem .7rem; min-height: 38px; border: 0; border-radius: 9px; background: transparent;
       color: var(--text-primary); font-family: inherit; font-size: .85rem; text-align: start; cursor: pointer; }
     .export-menu button:hover, .export-menu button:focus-visible { background: var(--primary); color: var(--btn-ink, #fff); }
+
+    /* ===== بطاقة العمل الواحدة: الشريط والصفوف والشرائح والقائمة المعتمة ===== */
+    .chat-option-btn.is-active { background: var(--primary); color: var(--btn-ink); }
+    .wr-head-row { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; }
+    .wr-head-row h2 { margin: 0; flex: 1 1 auto; }
+    .content > .wr-head-row:not(:first-child) { margin-top: var(--gap, 1.5rem); }
+    .wr-tools { display: flex; align-items: center; gap: .5rem; flex: 1 1 260px; min-width: 0; }
+    .wr-tools .waitlist-input { flex: 1 1 160px; min-width: 0; }
+    #rasiToggle svg, .wr-more svg, .wr-plus svg { width: 20px; height: 20px; fill: currentColor; }
+    /* شريط الأعضاء: شريحة لكل عضو بعداداته؛ النقرة تصفي الصفوف */
+    .wl-strip { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .wl-chip.chat-option-btn { flex-direction: column; align-items: flex-start; gap: .1rem; padding: .45rem .9rem; white-space: normal; text-align: start; max-width: 100%; overflow-wrap: anywhere; line-height: 1.3; height: auto; }
+    .wl-chip strong { font-size: .9rem; }
+    .wl-chip span { font-size: .74rem; font-weight: 500; color: var(--text-secondary); }
+    .wl-chip .is-late { color: var(--error); font-weight: 700; }
+    .wl-chip.is-active span, .wl-chip.is-active .is-late { color: inherit; }
+    /* قائمة الصفوف: صف واحد لكل عمل، وكل ما يخصه فيه */
+    .wr-list { display: flex; flex-direction: column; border: 1px solid var(--glass-border); border-radius: 16px; background: var(--glass); margin-top: .5rem; }
+    .wr-list:empty { display: none; }
+    .wr { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .75rem; padding: .55rem .75rem; border-bottom: 1px solid var(--glass-border); }
+    .wr:last-child { border-bottom: 0; }
+    .wr.is-late { border-inline-start: 3px solid var(--error); }
+    .wr-head { flex: 1 1 240px; min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: .1rem .5rem; order: 1; }
+    .wr-title { font-size: .92rem; font-weight: 600; color: var(--text-primary); overflow-wrap: anywhere; }
+    .wr-meta { font-size: .78rem; color: var(--text-secondary); }
+    .wr-meta .is-late { color: var(--error); font-weight: 700; }
+    .wr-pills { position: relative; flex: 1 1 auto; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: .3rem; order: 2; }
+    .wr-more.chat-option-btn.icon-only, .wr-plus.chat-option-btn.icon-only { flex: 0 0 44px; }
+    .wr-more { order: 3; }
+    .wr-more svg { transition: transform .15s ease; }
+    .wr-more[aria-expanded="true"] svg { transform: rotate(180deg); }
+    .wr-plus { display: none; }
+    .wr-detail { flex-basis: 100%; order: 4; padding: .25rem 0 .5rem; }
+    .wr-detail .platform-stat-detail { margin: 0; padding: 0; border-top: 0; }
+    .wr-detail .waitlist-form { justify-content: flex-start; margin-top: .5rem; }
+    .wr-detail .waitlist-form .waitlist-input { flex: 1 1 200px; }
+    /* الشريحة: الاسم الكامل وكلمة الدور؛ الألوان من .is-R/.is-A/.is-S/.is-I القائمة */
+    .mchip { display: inline-flex; align-items: center; justify-content: center; gap: .4em; min-height: var(--field-h); padding: .3rem .8rem; border-radius: 999px; border: 1.5px solid var(--glass-border); background: transparent; color: var(--text-secondary); font-family: inherit; font-size: .82rem; font-weight: 600; line-height: 1.25; cursor: pointer; white-space: normal; overflow-wrap: anywhere; text-align: center; max-width: 100%; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: manipulation; }
+    .mchip b { font-weight: 800; white-space: nowrap; }
+    .mchip:disabled, .mchip[aria-busy="true"] { opacity: .6; cursor: wait; }
+    .mchip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+    /* القائمة المعتمة (نسخة .export-menu بارتفاع لمس 44) */
+    .role-menu { position: absolute; inset-block-start: calc(100% + .35rem); inset-inline-start: 0; z-index: 200; display: flex; flex-direction: column; min-width: 11rem; max-width: 100%; padding: .3rem; gap: .2rem; background: var(--bg-mid); border: 1px solid var(--glass-border); border-radius: 12px; box-shadow: 0 16px 40px rgba(0, 0, 0, .45), 0 0 0 1px var(--glass-border); }
+    .role-menu-title { padding: .35rem .7rem .15rem; font-size: .78rem; color: var(--text-secondary); overflow-wrap: anywhere; }
+    .role-menu button { display: flex; align-items: center; gap: .5rem; min-height: 44px; padding: .5rem .7rem; border: 0; border-radius: 9px; background: transparent; color: var(--text-primary); font-family: inherit; font-size: .85rem; text-align: start; cursor: pointer; white-space: normal; overflow-wrap: anywhere; }
+    .role-menu button:hover, .role-menu button:focus-visible { background: var(--primary); color: var(--btn-ink, #fff); }
+    .role-menu .rasi-dot { flex: 0 0 .7rem; }
+    /* الجوال: العنوان سطرا كاملا، ثم الشرائح والزر ＋ وسهم التفاصيل على سطر واحد */
+    @media (max-width: 900px) { .mchip { min-height: 44px; } .wr-head { flex: 1 1 100%; } .wr-pills { flex: 1 1 auto; order: 2; } .wr-more { order: 3; margin-inline-start: auto; } .wr-detail { order: 4; } }
+    @media (max-width: 720px) { .wr-tools { flex-basis: 100%; } }
+    @media (max-width: 600px) { .wr-title { font-size: .88rem; } .mchip { font-size: .8rem; } .wl-chip strong { font-size: .85rem; } .mchip[data-role=""] { display: none; } .wr-plus { display: inline-flex; } }
+    @media (prefers-reduced-motion: reduce) { .wr-more svg { transition: none; } }

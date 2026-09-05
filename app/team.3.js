@@ -7,8 +7,11 @@
       var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
       var app = null;
-      var state = { loaded: false, workLoaded: false, error: null, canManage: false, members: [], invitations: [], limits: {}, work: [], roles: {} };
-      var RASI_CYCLE = ["", "R", "A", "S", "I"];
+      var state = { loaded: false, workLoaded: false, error: null, canManage: false, members: [], invitations: [], limits: {}, work: [], roles: {}, filterUser: null, matrixDirty: true };
+      /* بطاقة العمل الواحدة: صفوف مفتوحة، شرائح مشغولة، آخر ناتج للشريط والمصفوفة، والقائمة المعتمة الوحيدة */
+      var openRows = {}, pending = {}, lastStripHtml = "", lastMatrixSig = "", roleMenu = null, menuAnchor = null, suppressClick = false, pressTimer = null;
+      var SVG_MORE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5 4.5 8l1.4-1.4L12 12.7l6.1-6.1L19.5 8z"/></svg>';
+      var SVG_PLUS = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg>';
 
       function $(id) { return document.getElementById(id); }
 
@@ -403,9 +406,12 @@
       /* الرقم القياسي (ITM-) داخلي لا يُعرض: يظهر رقم القضية أو المخالفة أو المستند */
       function shownNumber(it) {
         var d = it.data || {};
-        return String(it.case_number || d.number || d.violation_number ||
+        return String(it.case_number || it.violation_number || it.doc_number || d.number || d.violation_number ||
                       d["رقم المخالفة"] || d["رقم الدعوى"] || d["رقم القضية"] || "").trim();
       }
+      function me() { return app && app.user ? app.user.id : null; }
+      function activeMembers() { return state.members.filter(function (m) { return m.status === "active"; }); }
+      function membersSig() { return activeMembers().map(function (m) { return m.user_id + ":" + memberName(m); }).join(","); }
 
       function workload() {
         var now = Date.now();
@@ -426,82 +432,69 @@
       /* الدور بكلمته الكاملة بلغة الواجهة: لا R ولا A ولا حرفان من الاسم */
       function roleWord(role) { return role ? t("rasiWord" + role) : ""; }
 
-      /* شرائح الأعضاء بالاسم الكامل: نقرة تسند، نقرة على غيره تنقل، نقرة على المسند تلغي */
-      function memberDots(itemId, assigned) {
-        var dots = state.members.filter(function (m) { return m.status === "active"; }).map(function (m) {
-          var on = m.user_id === assigned;
-          return '<button type="button" class="mchip' + (on ? " is-on" : "") + '"' +
-                 ' data-assign-item="' + esc(itemId) + '" data-assign-user="' + esc(m.user_id) + '"' +
-                 ' aria-pressed="' + (on ? "true" : "false") + '">' +
-                 esc(memberName(m)) + "</button>";
-        }).join("");
-        return '<div class="mdots" role="group" aria-label="' + esc(t("assignTo")) + '">' + dots + "</div>";
-      }
-
       function memberOptions(selected) {
         var html = '<option value="">' + esc(t("assignPick")) + "</option>";
-        state.members.forEach(function (m) {
+        activeMembers().forEach(function (m) {
           html += '<option value="' + esc(m.user_id) + '"' + (m.user_id === selected ? " selected" : "") + ">" +
                   esc(memberName(m)) + "</option>";
         });
         return html;
       }
 
-      function renderWorkload() {
+      /* شريط الأعضاء: «غير مسندة» ثم كل عضو بعداداته الثلاثة؛ النقرة تصفي الصفوف على صاحب العمل */
+      function renderStrip() {
         var card = $("workloadCard");
         if (!card) return;
         show("workloadCard", state.loaded && state.workLoaded);
         if (!state.loaded || !state.workLoaded) return;
-
         var now = Date.now();
-        var cols = [{ id: "", name: t("unassign") }].concat(state.members.map(function (m) { return { id: m.user_id, name: memberName(m) }; }));
+        var cols = [{ id: "", name: t("unassign"), invited: false }].concat(state.members.map(function (m) { return { id: m.user_id, name: memberName(m), invited: m.status !== "active" }; }));
         var open = state.work.filter(function (it) { return it.status !== "done" && it.status !== "cancelled"; });
-
-        $("wlBoard").innerHTML = cols.map(function (c) {
+        var html = cols.map(function (c) {
           var mine = open.filter(function (it) { return (it.assignee_id || "") === c.id; });
           var late = mine.filter(function (it) { return it.due_at && new Date(it.due_at).getTime() < now; }).length;
           var done = c.id ? state.work.filter(function (it) { return it.assignee_id === c.id && it.status === "done"; }).length : 0;
-          var head = '<div class="wl-col-head"><strong>' + esc(c.name) + "</strong><span>" +
-                     esc(t("wlOpen")) + " " + mine.length +
-                     (late ? ' · <span class="is-late">' + esc(t("wlOverdue")) + " " + late + "</span>" : "") +
-                     (c.id ? " · " + esc(t("wlDone")) + " " + done : "") + "</span></div>";
-          var list = mine.map(function (it) {
-            var isLate = it.due_at && new Date(it.due_at).getTime() < now;
-            var meta = [shownNumber(it), it.due_at ? fmtDate(it.due_at) : t("noDue")].filter(Boolean).join(" · ");
-            return '<div class="wl-card' + (isLate ? " is-late" : "") + '" data-item="' + esc(it.id) + '">' +
-                     '<b data-tr>' + esc(it.title || "-") + "</b><span>" + esc(meta) + "</span>" +
-                     memberDots(it.id, it.assignee_id || "") +
-                   "</div>";
-          }).join("");
-          return '<div class="wl-col" data-col="' + esc(c.id) + '">' + head + '<div class="wl-list">' + (list || '<div class="wl-empty">' + esc(t("unassignedEmpty")) + "</div>") + "</div></div>";
+          return '<button type="button" class="chat-option-btn wl-chip" data-col="' + esc(c.id) + '" aria-pressed="false">' +
+                   "<strong>" + esc(c.name) + (c.invited ? " · " + esc(t("statusInvited")) : "") + "</strong>" +
+                   "<span>" + esc(t("wlOpen")) + " " + mine.length +
+                   (late ? ' · <span class="is-late">' + esc(t("wlOverdue")) + " " + late + "</span>" : "") +
+                   (c.id ? " · " + esc(t("wlDone")) + " " + done : "") + "</span></button>";
         }).join("");
-        if (app.translateNodes) app.translateNodes($("wlBoard"));
+        var board = $("wlBoard");
+        if (html !== lastStripHtml) { lastStripHtml = html; board.innerHTML = html; }
+        board.querySelectorAll("[data-col]").forEach(function (chip) {
+          var on = state.filterUser !== null && chip.getAttribute("data-col") === state.filterUser;
+          chip.classList.toggle("is-active", on);
+          chip.setAttribute("aria-pressed", on ? "true" : "false");
+        });
       }
 
-      function assignTo(itemId, userId) {
-        return app.assignItem(itemId, userId || null).then(function () {
-          toast(userId ? tf("assignDone", { name: nameOf(userId) }) : t("unassign"), "success");
-          return loadWork();
-        }).catch(function (err) { toast(errorMessage(err), "error"); return loadWork(); });
+      function onStripClick(ev) {
+        var chip = ev.target.closest("[data-col]");
+        if (!chip) return;
+        var v = chip.getAttribute("data-col");
+        state.filterUser = state.filterUser === v ? null : v;
+        renderStrip();
+        renderRows();
+        markMatrixDirty();
       }
 
-      function onDotClick(ev) {
-        var dot = ev.target.closest("[data-assign-user]");
-        if (!dot || dot.disabled) return;
-        var itemId = dot.getAttribute("data-assign-item"), userId = dot.getAttribute("data-assign-user");
-        var wasOn = dot.getAttribute("aria-pressed") === "true";
-        dot.disabled = true;
-        assignTo(itemId, wasOn ? "" : userId);
-      }
-
+      /* قوائم التفاصيل: الإسناد والأدوار من قوائم select (طريق قارئ الشاشة) */
       function onAssignChange(ev) {
         var sel = ev.target.closest("[data-assign-item]");
-        if (!sel) return;
-        sel.disabled = true;
-        assignTo(sel.getAttribute("data-assign-item"), sel.value);
+        if (sel) {
+          var itemId = sel.getAttribute("data-assign-item");
+          var it = workById(itemId);
+          var v = sel.value;
+          if (v) setRole(itemId, v, "R", sel);
+          else if (it && it.assignee_id) setRole(itemId, it.assignee_id, "", sel);
+          return;
+        }
+        var pick = ev.target.closest("[data-role-pick-item]");
+        if (pick) setRole(pick.getAttribute("data-role-pick-item"), pick.getAttribute("data-role-pick-user"), pick.value, pick);
       }
 
-      /* السحب والإفلات بين الأعمدة */
+      function workById(id) { for (var i = 0; i < state.work.length; i++) if (state.work[i].id === id) return state.work[i]; return null; }
 
       function loadWork() {
         return app.teamWorkItems().then(function (rows) {
@@ -517,12 +510,10 @@
           var map = {};
           (rows || []).forEach(function (r) { (map[r.item_id] = map[r.item_id] || {})[r.user_id] = r.role; });
           state.roles = map;
-          state.workLoaded = true;          /* الآن فقط تظهر البطاقتان، مرة واحدة */
-          renderWorkload();
+          state.workLoaded = true;          /* الآن فقط تظهر البطاقة، مرة واحدة */
           renderRasi();
         }).catch(function () {
           state.workLoaded = true;
-          renderWorkload();
           renderRasi();
         });
       }
@@ -531,6 +522,7 @@
         var q = String(($("rasiSearch") && $("rasiSearch").value) || "").trim().toLowerCase();
         return state.work.filter(function (it) {
           if (it.status !== "open") return false;
+          if (state.filterUser !== null && (it.assignee_id || "") !== state.filterUser) return false;
           if (!q) return true;
           return String(it.title || "").toLowerCase().indexOf(q) !== -1 ||
                  String(shownNumber(it)).toLowerCase().indexOf(q) !== -1 ||
@@ -538,25 +530,116 @@
         }).slice(0, 150);
       }
 
-      /* التوزيع السريع: صف لكل عنصر مفتوح وشرائح بأسماء الأعضاء */
-      function renderQuick() {
+      /* ---------- صف واحد لكل عمل: العنوان والرقم والموعد، وشريحة لكل عضو بكلمة دوره ---------- */
+      function roleOf(it, userId) {
+        var row = state.roles[it.id] || {};
+        return row[userId] || (it.assignee_id === userId ? "R" : "");
+      }
+      function isLate(it) { return !!(it.due_at && it.status === "open" && new Date(it.due_at).getTime() < Date.now()); }
+      function rowSig(it) {
+        return [app && app.lang ? app.lang() : "", it.title, shownNumber(it), it.due_at || "", it.status, it.assignee_id || "",
+                JSON.stringify(state.roles[it.id] || {}), membersSig(), isLate(it) ? "L" : ""].join("|");
+      }
+      function metaHtml(it) {
+        var num = shownNumber(it);
+        return [num ? '<span class="rasi-code">' + esc(num) + "</span>" : "",
+                esc(it.due_at ? fmtDate(it.due_at) : t("noDue")),
+                isLate(it) ? '<span class="is-late">' + esc(t("wlOverdue")) + "</span>" : ""].filter(Boolean).join(" · ");
+      }
+      function rolePills(it) {
+        var members = activeMembers(), allHave = members.length > 0;
+        var html = members.map(function (m) {
+          var role = roleOf(it, m.user_id), derived = !((state.roles[it.id] || {})[m.user_id]) && it.assignee_id === m.user_id;
+          if (!role) allHave = false;
+          var key = it.id + "|" + m.user_id;
+          return '<button type="button" class="mchip' + (role ? " is-" + role : "") + '" data-q-item="' + esc(it.id) + '" data-q-user="' + esc(m.user_id) + '"' +
+                 ' data-role="' + role + '"' + (derived ? ' data-derived="1"' : "") + ' aria-pressed="' + (role ? "true" : "false") + '"' +
+                 (pending[key] ? ' aria-busy="true"' : "") + ' aria-label="' + esc(memberName(m) + (role ? " — " + roleWord(role) : "")) + '">' +
+                 '<span class="mchip-name">' + esc(memberName(m)) + "</span>" + (role ? '<b class="mchip-role">' + esc(roleWord(role)) + "</b>" : "") + "</button>";
+        }).join("");
+        html += '<button type="button" class="wr-plus chat-option-btn icon-only" data-plus-item="' + esc(it.id) + '" title="' + esc(t("wrAddMember")) + '" aria-label="' + esc(t("wrAddMember")) + '"' + (allHave ? " hidden" : "") + ">" + SVG_PLUS + "</button>";
+        return html;
+      }
+      function buildDetail(it) {
+        var members = activeMembers();
+        var holders = members.filter(function (m) { return roleOf(it, m.user_id); }).map(function (m) { return memberName(m) + " — " + roleWord(roleOf(it, m.user_id)); });
+        function row(label, val) { return '<div class="platform-stat-detail-row"><span>' + esc(label) + '</span><span class="platform-stat-detail-val">' + val + "</span></div>"; }
+        var num = shownNumber(it);
+        var html = '<div class="platform-stat-detail">' +
+          row(t("wrCategory"), esc(it.category || "-")) +
+          row(t("wrDue"), esc(it.due_at ? fmtDate(it.due_at, { withTime: true }) : t("noDue"))) +
+          row(t("wrNumber"), num ? '<span class="rasi-code">' + esc(num) + "</span>" : "-") +
+          row(t("wrOwner"), esc(it.assignee_id ? nameOf(it.assignee_id) : t("unassign"))) +
+          row(t("wrRoles"), esc(holders.length ? holders.join(" · ") : "-")) + "</div>" +
+          '<div class="waitlist-form">' +
+            '<select class="waitlist-input" data-assign-item="' + esc(it.id) + '" aria-label="' + esc(t("assignTo")) + '">' + memberOptions(it.assignee_id || "") + "</select>" +
+            members.map(function (m) {
+              var cur = roleOf(it, m.user_id);
+              return '<select class="waitlist-input" data-role-pick-item="' + esc(it.id) + '" data-role-pick-user="' + esc(m.user_id) + '" aria-label="' + esc(memberName(m)) + '">' +
+                ["", "R", "A", "S", "I"].map(function (r) { return '<option value="' + r + '"' + (r === cur ? " selected" : "") + ">" + esc(memberName(m) + " — " + (r ? roleWord(r) : t("rasiWordNone"))) + "</option>"; }).join("") + "</select>";
+            }).join("") +
+          "</div>";
+        return html;
+      }
+      function buildRow(it, sig) {
+        var el = document.createElement("div");
+        el.className = "wr" + (isLate(it) ? " is-late" : "");
+        el.setAttribute("role", "listitem");
+        el.dataset.item = it.id; el.dataset.sig = sig; el.dataset.title = it.title || "";
+        var open = !!openRows[it.id];
+        el.innerHTML = '<div class="wr-head"><span class="wr-title" data-tr>' + esc(it.title || "-") + '</span><span class="wr-meta">' + metaHtml(it) + "</span></div>" +
+          '<div class="wr-pills" role="group" aria-label="' + esc(t("assignTo")) + '">' + rolePills(it) + "</div>" +
+          '<button type="button" class="wr-more chat-option-btn icon-only" data-more-item="' + esc(it.id) + '" aria-expanded="' + (open ? "true" : "false") + '" aria-controls="wr-detail-' + esc(it.id) + '" title="' + esc(t("wrDetails")) + '" aria-label="' + esc(t("wrDetails")) + '">' + SVG_MORE + "</button>" +
+          '<div class="wr-detail" id="wr-detail-' + esc(it.id) + '"' + (open ? ' data-built="1"' : " hidden") + ">" + (open ? buildDetail(it) : "") + "</div>";
+        return el;
+      }
+      function patchRow(el, it, sig) {
+        if (roleMenu && el.contains(roleMenu)) closeRoleMenu();
+        el.classList.toggle("is-late", isLate(it));
+        if (el.dataset.title !== (it.title || "")) {
+          el.dataset.title = it.title || "";
+          var tt = el.querySelector(".wr-title"); tt.textContent = it.title || "-"; tt.removeAttribute("data-tr-done");
+          if (app.translateNodes) app.translateNodes(el);
+        }
+        el.querySelector(".wr-meta").innerHTML = metaHtml(it);
+        el.querySelector(".wr-pills").innerHTML = rolePills(it);
+        var detail = el.querySelector(".wr-detail");
+        if (detail && !detail.hidden) { detail.innerHTML = buildDetail(it); detail.dataset.built = "1"; }
+        el.dataset.sig = sig;
+      }
+      function patchRowById(itemId) {
+        var it = workById(itemId), el = $("quickList") && $("quickList").querySelector('.wr[data-item="' + itemId + '"]');
+        if (it && el) patchRow(el, it, rowSig(it));
+      }
+
+      /* قائمة الصفوف تتصالح بالمفاتيح: لا يعاد رسم صف لم يتغير */
+      function renderRows() {
         var list = $("quickList");
         if (!list) return;
-        var members = state.members.filter(function (m) { return m.status === "active"; });
-        var rows = state.work.filter(function (it) { return it.status === "open"; }).slice(0, 100);
-        renderQuickAddMembers();
-        if (!members.length || !rows.length) { list.innerHTML = ""; return; }
-        list.innerHTML = rows.map(function (it) {
-          var num = shownNumber(it);
-          var meta = [num ? '<span class="rasi-code">' + esc(num) + "</span>" : "", it.due_at ? esc(fmtDate(it.due_at)) : ""].filter(Boolean).join(" · ");
-          var chips = members.map(function (m) {
-            var role = (state.roles[it.id] || {})[m.user_id] || "";
-            return '<button type="button" class="rasi-chip' + (role ? " is-" + role : "") + '" data-q-item="' + esc(it.id) + '" data-q-user="' + esc(m.user_id) + '">' +
-                   esc(memberName(m)) + (role ? "<b>" + esc(roleWord(role)) + "</b>" : "") + "</button>";
-          }).join("");
-          return '<div class="user-row"><div><strong>' + esc(it.title || "-") + "</strong>" + (meta ? "<span>" + meta + "</span>" : "") + "</div>" +
-                 '<div class="rasi-chips">' + chips + "</div></div>";
-        }).join("");
+        closeRoleMenu();
+        var members = activeMembers();
+        var rows = rasiRows();
+        var wlEmpty = $("wlEmpty"), rasiEmpty = $("rasiEmpty");
+        if (!members.length) { list.innerHTML = ""; rasiEmpty.textContent = t("rasiNoMembers"); show("rasiEmpty", true); show("wlEmpty", false); return; }
+        if (!rows.length) {
+          list.innerHTML = "";
+          if (state.filterUser === "") { show("wlEmpty", true); show("rasiEmpty", false); }
+          else { rasiEmpty.textContent = t("rasiEmpty"); show("rasiEmpty", true); show("wlEmpty", false); }
+          return;
+        }
+        show("wlEmpty", false); show("rasiEmpty", false);
+        var existing = {}, fresh = [];
+        list.querySelectorAll(".wr[data-item]").forEach(function (el) { existing[el.dataset.item] = el; });
+        var seen = {};
+        rows.forEach(function (it, index) {
+          var sig = rowSig(it), el = existing[it.id];
+          if (el && el.dataset.sig !== sig) patchRow(el, it, sig);
+          if (!el) { el = buildRow(it, sig); fresh.push(el); }
+          seen[it.id] = true;
+          if (list.children[index] !== el) list.insertBefore(el, list.children[index] || null);
+        });
+        Object.keys(existing).forEach(function (id) { if (!seen[id]) existing[id].remove(); });
+        if (app.translateNodes) fresh.forEach(function (el) { app.translateNodes(el); });
       }
 
       function renderQuickAddMembers() {
@@ -564,8 +647,9 @@
         if (!sel) return;
         var keep = sel.value;
         var members = state.members.filter(function (m) { return m.status === "active"; });
-        sel.innerHTML = '<option value="">' + esc(t("quickAddNobody")) + "</option>" +
+        var html = '<option value="">' + esc(t("quickAddNobody")) + "</option>" +
           members.map(function (m) { return '<option value="' + esc(m.user_id) + '">' + esc(memberName(m)) + "</option>"; }).join("");
+        if (sel.innerHTML !== html) sel.innerHTML = html;
         if (keep) sel.value = keep;
         var input = $("quickAddText"); if (input) input.placeholder = t("quickAddPh");
       }
@@ -644,28 +728,157 @@
         }).then(function () { btn.disabled = false; });
       }
 
-      function onQuickClick(ev) {
-        var btn = ev.target.closest("[data-q-item]");
-        if (!btn || btn.disabled) return;
-        var itemId = btn.getAttribute("data-q-item"), userId = btn.getAttribute("data-q-user");
-        var current = (state.roles[itemId] || {})[userId] || "";
-        var mode = current === "R" ? "S" : current === "S" ? null : "R";
-        btn.disabled = true;
-        app.distributeItem(itemId, userId, mode).then(function (res) {
-          state.roles[itemId] = (res && res.roles) || {};
-          state.work.forEach(function (it) {
-            if (it.id !== itemId) return;
-            if (mode === "R") it.assignee_id = userId;
-            else if (it.assignee_id === userId) it.assignee_id = null;
-          });
-          renderQuick();
-          renderRasi();
-          renderWorkload();
+      /* ---------- الكتابة من مكان واحد: الشرائح والقائمة والمصفوفة وقوائم التفاصيل ---------- */
+      function setRole(itemId, userId, role, el) {
+        var key = itemId + "|" + userId;
+        if (pending[key]) return Promise.resolve();
+        var it = workById(itemId);
+        if (!it) return Promise.resolve();
+        role = role || "";
+        var prevRoles = JSON.parse(JSON.stringify(state.roles[itemId] || {}));
+        var prevAssignee = it.assignee_id || null;
+        var row = state.roles[itemId] = state.roles[itemId] || {};
+        var prevA = null;
+        Object.keys(row).forEach(function (u) { if (row[u] === "A" && u !== userId) prevA = u; });
+        if (role !== "A") prevA = null;
+        /* تحديث تفاؤلي محلي بمنطق distribute_item: معتمد واحد، مسؤول واحد، ومن يسند يصير معتمدا إن لم يوجد */
+        if (role === "A") Object.keys(row).forEach(function (u) { if (row[u] === "A" && u !== userId) delete row[u]; });
+        if (role === "R") {
+          Object.keys(row).forEach(function (u) { if (row[u] === "R" && u !== userId) delete row[u]; });
+          it.assignee_id = userId;
+          var hasA = Object.keys(row).some(function (u) { return row[u] === "A"; });
+          if (!hasA && me() && me() !== userId) row[me()] = "A";
+        }
+        if (role) row[userId] = role; else delete row[userId];
+        if (role !== "R" && it.assignee_id === userId) it.assignee_id = null;
+        pending[key] = true;
+        if (el && el.setAttribute) el.setAttribute("aria-busy", "true");
+        patchRowById(itemId); renderStrip(); markMatrixDirty();
+        var p = (role === "" || role === "R" || role === "S")
+          ? app.distributeItem(itemId, userId, role || null)
+          : app.setItemRole(itemId, userId, role).then(function () { return prevAssignee === userId ? app.assignItem(itemId, null) : null; });
+        return p.then(function (res) {
+          if (res && res.roles) state.roles[itemId] = res.roles;
           toast(t("rasiSaved"), "success");
+          if (prevA) toast(tf("rasiApproverSwapped", { name: nameOf(userId), prev: nameOf(prevA) }));
         }).catch(function (err) {
-          btn.disabled = false;
+          state.roles[itemId] = prevRoles; it.assignee_id = prevAssignee;
           toast(errorMessage(err), "error");
+        }).then(function () {
+          delete pending[key];
+          patchRowById(itemId); renderStrip(); markMatrixDirty();
         });
+      }
+
+      function onListClick(ev) {
+        if (suppressClick) { suppressClick = false; return; }
+        var more = ev.target.closest("[data-more-item]");
+        if (more) { onRowMore(more); return; }
+        var plus = ev.target.closest("[data-plus-item]");
+        if (plus) { openMemberMenu(plus.getAttribute("data-plus-item"), plus); return; }
+        var chip = ev.target.closest("[data-q-item]");
+        if (!chip || chip.getAttribute("aria-busy") === "true") return;
+        var current = chip.getAttribute("data-role") || "";
+        var next = current === "R" ? "S" : current === "S" ? "" : "R";   /* الدورة القائمة: مسؤول ← مساند ← بلا دور */
+        setRole(chip.getAttribute("data-q-item"), chip.getAttribute("data-q-user"), next, chip);
+      }
+
+      function onRowMore(btn) {
+        var id = btn.getAttribute("data-more-item"), detail = $("wr-detail-" + id), it = workById(id);
+        if (!detail || !it) return;
+        var open = detail.hidden;
+        if (open && detail.dataset.built !== "1") { detail.innerHTML = buildDetail(it); detail.dataset.built = "1"; }
+        detail.hidden = !open;
+        btn.setAttribute("aria-expanded", open ? "true" : "false");
+        if (open) openRows[id] = true; else delete openRows[id];
+      }
+
+      /* القائمة المعتمة: الكلمات الخمس لعضو، أو الأعضاء بلا دور (زر ＋ على الجوال) */
+      function closeRoleMenu() {
+        if (!roleMenu) return;
+        var anchor = menuAnchor;
+        roleMenu.remove(); roleMenu = null; menuAnchor = null;
+        document.removeEventListener("click", onDocClickAway, true);
+        document.removeEventListener("keydown", onMenuKey, true);
+        if (anchor && document.body.contains(anchor)) { try { anchor.focus(); } catch (e) { /* تجاهل */ } }
+      }
+      function onDocClickAway(ev) { if (roleMenu && !roleMenu.contains(ev.target) && ev.target !== menuAnchor) closeRoleMenu(); }
+      function onMenuKey(ev) {
+        if (!roleMenu) return;
+        if (ev.key === "Escape") { ev.preventDefault(); closeRoleMenu(); return; }
+        if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
+          var items = [].slice.call(roleMenu.querySelectorAll("button")), i = items.indexOf(document.activeElement);
+          if (!items.length) return;
+          ev.preventDefault();
+          var n = ev.key === "ArrowDown" ? (i + 1) % items.length : (i - 1 + items.length) % items.length;
+          items[n].focus();
+        }
+      }
+      function mountMenu(anchor, label, inner) {
+        closeRoleMenu();
+        var host = anchor.closest(".wr-pills") || anchor.parentNode;
+        roleMenu = document.createElement("div");
+        roleMenu.className = "role-menu"; roleMenu.setAttribute("role", "menu"); roleMenu.setAttribute("aria-label", label);
+        roleMenu.innerHTML = inner;
+        host.appendChild(roleMenu);
+        menuAnchor = anchor;
+        var first = roleMenu.querySelector("button"); if (first) first.focus();
+        setTimeout(function () {
+          document.addEventListener("click", onDocClickAway, true);
+          document.addEventListener("keydown", onMenuKey, true);
+        }, 0);
+      }
+      function openRoleMenu(itemId, userId, anchor) {
+        var name = nameOf(userId);
+        var inner = '<div class="role-menu-title">' + esc(name) + "</div>" +
+          ["R", "A", "S", "I", ""].map(function (r) {
+            return '<button type="button" role="menuitem" data-menu-role="' + r + '">' + (r ? '<i class="rasi-dot is-' + r + '"></i>' : "") + esc(r ? roleWord(r) : t("rasiWordNone")) + "</button>";
+          }).join("");
+        mountMenu(anchor, tf("wrRoleFor", { name: name }), inner);
+        roleMenu.addEventListener("click", function (ev) {
+          var b = ev.target.closest("[data-menu-role]"); if (!b) return;
+          var role = b.getAttribute("data-menu-role");
+          closeRoleMenu();
+          setRole(itemId, userId, role, anchor);
+        });
+      }
+      function openMemberMenu(itemId, anchor) {
+        var it = workById(itemId); if (!it) return;
+        var free = activeMembers().filter(function (m) { return !roleOf(it, m.user_id); });
+        var inner = '<div class="role-menu-title">' + esc(t("wrAddMember")) + "</div>" +
+          free.map(function (m) { return '<button type="button" role="menuitem" data-menu-user="' + esc(m.user_id) + '">' + esc(memberName(m)) + "</button>"; }).join("");
+        mountMenu(anchor, t("wrAddMember"), inner);
+        roleMenu.addEventListener("click", function (ev) {
+          var b = ev.target.closest("[data-menu-user]"); if (!b) return;
+          openRoleMenu(itemId, b.getAttribute("data-menu-user"), anchor);
+        });
+      }
+      function onListContext(ev) {
+        var chip = ev.target.closest("[data-q-item]"); if (!chip) return;
+        ev.preventDefault();
+        openRoleMenu(chip.getAttribute("data-q-item"), chip.getAttribute("data-q-user"), chip);
+      }
+      var pressStart = null;
+      function onListPointerDown(ev) {
+        var chip = ev.target.closest("[data-q-item]"); if (!chip) return;
+        pressStart = { x: ev.clientX, y: ev.clientY };
+        clearTimeout(pressTimer);
+        pressTimer = setTimeout(function () {
+          suppressClick = true;
+          openRoleMenu(chip.getAttribute("data-q-item"), chip.getAttribute("data-q-user"), chip);
+        }, 500);
+      }
+      function onListPointerMove(ev) {
+        if (!pressStart) return;
+        if (Math.abs(ev.clientX - pressStart.x) > 8 || Math.abs(ev.clientY - pressStart.y) > 8) { clearTimeout(pressTimer); pressStart = null; }
+      }
+      function onListPointerEnd() { clearTimeout(pressTimer); pressStart = null; }
+      function onListKey(ev) {
+        var chip = ev.target.closest("[data-q-item]"); if (!chip) return;
+        if (ev.key === "ArrowDown" || ev.key === "ContextMenu" || (ev.shiftKey && ev.key === "F10")) {
+          ev.preventDefault();
+          openRoleMenu(chip.getAttribute("data-q-item"), chip.getAttribute("data-q-user"), chip);
+        }
       }
 
       function renderRasi() {
@@ -673,44 +886,58 @@
         if (!card) return;
         show("rasiCard", state.loaded && state.workLoaded);
         if (!state.loaded || !state.workLoaded) return;
-        renderQuick();
-        var members = state.members.filter(function (m) { return m.status === "active"; });
-        var rows = rasiRows();
-        var table = $("rasiTable");
         var placeholder = $("rasiSearch"); if (placeholder) placeholder.placeholder = t("rasiSearch");
-        if (!members.length) { table.tHead.innerHTML = ""; table.tBodies[0].innerHTML = ""; $("rasiEmpty").textContent = t("rasiNoMembers"); show("rasiEmpty", true); return; }
-        if (!rows.length) { table.tHead.innerHTML = ""; table.tBodies[0].innerHTML = ""; $("rasiEmpty").textContent = t("rasiEmpty"); show("rasiEmpty", true); return; }
-        show("rasiEmpty", false);
+        renderQuickAddMembers();
+        renderStrip();
+        renderRows();
+        renderMatrix();
+        syncMatrixToggle();
+      }
+
+      function syncMatrixToggle() {
+        var btn = $("rasiToggle"), wrap = $("rasiMatrixWrap");
+        if (!btn || !wrap) return;
+        var word = t(wrap.hidden ? "rasiShowMatrix" : "rasiHideMatrix");
+        btn.setAttribute("aria-expanded", wrap.hidden ? "false" : "true");
+        if (btn.title !== word) { btn.title = word; btn.setAttribute("aria-label", word); }
+      }
+
+      function markMatrixDirty() {
+        state.matrixDirty = true;
+        var wrap = $("rasiMatrixWrap");
+        if (wrap && !wrap.hidden) renderMatrix();
+      }
+
+      /* المصفوفة الكاملة: ترسم فقط وهي مفتوحة وعند تغير ما تعرضه */
+      function renderMatrix() {
+        var table = $("rasiTable"), wrap = $("rasiMatrixWrap");
+        if (!table || !wrap) return;
+        if (wrap.hidden) { state.matrixDirty = true; return; }
+        var members = activeMembers();
+        var rows = rasiRows();
+        var sig = [app && app.lang ? app.lang() : "", state.filterUser, ($("rasiSearch") || {}).value || "",
+                   rows.map(function (it) { return it.id + ":" + JSON.stringify(state.roles[it.id] || {}) + ":" + (it.assignee_id || ""); }).join(","), membersSig()].join("|");
+        if (sig === lastMatrixSig && !state.matrixDirty) return;
+        if (!members.length || !rows.length) { table.tHead.innerHTML = ""; table.tBodies[0].innerHTML = ""; lastMatrixSig = sig; state.matrixDirty = false; return; }
         table.tHead.innerHTML = "<tr><th>" + esc(t("rasiItemCol")) + "</th>" +
           members.map(function (m) { return "<th>" + esc(memberName(m)) + "</th>"; }).join("") + "</tr>";
         table.tBodies[0].innerHTML = rows.map(function (it) {
           var meta = [shownNumber(it), it.due_at ? fmtDate(it.due_at) : ""].filter(Boolean).join(" · ");
           var cells = members.map(function (m) {
-            var role = (state.roles[it.id] || {})[m.user_id] || "";
+            var role = roleOf(it, m.user_id);
             var word = roleWord(role);
             return '<td><button type="button" class="rasi-cell' + (role ? " is-" + role : "") + '" data-rasi-item="' + esc(it.id) + '" data-rasi-user="' + esc(m.user_id) + '" title="' + esc(t("rasiDragHint")) + '" aria-label="' + esc(memberName(m) + (word ? " — " + word : "")) + '">' + esc(word || "—") + "</button></td>";
           }).join("");
           return '<tr><td><div class="rasi-item"><strong>' + esc(it.title || "-") + "</strong>" + (meta ? "<small>" + esc(meta) + "</small>" : "") + "</div></td>" + cells + "</tr>";
         }).join("");
+        lastMatrixSig = sig; state.matrixDirty = false;
       }
 
       /* ---------- الأدوار بالنقر: يختار الحرف مرة ثم تنقر الخلايا ---------- */
       var armedRole = null;
 
-      function applyRole(itemId, userId, role, cell) {
-        if (cell) cell.disabled = true;
-        return app.setItemRole(itemId, userId, role || null).then(function () {
-          var row = state.roles[itemId] = state.roles[itemId] || {};
-          /* معتمد واحد لكل عنصر: من يأخذ A يزيح من قبله */
-          if (role === "A") Object.keys(row).forEach(function (u) { if (row[u] === "A" && u !== userId) delete row[u]; });
-          if (role) row[userId] = role; else delete row[userId];
-          renderRasi();
-          toast(t("rasiDropped"), "success");
-        }).catch(function (err) {
-          if (cell) cell.disabled = false;
-          toast(errorMessage(err), "error");
-        });
-      }
+      /* المصفوفة تكتب من المكان نفسه الذي تكتب منه الصفوف */
+      function applyRole(itemId, userId, role, cell) { return setRole(itemId, userId, role || "", cell); }
 
       function setArmed(role) {
         armedRole = role;
@@ -762,9 +989,10 @@
         renderCapacity();
         renderMembers();
         renderInvite();
-        renderWorkload();
+        /* التركيز يعود إلى الشريحة نفسها بعد إعادة الرسم */
+        var f = document.activeElement, fk = f && f.getAttribute && f.getAttribute("data-q-item") ? [f.getAttribute("data-q-item"), f.getAttribute("data-q-user")] : null;
         renderRasi();
-        show("chatLinkCard", state.loaded);
+        if (fk) { var again = $("quickList").querySelector('[data-q-item="' + fk[0] + '"][data-q-user="' + fk[1] + '"]'); if (again) { try { again.focus(); } catch (e) { /* تجاهل */ } } }
       }
 
       function loadAll() {
@@ -791,7 +1019,6 @@
         show("inviteCard", false);
         show("workloadCard", false);
         show("rasiCard", false);
-        show("chatLinkCard", false);
         show("noOrgCard", false);
         show("unavailableCard", true);
       }
@@ -801,7 +1028,6 @@
         show("inviteCard", false);
         show("workloadCard", false);
         show("rasiCard", false);
-        show("chatLinkCard", false);
         show("unavailableCard", false);
         show("noOrgCard", true);
       }
@@ -871,17 +1097,26 @@
               .then(function () { btn.disabled = false; });
           });
         });
-        $("wlBoard").addEventListener("change", onAssignChange);
-        $("wlBoard").addEventListener("click", onDotClick);
+        $("wlBoard").addEventListener("click", onStripClick);
         wireRasi();
-        $("rasiSearch").addEventListener("input", function () { renderRasi(); });
-        $("quickList").addEventListener("click", onQuickClick);
+        $("rasiSearch").addEventListener("input", function () { renderRows(); markMatrixDirty(); });
+        var list = $("quickList");
+        list.addEventListener("click", onListClick);
+        list.addEventListener("change", onAssignChange);
+        list.addEventListener("contextmenu", onListContext);
+        list.addEventListener("pointerdown", onListPointerDown);
+        list.addEventListener("pointermove", onListPointerMove);
+        list.addEventListener("pointerup", onListPointerEnd);
+        list.addEventListener("pointercancel", onListPointerEnd);
+        list.addEventListener("pointerleave", onListPointerEnd);
+        list.addEventListener("keydown", onListKey);
         $("quickAddForm").addEventListener("submit", onQuickAdd);
         $("quickParentBtn").addEventListener("click", onQuickParent);
         $("rasiToggle").addEventListener("click", function () {
           var wrap = $("rasiMatrixWrap");
           wrap.hidden = !wrap.hidden;
-          $("rasiToggle").textContent = t(wrap.hidden ? "rasiShowMatrix" : "rasiHideMatrix");
+          syncMatrixToggle();
+          if (!wrap.hidden) renderMatrix();
         });
       function chatColumns() {
         return [

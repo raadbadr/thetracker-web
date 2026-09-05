@@ -18,7 +18,7 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Monoton&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/header.css">
   <link rel="stylesheet" href="/footer.css?v=3">
-  <link rel="stylesheet" href="/app/team.css?v=1">
+  <link rel="stylesheet" href="/app/team.css?v=2">
 </head>
 <body class="has-site-header">
   <header class="site-header">
@@ -118,36 +118,19 @@
     </div>
 
     <!-- توزيع الأعمال بين الأعضاء -->
-    <div class="content" id="workloadCard" hidden>
-      <h2 data-i18n="workloadTitle">توزيع الأعمال</h2>
-      <p data-i18n="workloadIntro">اسحب العمل إلى العضو.</p>
-      <div class="wl-board" id="wlBoard"></div>
-    </div>
-
-    <!-- مصفوفة RASI: أدوار الأعضاء على كل عنصر -->
+    <!-- بطاقة العمل الواحدة: شريط الأعضاء، الإدخال السريع، صف لكل عمل، والمصفوفة الكاملة -->
     <div class="content" id="rasiCard" hidden>
-      <h2 data-i18n="rasiTitle">مصفوفة RASI</h2>
-      <p data-i18n="rasiIntro">لكل قضية أو مخالفة أو مهمة: من ينفذها، ومن يعتمدها ويتحمل مسؤوليتها (واحد فقط)، ومن يساندها، ومن يبلغ بها. اختر الدور ثم انقر الخانة، ويصل صاحبه تنبيه فورا.</p>
-      <!-- الدور بكلمته الكاملة: لا حروف ولا اختصارات في أي مكان -->
-      <div class="rasi-legend">
-        <span><i class="rasi-dot is-R"></i> <span data-i18n="rasiLegendR">المنفذ المسؤول</span></span>
-        <span><i class="rasi-dot is-A"></i> <span data-i18n="rasiLegendA">المعتمد والمساءل</span></span>
-        <span><i class="rasi-dot is-S"></i> <span data-i18n="rasiLegendS">المساند</span></span>
-        <span><i class="rasi-dot is-I"></i> <span data-i18n="rasiLegendI">المبلغ</span></span>
+      <div class="wr-head-row">
+        <h2 data-i18n="workloadTitle">توزيع الأعمال</h2>
+        <div class="wr-tools"><input type="search" class="waitlist-input" id="rasiSearch" placeholder="ابحث بالعنوان أو الرقم" autocomplete="off" dir="auto"></div>
       </div>
+      <section id="workloadCard" class="wl-strip-wrap" hidden>
+        <p class="settings-note" data-i18n="workloadIntro">انقر اسم العضو لعرض أعماله وحدها، ونقرة ثانية تعرض الكل.</p>
+        <div class="wl-strip" id="wlBoard" role="group"></div>
+      </section>
 
-      <!-- يختار الدور بكلمته ثم تنقر الخانة -->
-      <div class="rasi-palette" id="rasiPalette" role="group">
-        <button type="button" class="rasi-chip is-R" data-role="R" draggable="false" data-i18n="rasiWordR">مسؤول</button>
-        <button type="button" class="rasi-chip is-A" data-role="A" draggable="false" data-i18n="rasiWordA">معتمد</button>
-        <button type="button" class="rasi-chip is-S" data-role="S" draggable="false" data-i18n="rasiWordS">مساند</button>
-        <button type="button" class="rasi-chip is-I" data-role="I" draggable="false" data-i18n="rasiWordI">مطلع</button>
-        <button type="button" class="rasi-chip is-clear" data-role="" draggable="false" data-i18n="rasiWordNone">بلا دور</button>
-      </div>
-
-      <!-- التوزيع السريع: ضغطة على اسم العضو تكفي -->
       <h3 class="invite-block-title" data-i18n="quickAddTitle">إدخال سريع</h3>
-      <p class="settings-note" data-i18n="quickAddHint">اكتب المهمة كما تقولها: «جلسة القضية 4521 لشركة الأبراج الأحد 10 صباحا لأحمد» — يفهم النوع والموعد والعميل ورقم الدعوى ومن ينفذ، ويسجل ويوزع بضغطة واحدة.</p>
+      <p class="settings-note" data-i18n="quickAddHint">اكتب المهمة بصيغة واحدة: «جلسة القضية 4521 لشركة الأبراج الأحد 10 صباحا لأحمد» — يستخرج النظام النوع والموعد والعميل ورقم الدعوى والمنفذ، ويسجل ويوزع بنقرة واحدة.</p>
       <form class="invite-row quick-add" id="quickAddForm" novalidate>
         <input type="text" class="waitlist-input" id="quickAddText" maxlength="500" autocomplete="off" placeholder="اكتب المهمة ومن ينفذها وموعدها…" dir="auto">
         <select class="waitlist-input" id="quickAddMember" aria-label="المنفذ"></select>
@@ -160,14 +143,31 @@
       <p class="waitlist-msg" id="quickAddMsg" role="status" aria-live="polite" hidden></p>
 
       <h3 class="invite-block-title" data-i18n="quickTitle">توزيع سريع</h3>
-      <p class="settings-note" data-i18n="quickHint">اضغط اسم العضو على العنصر: ضغطة واحدة تجعله المسؤول وتجعلك المعتمد تلقائيا، وضغطة ثانية تجعله مساندا، وثالثة تزيل الدور.</p>
-      <div class="user-list" id="quickList"></div>
+      <p class="settings-note" data-i18n="quickHint">انقر اسم العضو على العمل: نقرة واحدة تجعله المسؤول وتجعلك المعتمد تلقائيا، ونقرة ثانية تجعله مساندا، وثالثة تزيل الدور. والضغط المطول أو النقر بالزر الأيمن على الاسم يفتح قائمة الأدوار كلها، والسهم في آخر الصف يفتح التفاصيل.</p>
+      <!-- الدور بكلمته الكاملة: لا حروف ولا اختصارات في أي مكان -->
+      <div class="rasi-legend">
+        <span><i class="rasi-dot is-R"></i> <span data-i18n="rasiLegendR">مسؤول — ينفذ العمل</span></span>
+        <span><i class="rasi-dot is-A"></i> <span data-i18n="rasiLegendA">معتمد — يعتمد ويسأل عنه (واحد فقط)</span></span>
+        <span><i class="rasi-dot is-S"></i> <span data-i18n="rasiLegendS">مساند — يعين المسؤول</span></span>
+        <span><i class="rasi-dot is-I"></i> <span data-i18n="rasiLegendI">مطلع — يبلغ فقط</span></span>
+      </div>
+      <div class="wr-list" id="quickList" role="list"></div>
+      <div class="wl-empty" id="wlEmpty" data-i18n="unassignedEmpty" hidden>كل الأعمال مسندة.</div>
       <p class="waitlist-msg" id="rasiEmpty" data-i18n="rasiEmpty" hidden>لا عناصر مفتوحة لعرضها.</p>
 
-      <div class="chat-options"><button type="button" class="chat-option-btn" id="rasiToggle" data-i18n="rasiShowMatrix">عرض المصفوفة الكاملة</button></div>
+      <div class="wr-head-row">
+        <h2 data-i18n="rasiTitle">مصفوفة الأدوار</h2>
+        <button type="button" class="chat-option-btn icon-only" id="rasiToggle" aria-expanded="false" aria-controls="rasiMatrixWrap" title="عرض المصفوفة الكاملة" aria-label="عرض المصفوفة الكاملة"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z"/></svg></button>
+      </div>
+      <p class="settings-note" data-i18n="rasiIntro">لكل قضية أو مخالفة أو مهمة: من ينفذها، ومن يعتمدها ويتحمل مسؤوليتها (واحد فقط)، ومن يساندها، ومن يبلغ بها. أيقونة الشبكة بجانب العنوان تفتح الجدول الكامل: اختر الدور ثم انقر الخانة، ويصل صاحبه تنبيه فورا.</p>
       <div id="rasiMatrixWrap" hidden>
-        <div class="rasi-tools">
-          <input type="search" class="waitlist-input" id="rasiSearch" placeholder="ابحث بالعنوان أو الرقم" autocomplete="off" dir="auto">
+        <!-- يختار الدور بكلمته ثم تنقر الخانة -->
+        <div class="rasi-palette" id="rasiPalette" role="group">
+          <button type="button" class="rasi-chip is-R" data-role="R" draggable="false" data-i18n="rasiWordR">مسؤول</button>
+          <button type="button" class="rasi-chip is-A" data-role="A" draggable="false" data-i18n="rasiWordA">معتمد</button>
+          <button type="button" class="rasi-chip is-S" data-role="S" draggable="false" data-i18n="rasiWordS">مساند</button>
+          <button type="button" class="rasi-chip is-I" data-role="I" draggable="false" data-i18n="rasiWordI">مطلع</button>
+          <button type="button" class="rasi-chip is-clear" data-role="" draggable="false" data-i18n="rasiWordNone">بلا دور</button>
         </div>
         <div class="rasi-wrap"><table class="rasi-table" id="rasiTable"><thead></thead><tbody></tbody></table></div>
       </div>
@@ -232,13 +232,13 @@
     </p>
   </footer>
 
-  <script src="/app/team.1.js?v=1"></script>
+  <script src="/app/team.1.js?v=2"></script>
   <script src="/app/team.2.js?v=1"></script>
-  <script src="/app/team.3.js?v=1"></script>
+  <script src="/app/team.3.js?v=2"></script>
   <script src="/app/team.4.js?v=1"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 <script src="/app.js?v=4" defer></script>
-<script src="/app/common.js?v=23" defer></script>
+<script src="/app/common.js?v=24" defer></script>
 <script src="/brand-logo.js?v=4" defer></script>
 </body>
 </html>

@@ -7,7 +7,7 @@
     return run(function (client) {
       var orgId = requireOrg();
       return client.from("items")
-        .select("id,item_number,title,category,due_at,status,assignee_id")
+        .select("id,item_number,title,category,due_at,status,assignee_id,case_number,client_name,violation_number:data->>violation_number,doc_number:data->>number")
         .eq("org_id", orgId)
         .order("due_at", { ascending: true, nullsFirst: false })
         .limit(1000)
