@@ -429,7 +429,24 @@ async function readTelegramDocument(env, media, name, mime) {
 }
 
 /** الرسالة (نص/صوت/ملف) ← نية ← بحث فوري، أو عرض فعل بزري تأكيد، أو جواب المساعد */
-const ADD_VERBS = /(أضف|اضف|ضيف|سجل|سجّل|أنشئ|انشئ|اعمل|سوي|سو |افتح قضية|افتح مخالفة|add|create|new task|register)/i;
+const ADD_VERBS = /(أضف|اضف|ضيف|سجل|أنشئ|انشئ|اعمل|سوي|سو |افتح قضية|افتح مخالفة|add|create|new task|register)/i;
+/* بوابة أخيرة قبل أي إرسال: لا أسماء حقول ولا JSON ولا معرفات داخلية ولا مصطلحات تقنية تصل إلى المستخدم */
+const HUMANIZE_EMPTY = { ar: "لم أفهم الطلب، أعد صياغته بكلمات أخرى.", en: "I did not understand, please rephrase.", fr: "Je n'ai pas compris, reformulez.", ur: "سمجھ نہیں آیا، دوبارہ لکھیں۔" };
+function humanize(text, lang) {
+  let t = String(text || "");
+  t = t.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, "");
+  const lines = t.split("\n").filter((line) => {
+    const l = line.trim();
+    if (!l) return true;
+    if (/[{}\[\]]/.test(l) && /["':]/.test(l)) return false;                 /* JSON أو مصفوفات */
+    if (/\b[a-z]+_[a-z_]+\b/.test(l)) return false;                          /* أسماء حقول snake_case */
+    if (/ISO ?8601|null|undefined|uuid|jsonb|rpc|sql|payload|schema/i.test(l)) return false;
+    if (/^(missing|none|n\/a)\b/i.test(l)) return false;
+    return true;
+  });
+  t = lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+  return t || (HUMANIZE_EMPTY[lang] || HUMANIZE_EMPTY.ar);
+}
 function sanitizeIntentItem(item, text) {
   const out = {};
   const arabicMsg = /[\u0600-\u06FF]/.test(text || "");
@@ -456,8 +473,9 @@ async function smartReply(env, chatId, userId, text, lang, tgName, attachment, p
     let quick = null;
     try { quick = await quickAnswer(env, { chatId, userId, text, lang }); } catch {}
     if (quick && quick.text) {
-      try { await sendTelegram(env, chatId, pre + quick.text, menuKeyboard(lang)); } catch {}
-      await logBotReply(env, chatId, userId, quick.text);
+      const quickText = humanize(quick.text, lang);
+      try { await sendTelegram(env, chatId, pre + quickText, menuKeyboard(lang)); } catch {}
+      await logBotReply(env, chatId, userId, quickText);
       return;
     }
   }
@@ -473,7 +491,7 @@ async function smartReply(env, chatId, userId, text, lang, tgName, attachment, p
       catch { intent.action = "question"; }
     }
     if (intent.action !== "question") {
-      try { await sendTelegram(env, chatId, pre + describeAction(lang, intent, userTimeZone), actionButtons(lang)); } catch {}
+      try { await sendTelegram(env, chatId, pre + humanize(describeAction(lang, intent, userTimeZone), lang), actionButtons(lang)); } catch {}
       return;
     }
   }
@@ -485,8 +503,9 @@ async function smartReply(env, chatId, userId, text, lang, tgName, attachment, p
     agent = await agentReply(env, { chatId, userId, text, lang, name: tgName, orgName: (target && target.org_name) || "", attachment, userTimeZone });
   } catch (e) { console.log("agent failed", String(e && e.message || e).slice(0, 200)); agent = null; }
   if (agent && agent.text) {
-    try { await sendTelegram(env, chatId, pre + agent.text, menuKeyboard(lang)); } catch {}
-    await logBotReply(env, chatId, userId, agent.text);
+    const agentText = humanize(agent.text, lang);
+    try { await sendTelegram(env, chatId, pre + agentText, menuKeyboard(lang)); } catch {}
+    await logBotReply(env, chatId, userId, agentText);
     return;
   }
   if (intent.action === "search" && intent.query) {
@@ -498,6 +517,7 @@ async function smartReply(env, chatId, userId, text, lang, tgName, attachment, p
   let reply = null;
   try { reply = await telegramAssistantReply(env, chatId, userId, text, attachment); } catch {}
   if (!reply) reply = attachment ? b.fileUnreadable : channelText(lang).alreadyLinked(tgName);
+  reply = humanize(reply, lang);
   try { await sendTelegram(env, chatId, pre + reply, menuKeyboard(lang)); } catch {}
   await logBotReply(env, chatId, userId, reply);
 }
