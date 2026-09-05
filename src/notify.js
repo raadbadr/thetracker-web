@@ -206,7 +206,8 @@ export function formatItems(lang, rows, title, emptyText, userTimeZone, userHour
       return `${i + 1}. ${r.title || ""}${num}\n   ${issued}${r.due_at ? `${words[2]} ${dmy(r.due_at)}` : "-"}`;
     }
     const who = r.client_name ? ` — ${r.client_name}` : "";
-    const num = r.case_number ? ` (${r.case_number})` : "";
+    const caseNo = String(r.case_number || "").trim();
+    const num = /[\p{L}\p{N}]/u.test(caseNo) ? ` (${caseNo})` : ""; /* شرطة أو فراغ من الاستيراد ليست رقما */
     const tr = r.tracker_name ? ` · ${r.tracker_name}` : "";
     return `${i + 1}. ${r.title || ""}${who}${num}\n   ${r.due_at ? fmtDue(r.due_at, userTimeZone, userHour12) : "-"}${tr}`;
   });

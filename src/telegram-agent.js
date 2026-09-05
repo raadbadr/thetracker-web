@@ -7,6 +7,29 @@ const MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const LANG_NAMES = { ar: "العربية الفصحى", en: "English", fr: "français", ur: "اردو" };
 const AGENT_TOOLS = TOOLS.filter((t) => ["tracker_company", "tracker_items", "tracker_search", "tracker_list", "tracker_add", "tracker_complete", "tracker_assign", "tracker_team", "tracker_remind", "tracker_expenses"].includes(t.name));
 
+/* أفعال الكتابة: لا تنفذ بلا طلب صريح في رسالة المستخدم نفسها، ثم لا تنفذ إلا بعد تأكيده بزر.
+   كلمات المجاملة (أحسنت، شكرا…) ليست أوامر — هذا ما أقفل مخالفة بالخطأ ذات مرة. */
+export const VERBS = {
+  add: /(أضف|اضف|ضيف|سجل|سجّل|أنشئ|انشئ|اعمل|سوي|سو |افتح قضية|افتح مخالفة|add|create|new task|register|ajoute|enregistre|شامل کر|درج کر)/i,
+  done: /(أنجزت|انجزت|أنجزنا|انجزنا|تم إنجاز|تم انجاز|تم إنهاء|تم انهاء|أنهيت|انهيت|أنهينا|انهينا|أقفل|اقفل|أغلق|اغلق|إقفال|اقفال|إغلاق|اغلاق|خلصت|خلصنا|انتهت|انتهى|انتهينا|اعتبرها منجزة|اعتبره منجزا|كمنجز|منجزة|سددت|سُددت|دفعنا|دفعت|تم الدفع|تم السداد|\bdone\b|complete|finish|\bclose|paid|termin|clôtur|مکمل|ختم کر)/i,
+  assign: /(أسند|اسند|إسناد|اسناد|كلف|كلّف|تكليف|حوّل|حول|عيّن|عين|assign|delegate|hand (?:it )?to|attribue|confie|تفویض|سونپ)/i,
+  remind: /(ذكرني|ذكّرني|ذكرنا|نبهني|نبّهني|تذكير|تنبيه|remind|reminder|rappel|یاد دہانی|یاد دلا)/i,
+};
+const WRITE_TOOLS = { tracker_add: "add", tracker_complete: "done", tracker_assign: "assign" };
+/* يحكم نداء أداة كتابة: ممنوع بلا فعل صريح، وإلا يتحول إلى نية تنتظر تأكيد المستخدم بزر (لا تنفيذ هنا) */
+export function writeGate(name, args, text) {
+  const action = WRITE_TOOLS[name] || (name === "tracker_remind" ? "remind" : null);
+  if (!action) return { allow: true };
+  if (!VERBS[action].test(String(text || ""))) return { blocked: true, reason: "لم يطلب المستخدم هذا الإجراء في رسالته؛ لا تنفذه ولا تقترحه. أجب على رسالته كما هي (إن كانت مجاملة أو شكرا فرد بجملة قصيرة)." };
+  if (action === "remind") return { allow: true };
+  const a = args && typeof args === "object" ? args : {};
+  if (action === "done") return { pending: { action: "done", query: String(a.query || ""), item_id: a.item_id || null } };
+  if (action === "assign") return { pending: { action: "assign", query: String(a.query || ""), member: String(a.member || "") } };
+  const item = {};
+  for (const k of ["kind", "title", "client_name", "case_number", "violation_number", "amount", "due_at", "location", "notes", "category", "parent_id"]) if (a[k] != null && a[k] !== "") item[k] = a[k];
+  return { pending: { action: "add", item } };
+}
+
 function systemPrompt(ctx) {
   const lang = ctx.lang || "ar";
   return [
@@ -23,6 +46,7 @@ function systemPrompt(ctx) {
     `صيغة الرد: مختصرة جدا وبلغة إنسان. للقوائم سطر لكل عنصر بلا مقدمة ولا خاتمة، منسوخ من نص الأداة كما هو: الورقة الرسمية «نوعها — رقمها — إصدار يوم-شهر-سنة — ينتهي يوم-شهر-سنة»، والقضية أو المخالفة أو المهمة «العنوان — قضية/مخالفة رقم … — العميل — الموعد». الرقم الوحيد الذي يظهر هو رقم الورقة أو القضية أو المخالفة كما هو مسجل؛ أي رمز يبدأ بـ ITM أو ORG أو USR ممنوع. التواريخ يوم-شهر-سنة (مثل 31-10-2026) بلا وقت إلا إن كان موعدا بساعة. إن لم يوجد شيء فجملة واحدة. للأسئلة: الجواب فقط. لا شرح لما فعلت ولا ذكر لأسماء الأدوات.`,
     `لكل سؤال عن بياناته (قضايا، مخالفات، مهام، مواعيد، متأخر، عميل، رقم) استعمل الأدوات ولا تخمن ولا تختلق. tracker_list للمواعيد القادمة والمتأخرة، tracker_search للبحث بأي كلمة أو رقم.`,
     `حين يطلب إضافة أو إنجاز أو إسناد بصيغة واضحة نفذ بالأداة مباشرة ثم أخبره بما تم بعنوان العنصر (لا برقمه القياسي). إن كانت المهمة بلا قضية أو مخالفة تنتمي إليها فاعرض المرشحين الذين تعيدهم الأداة واطلب اختيار واحد. إن كان الطلب غامضا اسأل سؤالا واحدا قصيرا.`,
+    `الإنجاز والإضافة والإسناد لا تكون إلا بطلب صريح في رسالة المستخدم الحالية (أنجزت، أقفل، أضف، أسند…)، ولا ينفذ شيء قبل أن يؤكد بزر. كلمات المجاملة والتعليق (أحسنت، شكرا، ممتاز، تمام) ليست أوامر: رد عليها بجملة قصيرة فقط ولا تلمس أي عنصر.`,
     `لا تقل أبدا إنك تنتظر تفعيل أدوات أو دمجا تقنيا: الأدوات متاحة لك الآن. لا تخرج عن مواضيع تراكر إلا بتحية قصيرة أو توضيح.`,
     `لوحة التحكم: https://appmails.net/app/dashboard.html — المستندات: https://appmails.net/app/documents.html`,
     ctx.attachment ? `أرسل المستخدم الآن ملفا/صورة: «${ctx.attachment.name || ""}». محتواه المقروء:\n${String(ctx.attachment.content || "").slice(0, 6000)}` : "",
@@ -140,7 +164,10 @@ export async function agentReply(env, ctx) {
       const c = calls[i];
       let out;
       if (c.args && typeof c.args === "object") delete c.args.telegram_user_id; /* الهوية من الربط لا من النموذج */
-      try { out = await callTool(c.name, c.args, toolCtx); } catch (e) { out = { content: [{ type: "text", text: "tool error: " + String(e && e.message || e).slice(0, 200) }], isError: true }; }
+      const gate = writeGate(c.name, c.args, ctx.text);
+      if (gate.pending) { console.log("agent: pending", c.name, JSON.stringify(c.args).slice(0, 200)); return { text: "", pending: gate.pending, tools: toolsUsed.concat(c.name) }; }
+      if (gate.blocked) { console.log("agent: blocked", c.name, JSON.stringify(c.args).slice(0, 200)); out = { content: [{ type: "text", text: gate.reason }], isError: true }; }
+      else try { out = await callTool(c.name, c.args, toolCtx); } catch (e) { out = { content: [{ type: "text", text: "tool error: " + String(e && e.message || e).slice(0, 200) }], isError: true }; }
       toolsUsed.push(c.name);
       console.log("agent: tool", c.name, JSON.stringify(c.args).slice(0, 200), "→", (out && out.isError) ? "error" : "ok");
       const stripInternal = (v) => { if (Array.isArray(v)) return v.map(stripInternal); if (v && typeof v === "object") { const o = {}; for (const k of Object.keys(v)) if (k !== "item_number" && k !== "org_id" && k !== "user_id") o[k] = stripInternal(v[k]); return o; } return v; };

@@ -8,7 +8,7 @@ import { handleAssistantRequest, askAssistant } from "./assistant.js";
 import { handleTranslate } from "./translate.js";
 import { serveBundle } from "./bundles.js";
 import { handleMcp } from "./mcp.js";
-import { agentReply, quickAnswer } from "./telegram-agent.js";
+import { agentReply, quickAnswer, VERBS } from "./telegram-agent.js";
 import { handleCalendar } from "./calendar.js";
 import { handleDocumentAnalyze } from "./documents.js";
 import { runNotificationCron, linkChannelByCode, notifyTarget, sendTelegram, sendWhatsapp, sendSms, sendEmail, rpc, t as channelText,
@@ -451,7 +451,7 @@ async function readTelegramDocument(env, media, name, mime) {
 }
 
 /** الرسالة (نص/صوت/ملف) ← نية ← بحث فوري، أو عرض فعل بزري تأكيد، أو جواب المساعد */
-const ADD_VERBS = /(أضف|اضف|ضيف|سجل|أنشئ|انشئ|اعمل|سوي|سو |افتح قضية|افتح مخالفة|add|create|new task|register)/i;
+const ADD_VERBS = VERBS.add;
 /* بوابة أخيرة قبل أي إرسال: لا أسماء حقول ولا JSON ولا معرفات داخلية ولا مصطلحات تقنية تصل إلى المستخدم */
 const HUMANIZE_EMPTY = { ar: "لم أفهم الطلب، أعد صياغته بكلمات أخرى.", en: "I did not understand, please rephrase.", fr: "Je n'ai pas compris, reformulez.", ur: "سمجھ نہیں آیا، دوبارہ لکھیں۔" };
 function humanize(text, lang) {
@@ -489,6 +489,16 @@ function sanitizeIntentItem(item, text) {
   return out;
 }
 
+/* كل كتابة تمر من هنا: مسودة في القاعدة + وصف ما سيحدث + زرا تأكيد/إلغاء؛ التنفيذ في act:y فقط */
+async function askToConfirm(env, chatId, userId, intent, lang, pre, userTimeZone) {
+  try { await rpc(env, "telegram_draft_put", { p_secret: env.WORKER_SECRET, p_chat_id: String(chatId), p_user_id: userId, p_payload: { type: "action", intent } }); }
+  catch { return false; }
+  const ask = humanize(describeAction(lang, intent, userTimeZone), lang);
+  try { await sendTelegram(env, chatId, (pre || "") + ask, actionButtons(lang)); } catch {}
+  await logBotReply(env, chatId, userId, ask);
+  return true;
+}
+
 async function smartReply(env, chatId, userId, text, lang, tgName, attachment, prefix, userTimeZone) {
   const b = botText(lang);
   const pre = prefix || "";
@@ -508,16 +518,13 @@ async function smartReply(env, chatId, userId, text, lang, tgName, attachment, p
   if (intent.item) intent.item = sanitizeIntentItem(intent.item, text);
   /* الإضافة لا تقترح إلا بفعل صريح في الرسالة؛ كلمة أو سؤال ليس طلب تسجيل */
   if (intent.action === "add" && !ADD_VERBS.test(text)) intent.action = "question";
+  /* الإنجاز والإسناد كذلك: فعل صريح في الرسالة وإلا فهي سؤال أو تعليق (أحسنت ليست أمرا بالإقفال) */
+  if (intent.action === "done" && !VERBS.done.test(text)) intent.action = "question";
+  if (intent.action === "assign" && !VERBS.assign.test(text)) intent.action = "question";
   if (intent.action === "add" || intent.action === "done" || intent.action === "assign") {
     if (intent.action === "add" && !(intent.item && intent.item.title)) intent.action = "question";
-    else {
-      try { await rpc(env, "telegram_draft_put", { p_secret: env.WORKER_SECRET, p_chat_id: String(chatId), p_user_id: userId, p_payload: { type: "action", intent } }); }
-      catch { intent.action = "question"; }
-    }
-    if (intent.action !== "question") {
-      try { await sendTelegram(env, chatId, pre + humanize(describeAction(lang, intent, userTimeZone), lang), actionButtons(lang)); } catch {}
-      return;
-    }
+    else if (await askToConfirm(env, chatId, userId, intent, lang, pre, userTimeZone)) return;
+    else intent.action = "question";
   }
   /* الوكيل الذكي أولا: يعرف من يخاطب، يستعمل أدوات تراكر (بحث، مواعيد، إضافة، إنجاز، إسناد) باسمه، ويتذكر المحادثة */
   let agent = null;
@@ -526,6 +533,12 @@ async function smartReply(env, chatId, userId, text, lang, tgName, attachment, p
     try { target = await notifyTarget(env, userId, "telegram"); } catch {}
     agent = await agentReply(env, { chatId, userId, text, lang, name: tgName, orgName: (target && target.org_name) || "", attachment, userTimeZone });
   } catch (e) { console.log("agent failed", String(e && e.message || e).slice(0, 200)); agent = null; }
+  /* النموذج أراد كتابة (إنجاز/إضافة/إسناد): لا ينفذ؛ يعرض ما فهمه وينتظر زر التأكيد */
+  if (agent && agent.pending) {
+    const pending = agent.pending;
+    if (pending.item) pending.item = sanitizeIntentItem(pending.item, text);
+    if (await askToConfirm(env, chatId, userId, pending, lang, pre, userTimeZone)) return;
+  }
   if (agent && agent.text) {
     const agentText = humanize(agent.text, lang);
     try { await sendTelegram(env, chatId, pre + agentText, menuKeyboard(lang)); } catch {}

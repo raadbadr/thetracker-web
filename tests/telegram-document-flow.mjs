@@ -122,5 +122,26 @@ try {
   check("expenses: none recorded → one plain sentence with where to add them", none.content[0].text.startsWith("لا مصاريف مسجلة هذا الشهر") && clean(none.content[0].text), none.content[0].text);
 }
 
+/* ─── الكتابة من البوت: فعل صريح في الرسالة ثم تأكيد بزر؛ «احسنت» لا تقفل شيئا ─── */
+{
+  const { writeGate, VERBS } = await import("../src/telegram-agent.js");
+  const { formatItems } = await import("../src/notify.js");
+  const { heuristicIntent } = await import("../src/telegram-actions.js");
+  check("«احسنت» never completes anything", writeGate("tracker_complete", { query: "RSK-05092026-0001" }, "احسنت").blocked === true);
+  check("«شكرا» / «ممتاز» / «تمام» are not commands", !!writeGate("tracker_complete", { item_id: "x" }, "شكرا ممتاز").blocked && !!writeGate("tracker_add", { kind: "task", title: "x" }, "ممتاز").blocked && !!writeGate("tracker_assign", { query: "x", member: "y" }, "تمام").blocked);
+  check("the heuristic reader does not turn «احسنت» into done", !(heuristicIntent("احسنت") && heuristicIntent("احسنت").action === "done"), JSON.stringify(heuristicIntent("احسنت")));
+  const done = writeGate("tracker_complete", { query: "RSK-05092026-0001" }, "أنجزت المخالفة RSK-05092026-0001");
+  check("an explicit «أنجزت» becomes a pending confirmation, not an execution", !!done.pending && done.pending.action === "done" && done.pending.query === "RSK-05092026-0001", JSON.stringify(done));
+  const add = writeGate("tracker_add", { kind: "task", title: "مراجعة العقد", due_at: "2026-09-10T09:00:00+03:00", telegram_user_id: "1" }, "أضف مهمة مراجعة العقد غدا");
+  check("an explicit «أضف» becomes a pending add with item fields only", !!add.pending && add.pending.action === "add" && add.pending.item.title === "مراجعة العقد" && !("telegram_user_id" in add.pending.item), JSON.stringify(add));
+  const asg = writeGate("tracker_assign", { query: "4471", member: "أحمد" }, "كلف أحمد بالقضية 4471");
+  check("an explicit «كلف» becomes a pending assignment", !!asg.pending && asg.pending.action === "assign" && asg.pending.member === "أحمد", JSON.stringify(asg));
+  check("reading tools pass the gate untouched", writeGate("tracker_items", { kind: "case" }, "احسنت").allow === true && writeGate("tracker_company", {}, "شكرا").allow === true);
+  check("«ذكرني» may set a reminder directly; without the word it is blocked", writeGate("tracker_remind", { query: "الجلسة", before: "يوم" }, "ذكرني قبل يوم بالجلسة").allow === true && writeGate("tracker_remind", { query: "x", before: "يوم" }, "الجلسة قريبة").blocked === true);
+  check("English «done» / «close» are verbs, praise is not", VERBS.done.test("mark 4471 as done") && VERBS.done.test("close the case 4471") && !VERBS.done.test("great job") && !VERBS.done.test("well done".replace("done", "")));
+  const dash = formatItems("ar", [{ title: "مخالفة", client_name: "ASKEC", case_number: "-", due_at: "2026-09-07T06:00:00+00:00" }], "📅", "لا يوجد", "Asia/Riyadh");
+  check("a dash for the case number is not printed as (-)", !dash.includes("(-)") && dash.includes("مخالفة — ASKEC"), dash);
+}
+
 console.log(failed ? `\n${failed} check(s) failed` : "\nall checks pass");
 process.exit(failed ? 1 : 0);
