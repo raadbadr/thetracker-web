@@ -17,6 +17,7 @@ import { runNotificationCron, linkChannelByCode, notifyTarget, sendTelegram, sen
 import { ALLOWED_EXT, fileExt, parseWorkbook, draftPayload, commitImport } from "./telegram-import.js";
 import * as XLSX from "xlsx";
 import { extractIntent, describeAction, formatSearch, executeAction, runTelegramDigests } from "./telegram-actions.js";
+import { hmacHex, telegramFileRoute, handleTelegramFile, offerDocument, handleDocCallback } from "./telegram-documents.js";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -297,12 +298,7 @@ function targetDisplayName(target, lang, fallbackName) {
   return fullName || fullNameEn || fallbackName || "";
 }
 
-// --- رمز ربط موقع (HMAC بسر الـ Worker): زر داخل البوت يفتح الإعدادات فتربط الجلسة المحادثة بلا أي كتابة ---
-async function hmacHex(secret, data) {
-  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(data));
-  return [...new Uint8Array(sig)].map((b) => b.toString(16).padStart(2, "0")).join("");
-}
+// --- رمز ربط موقع (HMAC بسر الـ Worker، الدالة hmacHex في telegram-documents.js): زر داخل البوت يفتح الإعدادات فتربط الجلسة المحادثة بلا أي كتابة ---
 async function makeLinkToken(env, chatId) {
   const exp = Math.floor(Date.now() / 1000) + 60 * 60 * 24; // صالح يوما
   const body = `${chatId}.${exp}`;
@@ -708,6 +704,8 @@ async function handleTelegramWebhook(request, env) {
     let content = null;
     try { content = await readTelegramDocument(env, media, name, mime); } catch (e) { console.error("[telegram] read file failed:", String((e && e.message) || e).slice(0, 200)); }
     if (!content) { try { await sendTelegram(env, chatId, b.fileUnreadable, menuKeyboard(lang)); } catch {} return json({ ok: true }); }
+    /* ورقة رسمية أو قانونية تعرفها القواعد: خلاصتها بزري حفظ/لا ثم تحفظ مستندا كاملا بملفها؛ وإلا يجيب المساعد كالمعتاد */
+    if (await offerDocument(env, { chatId, userId: owner, lang, text: content, isPhoto: !!photo, file: { file_id: media.file_id, name, mime, size_bytes: size } })) return json({ ok: true });
     await smartReply(env, chatId, owner, caption || b.fileQuestion, lang, targetDisplayName(target, lang, tgName), { name, kind: photo ? "image" : "file", content }, "", userTimeZone);
     return json({ ok: true });
   }
@@ -754,6 +752,7 @@ async function handleTelegramCallback(env, cq) {
     try { await sendTelegram(env, chatId, r && r.status === "ok" ? t.set(r.name) : t.pick, menuKeyboard(lang)); } catch {}
     return json({ ok: true });
   }
+  if (/^(doc|prof):/.test(data) && await handleDocCallback(env, { chatId, userId: owner, lang, data })) return json({ ok: true });
   if (data === "act:n") {
     try { await rpc(env, "telegram_draft_take", { p_secret: env.WORKER_SECRET, p_chat_id: String(chatId) }); } catch {}
     try { await sendTelegram(env, chatId, b.importCancelled, menuKeyboard(lang)); } catch {}
@@ -889,6 +888,10 @@ export default {
       if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) return new Response("not configured", { status: 503 });
       return handleCalendar(cal[1], env);
     }
+
+    // ملف أرسله المستخدم إلى بوت تيليغرام: رابط موقع (HMAC) يبقى قابلا للفتح من صفحة المستندات — GET /api/telegram/file/<id>/<sig>
+    const tgFile = telegramFileRoute(path);
+    if (tgFile && request.method === "GET") { try { return await handleTelegramFile(env, tgFile.fileId, tgFile.sig, url); } catch { return new Response("not found", { status: 404 }); } }
 
     // إثبات ملكية النطاق لجوجل — يقدم من الـ Worker لأن طبقة الأصول تحول
     // /x.html إلى /x، وجوجل تطلب الملف على مساره الحرفي بامتداده.
