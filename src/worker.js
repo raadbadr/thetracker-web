@@ -9,7 +9,7 @@ import { handleTranslate } from "./translate.js";
 import { serveBundle } from "./bundles.js";
 import { handleMcp } from "./mcp.js";
 import { handleV1, mcpAuthenticate, importRowsWithKey } from "./api-v1.js";
-import { agentReply, quickAnswer, VERBS } from "./telegram-agent.js";
+import { agentReply, quickAnswer, VERBS, ungrounded } from "./telegram-agent.js";
 import { handleCalendar } from "./calendar.js";
 import { handleDocumentAnalyze } from "./documents.js";
 import { runNotificationCron, linkChannelByCode, notifyTarget, sendTelegram, sendWhatsapp, sendSms, sendEmail, rpc, t as channelText, westernDigits,
@@ -439,6 +439,8 @@ async function smartReply(env, chatId, userId, text, lang, tgName, attachment, p
   }
   let reply = null;
   try { reply = await telegramAssistantReply(env, chatId, userId, text, attachment); } catch {}
+  /* هذا المسار بلا أدوات: أي رقم أو قائمة أسماء فيه تخمين، فلا يخرج */
+  if (reply && ungrounded(reply, text + "\n" + (attachment && attachment.content ? String(attachment.content).slice(0, 4000) : ""), false)) reply = null;
   if (!reply) reply = attachment ? b.fileUnreadable : channelText(lang).alreadyLinked(tgName);
   reply = humanize(reply, lang);
   try { await sendTelegram(env, chatId, pre + reply, menuKeyboard(lang)); } catch {}

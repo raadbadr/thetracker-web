@@ -186,5 +186,19 @@ try {
   check("a dash for the case number is not printed as (-)", !dash.includes("(-)") && dash.includes("مخالفة — ASKEC"), dash);
 }
 
+/* ─── حارس التأريض: لا رقم ولا اسم من خارج الأدوات ─── */
+{
+  const { ungrounded } = await import("../src/telegram-agent.js");
+  const evidence = "كم المسجلين في الموقع\n{\"count\":2,\"items\":[{\"title\":\"المهندس رعد بدر\"},{\"title\":\"إياد بدر\"}]}";
+  check("an invented count is blocked", ungrounded("مستخدمون الموقع: 5", evidence, true) === true);
+  check("an invented name list is blocked", ungrounded("المهندس رعد بدر، إياد بدر، محمد علي، سارة خالد، أحمد عبد الله", evidence, true) === true);
+  check("the real two names pass", ungrounded("المهندس رعد بدر، إياد بدر", evidence, true) === false);
+  check("a count that the tool returned passes", ungrounded("لديك 2 من المستخدمين", evidence, true) === false);
+  check("any number at all is blocked when no tool ran", ungrounded("لديك 2 قضايا", evidence, false) === true);
+  check("a date reformatted from the tool output passes", ungrounded("ينتهي 31-10-2026", "{\"due_at\":\"2026-10-31\"}", true) === false);
+  check("a date the tool never returned is blocked", ungrounded("ينتهي 31-12-2027", "{\"due_at\":\"2026-10-31\"}", true) === true);
+  check("plain talk with no facts passes", ungrounded("على الرحب.", "", false) === false);
+}
+
 console.log(failed ? `\n${failed} check(s) failed` : "\nall checks pass");
 process.exit(failed ? 1 : 0);

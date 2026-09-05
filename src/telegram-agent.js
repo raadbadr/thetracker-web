@@ -22,6 +22,7 @@ function systemPrompt(ctx) {
     `أسئلة بيانات الشركة (رقم السجل التجاري، الرقم الضريبي، الآيبان، العنوان، الباقة، الأوراق المرفوعة) تجاب من tracker_company بالرقم نفسه كما هو مسجل.`,
     `كلمة واحدة تكفي: «قضايا» = tracker_items(case)، «مخالفات» = (violation)، «مهام» = (task)، «مستندات» = (document)، «المنجز» = (status done)، «مواعيد/القادم» = tracker_list(upcoming)، «متأخر» = tracker_list(overdue)، «الكل/ملخص/وضعنا» = tracker_overview، «مصاريف/المصاريف/كم صرفنا» = tracker_expenses(period)، أي اسم أو رقم = tracker_search. والكلام الطويل تفهم منه المطلوب نفسه.`,
     `إن لم يوجد شيء من النوع المطلوب فلا تكرر النفي نفسه: انقل ما تقوله الأداة عن الموجود فعلا (المنجز سابقا، ما يحمل الكلمة في عنوانه، النظرة العامة على المتتبعات) لكي يفهم المستخدم صورة بياناته. «بشكل عام» أو «السابقة» أو «الكل» تعني status=all.`,
+    `لا تخترع شيئا أبدا: كل رقم وكل اسم في ردك يجب أن يكون قد جاء حرفيا من نتيجة أداة في هذه المحادثة. إن لم تعد الأداة المعلومة فقل إنك لا تملكها ولا تقدر عليها، ولا تخمن عددا ولا اسما ولا تاريخا. أسئلة عن المنصة كلها (عدد المسجلين في الموقع، كل المستخدمين، الاشتراكات) ليست ضمن بيانات المستخدم: قل إنك لا تملكها.`,
     `لا تذكر أبدا أسماء حقول أو مفاتيح تقنية (مثل due_at أو client_name) ولا JSON ولا معرفات داخلية ولا صيغ تقنية (ISO 8601)؛ تكلم بلغة إنسان عادي فقط.`,
     `لا تعرض الرقم القياسي الداخلي (ITM-…) للمستخدم أبدا؛ اعرض رقم السجل أو القضية أو المخالفة أو الورقة نفسه كما هو مسجل، وتواريخ الإصدار والانتهاء.`,
     `صيغة الرد: مختصرة جدا وبلغة إنسان. للقوائم سطر لكل عنصر بلا مقدمة ولا خاتمة، منسوخ من نص الأداة كما هو: الورقة الرسمية «نوعها — رقمها — إصدار يوم-شهر-سنة — ينتهي يوم-شهر-سنة»، والقضية أو المخالفة أو المهمة «العنوان — قضية/مخالفة رقم … — العميل — الموعد». الرقم الوحيد الذي يظهر هو رقم الورقة أو القضية أو المخالفة كما هو مسجل؛ أي رمز يبدأ بـ ITM أو ORG أو USR ممنوع. التواريخ يوم-شهر-سنة (مثل 31-10-2026) بلا وقت إلا إن كان موعدا بساعة. إن لم يوجد شيء فجملة واحدة. للأسئلة: الجواب فقط. لا شرح لما فعلت ولا ذكر لأسماء الأدوات.`,
@@ -69,6 +70,25 @@ function limited(key, limit) {
 }
 
 const EMPTY = { ar: "لا يوجد.", en: "Nothing.", fr: "Rien.", ur: "کچھ نہیں۔" };
+const NO_DATA = {
+  ar: "لا أملك هذه المعلومة في بياناتك، ولن أخمنها. اكتب: قضايا، مخالفات، مهام، مستندات، مواعيد، متأخر، مصاريف، الشركة، الفريق.",
+  en: "I do not have that in your data, and I will not guess. Try: cases, violations, tasks, documents, upcoming, overdue, expenses, company, team.",
+  fr: "Je n'ai pas cette information dans vos données et je ne vais pas la deviner. Essayez : affaires, infractions, tâches, documents, échéances, retards, dépenses, société, équipe.",
+  ur: "یہ معلومات آپ کے ڈیٹا میں نہیں ہیں، اور میں اندازہ نہیں لگاوں گا۔ لکھیں: مقدمات، خلاف ورزیاں، کام، دستاویزات، تاریخیں، تاخیر، اخراجات، کمپنی، ٹیم۔",
+};
+/* حارس التأريض: لا يخرج رقم ولا اسم لم تعده أداة.
+   النموذج اخترع مرة «مستخدمون الموقع: 5» وأسماء لا وجود لها، فصار كل رقم وكل عنصر قائمة يقابل بالبيانات. */
+export function ungrounded(text, evidence, usedTools) {
+  const body = String(text || "");
+  const ev = String(evidence || "");
+  const evLetters = ev.replace(/[^\p{L}\p{N}]/gu, "");
+  const digits = body.match(/\d+/g) || [];
+  if (digits.length && !usedTools) return true;
+  for (const d of digits) { if (!new RegExp("(?<!\\d)" + d + "(?!\\d)").test(ev)) return true; }
+  const parts = body.split(/[،,\n]/).map((p) => p.trim()).filter((p) => p.length >= 3);
+  if (parts.length >= 3) { for (const p of parts) if (!evLetters.includes(p.replace(/[^\p{L}\p{N}]/gu, ""))) return true; }
+  return false;
+}
 function rowsText(rows) {
   return (rows || []).map((r) => {
     if (r.document_kind || r.doc_number) return [r.title, r.doc_number ? "رقم " + r.doc_number : null, r.issue_date ? "إصدار " + dmy(r.issue_date) : null, r.due_at ? "ينتهي " + dmy(r.due_at) : null].filter(Boolean).join(" — ");
@@ -121,6 +141,8 @@ export async function agentReply(env, ctx) {
   const toolCtx = { env, who: { org_id: ctx.orgId || null, org_name: ctx.orgName || "", user_id: ctx.userId }, hash: null, trusted: true, rpc: (name, args) => rpc(env, name, args) };
   const tools = toolDefs();
   let toolsUsed = [];
+  /* كل ما أعادته الأدوات: هو وحده مصدر الأرقام والأسماء في الرد */
+  let evidence = String(ctx.text || "") + "\n" + String(ctx.name || "") + "\n" + String(ctx.orgName || "");
   const seen = new Set();
   for (let round = 0; round < 3; round++) {
     /* بعد تنفيذ الأدوات يطلب جواب نصي صريح (بلا أدوات) كي لا يعيد النموذج النداء نفسه بلا نهاية */
@@ -130,7 +152,11 @@ export async function agentReply(env, ctx) {
     calls = calls.filter((c) => { const k = c.name + JSON.stringify(c.args || {}); if (seen.has(k)) return false; seen.add(k); return true; });
     if (!calls.length) {
       const text = extractText(res).trim();
-      if (text) return { text: text.replace(/[\u064B-\u0652\u0670]/g, ""), tools: toolsUsed };
+      if (text) {
+        const clean = text.replace(/[\u064B-\u0652\u0670]/g, "");
+        if (ungrounded(clean, evidence, toolsUsed.length > 0)) { console.log("agent: ungrounded reply blocked", clean.slice(0, 120)); return { text: NO_DATA[ctx.lang] || NO_DATA.ar, tools: toolsUsed }; }
+        return { text: clean, tools: toolsUsed };
+      }
       if (round < 2) { messages.push({ role: "user", content: "أجب الآن نصا مباشرا من نتائج الأدوات أعلاه، باختصار." }); continue; }
       console.log("agent: empty text after tools", toolsUsed.join(","), JSON.stringify(res).slice(0, 300));
       return null;
@@ -149,6 +175,7 @@ export async function agentReply(env, ctx) {
       console.log("agent: tool", c.name, JSON.stringify(c.args).slice(0, 200), "→", (out && out.isError) ? "error" : "ok");
       const stripInternal = (v) => { if (Array.isArray(v)) return v.map(stripInternal); if (v && typeof v === "object") { const o = {}; for (const k of Object.keys(v)) if (k !== "item_number" && k !== "org_id" && k !== "user_id") o[k] = stripInternal(v[k]); return o; } return v; };
       const payload = out && out.structuredContent ? JSON.stringify(stripInternal(out.structuredContent)).slice(0, 6000) : String((out && out.content && out.content[0] && out.content[0].text) || "").slice(0, 6000);
+      evidence += "\n" + payload + "\n" + String((out && out.content && out.content[0] && out.content[0].text) || "");
       messages.push({ role: "tool", tool_call_id: assistantMsg.tool_calls[i].id, name: c.name, content: payload });
     }
   }

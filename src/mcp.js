@@ -149,7 +149,7 @@ export async function callTool(name, args, ctx) {
     }
     case "tracker_search": {
       const rows = await ctx.rpc("telegram_search", { p_secret: secret, p_user_id: user, p_query: String(a.query || ""), p_limit: Math.min(20, Math.max(1, Number(a.limit) || 8)) });
-      return result({ items: rows || [] }, describeRows(rows));
+      return result({ count: (rows || []).length, items: rows || [] }, describeRows(rows));
     }
     case "tracker_company": {
       const orgs = (await ctx.rpc("telegram_company_profile", { p_secret: secret, p_user_id: user })) || [];
@@ -208,7 +208,7 @@ export async function callTool(name, args, ctx) {
     }
     case "tracker_list": {
       const rows = await ctx.rpc("telegram_items", { p_secret: secret, p_user_id: user, p_mode: a.mode === "overdue" ? "overdue" : "upcoming", p_limit: Math.min(20, Math.max(1, Number(a.limit) || 10)) });
-      return result({ mode: a.mode || "upcoming", items: rows || [] }, describeRows(rows));
+      return result({ mode: a.mode || "upcoming", count: (rows || []).length, items: rows || [] }, describeRows(rows));
     }
     case "tracker_add": {
       const item = {};
