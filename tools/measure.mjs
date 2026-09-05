@@ -92,11 +92,23 @@ for (const name of pages) {
       return { calendarState, booting: document.documentElement.classList.contains("app-booting"), scrollY: window.scrollY, dbg, scrollWidth: de.scrollWidth, innerWidth: vw, overflow: de.scrollWidth > vw + 1, wide: wide.slice(0, 12), wideCount: wide.length, smallTargets: small.slice(0, 10), smallCount: small.length, tinyInputs: tiny.slice(0, 8), sidebar: !!document.getElementById("appSidebar"), topbar: !!document.getElementById("appTopbar") && document.getElementById("appTopbar").children.length, loading: !!(document.getElementById("loadingCard") && document.getElementById("loadingCard").offsetParent), bodyText: document.body.innerText.slice(0, 80).replace(/\s+/g, " ") };
     });
     await page.screenshot({ path: `${OUT}/${name}-${label}.png`, fullPage: false });
-    report.push({ page: name, size: label, ...m, errors: errors.slice(0, 4) });
+    /* زر الإغلاق الدائري: يقاس بعد اللقطة بفتح اللوحات المخفية — دائرة 40 على بداية الاتجاه */
+    const closeX = await page.evaluate(() => {
+      ["editPanel", "addItemPanel", "docForm", "editorCard", "renameOrgForm", "newOrgForm", "newTrackerForm"].forEach((id) => { const el = document.getElementById(id); if (el) el.hidden = false; });
+      const rtl = getComputedStyle(document.documentElement).direction === "rtl";
+      return [...document.querySelectorAll(".close-x")].map((b) => {
+        const r = b.getBoundingClientRect(); const cs = getComputedStyle(b); const host = b.closest(".has-close-x");
+        const hr = host ? host.getBoundingClientRect() : null;
+        return (b.id || "?") + " " + Math.round(r.width) + "x" + Math.round(r.height) + " r=" + cs.borderRadius.split(" ")[0] +
+          " words=" + b.textContent.trim().length + " label=" + (b.getAttribute("aria-label") || "-") +
+          (hr ? " inset=" + Math.round(rtl ? hr.right - r.right : r.left - hr.left) : " inline");
+      });
+    });
+    report.push({ page: name, size: label, ...m, closeX, errors: errors.slice(0, 4) });
     if (process.env.DEBUG) console.log("   dbg", name, label, JSON.stringify(m.dbg));
     await page.close();
   }
 }
 await browser.close(); server.close();
 fs.writeFileSync(OUT + "/report.json", JSON.stringify(report, null, 1));
-for (const r of report) console.log(`${r.page.padEnd(10)} ${r.size.padEnd(8)} overflow=${r.overflow ? "YES " + r.scrollWidth + ">" + r.innerWidth : "no "} wide=${r.wideCount} small=${r.smallCount} tiny=${r.tinyInputs.length} shell=${r.sidebar ? "S" : "-"}${r.topbar ? "T" : "-"} loading=${r.loading} booting=${r.booting} scrollY=${r.scrollY} calendar=${r.calendarState} err=${r.errors.length}${r.wide.length ? "\n    wide: " + r.wide.slice(0, 5).join(" | ") : ""}${r.errors.length ? "\n    err: " + r.errors.slice(0, 2).join(" | ") : ""}`);
+for (const r of report) console.log(`${r.page.padEnd(10)} ${r.size.padEnd(8)} overflow=${r.overflow ? "YES " + r.scrollWidth + ">" + r.innerWidth : "no "} wide=${r.wideCount} small=${r.smallCount} tiny=${r.tinyInputs.length} shell=${r.sidebar ? "S" : "-"}${r.topbar ? "T" : "-"} loading=${r.loading} booting=${r.booting} scrollY=${r.scrollY} calendar=${r.calendarState} err=${r.errors.length}${r.wide.length ? "\n    wide: " + r.wide.slice(0, 5).join(" | ") : ""}${r.errors.length ? "\n    err: " + r.errors.slice(0, 2).join(" | ") : ""}${r.closeX && r.closeX.length ? "\n    close-x: " + r.closeX.join(" | ") : ""}`);

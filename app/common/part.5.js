@@ -144,6 +144,7 @@
     try { mountSidebar(); } catch (e) { /* تجاهل */ }
     try { mountTopbar(); } catch (e) { /* تجاهل */ }
     try { keepInsideApp(); } catch (e) { /* تجاهل */ }
+    try { mountCloseX(); } catch (e) { /* تجاهل */ }
     var readyGate = app && app.ready && typeof app.ready.then === "function" ? app.ready : null;
     if (readyGate) readyGate.then(function () {
       try { mountProfileGate(); } catch (e) { /* تجاهل */ }

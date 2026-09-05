@@ -687,6 +687,17 @@
     "[dir=rtl] body select.waitlist-input{background-position:left .85rem center}",
     "[dir=ltr] body select.waitlist-input{background-position:right .85rem center}",
     "body select.waitlist-input::-ms-expand{display:none}",
+    /* ــ زر الإغلاق الدائري (نمط تطبيق باركينزي: StandardCloseButton) ــ
+       الإلغاء يصير علامة × داخل دائرة أعلى النافذة، في بداية السطر حسب اتجاه
+       اللغة (يمين في العربية والأردية، يسار في الإنجليزية والفرنسية). */
+    "body .close-x{width:40px;height:40px;min-height:40px;min-width:40px;padding:0;flex:0 0 40px;",
+    "border-radius:50%;display:inline-flex;align-items:center;justify-content:center;",
+    "background:var(--bg-top);color:var(--primary);border:1px solid var(--glass-border);",
+    "box-shadow:0 2px 4px rgba(0,0,0,.2);cursor:pointer;font-size:0}",
+    "body .close-x svg{width:16px;height:16px;display:block}",
+    "body .close-x:hover{background:var(--glass-strong)}",
+    "body .close-x.is-corner{position:absolute;top:1rem;inset-inline-start:1rem;z-index:5}",
+    "body .has-close-x{position:relative}",
     /* صف الأدوات: كل ما فيه على خط واحد بارتفاع واحد */
     "body .toolbar,body .filters-row{align-items:center}",
     "body .toolbar>*,body .filters-row>*{margin:0}",
@@ -832,6 +843,51 @@
     if (html === sidebarHtml) return;
     sidebarHtml = html;
     nav.innerHTML = html;
+  }
+
+  /* ============================================================
+   * زر الإغلاق الدائري — كتلة مستقلة، لا تلمس شيئا من تخطيط الصفحات.
+   * كل زر إلغاء يصير × داخل دائرة كما في تطبيق باركينزي: في اللوحات
+   * الكبيرة يعلو زاوية اللوحة عند بداية الاتجاه، وفي الصفوف القصيرة
+   * يبقى مكانه بالشكل نفسه. الكلمة تبقى في title و aria-label.
+   * ============================================================ */
+  var CLOSE_X_LABEL = { ar: "إلغاء", en: "Cancel", fr: "Annuler", ur: "منسوخ" };
+  /* الزر: الحاوية التي يعلو زاويتها، أو "" ليبقى في مكانه داخل الصف */
+  var CLOSE_X_BUTTONS = {
+    editCancelBtn: "editPanel",
+    addCancelBtn: "addItemPanel",
+    docCancelBtn: "docForm",
+    cancelBtn: "editorCard",
+    renameOrgCancel: "",
+    newOrgCancel: "",
+    newTrackerCancel: ""
+  };
+  var CLOSE_X_SVG = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">' +
+    '<path d="M3.2 3.2 12.8 12.8M12.8 3.2 3.2 12.8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
+
+  function closeXify(btn, host) {
+    if (!btn || btn.classList.contains("close-x")) return;
+    var word = sidebarLabel(CLOSE_X_LABEL);
+    btn.removeAttribute("data-i18n");
+    btn.innerHTML = CLOSE_X_SVG;
+    btn.classList.add("close-x");
+    btn.title = word;
+    btn.setAttribute("aria-label", word);
+    if (host) {
+      host.classList.add("has-close-x");
+      btn.classList.add("is-corner");
+      host.insertBefore(btn, host.firstChild);
+    }
+  }
+
+  function mountCloseX() {
+    if (!/^\/app\//.test(String(window.location.pathname || ""))) return;
+    Object.keys(CLOSE_X_BUTTONS).forEach(function (id) {
+      var btn = document.getElementById(id);
+      if (!btn) return;
+      var hostId = CLOSE_X_BUTTONS[id];
+      closeXify(btn, hostId ? document.getElementById(hostId) : null);
+    });
   }
 
   function mountSidebar() {

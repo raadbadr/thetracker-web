@@ -479,10 +479,11 @@
         '<div id="newOrgExpiryEcho" style="font-size:.8rem;color:var(--text-secondary);margin:-.6rem 0 .8rem"></div>' +
 
         '<button type="button" id="newOrgSave">' + escapeHtml(t.save) + "</button>" +
-        '<button type="button" id="newOrgCancelBtn" style="margin-top:.6rem;background:transparent;color:var(--text-secondary)">' + escapeHtml(t.cancel) + "</button>" +
+        '<button type="button" id="newOrgCancelBtn"></button>' +
         '<div class="app-gate-msg" id="newOrgErr"></div>' +
       "</div>";
     document.body.appendChild(gate);
+    try { closeXify(document.getElementById("newOrgCancelBtn"), gate.querySelector(".app-gate-card")); } catch (e) { /* تجاهل */ }
     var input = document.getElementById("newOrgInput");
     if (input) input.focus();
 

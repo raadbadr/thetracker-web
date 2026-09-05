@@ -687,6 +687,22 @@
     .cal-nav .cal-modes { padding: 0 0.2rem; }
     .cal-nav .cal-mode { height: 32px; display: inline-flex; align-items: center; }
     .cal-nav .chat-option-btn { margin: 0; }
+    /* شريط التقويم على ثلاث مناطق: اليوم والتقويمان في البداية، الشهر بين سهميه في وسط الشريط تماما،
+       والفلاتر في النهاية (أمر المهندس رعد: «الشهر يجي في النص بين الاثنين») */
+    .cal-nav { display: grid; grid-template-columns: 1fr auto 1fr; justify-content: stretch; }
+    .cal-nav > .cal-nav-group:nth-child(1) { order: 2; justify-self: center; }
+    .cal-nav .cal-title { justify-content: center; }   /* النص في منتصف صندوقه لا في طرفه: الفراغ متساو عن الزرين */
+    .cal-nav > .cal-nav-group:nth-child(2) { order: 1; justify-self: start; }
+    .cal-nav > #calFilters { order: 3; justify-self: end; }
+    .cal-nav > #calFilters[hidden] { display: none; }
+    @media (max-width: 900px) {
+      .cal-nav { grid-template-columns: 1fr; justify-items: center; row-gap: 0.6rem; }
+      .cal-nav > .cal-nav-group:nth-child(1) { order: 1; }
+      .cal-nav > .cal-nav-group:nth-child(2) { order: 2; justify-self: center; }
+      .cal-nav > #calFilters { order: 3; justify-self: center; }
+    }
+    .dash-side .cal-nav { grid-template-columns: 1fr; justify-items: center; }
+    .dash-side .cal-nav > .cal-nav-group:nth-child(2) { justify-self: center; }
     .cal-title {
       font-size: 1.15rem; font-weight: 700; color: var(--text-primary);
       min-width: 10rem; text-align: center; line-height: 1.3;

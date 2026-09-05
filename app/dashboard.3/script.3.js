@@ -72,7 +72,12 @@
       }
 
       /* تقويم أم القرى عبر Intl: الشبكة نفسها تتبع الشهر الهجري في الوضع الهجري */
-      var HIJRI_LOCALE = "ar-SA-u-ca-islamic-umalqura-nu-latn";   /* الأرقام غربية دائما */
+      /* اسم الشهر الهجري بلغة الواجهة نفسها (لا «ربيع» في الإنجليزية)، والأرقام غربية دائما */
+      function hijriLocale() {
+        var lo = app.lang();
+        var base = lo === "ur" ? "ur-PK" : (lo === "ar" ? "ar-SA" : (lo === "fr" ? "fr-FR" : "en-US"));
+        return base + "-u-ca-islamic-umalqura-nu-latn";
+      }
 
       function hijriParts(date) {
         try {
@@ -87,7 +92,7 @@
 
       function hijriTitle(date) {
         try {
-          return new Intl.DateTimeFormat(HIJRI_LOCALE, { month: "long", year: "numeric" }).format(date);
+          return new Intl.DateTimeFormat(hijriLocale(), { month: "long", year: "numeric" }).format(date);
         } catch (e) { return ""; }
       }
 
