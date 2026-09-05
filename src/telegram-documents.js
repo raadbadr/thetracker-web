@@ -99,25 +99,25 @@ const KIND_LABELS = {
         insurance_policy: "انشورنس پالیسی", employment_contract: "ملازمت کا معاہدہ", contract: "معاہدہ" },
 };
 const T = {
-  ar: { name: "باسم", number: "الرقم", amount: "المبلغ", issued: "الإصدار", expires: "الانتهاء", assumed: "(مفترض: سنة من الإصدار)", ask: "أحفظها في المستندات؟",
+  ar: { name: "باسم", number: "الرقم", amount: "المبلغ", issued: "الإصدار", expires: "الانتهاء", filing: "أول إقرار", assumed: "(مفترض: سنة من الإصدار)", ask: "أحفظها في المستندات؟",
         yes: "💾 حفظ في المستندات", no: "لا", saved: "حفظت في المستندات", updated: "حدثت في المستندات", num: "رقم", exp: "ينتهي", open: "فتح المستندات",
         skipped: "لم تحفظ.", noOrg: "لا شركة مرتبطة بحسابك؛ أنشئ الشركة من الموقع أولا.", sep: "، ",
         profAsk: "في الورقة بيانات تختلف عن بطاقة الشركة:", profCurrent: "المسجل", profNone: "غير مسجل", profQ: "أحدث بطاقة الشركة بها؟",
         profYes: "✅ تحديث بطاقة الشركة", profNo: "لا", profDone: "حدثت بطاقة الشركة:", profKept: "بقيت بطاقة الشركة كما هي.", profForbidden: "تحديث بطاقة الشركة للمالك أو المدير فقط.",
         fields: { vat_number: "الرقم الضريبي", cr_number: "رقم السجل التجاري", unified_number: "الرقم الوطني الموحد", legal_name: "الاسم النظامي", legal_name_en: "الاسم النظامي بالإنجليزية" } },
-  en: { name: "Name", number: "Number", amount: "Amount", issued: "Issued", expires: "Expires", assumed: "(assumed: one year from issue)", ask: "Save it to Documents?",
+  en: { name: "Name", number: "Number", amount: "Amount", issued: "Issued", expires: "Expires", filing: "First filing", assumed: "(assumed: one year from issue)", ask: "Save it to Documents?",
         yes: "💾 Save to Documents", no: "No", saved: "Saved to Documents", updated: "Updated in Documents", num: "no.", exp: "expires", open: "Open Documents",
         skipped: "Not saved.", noOrg: "No company is linked to your account; create it on the website first.", sep: ", ",
         profAsk: "The paper carries details that differ from the company record:", profCurrent: "on record", profNone: "none", profQ: "Update the company record with them?",
         profYes: "✅ Update company record", profNo: "No", profDone: "Company record updated:", profKept: "The company record was left unchanged.", profForbidden: "Only the owner or an admin can update the company record.",
         fields: { vat_number: "VAT number", cr_number: "CR number", unified_number: "Unified national number", legal_name: "Legal name", legal_name_en: "Legal name (English)" } },
-  fr: { name: "Nom", number: "Numéro", amount: "Montant", issued: "Délivré le", expires: "Expire le", assumed: "(supposé : un an après la délivrance)", ask: "L'enregistrer dans Documents ?",
+  fr: { name: "Nom", number: "Numéro", amount: "Montant", issued: "Délivré le", expires: "Expire le", filing: "Premiere declaration", assumed: "(supposé : un an après la délivrance)", ask: "L'enregistrer dans Documents ?",
         yes: "💾 Enregistrer dans Documents", no: "Non", saved: "Enregistré dans Documents", updated: "Mis à jour dans Documents", num: "n°", exp: "expire le", open: "Ouvrir Documents",
         skipped: "Non enregistré.", noOrg: "Aucune société liée à votre compte ; créez-la d'abord sur le site.", sep: ", ",
         profAsk: "Le document porte des données différentes de la fiche société :", profCurrent: "enregistré", profNone: "aucun", profQ: "Mettre à jour la fiche société ?",
         profYes: "✅ Mettre à jour la fiche", profNo: "Non", profDone: "Fiche société mise à jour :", profKept: "La fiche société reste inchangée.", profForbidden: "Seul le propriétaire ou un administrateur peut modifier la fiche société.",
         fields: { vat_number: "Numéro de TVA", cr_number: "Numéro de registre de commerce", unified_number: "Numéro national unifié", legal_name: "Nom légal", legal_name_en: "Nom légal (anglais)" } },
-  ur: { name: "نام", number: "نمبر", amount: "رقم", issued: "اجرا", expires: "میعاد", assumed: "(فرضی: اجرا سے ایک سال)", ask: "دستاویزات میں محفوظ کروں؟",
+  ur: { name: "نام", number: "نمبر", amount: "رقم", issued: "اجرا", expires: "میعاد", filing: "پہلا گوشوارہ", assumed: "(فرضی: اجرا سے ایک سال)", ask: "دستاویزات میں محفوظ کروں؟",
         yes: "💾 دستاویزات میں محفوظ کریں", no: "نہیں", saved: "دستاویزات میں محفوظ", updated: "دستاویزات میں اپ ڈیٹ", num: "نمبر", exp: "میعاد", open: "دستاویزات کھولیں",
         skipped: "محفوظ نہیں ہوا۔", noOrg: "آپ کے اکاؤنٹ سے کوئی کمپنی منسلک نہیں؛ پہلے ویب سائٹ پر کمپنی بنائیں۔", sep: "، ",
         profAsk: "دستاویز میں کمپنی ریکارڈ سے مختلف معلومات ہیں:", profCurrent: "ریکارڈ میں", profNone: "درج نہیں", profQ: "کمپنی ریکارڈ اپ ڈیٹ کروں؟",
@@ -143,7 +143,9 @@ export function docConfirmText(lang, f) {
   if (f.number) lines.push(t.number + ": " + f.number);
   if (f.amount) lines.push(t.amount + ": " + f.amount);
   if (f.issue_date) lines.push(t.issued + ": " + dmy(f.issue_date));
-  if (f.expiry_date) lines.push(t.expires + ": " + dmy(f.expiry_date) + (f.expiry_assumed ? " " + t.assumed : ""));
+  const filing = f.kind === "vat_certificate" && f.details && f.details.first_filing_due;
+  if (filing) lines.push(t.filing + ": " + dmy(filing));   /* الشهادة الضريبية لا تنتهي: موعدها أول إقرار */
+  else if (f.expiry_date) lines.push(t.expires + ": " + dmy(f.expiry_date) + (f.expiry_assumed ? " " + t.assumed : ""));
   lines.push("", t.ask);
   return lines.join("\n");
 }
@@ -156,7 +158,7 @@ export function docSavedText(lang, r) {
   const t = texts(lang);
   const parts = [(r.status === "updated" ? t.updated : t.saved) + ": " + kindLabel(lang, r.kind)];
   if (r.number) parts.push(t.num + " " + r.number);
-  if (r.expiry_date) parts.push(t.exp + " " + dmy(r.expiry_date));
+  if (r.expiry_date) parts.push((r.kind === "vat_certificate" ? t.filing : t.exp) + " " + dmy(r.expiry_date));
   return parts.join(" — ");
 }
 export function profileOfferText(lang, updates, current) {
@@ -216,6 +218,7 @@ export async function handleDocCallback(env, ctx) {
     let r = null;
     try {
       const external_url = await telegramFileUrl(env, d.file.file_id, d.file.name);
+      if (d.doc && d.doc.kind === "vat_certificate" && d.doc.details && d.doc.details.first_filing_due) { d.doc.expiry_date = d.doc.details.first_filing_due; d.doc.expiry_assumed = false; }
       r = await rpc(env, "telegram_save_document", { p_secret: env.WORKER_SECRET, p_user_id: ctx.userId, p_doc: d.doc,
         p_file: { name: d.file.name, mime: d.file.mime, size_bytes: d.file.size_bytes, external_url } });
     } catch (e) {
