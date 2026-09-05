@@ -484,13 +484,13 @@
               (isCurrent ? '<div class="tlx-today is-at-today" id="tlxToday" style="left:' + tlxLeft(ratioOf(todayMs), isRtl) + '"><span class="tlx-today-label">' + esc(T("tlNow")) + "</span></div>" : "") +
             "</div></div>" +
           "</div>" +
-          /* الحدث المختار بكلماته تحت المسطرة: «الحدث 3 من 7 — استيراد ملف · 5 سبتمبر»؛ السطر محجوز دائما فلا يقفز شيء */
-          '<div class="tlx-current" id="tlxCurrent" aria-live="polite"></div>' +
           '<div class="tlx-ends">' +
             '<button type="button" class="tlx-nav-btn" id="tlxPrev" aria-label="' + esc(T("tlPrev")) + '"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M14.5 5.5 8 12l6.5 6.5"/></svg></button>' +
             '<span class="tlx-ends-dates"><span>' + esc(tlxFmtDate(minMs)) + "</span><span>" + esc(tlxFmtDate(maxMs)) + "</span></span>" +
             '<button type="button" class="tlx-nav-btn" id="tlxNext" aria-label="' + esc(T("tlNext")) + '"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M9.5 5.5 16 12l-6.5 6.5"/></svg></button>' +
           "</div>" +
+          /* الحدث المختار بكلماته أسفل الصف الموجود لا فوقه: «الحدث 3 من 7 — استيراد ملف · 5 سبتمبر»؛ ارتفاعه محجوز لسطرين فلا يقفز شيء */
+          (events.length ? '<div class="tlx-current" id="tlxCurrent" aria-live="polite"></div>' : "") +
         "</div>";
         if (!events.length) html += '<p class="empty-note">' + esc(T("timelineEmpty")) + "</p>";
         if (card.__sig === html) return;
@@ -525,16 +525,23 @@
             /* في اليوم الواحد أحداث عدة: يُختار آخرها فيبقى «التالي» ينتقل للأمام */
             if (active) marks.forEach(function (m) { if (m.dataset.step === active.dataset.step) active = m; });
           }
-          selIdx = active ? Number(active.dataset.idx) : -1;
-          marks.forEach(function (m) { m.classList.toggle("is-active", m === active); m.setAttribute("aria-pressed", m === active ? "true" : "false"); });
+          /* المؤشر يعد «على الحدث» حين يقف المقبض عنده؛ وإلا فالسهمان يقاسان من موضع المقبض نفسه */
+          var onEvent = !!active && Math.abs(Number(active.dataset.step) - p) <= SNAP;
+          selIdx = onEvent ? Number(active.dataset.idx) : -1;
+          marks.forEach(function (m) {
+            m.classList.toggle("is-active", m === active);
+            m.setAttribute("aria-pressed", m === active ? "true" : "false");
+            /* العلامة الواقعة تحت المقبض لا تعترض سحبه؛ نقرة هناك تصل المقبض ويلتقطها الالتصاق */
+            m.classList.toggle("is-under-thumb", Math.abs(Number(m.dataset.step) - p) <= SNAP);
+          });
           /* السهمان يعملان ما دام هناك حدث في اتجاههما، وإلا يخفتان */
-          if (prev) prev.disabled = !marks.length || (selIdx >= 0 ? selIdx <= 0 : !marks.some(function (m) { return Number(m.dataset.step) < p - SNAP; }));
-          if (next) next.disabled = !marks.length || (selIdx >= 0 ? selIdx >= marks.length - 1 : !marks.some(function (m) { return Number(m.dataset.step) > p + SNAP; }));
+          if (prev) prev.disabled = !marks.length || (onEvent ? selIdx <= 0 : !marks.some(function (m) { return Number(m.dataset.step) < p; }));
+          if (next) next.disabled = !marks.length || (onEvent ? selIdx >= marks.length - 1 : !marks.some(function (m) { return Number(m.dataset.step) > p; }));
           if (current) {
             var text = "";
             if (active) {
               var lab = active.querySelector(".tlx-ms-label"), dt = active.querySelector(".tlx-ms-date");
-              text = T("tlEventOf").replace("{i}", String(selIdx + 1)).replace("{n}", String(marks.length)) +
+              text = T("tlEventOf").replace("{i}", String(Number(active.dataset.idx) + 1)).replace("{n}", String(marks.length)) +
                      " — " + (lab ? lab.textContent : "") + (dt ? " · " + dt.textContent : "");
             }
             if (current.textContent !== text) current.textContent = text;
@@ -542,7 +549,9 @@
         }
         slider.addEventListener("input", function () {
           var v = Number(this.value);
-          for (var i = 0; i < stops.length; i++) if (Math.abs(v - stops[i]) <= SNAP) { v = stops[i]; this.value = String(v); break; }
+          var nearest = null;
+          for (var i = 0; i < stops.length; i++) if (Math.abs(v - stops[i]) <= SNAP && (nearest === null || Math.abs(v - stops[i]) < Math.abs(v - nearest))) nearest = stops[i];
+          if (nearest !== null) { v = nearest; this.value = String(v); }
           apply(v);
         });
         /* نقرة أو Enter على العلامة تختار حدثها */
@@ -574,8 +583,8 @@
           var p = Number(slider.value);
           var ni = selIdx >= 0 ? selIdx + dir : -1;
           if (selIdx < 0) {
-            if (dir < 0) { for (var i = marks.length - 1; i >= 0; i--) if (Number(marks[i].dataset.step) < p - SNAP) { ni = i; break; } }
-            else { for (var j = 0; j < marks.length; j++) if (Number(marks[j].dataset.step) > p + SNAP) { ni = j; break; } }
+            if (dir < 0) { for (var i = marks.length - 1; i >= 0; i--) if (Number(marks[i].dataset.step) < p) { ni = i; break; } }
+            else { for (var j = 0; j < marks.length; j++) if (Number(marks[j].dataset.step) > p) { ni = j; break; } }
           }
           if (ni >= 0 && ni < marks.length) pick(marks[ni]);
         }

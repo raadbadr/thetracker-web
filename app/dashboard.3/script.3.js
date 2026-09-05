@@ -304,6 +304,7 @@
         renderSelects();
         renderList();
         renderCalendar();
+        renderTimeline(tlState.rows, tlState.stats);   /* الخط الزمني بلغة الواجهة الجديدة، بلا تحميل */
       };
 
       /* Deferred scripts (supabase-js, app.js, common.js) run before DOMContentLoaded. */
