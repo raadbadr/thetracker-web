@@ -677,7 +677,10 @@
         timeline.id = "timelineCard";
         timeline.hidden = true;   /* يظهر مع أول رسم له */
         dash.insertBefore(timeline, grid);
-        dash.insertBefore(calCard, dash.firstChild);   /* التقويم قبل كل شيء في كل الصفحات */
+        /* الرئيسية: المربعات الأربعة أولا ثم التقويم تحتها مباشرة (أمر المهندس رعد)؛ بقية الصفحات: التقويم أولا */
+        var statsTop = dash.querySelector(".stats-section.stats-top");
+        if (statsTop && statsTop.parentNode === dash) dash.insertBefore(calCard, statsTop.nextSibling);
+        else dash.insertBefore(calCard, dash.firstChild);
 
         var tabs = dash.querySelector(".tabs-row");
         if (tabs) tabs.hidden = true;
