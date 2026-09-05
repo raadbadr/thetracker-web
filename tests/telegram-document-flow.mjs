@@ -203,6 +203,9 @@ try {
   check("a date reformatted from the tool output passes", ungrounded("ينتهي 31-10-2026", "{\"due_at\":\"2026-10-31\"}", true) === false);
   check("a date the tool never returned is blocked", ungrounded("ينتهي 31-12-2027", "{\"due_at\":\"2026-10-31\"}", true) === true);
   check("plain talk with no facts passes", ungrounded("على الرحب.", "", false) === false);
+  check("an invented person in prose is blocked", ungrounded("أحمد هو المسؤول عن هذه القضية", evidence, true) === true);
+  check("a person the tool returned passes in prose", ungrounded("إياد بدر هو المسؤول", evidence, true) === false);
+  check("an honest refusal passes", ungrounded("لا أملك هذه المعلومة في بياناتك، ولن أخمنها.", "", false) === false);
 }
 
 /* ─── من الطرف إلى الطرف: النموذج يحاول الكذب فيمنعه الحارس، ويمر حين يستند إلى أداة ─── */
@@ -235,13 +238,15 @@ try {
       { tool_calls: [{ function: { name: "tracker_items", arguments: JSON.stringify({ kind: "case" }) } }] },
       { response: "العملاء: شركة أبراج، محمد علي، سارة خالد" },
     ]), { chatId: "t2", userId: "u1", text: "مين العملاء", lang: "ar" });
-    check("end to end: invented names are blocked even after a real tool call", !!names && names.text.startsWith("لا أملك هذه المعلومة"), names && names.text);
+    check("end to end: after a tool call the answer is the data itself, never the model's prose", !!names && names.text.includes("جلسة الاستئناف") && !/محمد علي|سارة خالد/.test(names.text), names && names.text);
     /* الحقيقة تمر: رقم القضية جاء من الأداة */
     const truth = await agentReply(envOf([
       { tool_calls: [{ function: { name: "tracker_items", arguments: JSON.stringify({ kind: "case" }) } }] },
       { response: "لديك قضية واحدة: جلسة الاستئناف رقم 4471 لشركة أبراج." },
     ]), { chatId: "t3", userId: "u1", text: "ايش وضع القضايا عندي", lang: "ar" });
-    check("end to end: a grounded answer passes untouched", !!truth && truth.text.includes("4471") && !truth.text.startsWith("لا أملك"), truth && truth.text);
+    check("end to end: the real row reaches the user, composed from the data", !!truth && truth.text.includes("4471") && truth.text.includes("جلسة الاستئناف") && !truth.text.startsWith("لا أملك"), truth && truth.text);
+    const prose = await agentReply(envOf([{ response: "أحمد هو المسؤول عن هذه القضية" }]), { chatId: "t4", userId: "u1", text: "من يتابع الموضوع", lang: "ar" });
+    check("end to end: one invented name in plain prose, no digits, is still blocked", !!prose && prose.text.startsWith("لا أملك هذه المعلومة"), prose && prose.text);
     check("end to end: the tool really was called against the database", rpcCalls.includes("telegram_items_by_kind"), String(rpcCalls));
   } finally { globalThis.fetch = realFetch; }
 }

@@ -2,7 +2,7 @@
    ويعرف من يخاطب (اسمه وشركته) ويتذكر آخر الرسائل. الردود بلغة الواجهة بلا تشكيل وبأرقام غربية. */
 import { rpc, dmy, VERBS, writeGate } from "./notify.js";
 import { TOOLS, callTool } from "./mcp.js";
-import { understand, composeAnswer } from "./telegram-understand.js";
+import { understand, composeAnswer, normalize } from "./telegram-understand.js";
 
 const MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const LANG_NAMES = { ar: "العربية الفصحى", en: "English", fr: "français", ur: "اردو" };
@@ -78,6 +78,9 @@ const NO_DATA = {
 };
 /* حارس التأريض: لا يخرج رقم ولا اسم لم تعده أداة.
    النموذج اخترع مرة «مستخدمون الموقع: 5» وأسماء لا وجود لها، فصار كل رقم وكل عنصر قائمة يقابل بالبيانات. */
+/* مفردات المحادثة المسموحة في المسار الحر (مطبعة بلا همز ولا تاء مربوطة): كلمات ربط وإرشاد ووصف،
+   لا أسماء أشخاص ولا شركات ولا أرقام — تلك من الأدوات وحدها */
+const TALK = new Set(normalize("اهلا مرحبا شكرا عفوا نعم لن ولن لم ليس ليست غير سوي لا يوجد توجد لدي لديك عندك عندي لديه هذا هذه ذلك تلك التي الذي ما ماذا كيف متي اين هل ان انا انت نحن هو هي هم يمكن اقدر استطيع اعرف اعلم املك املكها اخمن اخمنها معلومه معلومات بيانات بياناتك حسابك الموقع المنصه النظام البوت مساعد اكتب جرب اطلب اسال سؤالك رسالتك الان حاليا فقط ايضا لكن او و في من علي الي مع بلا بدون شيء شي كل اي جميع قضايا قضيه قضاياك مخالفات مخالفه مهام مهمه مستندات مستند اوراق ورقه شهاده شهادات سجل السجل رخصه عقد مواعيد موعد متاخر متاخرات مصاريف مصروفات شركه الشركه شركتك فريق الفريق فريقك عضو اعضاء مستخدم مستخدمين مسجل مسجلين مشتركين مسؤول مسئول المسؤول عن يتابع المنجز منجز مفتوح مفتوحه تذكير تنبيه ينتهي تنتهي انتهاء اصدار صادر رقم ارقام تاريخ تواريخ عدد اجمالي مجموع نتيجه نتائج قائمه سوف سا رجاء الرحب اهلين طيب حسنا تمام ريال يوم ايام اسبوع شهر سنه ok yes no i you we the a an is are do does not have has can cannot know about your my data account site platform bot assistant write try ask question message now only also but or and in of on to with for nothing none there help hello hi thanks welcome please sorry cases case violations violation tasks task documents document upcoming overdue expenses company team done items item number date").split(" "));
 export function ungrounded(text, evidence, usedTools) {
   const body = String(text || "");
   const ev = String(evidence || "");
@@ -87,6 +90,16 @@ export function ungrounded(text, evidence, usedTools) {
   for (const d of digits) { if (!new RegExp("(?<!\\d)" + d + "(?!\\d)").test(ev)) return true; }
   const parts = body.split(/[،,\n]/).map((p) => p.trim()).filter((p) => p.length >= 3);
   if (parts.length >= 3) { for (const p of parts) if (!evLetters.includes(p.replace(/[^\p{L}\p{N}]/gu, ""))) return true; }
+  /* ادعاء نثري باسم واحد («أحمد هو المسؤول») لا يحمل رقما ولا قائمة: كل كلمة ذات معنى
+     يجب أن تكون في بيانات الأداة أو في مفردات المحادثة، وإلا فهي كيان مخترع */
+  const evNorm = normalize(ev).replace(/\s+/g, "");
+  for (const w of normalize(body).split(" ")) {
+    if (w.length < 3) continue;
+    const k = w.replace(/^(بال|وال|فال|لل|ال|و|ف|ب|ل)/, "");
+    if (TALK.has(w) || TALK.has(k)) continue;
+    if (evNorm.includes(w) || evNorm.includes(k)) continue;
+    return true;
+  }
   return false;
 }
 function rowsText(rows) {
@@ -141,6 +154,7 @@ export async function agentReply(env, ctx) {
   const toolCtx = { env, who: { org_id: ctx.orgId || null, org_name: ctx.orgName || "", user_id: ctx.userId }, hash: null, trusted: true, rpc: (name, args) => rpc(env, name, args) };
   const tools = toolDefs();
   let toolsUsed = [];
+  const answers = []; /* نصوص الأدوات: هي وحدها ما يراه المستخدم */
   /* كل ما أعادته الأدوات: هو وحده مصدر الأرقام والأسماء في الرد */
   let evidence = String(ctx.text || "") + "\n" + String(ctx.name || "") + "\n" + String(ctx.orgName || "");
   const seen = new Set();
@@ -177,7 +191,15 @@ export async function agentReply(env, ctx) {
       const payload = out && out.structuredContent ? JSON.stringify(stripInternal(out.structuredContent)).slice(0, 6000) : String((out && out.content && out.content[0] && out.content[0].text) || "").slice(0, 6000);
       evidence += "\n" + payload + "\n" + String((out && out.content && out.content[0] && out.content[0].text) || "");
       messages.push({ role: "tool", tool_call_id: assistantMsg.tool_calls[i].id, name: c.name, content: payload });
+      const shown = out && !out.isError && out.content && out.content[0] && out.content[0].text;
+      if (shown) {
+        const rows = out.structuredContent && out.structuredContent.items;
+        answers.push(Array.isArray(rows) && rows.length ? rowsText(rows) : String(shown));
+      }
     }
+    /* دور النموذج ينتهي هنا: اختار الأداة، والنص يبنى من بياناتها لا من كلامه.
+       (أمر المهندس رعد: مساعد أقرب إلى بوت مع لمسة نموذج، فلا جملة حقيقة يولدها النموذج حرا) */
+    if (answers.length) return { text: answers.join("\n"), tools: toolsUsed };
   }
   console.log("agent: rounds exhausted", toolsUsed.join(","));
   return null;
