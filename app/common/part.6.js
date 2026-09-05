@@ -188,6 +188,119 @@
     document.addEventListener("reset", function () { setTimeout(function () { dpRecords.forEach(function (r) { dpRefresh(r); }); }, 0); }, true);
   }
 
+  /* ============================================================
+   * حاسبة المدة والعدّاد التنازلي (أمر المهندس رعد 2026-09-05):
+   * بجانب كل حقل تاريخ يحمل data-duration حقل «المدة بالأيام»: كتابة 60 تضبط
+   * التاريخ بعد 60 يوما، واختيار تاريخ يحسب الأيام، وتحته سطر «المتبقي 59 يوما و13 ساعة»
+   * يتحدث كل دقيقة. والعناصر التي تحمل data-due (في الجداول) تأخذ النص نفسه بلا إعادة رسم.
+   * ============================================================ */
+  var DUR_TEXT = {
+    ar: { days: "المدة بالأيام", left: "المتبقي {t}", late: "متأخر {t}", today: "ينتهي اليوم", d: ["يوم", "يومان", "{n} أيام", "{n} يوما"], h: ["ساعة", "ساعتان", "{n} ساعات", "{n} ساعة"], and: " و" },
+    en: { days: "Duration in days", left: "{t} left", late: "{t} overdue", today: "Ends today", d: ["1 day", "2 days", "{n} days", "{n} days"], h: ["1 hour", "2 hours", "{n} hours", "{n} hours"], and: " and " },
+    fr: { days: "Durée en jours", left: "Reste {t}", late: "En retard de {t}", today: "Expire aujourd'hui", d: ["1 jour", "2 jours", "{n} jours", "{n} jours"], h: ["1 heure", "2 heures", "{n} heures", "{n} heures"], and: " et " },
+    ur: { days: "مدت (دن)", left: "{t} باقی", late: "{t} تاخیر", today: "آج ختم", d: ["1 دن", "2 دن", "{n} دن", "{n} دن"], h: ["1 گھنٹہ", "2 گھنٹے", "{n} گھنٹے", "{n} گھنٹے"], and: " اور " }
+  };
+  function durText() { return DUR_TEXT[lang()] || DUR_TEXT.ar; }
+  function durUnit(forms, n) {
+    var f = n === 1 ? forms[0] : n === 2 ? forms[1] : (n >= 3 && n <= 10 ? forms[2] : forms[3]);
+    return f.replace("{n}", String(n));
+  }
+  /* نص العدّاد لتاريخ ISO: أيام وساعات، أو «ينتهي اليوم»، أو التأخر */
+  function remainingText(iso) {
+    if (!iso) return "";
+    var ms = new Date(iso).getTime() - Date.now();
+    if (isNaN(ms)) return "";
+    var t = durText(), abs = Math.abs(ms);
+    var days = Math.floor(abs / 86400000), hours = Math.floor((abs % 86400000) / 3600000);
+    if (ms >= 0 && days === 0 && hours === 0) return t.today;
+    var parts = [];
+    if (days) parts.push(durUnit(t.d, days));
+    if (hours || !days) parts.push(durUnit(t.h, hours));
+    var text = parts.join(t.and);
+    return (ms >= 0 ? t.left : t.late).replace("{t}", text);
+  }
+  app.remainingText = remainingText;
+
+  function durDaysFromValue(native) {
+    var v = native.value; if (!v) return "";
+    var d = new Date(native.type === "datetime-local" ? v : v + "T09:00:00");
+    if (isNaN(d.getTime())) return "";
+    return String(Math.max(0, Math.ceil((d.getTime() - Date.now()) / 86400000)));
+  }
+  function durValueFromDays(native, n) {
+    var d = new Date(Date.now() + n * 86400000);
+    var pad = function (x) { return (x < 10 ? "0" : "") + x; };
+    var ymd = d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+    if (native.type !== "datetime-local") return ymd;
+    /* مدة بالأيام تنتهي بنهاية يومها الأخير (23:59) ما لم يكن للحقل وقت محدد من قبل */
+    var cur = native.value && native.value.length >= 16 ? native.value.slice(11, 16) : "23:59";
+    return ymd + "T" + cur;
+  }
+  var durRecords = [];
+  function mountDurationCalc(native) {
+    if (native.__dur) return;
+    var field = native.closest(".form-field") || native.closest("label") || native.parentNode;
+    if (!field || !field.parentNode) return;
+    var t = durText();
+    var wrap = document.createElement("label");
+    wrap.className = "form-field dur-field";
+    wrap.innerHTML = "<span></span>" +
+      '<input type="number" class="waitlist-input dur-days" min="0" max="3650" step="1" inputmode="numeric" placeholder="60" dir="ltr" autocomplete="off">' +
+      '<span class="dur-countdown" aria-live="polite"></span>';
+    field.parentNode.insertBefore(wrap, field.nextSibling);
+    var days = wrap.querySelector(".dur-days"), out = wrap.querySelector(".dur-countdown");
+    var rec = { native: native, days: days, out: out, label: wrap.firstChild };
+    native.__dur = rec; durRecords.push(rec);
+    days.addEventListener("input", function () {
+      var n = parseInt(days.value, 10);
+      if (!isFinite(n) || n < 0) { if (!days.value) { native.value = ""; native.dispatchEvent(new Event("input", { bubbles: true })); durRefresh(rec); } return; }
+      native.value = durValueFromDays(native, n);
+      native.dispatchEvent(new Event("input", { bubbles: true }));
+      native.dispatchEvent(new Event("change", { bubbles: true }));
+      durRefresh(rec, true);
+    });
+    native.addEventListener("input", function () { durRefresh(rec); });
+    native.addEventListener("change", function () { durRefresh(rec); });
+    var form = native.closest("form");
+    if (form) form.addEventListener("reset", function () { setTimeout(function () { durRefresh(rec); }, 0); });
+    durRefresh(rec);
+  }
+  function durRefresh(rec, keepDays) {
+    var t = durText();
+    if (rec.label.textContent !== t.days) rec.label.textContent = t.days;
+    if (!keepDays && document.activeElement !== rec.days) {
+      var d = durDaysFromValue(rec.native);
+      if (rec.days.value !== d) rec.days.value = d;
+    }
+    var text = rec.native.value ? remainingText(rec.native.type === "datetime-local" ? rec.native.value : rec.native.value + "T09:00:00") : "";
+    if (rec.out.textContent !== text) rec.out.textContent = text;
+    rec.out.classList.toggle("is-late", !!rec.native.value && new Date(rec.native.type === "datetime-local" ? rec.native.value : rec.native.value + "T09:00:00").getTime() < Date.now());
+  }
+  /* عناصر الجداول: <span data-due="ISO"> يمتلئ بالنص ويتحدث كل دقيقة */
+  function refreshDueLabels(root) {
+    (root || document).querySelectorAll("[data-due]").forEach(function (el) {
+      var text = remainingText(el.getAttribute("data-due"));
+      if (el.textContent !== text) el.textContent = text;
+      el.classList.toggle("is-late", !!text && new Date(el.getAttribute("data-due")).getTime() < Date.now());
+    });
+  }
+  app.refreshDueLabels = refreshDueLabels;
+  function durTick() {
+    durRecords = durRecords.filter(function (r) { return document.documentElement.contains(r.native); });
+    durRecords.forEach(function (r) { durRefresh(r); });
+    refreshDueLabels(document);
+  }
+  setInterval(durTick, 60000);
+  if (window.MutationObserver) {
+    var durMo = new MutationObserver(function (muts) {
+      var need = false;
+      muts.forEach(function (m) { [].forEach.call(m.addedNodes, function (n) { if (n.nodeType === 1 && (n.hasAttribute && n.hasAttribute("data-due") || n.querySelector && n.querySelector("[data-due]"))) need = true; }); });
+      if (need) refreshDueLabels(document);
+    });
+    if (document.body) durMo.observe(document.body, { childList: true, subtree: true });
+    else document.addEventListener("DOMContentLoaded", function () { durMo.observe(document.body, { childList: true, subtree: true }); });
+  }
+
   function enhanceDateInputs(root) {
     var scope = root && root.querySelectorAll ? root : document;
     dpEnsureStyle();
@@ -197,6 +310,7 @@
     var list = Array.prototype.slice.call(scope.querySelectorAll(sel));
     if (scope !== document && scope.matches && scope.matches(sel)) list.unshift(scope);
     list.forEach(function (native) { try { dpEnhance(native); } catch (e) { /* يبقى الحقل الأصلي */ } });
+    (root || document).querySelectorAll('input[data-duration]').forEach(function (native) { try { mountDurationCalc(native); } catch (e) { /* الحقل يبقى بلا حاسبة */ } });
   }
 
   function dpEnhance(native) {

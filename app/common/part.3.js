@@ -696,14 +696,20 @@
     "box-shadow:0 2px 4px rgba(0,0,0,.2);cursor:pointer;font-size:0}",
     "body .close-x svg{width:16px;height:16px;display:block}",
     "body .close-x:hover{background:var(--glass-strong)}",
-    "body .close-x.is-corner{position:absolute;top:1rem;inset-inline-start:1rem;z-index:5}",
+    "body .close-x.is-corner{position:absolute;z-index:5}",
     "body .has-close-x{position:relative}",
+    /* سطر العنوان: الزر في بدايته والعنوان في منتصفه (كشريط الشيت في باركينزي)، وما لا عنوان له يبدأ تحت السطر */
+    "body .has-close-x>.close-x+h2,body .has-close-x>.close-x+h3{min-height:40px;display:flex;align-items:center;justify-content:center;text-align:center;padding-inline:56px;margin-top:0;box-sizing:border-box}",
+    "body .has-close-x>.close-x+:not(h1):not(h2):not(h3){margin-top:calc(40px + .75rem)}",
+    /* حاسبة المدة والعدّاد: حقل الأيام بجانب التاريخ، والسطر محجوز فلا يقفز شيء؛ التأخر أحمر */
+    "body .dur-countdown{display:block;min-height:1.2em;font-size:.8rem;color:var(--text-secondary);font-variant-numeric:tabular-nums}",
+    "body .dur-countdown.is-late,body .due-left.is-late{color:var(--error);font-weight:700}",
+    "body .due-left:empty{display:none}",
     "body .waitlist-form>.close-x,body .form-actions>.close-x{width:40px;max-width:40px;flex:0 0 40px}",
     /* داخل نوافذ app-gate: قاعدة الأزرار هناك تمدد كل زر بعرض النافذة، فتُخصَّص هنا: دائرة في الزاوية والعنوان في المنتصف */
     "body .app-gate-card button.close-x{width:40px;height:40px;min-height:40px;padding:0;border-radius:50%;grid-column:auto;",
     "background:var(--bg-top);color:var(--primary);border:1px solid var(--glass-border);box-shadow:0 2px 4px rgba(0,0,0,.2);",
-    "position:absolute;top:1.1rem;inset-inline-start:1.1rem;z-index:5;font-weight:400}",
-    "body .app-gate-card.has-close-x h2{text-align:center;padding-inline:48px;min-height:40px;display:flex;align-items:center;justify-content:center}",
+    "position:absolute;z-index:5;font-weight:400}",
     /* صف الأدوات: كل ما فيه على خط واحد بارتفاع واحد */
     "body .toolbar,body .filters-row{align-items:center}",
     "body .toolbar>*,body .filters-row>*{margin:0}",
@@ -883,8 +889,27 @@
       host.classList.add("has-close-x");
       btn.classList.add("is-corner");
       host.insertBefore(btn, host.firstChild);
+      /* حاوية بلا عنوان في أولها: يمنع تسرب هامش أول عنصر إلى الحاوية كلها فيبقى الزر فوق السطر المحجوز */
+      var firstContent = btn.nextElementSibling;
+      if (firstContent && !/^H[1-3]$/.test(firstContent.tagName)) host.style.display = "flow-root";   /* الحاوية مخفية عند التركيب فلا يُقرأ display المحسوب */
+      placeCloseX(btn);
     }
   }
+
+  /* الزر في زاوية حشو الحاوية نفسها (3rem على الحاسب، 1.5rem على الجوال…) فلا يلمس الحافة ولا يغطي العنوان */
+  function placeCloseX(btn) {
+    var host = btn.parentNode; if (!host) return;
+    var cs = getComputedStyle(host);
+    var rtl = getComputedStyle(document.documentElement).direction === "rtl";
+    var top = cs.paddingTop, side = rtl ? cs.paddingRight : cs.paddingLeft;
+    if (btn.style.top !== top) btn.style.top = top;
+    if (btn.style.insetInlineStart !== side) btn.style.insetInlineStart = side;
+  }
+  var closeXResizeTimer = null;
+  window.addEventListener("resize", function () {
+    clearTimeout(closeXResizeTimer);
+    closeXResizeTimer = setTimeout(function () { document.querySelectorAll(".close-x.is-corner").forEach(placeCloseX); }, 120);
+  });
 
   function mountCloseX() {
     if (!/^\/app\//.test(String(window.location.pathname || ""))) return;
